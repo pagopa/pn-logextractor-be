@@ -1,5 +1,19 @@
 AWSTemplateFormatVersion: 2010-09-09
 
+Parameters:
+
+  ProjectName:
+    Type: String
+    Description: Name of the project
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC id for the private endpoint
+
+  RouteTableIds:
+    Type: List<String>
+    Description: List of route table to register the endpoint ingress
+
 Resources:
 
   Table:
@@ -70,13 +84,13 @@ Resources:
     Properties:
       VpcEndpointType: Gateway
       PolicyDocument:
-        Version: '2012-10-17'
+        Version: 2012-10-17
         Statement:
           - Action: '*'
             Effect: Allow
             Resource: '*'
             Principal: '*'
       RouteTableIds: !Ref RouteTableIds
-      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.dynamodb'
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.dynamodb
       VpcId: !Ref VpcId
 

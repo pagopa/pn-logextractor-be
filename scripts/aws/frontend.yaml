@@ -8,6 +8,10 @@ Parameters:
     Type: String
     Description: Name of the project
 
+  WafId:
+    Type: String
+    Description: CloudFront WAF id
+
 Resources:
 
   Hosting:
@@ -78,30 +82,4 @@ Resources:
             S3OriginConfig:
               OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${OAI}
         PriceClass: PriceClass_100
-          #        WebACLId: !Ref WebACL
-          #
-          #  WebACL:
-          #    Type: AWS::WAFv2::WebACL
-          #    Properties:
-          #      Name: !Sub ${ProjectName}WebACL
-          #      Scope: CLOUDFRONT
-          #      Description: CloudFront WebACL
-          #      DefaultAction:
-          #        Allow: {}
-          #      VisibilityConfig:
-          #        SampledRequestsEnabled: true
-          #        CloudWatchMetricsEnabled: true
-          #        MetricName: !Sub ${ProjectName}WebACLMetric
-          #      Rules:
-          #        - Name: AWS-AWSManagedRulesCommonRuleSet
-          #          Priority: 0
-          #          OverrideAction:
-          #            None: {}
-          #          VisibilityConfig:
-          #            SampledRequestsEnabled: true
-          #            CloudWatchMetricsEnabled: true
-          #            MetricName: MetricForAMRCRS
-          #          Statement:
-          #            ManagedRuleGroupStatement:
-          #              VendorName: AWS
-          #              Name: AWSManagedRulesCommonRuleSet
+        WebACLId: !Ref WafId

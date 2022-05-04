@@ -131,5 +131,13 @@ Outputs:
 
   PrivateSubnetIds:
     Value: !Join [',', [!Ref PrivateSubnet1, !Ref PrivateSubnet2]]
-    Description: Id of the public subnet
+    Description: Ids of the private subnets
+
+  PublicRouteTableId:
+    Value: !Ref PublicRouteTable
+    Description: Id of the public route table
+
+  PrivateRouteTableIds:
+    Value: !Join [',', [!Ref PrivateRouteTable1, !Ref PrivateRouteTable2]]
+    Description: Ids of the private route tables
 

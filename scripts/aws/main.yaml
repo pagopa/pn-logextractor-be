@@ -17,6 +17,10 @@ Parameters:
     Description: This value determine current the second byte of CIDR's block
     Default: 0
 
+  WafId:
+    Type: String
+    Description: Global WAF id for CloudFront
+
 Resources:
 
   Networking:
@@ -32,6 +36,7 @@ Resources:
       TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/frontend.yaml
       Parameters:
         ProjectName: !Ref ProjectName
+        WafId: !Ref WafId
 
   Api:
     Type: AWS::CloudFormation::Stack
@@ -48,5 +53,37 @@ Resources:
       TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/backend.yaml
       Parameters:
         ProjectName: !Ref ProjectName
+        VpcId: !GetAtt Networking.Outputs.VpcId
+        SubnetIds: !GetAtt Networking.Outputs.PrivateSubnetIds
+
+  Database:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/database.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        VpcId: !GetAtt Networking.Outputs.VpcId
+        RouteTableIds: !GetAtt Networking.Outputs.PrivateRouteTableIds
+
+  Cache:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/cache.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        VpcId: !GetAtt Networking.Outputs.VpcId
+        SubnetIds: !GetAtt Networking.Outputs.PrivateSubnetIds
+        NodeType: cache.t2.micro
+        Replicas: 1
+        SourceSecurityGroupId: !GetAtt Backend.Outputs.CacheSecurityGroupId
+
+  Services:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/services.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        EngineVersion: OpenSearch_1.2
+        InstanceType: t3.small.search
         VpcId: !GetAtt Networking.Outputs.VpcId
         SubnetIds: !GetAtt Networking.Outputs.PrivateSubnetIds

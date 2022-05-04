@@ -8,9 +8,25 @@ Parameters:
     Type: String
     Description: Name of the project
 
-  SourceSecurityGroupName:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC id for the cluster
+
+  NodeType:
     Type: String
-    Description: Name of SG that can have access to the cluster
+    Description: Cache node type (i.e. cache.t2.micro)
+
+  Replicas:
+    Type: Number
+    Description: Number of nodes
+
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Private subnets to deploy resources into
+
+  SourceSecurityGroupId:
+    Type: String
+    Description: The id of the SG that can have access to the cluster
 
 Resources:
 
@@ -18,18 +34,26 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: !Sub ${ProjectName}-redis-sg
-      GroupDescription: "ingres tcp 8080, egress all"
-      GroupDescription: Elasticache Security Group
+      GroupDescription: "ingress tcp 6379, egress all"
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: 11211
-          ToPort: 11211
-          SourceSecurityGroupName: !Ref SourceSecurityGroup
+          FromPort: 6379
+          ToPort: 6379
+          SourceSecurityGroupId: !Ref SourceSecurityGroupId
+      VpcId: !Ref VpcId
 
   Cluster:
     Type: AWS::ElastiCache::CacheCluster
     Properties:
       Engine: redis
-      CacheNodeType: cache.t2.micro
-      NumCacheNodes: 1
-      VpcSecurityGroupIds: !GetAtt SecurityGroup.GroupId
+      CacheSubnetGroupName: !Ref SubnetGroup
+      CacheNodeType: !Ref NodeType
+      NumCacheNodes: !Ref Replicas
+      VpcSecurityGroupIds:
+        - !GetAtt SecurityGroup.GroupId
+
+  SubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: Cache Subnet Group
+      SubnetIds: !Ref SubnetIds
