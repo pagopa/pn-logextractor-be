@@ -1,0 +1,107 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >
+  CloudFormation definition of Log Extractor Frontend subsystem
+
+Parameters:
+
+  ProjectName:
+    Type: String
+    Description: Name of the project
+
+Resources:
+
+  Hosting:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${ProjectName}-hosting
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  LogsStorage:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${ProjectName}-logs
+
+  HostingPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref Hosting
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+            Resource:
+              - !Sub arn:aws:s3:::${Hosting}/*
+            Principal:
+              AWS:
+                - !Sub arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${OAI}
+
+  OAI:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub ${ProjectName}
+
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: !Sub ${ProjectName}
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # CachingOptimized
+          TargetOriginId: s3_hosting
+          ViewerProtocolPolicy: redirect-to-https
+        DefaultRootObject: index.html
+        Enabled: true
+        Logging:
+          Bucket: !GetAtt Hosting.DomainName
+          Prefix: cloudfront/
+        Origins:
+          - DomainName: !GetAtt Hosting.DomainName
+            Id: s3_hosting
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${OAI}
+        PriceClass: PriceClass_100
+          #        WebACLId: !Ref WebACL
+          #
+          #  WebACL:
+          #    Type: AWS::WAFv2::WebACL
+          #    Properties:
+          #      Name: !Sub ${ProjectName}WebACL
+          #      Scope: CLOUDFRONT
+          #      Description: CloudFront WebACL
+          #      DefaultAction:
+          #        Allow: {}
+          #      VisibilityConfig:
+          #        SampledRequestsEnabled: true
+          #        CloudWatchMetricsEnabled: true
+          #        MetricName: !Sub ${ProjectName}WebACLMetric
+          #      Rules:
+          #        - Name: AWS-AWSManagedRulesCommonRuleSet
+          #          Priority: 0
+          #          OverrideAction:
+          #            None: {}
+          #          VisibilityConfig:
+          #            SampledRequestsEnabled: true
+          #            CloudWatchMetricsEnabled: true
+          #            MetricName: MetricForAMRCRS
+          #          Statement:
+          #            ManagedRuleGroupStatement:
+          #              VendorName: AWS
+          #              Name: AWSManagedRulesCommonRuleSet

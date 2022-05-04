@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >
+  CloudFormation definition of Log Extractor system
+
+Parameters:
+
+  ProjectName:
+    Type: String
+    Description: Name of the project
+
+  TemplateBucketBaseUrl:
+    Type: String
+    Description: The S3 bucket from which to fetch the templates used by this stack
+
+  VpcNumber:
+    Type: Number
+    Description: This value determine current the second byte of CIDR's block
+    Default: 0
+
+Resources:
+
+  Networking:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/networking.yaml
+      Parameters:
+        VpcNumber: !Ref VpcNumber
+
+  Frontend:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/frontend.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+
+  Api:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/api.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        NetworkLoadBalancerLink: !GetAtt Backend.Outputs.NlbLink
+        ApplicationLoadBalancerDomain: !GetAtt Backend.Outputs.AlbDomain
+
+  Backend:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/backend.yaml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        VpcId: !GetAtt Networking.Outputs.VpcId
+        SubnetIds: !GetAtt Networking.Outputs.PrivateSubnetIds

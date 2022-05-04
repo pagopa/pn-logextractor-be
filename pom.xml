@@ -6,7 +6,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>2.6.7</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
 	<groupId>it.gov.pagopa.logextractor</groupId>
 	<artifactId>pn-logextractor-be</artifactId>
@@ -41,8 +41,60 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- AWS dependencies START-->
+		<!-- Redis related dependencies -->
+		<dependency>
+		  <groupId>io.awspring.cloud</groupId>
+		  <artifactId>spring-cloud-aws</artifactId>
+		  <version>2.3.1</version>
+		  <type>pom</type>
+		</dependency>
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-data-redis</artifactId>
+		    <version>2.6.7</version>
+		</dependency>
+		<dependency>
+		  <groupId>org.springframework.cloud</groupId>
+		  <artifactId>spring-cloud-starter-aws</artifactId>
+		  <version>2.2.6.RELEASE</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.amazonaws</groupId>
+		    <artifactId>aws-java-sdk-elasticache</artifactId>
+		    <version>1.12.210</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.amazonaws</groupId>
+		    <artifactId>aws-java-sdk-cloudformation</artifactId>
+		    <version>1.12.210</version>
+		</dependency>
+		<!-- Redis related dependencies -->
+		<!-- DynamoDB dependencies -->
+		<dependency>
+	        <groupId>com.amazonaws</groupId>
+	        <artifactId>aws-java-sdk-dynamodb</artifactId>
+	        <version>1.11.64</version>
+	    </dependency>
+	    <dependency>
+	        <groupId>com.github.derjust</groupId>
+	        <artifactId>spring-data-dynamodb</artifactId>
+	        <version>5.1.0</version>
+	    </dependency>
+	    <!-- DynamoDB dependencies -->
+		<!-- AWS dependencies END-->
 	</dependencies>
-
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+       			<groupId>org.springframework.data</groupId>
+	       		<artifactId>spring-data-releasetrain</artifactId>
+	       		<version>Lovelace-SR1</version>
+	       		<type>pom</type>
+	       		<scope>import</scope>
+	     	</dependency>
+	   	</dependencies>
+ 	</dependencyManagement>
 	<build>
 		<plugins>
 			<plugin>

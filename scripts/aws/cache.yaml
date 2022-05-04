@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >
+  CloudFormation definition of Log Extractor additional services
+
+Parameters:
+
+  ProjectName:
+    Type: String
+    Description: Name of the project
+
+  SourceSecurityGroupName:
+    Type: String
+    Description: Name of SG that can have access to the cluster
+
+Resources:
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${ProjectName}-redis-sg
+      GroupDescription: "ingres tcp 8080, egress all"
+      GroupDescription: Elasticache Security Group
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 11211
+          ToPort: 11211
+          SourceSecurityGroupName: !Ref SourceSecurityGroup
+
+  Cluster:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      Engine: redis
+      CacheNodeType: cache.t2.micro
+      NumCacheNodes: 1
+      VpcSecurityGroupIds: !GetAtt SecurityGroup.GroupId

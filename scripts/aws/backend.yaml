@@ -1,0 +1,107 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >
+  CloudFormation definition of Log Extractor Backend subsystem
+
+Parameters:
+
+  ProjectName:
+    Type: String
+    Description: Name of the project
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC id of the subnets
+
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Private subnets to deploy resources into
+
+Resources:
+
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: application
+      Scheme: internal
+      IpAddressType: ipv4
+      Subnets: !Ref SubnetIds
+      SecurityGroups:
+        - !Ref SecurityGroup
+
+  ApplicationLoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Protocol: HTTP
+      Port: 8080
+      DefaultActions:
+        - Type: fixed-response
+          FixedResponseConfig:
+            StatusCode: 404
+            ContentType: "application/json"
+            MessageBody: "{ \"error\": \"404\", \"message\": \"Load balancer rule not configured\" }"
+          Order: 1
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${ProjectName}-lb-sg
+      GroupDescription: "ingres tcp 8080, egress all"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: "0.0.0.0/0"
+      VpcId: !Ref VpcId
+
+  NetworkLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: network
+      Scheme: internal
+      IpAddressType: ipv4
+      Subnets: !Ref SubnetIds
+
+  NetworkLoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref NetworkLoadBalancer
+      Protocol: TCP
+      Port: 8080
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref NetworkToApplicationLoadBalancerTargetGroup
+          Order: 1
+
+  NetworkToApplicationLoadBalancerTargetGroup:
+    DependsOn: ApplicationLoadBalancerListener
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      TargetType: alb
+      Protocol: TCP
+      Port: 8080
+      Targets:
+        - Id: !Ref ApplicationLoadBalancer
+      VpcId: !Ref VpcId
+
+  NetworkLoadBalancerLink:
+    Type: AWS::ApiGateway::VpcLink
+    Properties:
+      Name: !Sub ${ProjectName}-nlb-link
+      Description: API-GW link to Network load balancer
+      TargetArns:
+        - !Ref NetworkLoadBalancer
+
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub ${ProjectName}-ecs-cluster
+
+Outputs:
+  AlbDomain:
+    Value: !GetAtt ApplicationLoadBalancer.DNSName
+    Description: FQDN of the application load balanacer
+
+  NlbLink:
+    Value: !Ref NetworkLoadBalancerLink
+    Description: Private link to the NLB in front of ECS

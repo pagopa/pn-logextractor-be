@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >
+  CloudFormation definition of Log Extractor additional services
+
+Parameters:
+
+  ProjectName:
+    Type: String
+    Description: Name of the project
+
+  EngineVersion:
+    Type: String
+    Description: User-defined OpenSearch version
+
+  InstanceType:
+    Type: String
+    Description: https://docs.aws.amazon.com/opensearch-service/latest/developerguide/supported-instance-types.html
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC id of the subnets
+
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Private subnets to deploy resources into
+
+Resources:
+
+  OpenSearchServiceDomain:
+    Type: AWS::OpenSearchService::Domain
+    Properties:
+      EngineVersion: !Ref EngineVersion
+      ClusterConfig:
+        InstanceCount: 1
+        InstanceType: !Ref InstanceType
+      EBSOptions:
+        EBSEnabled: true
+        Iops: 0
+        VolumeSize: 10
+        VolumeType: standard
+      AccessPolicies:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Deny
+            Principal:
+              AWS: '*'
+            Action: 'es:*'
+            Resource: '*'
+      AdvancedOptions:
+        rest.action.multi.allow_explicit_index: true
+        override_main_response_version: true
+      VPCOptions:
+        SubnetIds: !Ref SubnetIds
+        SecurityGroupIds:
+          - Ref: SecurityGroup
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub {ProjectName}-opensearch-sg
+      GroupDescription: "ingres tcp 443, egress all"
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
