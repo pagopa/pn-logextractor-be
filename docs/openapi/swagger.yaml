@@ -1,0 +1,269 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Swagger log extractor
+  description: API description for log extractor project
+tags:
+  - name: persons
+    description: Operations about a person
+  - name: logs
+    description: Operations about logs
+  - name: users
+    description: Operations about a user
+  - name: domains
+    description: Operations about the domain data of the application
+schemes:
+  - https
+paths:
+  /domains/extractionTypes:
+    get:
+      tags:
+        - domains
+      summary: Get the extraction types that can be performed
+      description: Return the list of the extraction types
+      produces:
+        - application/json
+      parameters:
+        - name: domain
+          in: query
+          description: The type of the domain data that must be retrieved
+          type: string
+          required: true
+      responses:
+        '200':
+          description: Operazione completata con successo
+          schema:
+            $ref: '#/definitions/ExtractionTypeList'
+        '500':
+          description: Errore nell'elaborazione della richiesta
+  /persons/references:
+    get:
+      tags:
+        - persons
+      summary: Get the person's fiscal code or ID
+      description: Return the person's fiscal code or ID depending on the input received
+      produces:
+        - application/json
+      parameters:
+        - name: extractionType
+          in: query
+          description: The type of the extraction that must be done
+          type: integer
+          required: true
+        - name: ticketNumber
+          in: query
+          description: >-
+            The number of the ticket for which the user is performing the
+            extraction
+          type: integer
+          required: false
+        - name: fiscal-code
+          in: header
+          description: Fiscal code of the person whose ID must be returned
+          type: string
+          required: false
+        - name: person-id
+          in: header
+          description: ID of the person whose fiscal code must be returned
+          type: string
+          required: false
+      responses:
+        '200':
+          description: Operazione completata con successo
+          schema:
+            $ref: '#/definitions/PersonData'
+        '400':
+          description: Informazioni non valide
+        '500':
+          description: Errore nell'elaborazione della richiesta
+  /logs/persons:
+    get:
+      tags:
+        - logs
+      summary: >-
+        Download the logs' archive related to a person's own activities or on a
+        notification
+      description: Download the zip file and return the password to be shown to the user
+      produces:
+        - application/json
+      parameters:
+        - name: extractionType
+          in: query
+          description: The type of the extraction that must be done
+          type: integer
+          required: true
+        - name: ticketNumber
+          in: query
+          description: >-
+            The number of the ticket for which the user is performing the
+            extraction
+          type: integer
+          required: true
+        - name: fiscal-code
+          in: header
+          description: Fiscal code of the person whose ID must be returned
+          type: string
+          required: false
+        - name: person-id
+          in: header
+          description: ID of the person whose fiscal code must be returned
+          type: string
+          required: false
+        - name: iun
+          in: query
+          description: The IUN of the notification
+          type: integer
+          required: false
+        - name: months
+          in: query
+          description: The months interval
+          type: integer
+          required: false
+        - name: deanonimization
+          in: query
+          description: Flag that indicates if the deanonimization must be performed or not
+          type: boolean
+          required: true
+      responses:
+        '200':
+          description: Operazione completata con successo
+          schema:
+            $ref: '#/definitions/DownloadLog'
+        '400':
+          description: Informazioni non valide
+        '500':
+          description: Errore nell'elaborazione della richiesta
+  /logs/operators:
+    get:
+      tags:
+        - logs
+      summary: >-
+        Download the logs' archive related to a person activities and its
+        operators' ones
+      description: Download the zip file and return the password to be shown to the user
+      produces:
+        - application/json
+      parameters:
+        - name: extractionType
+          in: query
+          description: The type of the extraction that must be done
+          type: integer
+          required: true
+        - name: ticketNumber
+          in: query
+          description: >-
+            The number of the ticket for which the user is performing the
+            extraction
+          type: integer
+          required: true
+        - name: fiscal-code
+          in: header
+          description: Fiscal code of the person whose ID must be returned
+          type: string
+          required: false
+        - name: months
+          in: query
+          description: The months interval
+          type: integer
+          required: false
+      responses:
+        '200':
+          description: Operazione completata con successo
+          schema:
+            $ref: '#/definitions/DownloadLog'
+        '400':
+          description: Informazioni non valide
+        '500':
+          description: Errore nell'elaborazione della richiesta
+  /logs/notifications:
+    get:
+      tags:
+        - logs
+      summary: Download the logs' archive related to a notifications
+      description: Download the zip file and return the password to be shown to the user
+      produces:
+        - application/json
+      parameters:
+        - name: extractionType
+          in: query
+          description: The type of the extraction that must be done
+          type: integer
+          required: true
+        - name: ticketNumber
+          in: query
+          description: >-
+            The number of the ticket for which the user is performing the
+            extraction
+          type: integer
+          required: true
+        - name: ipa-code
+          in: header
+          description: The IPA code of a public administration entity
+          type: integer
+          required: false
+        - name: iun
+          in: query
+          description: The IUN of the notification
+          type: integer
+          required: false
+        - name: referenceMonth
+          in: query
+          description: The reference month
+          type: integer
+          required: false
+      responses:
+        '200':
+          description: Operazione completata con successo
+          schema:
+            $ref: '#/definitions/DownloadLog'
+        '400':
+          description: Informazioni non valide
+        '500':
+          description: Errore nell'elaborazione della richiesta
+  /users/login:
+    post:
+      tags:
+        - users
+      summary: Logs user into the system
+      description: Log the user in and return the access token
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Operazione completata con successo
+          schema:
+            $ref: '#/definitions/UserLogin'
+        '500':
+          description: Errore durante l'elaborazione della richiesta
+definitions:
+  ExtractionTypeList:
+    type: object
+    properties:
+      type:
+        type: string
+        example: qwerty
+      code:
+        type: integer
+        example: 1
+  UserLogin:
+    type: object
+    properties:
+      token:
+        type: string
+        example: qwerty
+  PersonData:
+    type: object
+    required:
+      - data
+    properties:
+      data:
+        type: string
+        example: qwerty
+  DownloadLog:
+    type: object
+    required:
+      - password
+    properties:
+      password:
+        type: string
+        example: qwerty

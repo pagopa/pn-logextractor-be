@@ -43,7 +43,8 @@
 		</dependency>
 		<!-- AWS dependencies START-->
 		<!-- Redis related dependencies -->
-		<dependency>
+		<!-- TODO: enable when redis configuration is ready -->
+		<!-- <dependency>
 		  <groupId>io.awspring.cloud</groupId>
 		  <artifactId>spring-cloud-aws</artifactId>
 		  <version>2.3.1</version>
@@ -52,7 +53,6 @@
 		<dependency>
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-data-redis</artifactId>
-		    <version>2.6.7</version>
 		</dependency>
 		<dependency>
 		  <groupId>org.springframework.cloud</groupId>
@@ -68,10 +68,10 @@
 		    <groupId>com.amazonaws</groupId>
 		    <artifactId>aws-java-sdk-cloudformation</artifactId>
 		    <version>1.12.210</version>
-		</dependency>
+		</dependency>-->
 		<!-- Redis related dependencies -->
 		<!-- DynamoDB dependencies -->
-		<dependency>
+		 <dependency>
 	        <groupId>com.amazonaws</groupId>
 	        <artifactId>aws-java-sdk-dynamodb</artifactId>
 	        <version>1.11.64</version>
