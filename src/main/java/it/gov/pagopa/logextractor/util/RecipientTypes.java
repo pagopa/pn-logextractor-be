@@ -14,7 +14,6 @@ public enum RecipientTypes {
 	}
 	
 	public static boolean isValid(String value) {
-		ArrayList<String> values = getValues();
-		return values.contains(value);
+		return getValues().contains(value);
 	}
 }

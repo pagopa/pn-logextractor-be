@@ -5,9 +5,13 @@ import javax.validation.constraints.Size;
 
 import it.gov.pagopa.logextractor.annotation.RecipientType;
 import it.gov.pagopa.logextractor.util.Constants;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
+@AllArgsConstructor
 public class GetRecipientDenominationByInternalIdResponseDto {
 
 	@Size(min = 16, max = 16)

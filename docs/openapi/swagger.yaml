@@ -15,7 +15,7 @@ tags:
 schemes:
   - https
 paths:
-  /domains/extractionTypes:
+  '/domains/extractionTypes':
     get:
       tags:
         - domains
@@ -23,20 +23,20 @@ paths:
       description: Return the list of the extraction types
       produces:
         - application/json
-      parameters:
-        - name: domain
-          in: query
-          description: The type of the domain data that must be retrieved
-          type: string
-          required: true
       responses:
         '200':
-          description: Operazione completata con successo
+          description: The operation has been successfully completed
           schema:
             $ref: '#/definitions/ExtractionTypeList'
+        '400':
+          description: In case of errors during the request validation, an error message is returned
+          schema:
+            $ref: '#/definitions/ApiError400'
         '500':
-          description: Errore nell'elaborazione della richiesta
-  /persons/references:
+          description: In case of errors during the request elaboration, an error message is returned
+          schema:
+            $ref: '#/definitions/ApiError500'
+  '/persons/basicData':
     get:
       tags:
         - persons
@@ -69,14 +69,18 @@ paths:
           required: false
       responses:
         '200':
-          description: Operazione completata con successo
+          description: The operation has been successfully completed
           schema:
             $ref: '#/definitions/PersonData'
         '400':
-          description: Informazioni non valide
+          description: In case of errors during the request validation, an error message is returned
+          schema:
+            $ref: '#/definitions/ApiError400'
         '500':
-          description: Errore nell'elaborazione della richiesta
-  /logs/persons:
+          description: In case of errors during the request elaboration, an error message is returned
+          schema:
+            $ref: '#/definitions/ApiError500'
+  '/logs/persons':
     get:
       tags:
         - logs
@@ -126,14 +130,18 @@ paths:
           required: true
       responses:
         '200':
-          description: Operazione completata con successo
+          description: The operation has been successfully completed
           schema:
             $ref: '#/definitions/DownloadLog'
         '400':
-          description: Informazioni non valide
+          description: In case of errors during the request validation, an error message is returned
+          schema:
+            $ref: '#/definitions/ApiError400'
         '500':
-          description: Errore nell'elaborazione della richiesta
-  /logs/operators:
+          description: In case of errors during the request elaboration, an error message is returned
+          schema:
+            $ref: '#/definitions/ApiError500'
+  '/logs/operators':
     get:
       tags:
         - logs
@@ -160,22 +168,26 @@ paths:
           in: header
           description: Fiscal code of the person whose ID must be returned
           type: string
-          required: false
+          required: true
         - name: months
           in: query
           description: The months interval
           type: integer
-          required: false
+          required: true
       responses:
         '200':
-          description: Operazione completata con successo
+          description: The operation has been successfully completed
           schema:
             $ref: '#/definitions/DownloadLog'
         '400':
-          description: Informazioni non valide
+          description: In case of errors during the request validation, an error message is returned
+          schema:
+            $ref: '#/definitions/ApiError400'
         '500':
-          description: Errore nell'elaborazione della richiesta
-  /logs/notifications:
+          description: In case of errors during the request elaboration, an error message is returned
+          schema:
+            $ref: '#/definitions/ApiError500'
+  '/logs/notifications':
     get:
       tags:
         - logs
@@ -213,14 +225,18 @@ paths:
           required: false
       responses:
         '200':
-          description: Operazione completata con successo
+          description: The operation has been successfully completed
           schema:
             $ref: '#/definitions/DownloadLog'
         '400':
-          description: Informazioni non valide
+          description: In case of errors during the request validation, an error message is returned
+          schema:
+            $ref: '#/definitions/ApiError400'
         '500':
-          description: Errore nell'elaborazione della richiesta
-  /users/login:
+          description: In case of errors during the request elaboration, an error message is returned
+          schema:
+            $ref: '#/definitions/ApiError500'
+  '/users/login':
     post:
       tags:
         - users
@@ -230,21 +246,23 @@ paths:
         - application/json
       responses:
         '200':
-          description: Operazione completata con successo
+          description: The operation has been successfully completed
           schema:
             $ref: '#/definitions/UserLogin'
         '500':
-          description: Errore durante l'elaborazione della richiesta
+          description: In case of errors during the request elaboration, an error message is returned
 definitions:
   ExtractionTypeList:
-    type: object
-    properties:
-      type:
-        type: string
-        example: qwerty
-      code:
-        type: integer
-        example: 1
+    type: array
+    items:
+      type: object
+      properties:
+        type:
+          type: string
+          example: qwerty
+        code:
+          type: integer
+          example: 1
   UserLogin:
     type: object
     properties:
@@ -267,3 +285,27 @@ definitions:
       password:
         type: string
         example: qwerty
+  ApiError400:
+    type: object
+    required:
+      - status
+      - message
+    properties:
+      status:
+        type: integer
+        example: 400
+      message:
+        type: string
+        example: Informazioni non valide
+  ApiError500:
+    type: object
+    required:
+      - status
+      - message
+    properties:
+      status:
+        type: integer
+        example: 500
+      message:
+        type: string
+        example: Errore nell'elaborazione della richiesta
