@@ -10,6 +10,6 @@ public class RecipientTypeValidator implements ConstraintValidator<RecipientType
 
 	@Override
 	public boolean isValid(String value, ConstraintValidatorContext context) {
-		return value != null && RecipientTypes.isValid(value) ;
+		return value != null && RecipientTypes.isValid(value);
 	}
 }

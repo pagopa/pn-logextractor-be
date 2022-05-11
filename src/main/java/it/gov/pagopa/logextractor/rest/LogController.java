@@ -1,5 +1,6 @@
 package it.gov.pagopa.logextractor.rest;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -12,7 +13,7 @@ import it.gov.pagopa.logextractor.dto.response.DownloadLogResponseDto;
 @RequestMapping("/logs")
 public class LogController {
 
-	@GetMapping("/persons")
+	@GetMapping(name = "/persons", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<DownloadLogResponseDto> getPersonActivityLogs(@RequestParam(required = true) String extractionType, 
 																		@RequestParam(required = true) int ticketNumber,
 																		@RequestParam(required = false) Integer iun, 
@@ -23,7 +24,7 @@ public class LogController {
 		return ResponseEntity.ok(null);
 	}
 	
-	@GetMapping("/operators")
+	@GetMapping(name = "/operators", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<DownloadLogResponseDto> getOperatorsActivityLogs(@RequestParam(required = true) String extractionType, 
 																		   @RequestParam(required = true) int ticketNumber, 
 																		   @RequestParam(required = true) int months, 
@@ -31,7 +32,7 @@ public class LogController {
 		return ResponseEntity.ok(null);
 	}
 	
-	@GetMapping("/notifications")
+	@GetMapping(name = "/notifications", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<DownloadLogResponseDto> getNotificationLogs(@RequestParam(required = true) String extractionType, 
 																	  @RequestParam(required = true) int ticketNumber,
 																	  @RequestParam(required = false) Integer iun,

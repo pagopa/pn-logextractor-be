@@ -1,5 +1,6 @@
 package it.gov.pagopa.logextractor.rest;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -13,7 +14,7 @@ import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 @RequestMapping("/persons")
 public class PersonController {
 	
-	@GetMapping("/basicData")
+	@GetMapping(name = "/basicData", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	public ResponseEntity<GetBasicDataResponseDto> getBasicData(@RequestParam(required = true) String extractionType,
 																@RequestParam(required = false) int ticketNumber,
 																@RequestHeader(name = "fiscal-code", required = false) String taxId,
