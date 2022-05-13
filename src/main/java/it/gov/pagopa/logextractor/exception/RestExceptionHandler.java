@@ -1,5 +1,7 @@
 package it.gov.pagopa.logextractor.exception;
 
+import java.io.IOException;
+
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 
@@ -18,13 +20,19 @@ import it.gov.pagopa.logextractor.dto.response.ApiError;
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	@ExceptionHandler(LogExtractorException.class)
-    protected ResponseEntity<ApiError> handleBusinessException(LogExtractorException ex) {
+    protected ResponseEntity<ApiError> handleLogExtractorException(LogExtractorException ex) {
+        //log.error("ERROR: Business Exception: " + ExceptionUtils.getStackTrace(ex));
+        return ResponseEntity.internalServerError().body(new ApiError(ex));
+    }
+	
+	@ExceptionHandler(IOException.class)
+    protected ResponseEntity<ApiError> handleIOException(IOException ex) {
         //log.error("ERROR: Business Exception: " + ExceptionUtils.getStackTrace(ex));
         return ResponseEntity.internalServerError().body(new ApiError(ex));
     }
 	
 	@ExceptionHandler({ ConstraintViolationException.class })
-    public ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException ex, WebRequest request) {
+    protected ResponseEntity<ApiError> handleConstraintViolationException(ConstraintViolationException ex, WebRequest request) {
         StringBuilder builder = new StringBuilder("");
         for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
             builder.append(" " + violation.getMessage() + ",");
