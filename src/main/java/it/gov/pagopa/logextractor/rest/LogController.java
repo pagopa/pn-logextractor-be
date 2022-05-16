@@ -13,7 +13,7 @@ import it.gov.pagopa.logextractor.dto.response.DownloadLogResponseDto;
 @RequestMapping("/logs")
 public class LogController {
 
-	@GetMapping(name = "/persons", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@GetMapping(value = "/persons", produces="application/zip")
 	public ResponseEntity<DownloadLogResponseDto> getPersonActivityLogs(@RequestParam(required = true) String extractionType, 
 																		@RequestParam(required = true) int ticketNumber,
 																		@RequestParam(required = false) Integer iun, 
@@ -24,7 +24,7 @@ public class LogController {
 		return ResponseEntity.ok(null);
 	}
 	
-	@GetMapping(name = "/operators", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@GetMapping(value = "/operators", produces="application/zip")
 	public ResponseEntity<DownloadLogResponseDto> getOperatorsActivityLogs(@RequestParam(required = true) String extractionType, 
 																		   @RequestParam(required = true) int ticketNumber, 
 																		   @RequestParam(required = true) int months, 
@@ -32,7 +32,7 @@ public class LogController {
 		return ResponseEntity.ok(null);
 	}
 	
-	@GetMapping(name = "/notifications", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@GetMapping(value = "/notifications", produces="application/zip")
 	public ResponseEntity<DownloadLogResponseDto> getNotificationLogs(@RequestParam(required = true) String extractionType, 
 																	  @RequestParam(required = true) int ticketNumber,
 																	  @RequestParam(required = false) Integer iun,
