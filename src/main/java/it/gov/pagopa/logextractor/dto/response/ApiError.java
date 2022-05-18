@@ -1,5 +1,10 @@
 package it.gov.pagopa.logextractor.dto.response;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class ApiError {
 	String message;
 	
