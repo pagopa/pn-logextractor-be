@@ -12,7 +12,7 @@ public class BeanConfiguration {
 	@Bean
 	public RestTemplate restTemplate() {
 		RestTemplate restTemplate = new RestTemplate();
-		restTemplate.setErrorHandler(new RestTemplateExceptionHandler());
+		//restTemplate.setErrorHandler(new RestTemplateExceptionHandler());
 		return restTemplate;
 	}
 }
