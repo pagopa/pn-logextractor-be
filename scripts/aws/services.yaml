@@ -18,7 +18,7 @@ Parameters:
   InstanceReplicas:
     Type: Number
     Description: Number of instances
-    Default: 2
+    Default: 3
 
   VpcId:
     Type: AWS::EC2::VPC::Id
@@ -53,6 +53,8 @@ Resources:
         InstanceCount: !Ref InstanceReplicas
         InstanceType: !Ref InstanceType
         ZoneAwarenessEnabled: true
+        ZoneAwarenessConfig:
+          AvailabilityZoneCount: 3
       EBSOptions:
         EBSEnabled: true
         Iops: !Ref EbsIops

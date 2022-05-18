@@ -69,7 +69,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref Vpc
-      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
       CidrBlock: !Sub 10.${VpcNumber}.16.0/20
       MapPublicIpOnLaunch: true
 
@@ -96,7 +96,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref Vpc
-      AvailabilityZone: !Select [ 2, !GetAZs '' ]
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
       CidrBlock: !Sub 10.${VpcNumber}.32.0/20
       MapPublicIpOnLaunch: true
 
@@ -119,6 +119,33 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId: !Ref Nat
 
+  PrivateSubnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      AvailabilityZone: !Select [ 2, !GetAZs '' ]
+      CidrBlock: !Sub 10.${VpcNumber}.48.0/20
+      MapPublicIpOnLaunch: true
+
+  PrivateSubnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable3
+      SubnetId: !Ref PrivateSubnet3
+
+  PrivateRouteTable3:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+
+  DefaultPrivateRoute3:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable3
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref Nat
+
 Outputs:
 
   VpcId:
@@ -130,7 +157,7 @@ Outputs:
     Description: Id of the public subnet
 
   PrivateSubnetIds:
-    Value: !Join [',', [!Ref PrivateSubnet1, !Ref PrivateSubnet2]]
+    Value: !Join [',', [!Ref PrivateSubnet1, !Ref PrivateSubnet2, !Ref PrivateSubnet3]]
     Description: Ids of the private subnets
 
   PublicRouteTableId:
@@ -138,6 +165,6 @@ Outputs:
     Description: Id of the public route table
 
   PrivateRouteTableIds:
-    Value: !Join [',', [!Ref PrivateRouteTable1, !Ref PrivateRouteTable2]]
+    Value: !Join [',', [!Ref PrivateRouteTable1, !Ref PrivateRouteTable2, !Ref PrivateRouteTable3]]
     Description: Ids of the private route tables
 

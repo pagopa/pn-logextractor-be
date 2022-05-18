@@ -16,6 +16,10 @@ Parameters:
     Type: String
     Description: Application load balancer that dispatch request to microserveces
 
+  LogRetentionInDays:
+    Type: Number
+    Description: Number of days to preserve the API logs
+
 Resources:
 
   PublicRestApi:
@@ -130,5 +134,5 @@ Resources:
   PublicApiLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      RetentionInDays: 1
+      RetentionInDays: !Ref LogRetentionInDays
 

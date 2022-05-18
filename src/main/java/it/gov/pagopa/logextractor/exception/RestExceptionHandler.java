@@ -28,7 +28,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(IOException.class)
     protected ResponseEntity<ApiError> handleIOException(IOException ex) {
         //log.error("ERROR: Business Exception: " + ExceptionUtils.getStackTrace(ex));
-        return ResponseEntity.internalServerError().body(new ApiError(ex));
+        return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
     }
 	
 	@ExceptionHandler({ ConstraintViolationException.class })

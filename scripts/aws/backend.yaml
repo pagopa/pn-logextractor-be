@@ -97,13 +97,6 @@ Resources:
     Properties:
       ClusterName: !Sub ${ProjectName}-ecs-cluster
 
-  CacheSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: !Sub ${ProjectName}-cache-sg
-      GroupDescription: "ingress none, egress all"
-      VpcId: !Ref VpcId
-
 Outputs:
   AlbDomain:
     Value: !GetAtt ApplicationLoadBalancer.DNSName
@@ -112,7 +105,3 @@ Outputs:
   NlbLink:
     Value: !Ref NetworkLoadBalancerLink
     Description: Private link to the NLB in front of ECS
-
-  CacheSecurityGroupId:
-    Value: !GetAtt CacheSecurityGroup.GroupId
-    Description: The id of the security group that can access the cache cluster

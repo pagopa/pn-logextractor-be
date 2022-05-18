@@ -24,11 +24,14 @@ Parameters:
     Type: List<AWS::EC2::Subnet::Id>
     Description: Private subnets to deploy resources into
 
-  SourceSecurityGroupId:
-    Type: String
-    Description: The id of the SG that can have access to the cluster
-
 Resources:
+
+  AllowedSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${ProjectName}-cache-sg
+      GroupDescription: "ingress none, egress all"
+      VpcId: !Ref VpcId
 
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -39,7 +42,7 @@ Resources:
         - IpProtocol: tcp
           FromPort: 6379
           ToPort: 6379
-          SourceSecurityGroupId: !Ref SourceSecurityGroupId
+          SourceSecurityGroupId: !GetAtt AllowedSecurityGroup.GroupId
       VpcId: !Ref VpcId
 
   Cluster:
@@ -57,3 +60,10 @@ Resources:
     Properties:
       Description: Cache Subnet Group
       SubnetIds: !Ref SubnetIds
+
+Outputs:
+
+  AllowedSecurityGroupId:
+    Value: !GetAtt AllowedSecurityGroup.GroupId
+    Description: The id of the security group that can access the cache cluster
+
