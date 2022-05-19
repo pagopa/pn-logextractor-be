@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >
+  CloudFormation definition of Log Extractor system (global resrouces)
+
+Parameters:
+
+  ProjectName:
+    Type: String
+    Description: Name of the project
+
+Resources:
+
+  CloudFrontWaf:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: !Sub ${ProjectName}WebACL
+      Scope: CLOUDFRONT
+      Description: CloudFront WebACL
+      DefaultAction:
+        Allow: {}
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: !Sub ${ProjectName}WebACLMetric
+      Rules:
+        - Name: AWS-AWSManagedRulesCommonRuleSet
+          Priority: 0
+          OverrideAction:
+            None: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: MetricForAMRCRS
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+
+Outputs:
+  CloudFrontWafId:
+    Value: !GetAtt CloudFrontWaf.Id
+    Description: CloudFront WAFv2 id
