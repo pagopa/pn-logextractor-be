@@ -39,12 +39,12 @@ Parameters:
   OpenSearchEngineVersion:
     Type: String
     Default: OpenSearch_1.2
-    Description: OpenSerach engine version
+    Description: OpenSearch engine version
 
-  OpenSerachNodeType:
+  OpenSearchNodeType:
     Type: String
     Default: t3.small.search
-    Description: OpenSerach nodes type
+    Description: OpenSearch nodes type
 
 Resources:
 
@@ -90,7 +90,7 @@ Resources:
       Parameters:
         ProjectName: !Ref ProjectName
         EngineVersion: !Ref OpenSearchEngineVersion
-        InstanceType: !Ref OpenSerachNodeType
+        InstanceType: !Ref OpenSearchNodeType
         VpcId: !GetAtt Networking.Outputs.VpcId
         SubnetIds: !GetAtt Networking.Outputs.PrivateSubnetIds
 

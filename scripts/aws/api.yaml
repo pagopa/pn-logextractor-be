@@ -49,12 +49,6 @@ Resources:
       HttpMethod: ANY
       AuthorizationType: NONE
       ApiKeyRequired: true
-      RequestParameters:
-        method.request.path.proxy: true
-        method.request.header.x-pagopa-pn-uid: false
-        method.request.header.x-pagopa-pn-cx-id: false
-        method.request.header.x-pagopa-pn-cx-type: false
-        method.request.header.x-pagopa-pn-cx-groups: false
       Integration:
         ConnectionType: VPC_LINK
         ConnectionId: !Ref NetworkLoadBalancerLink
