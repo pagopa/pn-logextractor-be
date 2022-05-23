@@ -6,7 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ApiError {
-	String message;
+	private String message;
 	
 	public ApiError(Exception serverException) {
 		this.message = serverException.getMessage();

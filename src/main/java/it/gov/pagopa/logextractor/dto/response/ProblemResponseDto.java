@@ -14,9 +14,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ProblemResponseDto {
 
-	int status;
-	String title;
-	String detail;
-	String traceId;
-	ArrayList<ProblemError> errors;
+	private int status;
+	private String title;
+	private String detail;
+	private String traceId;
+	private ArrayList<ProblemError> errors;
 }

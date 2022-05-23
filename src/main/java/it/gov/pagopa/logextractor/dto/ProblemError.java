@@ -2,7 +2,7 @@ package it.gov.pagopa.logextractor.dto;
 
 public class ProblemError {
 
-	String code;
-	String element;
-	String detail;
+	private String code;
+	private String element;
+	private String detail;
 }

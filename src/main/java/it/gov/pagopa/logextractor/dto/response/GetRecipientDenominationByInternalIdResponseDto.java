@@ -20,15 +20,15 @@ public class GetRecipientDenominationByInternalIdResponseDto {
 
 	@Size(min = 16, max = 16)
 	@Pattern(regexp = Constants.FISCAL_CODE_PATTERN, message = "Invalid Tax ID")
-	String taxId;
+	private String taxId;
 
 	@Size(min = 1, max = 100, message = "Invalid Intenal ID")
 	@Pattern(regexp = Constants.INTERNAL_ID_PATTERN)
-	String internalId;
+	private String internalId;
 
 	@RecipientType
-	String recipientType;
+	private String recipientType;
 
 	@Pattern(regexp = Constants.ALPHA_NUMERIC_WITHOUT_SPECIAL_CHAR_PATTERN, message = "Invalid denomination")
-	String denomination;
+	private String denomination;
 }

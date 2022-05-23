@@ -11,6 +11,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class DomainResponseDto {
 
-	String type;
-	int code;
+	private String type;
+	private int code;
 }

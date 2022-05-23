@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class EnsureRecipientByExternalIdResponseDto {
 
-	String internalId;
+	private String internalId;
 }

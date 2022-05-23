@@ -11,5 +11,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class DownloadLogResponseDto {
 
-	String password;
+	private String password;
 }

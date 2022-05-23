@@ -11,5 +11,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class GetBasicDataResponseDto {
 
-	String data;
+	private String data;
 }
