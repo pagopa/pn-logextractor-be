@@ -15,6 +15,9 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import com.opencsv.exceptions.CsvDataTypeMismatchException;
+import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
+
 import it.gov.pagopa.logextractor.dto.response.ApiError;
 //import lombok.extern.slf4j.Slf4j;
 
@@ -31,6 +34,18 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	@ExceptionHandler(IOException.class)
     protected ResponseEntity<ApiError> handleIOException(IOException ex) {
+        //log.error("ERROR: Business Exception: " + ExceptionUtils.getStackTrace(ex));
+        return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
+    }
+	
+	@ExceptionHandler(CsvDataTypeMismatchException.class)
+    protected ResponseEntity<ApiError> handleCsvDataTypeMismatchException(CsvDataTypeMismatchException ex) {
+        //log.error("ERROR: Business Exception: " + ExceptionUtils.getStackTrace(ex));
+        return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
+    }
+	
+	@ExceptionHandler(CsvRequiredFieldEmptyException.class)
+    protected ResponseEntity<ApiError> handleCsvRequiredFieldEmptyException(CsvRequiredFieldEmptyException ex) {
         //log.error("ERROR: Business Exception: " + ExceptionUtils.getStackTrace(ex));
         return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
     }
