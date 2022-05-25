@@ -1,4 +1,4 @@
-package it.gov.pagopa.logextractor.util;
+package it.gov.pagopa.logextractor.util.deanonimizationservice;
 
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -8,12 +8,13 @@ import it.gov.pagopa.logextractor.config.ApplicationContextProvider;
 import it.gov.pagopa.logextractor.dto.response.EnsureRecipientByExternalIdResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInternalIdResponseDto;
+import it.gov.pagopa.logextractor.util.RecipientTypes;
 
 /**
  * A utility class containing methods that make calls to Piattaforma Notifiche
  * external service
  */
-public class ExternalApiHandler {
+public class DeanonimizationApiHandler {
 
 	/**
 	 * Method that makes a request to Piattaforma Notifiche external service to

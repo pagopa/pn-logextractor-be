@@ -5,8 +5,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpServerErrorException;
 
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
-import it.gov.pagopa.logextractor.util.ExternalApiHandler;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
+import it.gov.pagopa.logextractor.util.deanonimizationservice.DeanonimizationApiHandler;
 
 /**
  * Implementation class of {@link PersonService}
@@ -24,7 +24,7 @@ public class PersonServiceImpl implements PersonService {
 	public GetBasicDataResponseDto getPersonsBasicData(Integer extractionType, RecipientTypes recipientType,
 			String ticketNumber, String taxId, String personId) throws HttpServerErrorException {
 
-		ExternalApiHandler handler = new ExternalApiHandler();
+		DeanonimizationApiHandler handler = new DeanonimizationApiHandler();
 		GetBasicDataResponseDto basicData = null;
 
 		if (ticketNumber != null && taxId != null && personId == null) {
