@@ -6,6 +6,7 @@ import org.springframework.web.client.HttpServerErrorException;
 
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.util.ExternalApiHandler;
+import it.gov.pagopa.logextractor.util.RecipientTypes;
 
 /**
  * Implementation class of {@link PersonService}
@@ -20,7 +21,7 @@ public class PersonServiceImpl implements PersonService {
 	String getTaxCodeURL;
 
 	@Override
-	public GetBasicDataResponseDto getPersonsBasicData(Integer extractionType, Boolean recipientType,
+	public GetBasicDataResponseDto getPersonsBasicData(Integer extractionType, RecipientTypes recipientType,
 			String ticketNumber, String taxId, String personId) throws HttpServerErrorException {
 
 		ExternalApiHandler handler = new ExternalApiHandler();

@@ -4,6 +4,7 @@ import org.springframework.web.client.HttpServerErrorException;
 
 import it.gov.pagopa.logextractor.annotation.RecipientType;
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
+import it.gov.pagopa.logextractor.util.RecipientTypes;
 
 /**
  * An interface containing all methods for persons
@@ -27,6 +28,6 @@ public interface PersonService {
 	 * @return basic data for a person, depending on which parameters are present
 	 * @throws HttpServerErrorException
 	 */
-	GetBasicDataResponseDto getPersonsBasicData(Integer extractionType, Boolean recipientType, String ticketNumber,
+	GetBasicDataResponseDto getPersonsBasicData(Integer extractionType, RecipientTypes recipientType, String ticketNumber,
 			String taxId, String personId) throws HttpServerErrorException;
 }

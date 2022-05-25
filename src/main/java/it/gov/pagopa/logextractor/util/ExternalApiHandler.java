@@ -30,11 +30,11 @@ public class ExternalApiHandler {
 	 *         identifier of a person
 	 * @throws HttpServerErrorException
 	 */
-	public GetBasicDataResponseDto getUniqueIdentifierForPerson(Boolean recipientType, String taxId,
+	public GetBasicDataResponseDto getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId,
 			String externalServiceUrl) throws HttpServerErrorException {
 		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("restTemplate");
 
-		String URL = String.format(externalServiceUrl, recipientType == Boolean.FALSE ? "PF" : "PG", taxId);
+		String URL = String.format(externalServiceUrl, recipientType.toString(), taxId);
 		var response = client.getForObject(URL, EnsureRecipientByExternalIdResponseDto.class);
 
 		return GetBasicDataResponseDto.builder().data(response.getInternalId()).build();
