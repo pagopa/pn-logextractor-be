@@ -2,13 +2,26 @@ package it.gov.pagopa.logextractor.util.opensearch;
 
 import java.util.ArrayList;
 
-
+/**
+ * Utility class for constructing OpenSearch queries
+ * */
 public class OpenSearchQueryConstructor {
 
+	/**
+	 * Creates a simple or boolean multi search query string with the input query data
+	 * @param queryData the query data
+	 * @param isBoolean if true the method constructs a boolean multi search query otherwise a simple multi search query
+	 * @return a string representing the simple or boolean multi search query 
+	 * */
 	public String createMultiSearchQuery(ArrayList<OpenSearchQuerydata> queryData, boolean isBoolean) {
 		return isBoolean ? createBooleanMultiSearchQuery(queryData) : createSimpleMultiSearchQuery(queryData);
 	}
 	
+	/**
+	 * Creates a boolean multi search query string with the input query data
+	 * @param queryData the query data
+	 * @return a string representing the boolean multi search query 
+	 * */
 	private String createBooleanMultiSearchQuery(ArrayList<OpenSearchQuerydata> queryData) {
 		StringBuilder queryBuilder = new StringBuilder();
 		if(null != queryData && queryData.size() > 0) {
@@ -25,6 +38,11 @@ public class OpenSearchQueryConstructor {
 		return queryBuilder.toString();
 	}
 	
+	/**
+	 * Creates a simple multi search query string with the input query data
+	 * @param queryData the query data
+	 * @return a string representing the simple multi search query 
+	 * */
 	private String createSimpleMultiSearchQuery(ArrayList<OpenSearchQuerydata> queryData) {
 		StringBuilder queryBuilder = new StringBuilder();
 		if(null != queryData && queryData.size() > 0) {

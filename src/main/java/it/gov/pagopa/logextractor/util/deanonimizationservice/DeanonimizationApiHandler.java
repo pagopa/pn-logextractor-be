@@ -12,7 +12,7 @@ import it.gov.pagopa.logextractor.util.RecipientTypes;
 
 /**
  * A utility class containing methods that make calls to Piattaforma Notifiche
- * external service
+ * deanonimization external service
  */
 public class DeanonimizationApiHandler {
 
