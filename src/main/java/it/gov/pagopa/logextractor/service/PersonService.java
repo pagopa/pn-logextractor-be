@@ -28,6 +28,6 @@ public interface PersonService {
 	 * @return basic data for a person, depending on which parameters are present
 	 * @throws HttpServerErrorException
 	 */
-	GetBasicDataResponseDto getPersonsBasicData(Integer extractionType, RecipientTypes recipientType, String ticketNumber,
-			String taxId, String personId) throws HttpServerErrorException;
+	GetBasicDataResponseDto getPersonsBasicData(RecipientTypes recipientType, String ticketNumber, String taxId,
+			String personId) throws HttpServerErrorException;
 }

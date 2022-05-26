@@ -50,6 +50,6 @@ public class PersonController {
 			@RequestHeader(name = "fiscal-code", required = false) @Size(min = 16, max = 16) @Pattern(regexp = Constants.FISCAL_CODE_PATTERN, message = "Invalid Tax ID") String taxId,
 			@RequestHeader(name = "person-id", required = false) @Size(min = 1, max = 100, message = "Invalid person id") @Pattern(regexp = Constants.INTERNAL_ID_PATTERN) String personId) {
 		return ResponseEntity
-				.ok(personService.getPersonsBasicData(extractionType, recipientType, ticketNumber, taxId, personId));
+				.ok(personService.getPersonsBasicData(recipientType, ticketNumber, taxId, personId));
 	}
 }

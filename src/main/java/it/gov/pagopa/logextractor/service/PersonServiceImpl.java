@@ -21,8 +21,8 @@ public class PersonServiceImpl implements PersonService {
 	String getTaxCodeURL;
 
 	@Override
-	public GetBasicDataResponseDto getPersonsBasicData(Integer extractionType, RecipientTypes recipientType,
-			String ticketNumber, String taxId, String personId) throws HttpServerErrorException {
+	public GetBasicDataResponseDto getPersonsBasicData(RecipientTypes recipientType, String ticketNumber, String taxId,
+			String personId) throws HttpServerErrorException {
 
 		DeanonimizationApiHandler handler = new DeanonimizationApiHandler();
 		GetBasicDataResponseDto basicData = null;
