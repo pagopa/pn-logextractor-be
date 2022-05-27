@@ -8,48 +8,20 @@ tags:
     description: Operations about a person
   - name: logs
     description: Operations about logs
-  - name: users
-    description: Operations about a user
-  - name: domains
-    description: Operations about the domain data of the application
 schemes:
   - https
+  - http
 paths:
-  '/domains/extractionTypes':
-    get:
-      tags:
-        - domains
-      summary: Get the extraction types that can be performed
-      description: Return the list of the extraction types
-      produces:
-        - application/json
-      responses:
-        '200':
-          description: The operation has been successfully completed
-          schema:
-            $ref: '#/definitions/ExtractionTypeList'
-        '400':
-          description: In case of errors during the request validation, an error message is returned
-          schema:
-            $ref: '#/definitions/ApiError400'
-        '500':
-          description: In case of errors during the request elaboration, an error message is returned
-          schema:
-            $ref: '#/definitions/ApiError500'
   '/persons/basicData':
     get:
       tags:
         - persons
+      operationId: getPersonBasicData
       summary: Get the person's fiscal code or ID
       description: Return the person's fiscal code or ID depending on the input received
       produces:
         - application/json
       parameters:
-        - name: extractionType
-          in: query
-          description: The type of the extraction that must be done
-          type: integer
-          required: true
         - name: ticketNumber
           in: query
           description: >-
@@ -84,6 +56,7 @@ paths:
     get:
       tags:
         - logs
+      operationId: getPersonsLogs
       summary: >-
         Download the logs' archive related to a person's own activities or on a
         notification
@@ -91,11 +64,6 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: extractionType
-          in: query
-          description: The type of the extraction that must be done
-          type: integer
-          required: true
         - name: ticketNumber
           in: query
           description: >-
@@ -145,6 +113,7 @@ paths:
     get:
       tags:
         - logs
+      operationId: getOperatorsLogs
       summary: >-
         Download the logs' archive related to a person activities and its
         operators' ones
@@ -152,11 +121,6 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: extractionType
-          in: query
-          description: The type of the extraction that must be done
-          type: integer
-          required: true
         - name: ticketNumber
           in: query
           description: >-
@@ -191,16 +155,12 @@ paths:
     get:
       tags:
         - logs
+      operationId: getNotificationsLogs
       summary: Download the logs' archive related to a notifications
       description: Download the zip file and return the password to be shown to the user
       produces:
         - application/json
       parameters:
-        - name: extractionType
-          in: query
-          description: The type of the extraction that must be done
-          type: integer
-          required: true
         - name: ticketNumber
           in: query
           description: >-
@@ -236,39 +196,7 @@ paths:
           description: In case of errors during the request elaboration, an error message is returned
           schema:
             $ref: '#/definitions/ApiError500'
-  '/users/login':
-    post:
-      tags:
-        - users
-      summary: Logs user into the system
-      description: Log the user in and return the access token
-      produces:
-        - application/json
-      responses:
-        '200':
-          description: The operation has been successfully completed
-          schema:
-            $ref: '#/definitions/UserLogin'
-        '500':
-          description: In case of errors during the request elaboration, an error message is returned
 definitions:
-  ExtractionTypeList:
-    type: array
-    items:
-      type: object
-      properties:
-        type:
-          type: string
-          example: qwerty
-        code:
-          type: integer
-          example: 1
-  UserLogin:
-    type: object
-    properties:
-      token:
-        type: string
-        example: qwerty
   PersonData:
     type: object
     required:
