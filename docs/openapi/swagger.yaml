@@ -8,6 +8,7 @@ tags:
     description: Operations about a person
   - name: logs
     description: Operations about logs
+basePath: "/logextractor/v1"
 schemes:
   - https
   - http
