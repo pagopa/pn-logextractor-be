@@ -8,9 +8,13 @@ Parameters:
     Type: String
     Description: Name of the project
 
-  WafId:
+  WafArn:
     Type: String
-    Description: CloudFront WAF id
+    Description: CloudFront WAFv2 arn
+
+  LogBucketDomainName:
+    Type: String
+    Description: Bucket (domain name) to store CloudFront logs
 
 Resources:
 
@@ -24,11 +28,6 @@ Resources:
         BlockPublicPolicy: true
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
-
-  LogsStorage:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub ${ProjectName}-logs
 
   HostingPolicy:
     Type: AWS::S3::BucketPolicy
@@ -74,12 +73,11 @@ Resources:
         DefaultRootObject: index.html
         Enabled: true
         Logging:
-          Bucket: !GetAtt Hosting.DomainName
-          Prefix: cloudfront/
+          Bucket: !Ref LogBucketDomainName
         Origins:
           - DomainName: !GetAtt Hosting.DomainName
             Id: s3_hosting
             S3OriginConfig:
               OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${OAI}
         PriceClass: PriceClass_100
-        WebACLId: !Ref WafId
+        WebACLId: !Ref WafArn

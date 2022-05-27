@@ -1,4 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
+Description: >
+  CloudFormation definition of Log Extractor database
 
 Parameters:
 

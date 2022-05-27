@@ -17,9 +17,13 @@ Parameters:
     Description: This value determine current the second byte of CIDR's block
     Default: 0
 
-  WafId:
+  WafArn:
     Type: String
-    Description: Global WAF id for CloudFront
+    Description: Global WAF (ARN) for CloudFront
+
+  CloudFrontLogBucketDomainName:
+    Type: String
+    Description: Bucket to store CloudFront logs
 
   ApiLogRetentionInDays:
     Type: Number
@@ -28,7 +32,7 @@ Parameters:
 
   CacheNodeType:
     Type: String
-    Default: cache.t2.micro
+    Default: cache.t3.micro
     Description: Type of the nodes in the cache cluster
 
   CacheReplicas:
@@ -61,7 +65,8 @@ Resources:
       TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/frontend.yaml
       Parameters:
         ProjectName: !Ref ProjectName
-        WafId: !Ref WafId
+        WafArn: !Ref WafArn
+        LogBucketDomainName: !Ref CloudFrontLogBucketDomainName
 
   Database:
     Type: AWS::CloudFormation::Stack
