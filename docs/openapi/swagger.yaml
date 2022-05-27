@@ -25,8 +25,7 @@ paths:
         - name: ticketNumber
           in: query
           description: >-
-            The number of the ticket for which the user is performing the
-            extraction
+            The number of the ticket for which the user is performing the extraction
           type: integer
           required: false
         - name: fiscal-code
@@ -58,8 +57,7 @@ paths:
         - logs
       operationId: getPersonsLogs
       summary: >-
-        Download the logs' archive related to a person's own activities or on a
-        notification
+        Download the logs' archive related to a person's own activities or on a notification
       description: Download the zip file and return the password to be shown to the user
       produces:
         - application/json
@@ -115,8 +113,7 @@ paths:
         - logs
       operationId: getOperatorsLogs
       summary: >-
-        Download the logs' archive related to a person activities and its
-        operators' ones
+        Download the logs' archive related to a person activities and its operators' ones
       description: Download the zip file and return the password to be shown to the user
       produces:
         - application/json
@@ -164,8 +161,7 @@ paths:
         - name: ticketNumber
           in: query
           description: >-
-            The number of the ticket for which the user is performing the
-            extraction
+            The number of the ticket for which the user is performing the extraction
           type: integer
           required: true
         - name: ipa-code
