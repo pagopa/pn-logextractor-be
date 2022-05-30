@@ -95,6 +95,11 @@ paths:
           description: The extraction period start date
           type: date
           required: false
+        - name: dateTo
+          in: query
+          description: The extraction period end date
+          type: date
+          required: false
         - name: deanonimization
           in: query
           description: Flag that indicates if the deanonimization must be performed or not
