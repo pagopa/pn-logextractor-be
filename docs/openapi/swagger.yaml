@@ -70,15 +70,15 @@ paths:
             extraction
           type: integer
           required: true
-        - name: referenceDate
-          in: query
-          description: The reference date for log extraction 
-          type: date
-          required: true
         - name: taxId
           in: query
           description: Fiscal code of the person whose ID must be returned
           type: string
+          required: false
+        - name: referenceDate
+          in: query
+          description: The reference date for log extraction
+          type: date
           required: false
         - name: personId
           in: query
@@ -90,10 +90,15 @@ paths:
           description: The IUN of the notification
           type: integer
           required: false
-        - name: months
+        - name: dateFrom
           in: query
-          description: The months interval
-          type: integer
+          description: The extraction period start date
+          type: date
+          required: false
+        - name: dateTo
+          in: query
+          description: The extraction period end date
+          type: date
           required: false
         - name: deanonimization
           in: query
