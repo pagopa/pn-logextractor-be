@@ -97,6 +97,12 @@ paths:
           type: string
           pattern: /([0-9]{4})-(?:[0-9]{2})-([0-9]{2})/
           required: false
+        - name: dateTo
+          in: query
+          description: The extraction period end date
+          type: string
+          pattern: /([0-9]{4})-(?:[0-9]{2})-([0-9]{2})/
+          required: false
         - name: deanonimization
           in: query
           description: Flag that indicates if the deanonimization must be performed or not
