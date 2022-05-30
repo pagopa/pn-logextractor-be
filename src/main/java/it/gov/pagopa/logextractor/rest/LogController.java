@@ -36,7 +36,7 @@ public class LogController {
 																	  @RequestParam(required = true) int ticketNumber,
 																	  @RequestParam(required = false) Integer iun,
 																	  @RequestParam(required = false) Integer referenceMonth,
-																	  @RequestParam(required = false) String personId){
+																	  @RequestParam(required = false) String ipaCode){
 		return ResponseEntity.ok(null);
 	}
 }
