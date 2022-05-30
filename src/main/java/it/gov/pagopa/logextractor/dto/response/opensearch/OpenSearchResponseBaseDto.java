@@ -1,4 +1,4 @@
-package it.gov.pagopa.logextractor.dto.response;
+package it.gov.pagopa.logextractor.dto.response.opensearch;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @Builder
-public class BaseOpenSearchResponseDto {
+public class OpenSearchResponseBaseDto {
 
 	private String timestamp;
 	private String version;
