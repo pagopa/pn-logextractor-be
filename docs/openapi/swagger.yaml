@@ -29,7 +29,7 @@ paths:
             The number of the ticket for which the user is performing the extraction
           type: integer
           required: false
-        - name: fiscalCode
+        - name: taxId
           in: query
           description: Fiscal code of the person whose ID must be returned
           type: string
