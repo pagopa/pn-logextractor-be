@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @Builder
-public class baseOpenSearchResponseDto {
+public class BaseOpenSearchResponseDto {
 
 	private String timestamp;
 	private String version;
