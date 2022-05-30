@@ -29,13 +29,13 @@ paths:
             The number of the ticket for which the user is performing the extraction
           type: integer
           required: false
-        - name: fiscal-code
-          in: header
+        - name: taxId
+          in: query
           description: Fiscal code of the person whose ID must be returned
           type: string
           required: false
-        - name: person-id
-          in: header
+        - name: personId
+          in: query
           description: ID of the person whose fiscal code must be returned
           type: string
           required: false
@@ -70,13 +70,13 @@ paths:
             extraction
           type: integer
           required: true
-        - name: fiscal-code
-          in: header
+        - name: taxId
+          in: query
           description: Fiscal code of the person whose ID must be returned
           type: string
           required: false
-        - name: person-id
-          in: header
+        - name: personId
+          in: query
           description: ID of the person whose fiscal code must be returned
           type: string
           required: false
@@ -126,8 +126,8 @@ paths:
             extraction
           type: integer
           required: true
-        - name: fiscal-code
-          in: header
+        - name: taxId
+          in: query
           description: Fiscal code of the person whose ID must be returned
           type: string
           required: true
@@ -165,8 +165,8 @@ paths:
             The number of the ticket for which the user is performing the extraction
           type: integer
           required: true
-        - name: ipa-code
-          in: header
+        - name: ipaCode
+          in: query
           description: The IPA code of a public administration entity
           type: integer
           required: false

@@ -18,7 +18,7 @@ import it.gov.pagopa.logextractor.util.Constants;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
 
 @RestController
-@RequestMapping("/persons")
+@RequestMapping("/logextractor/v1/persons")
 public class PersonController {
 
 	@Autowired
@@ -47,8 +47,8 @@ public class PersonController {
 	public ResponseEntity<GetBasicDataResponseDto> getBasicData(@RequestParam(required = true) Integer extractionType,
 			@RequestParam(required = true) RecipientTypes recipientType,
 			@RequestParam(required = false) @Pattern(regexp = Constants.ALPHA_NUMERIC_WITHOUT_SPECIAL_CHAR_PATTERN, message = "Invalid ticket number") String ticketNumber,
-			@RequestHeader(name = "fiscal-code", required = false) @Size(min = 16, max = 16) @Pattern(regexp = Constants.FISCAL_CODE_PATTERN, message = "Invalid Tax ID") String taxId,
-			@RequestHeader(name = "person-id", required = false) @Size(min = 1, max = 100, message = "Invalid person id") @Pattern(regexp = Constants.INTERNAL_ID_PATTERN) String personId) {
+			@RequestParam(required = false) @Size(min = 16, max = 16) @Pattern(regexp = Constants.FISCAL_CODE_PATTERN, message = "Invalid Tax ID") String taxId,
+			@RequestParam(required = false) @Size(min = 1, max = 100, message = "Invalid person id") @Pattern(regexp = Constants.INTERNAL_ID_PATTERN) String personId) {
 		return ResponseEntity
 				.ok(personService.getPersonsBasicData(recipientType, ticketNumber, taxId, personId));
 	}
