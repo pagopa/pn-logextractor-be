@@ -70,6 +70,11 @@ paths:
             extraction
           type: integer
           required: true
+        - name: referenceDate
+          in: query
+          description: The reference date for log extraction 
+          type: date
+          required: true
         - name: taxId
           in: query
           description: Fiscal code of the person whose ID must be returned
