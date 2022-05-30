@@ -78,7 +78,8 @@ paths:
         - name: referenceDate
           in: query
           description: The reference date for log extraction
-          type: date
+          type: string
+          pattern: "yyyy-mm-dd"
           required: false
         - name: personId
           in: query
@@ -93,12 +94,14 @@ paths:
         - name: dateFrom
           in: query
           description: The extraction period start date
-          type: date
+          type: string
+          pattern: "yyyy-mm-dd"
           required: false
         - name: dateTo
           in: query
           description: The extraction period end date
-          type: date
+          type: string
+          pattern: "yyyy-mm-dd"
           required: false
         - name: deanonimization
           in: query
@@ -144,12 +147,14 @@ paths:
         - name: dateFrom
           in: query
           description: The extraction period start date
-          type: date
+          type: string
+          pattern: "yyyy-mm-dd"
           required: false
         - name: dateTo
           in: query
           description: The extraction period end date
-          type: date
+          type: string
+          pattern: "yyyy-mm-dd"
           required: false
       responses:
         '200':
@@ -193,7 +198,8 @@ paths:
         - name: referenceMonth
           in: query
           description: The reference month
-          type: integer
+          type: string
+          pattern: "yyyy-mm-dd"
           required: false
       responses:
         '200':
