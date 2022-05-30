@@ -141,11 +141,16 @@ paths:
           description: Fiscal code of the person whose ID must be returned
           type: string
           required: true
-        - name: months
+        - name: dateFrom
           in: query
-          description: The months interval
-          type: integer
-          required: true
+          description: The extraction period start date
+          type: date
+          required: false
+        - name: dateTo
+          in: query
+          description: The extraction period end date
+          type: date
+          required: false
       responses:
         '200':
           description: The operation has been successfully completed
