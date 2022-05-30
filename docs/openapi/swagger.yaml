@@ -195,12 +195,6 @@ paths:
           description: The IUN of the notification
           type: integer
           required: false
-        - name: referenceMonth
-          in: query
-          description: The reference month
-          type: string
-          pattern: /([0-9]{4})-(?:[0-9]{2})-([0-9]{2})/
-          required: false
       responses:
         '200':
           description: The operation has been successfully completed
