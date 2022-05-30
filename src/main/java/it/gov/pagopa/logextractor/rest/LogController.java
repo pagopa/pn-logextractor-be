@@ -13,8 +13,7 @@ import it.gov.pagopa.logextractor.dto.response.DownloadLogResponseDto;
 public class LogController {
 
 	@GetMapping(value = "/persons", produces="application/zip")
-	public ResponseEntity<DownloadLogResponseDto> getPersonActivityLogs(@RequestParam(required = true) String extractionType, 
-																		@RequestParam(required = true) int ticketNumber,
+	public ResponseEntity<DownloadLogResponseDto> getPersonActivityLogs(@RequestParam(required = true) int ticketNumber,
 																		@RequestParam(required = false) Integer iun, 
 																		@RequestParam(required = false) Integer months, 
 																		@RequestParam(required = true) boolean deanonimization,
@@ -24,16 +23,14 @@ public class LogController {
 	}
 	
 	@GetMapping(value = "/operators", produces="application/zip")
-	public ResponseEntity<DownloadLogResponseDto> getOperatorsActivityLogs(@RequestParam(required = true) String extractionType, 
-																		   @RequestParam(required = true) int ticketNumber, 
+	public ResponseEntity<DownloadLogResponseDto> getOperatorsActivityLogs(@RequestParam(required = true) int ticketNumber, 
 																		   @RequestParam(required = true) int months, 
 																		   @RequestParam(required = false) String taxId) {
 		return ResponseEntity.ok(null);
 	}
 	
 	@GetMapping(value = "/notifications", produces="application/zip")
-	public ResponseEntity<DownloadLogResponseDto> getNotificationLogs(@RequestParam(required = true) String extractionType, 
-																	  @RequestParam(required = true) int ticketNumber,
+	public ResponseEntity<DownloadLogResponseDto> getNotificationLogs(@RequestParam(required = true) int ticketNumber,
 																	  @RequestParam(required = false) Integer iun,
 																	  @RequestParam(required = false) Integer referenceMonth,
 																	  @RequestParam(required = false) String ipaCode){
