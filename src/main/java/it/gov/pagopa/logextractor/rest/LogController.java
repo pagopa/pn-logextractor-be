@@ -6,7 +6,6 @@ import javax.validation.constraints.Size;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,11 +47,16 @@ public class LogController {
 		return ResponseEntity.ok(null);
 	}
 	
-	@GetMapping(value = "/notifications", produces="application/zip")
-	public ResponseEntity<DownloadLogResponseDto> getNotificationLogs(@RequestParam(required = true) int ticketNumber,
-											  @RequestParam(required = false) Integer iun,
-											  @RequestParam(required = false) @Pattern(regexp = Constants.INPUT_DATE_FORMAT) String referenceMonth,
-											  @RequestParam(required = false) String ipaCode){
+	@GetMapping(value = "/notifications/info", produces="application/zip")
+	public ResponseEntity<DownloadLogResponseDto> getNotificationInfoLogs(@RequestParam(required = true) int ticketNumber,
+					  							@RequestParam(required = true) Integer iun){
+		return ResponseEntity.ok(null);
+	}
+	
+	@GetMapping(value = "/notifications/monthly", produces="application/zip")
+	public ResponseEntity<DownloadLogResponseDto> getNotificationMonthlyLogs(@RequestParam(required = true) int ticketNumber,
+											  @RequestParam(required = true) @Pattern(regexp = Constants.INPUT_DATE_FORMAT) String referenceMonth,
+											  @RequestParam(required = true) String ipaCode){
 		return ResponseEntity.ok(null);
 	}
 }
