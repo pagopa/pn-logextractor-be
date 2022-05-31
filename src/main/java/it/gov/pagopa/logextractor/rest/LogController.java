@@ -20,8 +20,7 @@ public class LogController {
 												@RequestParam(required = false) @Pattern(regexp = Constants.INPUT_DATE_FORMAT) String referenceDate,
 												@RequestParam(required = false) @Pattern(regexp = Constants.INPUT_DATE_FORMAT) String dateFrom,
 												@RequestParam(required = false) @Pattern(regexp = Constants.INPUT_DATE_FORMAT) String dateTo,
-												@RequestParam(required = false) Integer iun, 
-												@RequestParam(required = false) Integer months, 
+												@RequestParam(required = false) Integer iun,
 												@RequestParam(required = true) boolean deanonimization,
 												@RequestParam(required = false) String taxId, 
 												@RequestParam(required = false) String personId){
