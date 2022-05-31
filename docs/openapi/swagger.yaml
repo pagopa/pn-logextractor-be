@@ -27,7 +27,7 @@ paths:
           in: query
           description: >-
             The number of the ticket for which the user is performing the extraction
-          type: integer
+          type: string
           required: false
         - name: taxId
           in: query
@@ -68,7 +68,7 @@ paths:
           description: >-
             The number of the ticket for which the user is performing the
             extraction
-          type: integer
+          type: string
           required: true
         - name: taxId
           in: query
@@ -137,7 +137,7 @@ paths:
           description: >-
             The number of the ticket for which the user is performing the
             extraction
-          type: integer
+          type: string
           required: true
         - name: taxId
           in: query
@@ -183,7 +183,7 @@ paths:
           in: query
           description: >-
             The number of the ticket for which the user is performing the extraction
-          type: integer
+          type: string
           required: true
         - name: iun
           in: query
@@ -217,7 +217,7 @@ paths:
           in: query
           description: >-
             The number of the ticket for which the user is performing the extraction
-          type: integer
+          type: string
           required: true
         - name: ipaCode
           in: query
