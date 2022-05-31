@@ -13,7 +13,6 @@ import lombok.Setter;
 @Builder
 public class OpenSearchRangeQueryData {
 
-	private String indexName;
 	private String rangeField;
 	private String from;
 	private String to;

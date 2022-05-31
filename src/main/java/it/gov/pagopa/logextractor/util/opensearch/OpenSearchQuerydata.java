@@ -17,5 +17,6 @@ import lombok.Setter;
 public class OpenSearchQuerydata {
 	
 	private String indexName;
-	private List<OpenSearchQueryFilter> searchFields;
+	private List<OpenSearchQueryFilter> matchFields;
+	private OpenSearchRangeQueryData rangeData;
 }
