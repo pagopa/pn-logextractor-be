@@ -48,15 +48,16 @@ public class LogController {
 	}
 	
 	@GetMapping(value = "/notifications/info", produces="application/zip")
-	public ResponseEntity<DownloadLogResponseDto> getNotificationInfoLogs(@RequestParam(required = true) int ticketNumber,
+	public ResponseEntity<DownloadLogResponseDto> getNotificationInfoLogs(@RequestParam(required = true) String ticketNumber,
 					  							@RequestParam(required = true) Integer iun){
 		return ResponseEntity.ok(null);
 	}
 	
 	@GetMapping(value = "/notifications/monthly", produces="application/zip")
-	public ResponseEntity<DownloadLogResponseDto> getNotificationMonthlyLogs(@RequestParam(required = true) int ticketNumber,
+	public ResponseEntity<DownloadLogResponseDto> getNotificationMonthlyLogs(@RequestParam(required = true) String ticketNumber,
 											  @RequestParam(required = true) @Pattern(regexp = Constants.INPUT_DATE_FORMAT) String referenceMonth,
-											  @RequestParam(required = true) String ipaCode){
-		return ResponseEntity.ok(null);
+											  @RequestParam(required = true) String ipaCode) {
+		
+		return ResponseEntity.ok(logService.getMonthlyNotifications(ticketNumber, referenceMonth, ipaCode));
 	}
 }

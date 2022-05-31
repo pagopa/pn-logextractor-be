@@ -8,23 +8,30 @@ import java.util.List;
  * Utility class for constructing OpenSearch queries
  * */
 public class OpenSearchQueryConstructor {
-
+	
 	/**
-	 * Creates a simple or boolean multi search query string with the input query data
-	 * @param queryData the query data
-	 * @param isBoolean if true the method constructs a boolean multi search query otherwise a simple multi search query
-	 * @return a string representing the simple or boolean multi search query 
+	 * Creates a multi-search range query
+	 * @param queryData The fields and filters for the query
+	 * @return A string representing the multi-search range query
 	 * */
-	public String createMultiSearchQuery(ArrayList<OpenSearchQuerydata> queryData, boolean isBoolean) {
-		return isBoolean ? createBooleanMultiSearchQuery(queryData) : createSimpleMultiSearchQuery(queryData);
+	public String createMultiSearchRangeQuery(List<OpenSearchRangeQueryData> queryData) {
+		StringBuilder queryBuilder = new StringBuilder();
+		if(null != queryData && queryData.size() > 0) {
+			for(OpenSearchRangeQueryData qTemp : queryData) {
+				queryBuilder.append("{\"index\":\""+qTemp.getIndexName()+"\"}\n"
+					+ "{\"query\":{\"range\":{\""+qTemp.getRangeField()+"\":{\"gte\":\""+qTemp.getFrom()+"\",\"lte\":\""+qTemp.getTo()+"\"}}}}\n");
+			}
+		}
+		System.out.println("Created query:\n" + queryBuilder.toString());
+		return queryBuilder.toString();
 	}
 	
 	/**
-	 * Creates a boolean multi search query string with the input query data
-	 * @param queryData the query data
-	 * @return a string representing the boolean multi search query 
+	 * Creates a boolean multi-search query string with the input query data
+	 * @param queryData The query data
+	 * @return A string representing the multi-search boolean query 
 	 * */
-	private String createBooleanMultiSearchQuery(ArrayList<OpenSearchQuerydata> queryData) {
+	public String createBooleanMultiSearchQuery(ArrayList<OpenSearchQuerydata> queryData) {
 		StringBuilder queryBuilder = new StringBuilder();
 		if(null != queryData && queryData.size() > 0) {
 			for(OpenSearchQuerydata qTemp : queryData) {
@@ -42,11 +49,11 @@ public class OpenSearchQueryConstructor {
 	}
 	
 	/**
-	 * Creates a simple multi search query string with the input query data
-	 * @param queryData the query data
-	 * @return a string representing the simple multi search query 
+	 * Creates a simple multi-search query string with the input query data
+	 * @param queryData The query data
+	 * @return A string representing the multi-search simple query 
 	 * */
-	private String createSimpleMultiSearchQuery(ArrayList<OpenSearchQuerydata> queryData) {
+	public String createSimpleMultiSearchQuery(ArrayList<OpenSearchQuerydata> queryData) {
 		StringBuilder queryBuilder = new StringBuilder();
 		if(null != queryData && queryData.size() > 0) {
 			for(OpenSearchQuerydata qTemp : queryData) {
@@ -65,11 +72,12 @@ public class OpenSearchQueryConstructor {
 	 * Creates the data structures for a multi-search query from the input map, the map must contain the index name as key and 
 	 * its corresponding search filters as values
 	 * @param data The input map containing the indexes and their corresponding search filters to be used for a multi-search query
-	 * @return A list of OpenSearchQuerydata objects to be used into a multi-search query*/
+	 * @return A list of OpenSearchQuerydata objects to be used into a multi-search query
+	 * */
 	public ArrayList<OpenSearchQuerydata> createMultiSearchQueryData(HashMap<String, List<OpenSearchQueryFilter>> data) {
 		ArrayList<OpenSearchQuerydata> queryData = new ArrayList<>();
 		for (String key : data.keySet()) {
-			queryData.add(OpenSearchQuerydata.builder().indexName(key).searchFields(data.get(key)).build());
+			queryData.add(new OpenSearchQuerydata(key, data.get(key)));
 	    }
 		return queryData;
 	}
