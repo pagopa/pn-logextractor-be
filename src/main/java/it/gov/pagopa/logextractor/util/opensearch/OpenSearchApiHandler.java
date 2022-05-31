@@ -20,10 +20,14 @@ import it.gov.pagopa.logextractor.config.ApplicationContextProvider;
 public class OpenSearchApiHandler {
 
 	/**
-	 * Performs a multi-search HTTP GET request to the Opensearch service*/
-	public ArrayList<String> getDocumentsByMultiSearchQuery(ArrayList<OpenSearchQuerydata> queryData, boolean isBooleanQuery, String host, 
-								String basicAuthUsername, String basicAuthPassword) {
-		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
+	 * Performs a multi-search HTTP GET request to the Opensearch service
+	 * @param query The mmulti-search query to the sent
+	 * @param host The base URL of the Opensearch service
+	 * @param basicAuthUsername The username for the basic authentication
+	 * @param basicAuthPassword The password for the basic authentication
+	 * @return The documents list contained into the Opensearch response
+	 * */
+	public ArrayList<String> getDocumentsByMultiSearchQuery(String query, String host, String basicAuthUsername, String basicAuthPassword) {
 		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("restTemplate");
 		HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -31,7 +35,7 @@ public class OpenSearchApiHandler {
         List<MediaType> acceptedTypes = new ArrayList<MediaType>();
         acceptedTypes.add(MediaType.APPLICATION_JSON);
         requestHeaders.setAccept(acceptedTypes);
-        HttpEntity<String> request = new HttpEntity<String>(queryConstructor.createMultiSearchQuery(queryData, isBooleanQuery), requestHeaders);
+        HttpEntity<String> request = new HttpEntity<String>(query, requestHeaders);
         var response = client.exchange(host+"/_msearch", HttpMethod.GET, request, String.class);
         return getDocuments(response.getBody());
 	}
