@@ -22,6 +22,6 @@ public class BeanConfiguration {
 		    }
 		});
 		//END
-		return new RestTemplate();
+		return new RestTemplate(new SimpleClientHttpRequestWithGetBodyFactory());
 	}
 }

@@ -35,6 +35,7 @@ public class OpenSearchQueryConstructor {
 									+ "{\"query\":{\"bool\":{\"must\":["+paramsBuilder+"]}}}\n");
 			}
 		}
+		System.out.println("Created query:\n" + queryBuilder.toString());
 		return queryBuilder.toString();
 	}
 	

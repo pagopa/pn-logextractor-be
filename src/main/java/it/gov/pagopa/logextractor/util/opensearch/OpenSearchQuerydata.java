@@ -1,6 +1,7 @@
 package it.gov.pagopa.logextractor.util.opensearch;
 
-import java.util.ArrayList;
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,5 +17,5 @@ import lombok.Setter;
 public class OpenSearchQuerydata {
 	
 	private String indexName;
-	private ArrayList<OpenSearchQueryFilter> searchFields;
+	private List<OpenSearchQueryFilter> searchFields;
 }
