@@ -42,6 +42,26 @@ public class FileUtilities {
 	}
 	
 	/**
+	 * Write the input content list into the input file
+	 * @param file the file where to write the content into
+	 * @param content the content list to write into the file
+	 * @throws IOException in case of an I/O error
+	 * */
+	public void write(File file, ArrayList<String> contents) throws IOException {
+		for(String contentTemp : contents) {
+			write(file, contentTemp+"\n");
+		}
+	}
+	
+	/**
+	 * Delete an existing file
+	 * @param name The file to be deleted
+	 * */
+	public void deleteFile(File file) {
+		FileUtils.deleteQuietly(file);
+	}
+	
+	/**
 	 * Write notification data to a csv file
 	 * @param file the file where to write the content into
 	 * @param notifications the list of notifications
