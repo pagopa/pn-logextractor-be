@@ -23,6 +23,13 @@ paths:
       produces:
         - application/json
       parameters:
+        - name: recipientType
+          in: query
+          description: >-
+            The type of person we're getting the data of
+          type: string
+          enum: [ "PF", "PG"]
+          required: true
         - name: ticketNumber
           in: query
           description: >-
