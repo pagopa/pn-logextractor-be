@@ -72,14 +72,14 @@ public class LogServiceImpl implements LogService{
 			}
 		}
 		
-		FileUtilities utils = new FileUtilities();
-		File file = utils.getFile("C:\\Users\\msarkisian\\OneDrive - DXC Production\\Documents\\LogExtractor\\Files\\personLogs.txt");
-		utils.write(file, openSearchResponse);
-		
-		System.out.println(password);
-		var zipFile = ZipFactory.createZipArchive("C:\\Users\\msarkisian\\OneDrive - DXC Production\\Documents\\LogExtractor\\Files\\archive.zip", password);
-		System.out.println(zipFile.getFile().getName());
-		zipFile.addFile(file);
+//		FileUtilities utils = new FileUtilities();
+//		File file = utils.getFile("C:\\Users\\msarkisian\\OneDrive - DXC Production\\Documents\\LogExtractor\\Files\\personLogs.txt");
+//		utils.write(file, openSearchResponse);
+//		
+//		System.out.println(password);
+//		var zipFile = ZipFactory.createZipArchive("C:\\Users\\msarkisian\\OneDrive - DXC Production\\Documents\\LogExtractor\\Files\\archive.zip", password);
+//		System.out.println(zipFile.getFile().getName());
+//		zipFile.addFile(file);
 		
 		return DownloadLogResponseDto.builder().password(password).build();
 	}
