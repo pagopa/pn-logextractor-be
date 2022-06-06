@@ -48,13 +48,13 @@ public class LogServiceImpl implements LogService{
 	String csvFileName;
 
 	@Override
-	public ZipFile getPersonLogs(String dateFrom, String dateTo, String ticketNumber, Integer uin, String personId, String password) throws IOException {
+	public ZipFile getPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId, String password) throws IOException {
 		
 		OpenSearchApiHandler openSearchHandler = new OpenSearchApiHandler();
 		ArrayList<String> openSearchResponse = null;
 		
 		// use case 7
-		if (dateFrom != null && dateTo != null && personId != null && uin == null) {
+		if (dateFrom != null && dateTo != null && personId != null && iun == null) {
 			System.out.println("use case 7");
 			OpenSearchQueryFilter internalIdFilter = new OpenSearchQueryFilter("internalid", personId);
 			ArrayList<OpenSearchQueryFilter> simpleQueryFilters = new ArrayList<>();
@@ -66,9 +66,9 @@ public class LogServiceImpl implements LogService{
 			openSearchResponse = openSearchHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 		} else {
 			// use case 8
-			if (uin != null) {
+			if (iun != null) {
 				System.out.println("use case 8");
-				OpenSearchQueryFilter internalIdFilter = new OpenSearchQueryFilter("internalid", uin.toString());
+				OpenSearchQueryFilter internalIdFilter = new OpenSearchQueryFilter("internalid", iun.toString());
 				ArrayList<OpenSearchQueryFilter> queryFilters = new ArrayList<>();
 				queryFilters.add(internalIdFilter);
 				OpenSearchQuerydata queryData = new OpenSearchQuerydata("logs-2", queryFilters, null);

@@ -11,7 +11,7 @@ import net.lingala.zip4j.ZipFile;
 
 
 public interface LogService {
-	ZipFile getPersonLogs(String dateFrom, String dateTo, String ticketNumber, Integer uin, String personId, String password) throws IOException;
+	ZipFile getPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId, String password) throws IOException;
 	ZipFile getMonthlyNotifications(String ticketNumber, String referenceMonth, String ipaCode) throws IOException, ParseException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException;
 	PasswordResponseDto createPassword();
 }

@@ -10,5 +10,5 @@ import lombok.Setter;
 public class NotificationInfoRequestDto extends BaseRequestDto {
 
 	@NotBlank
-	private Integer iun;
+	private String iun;
 }

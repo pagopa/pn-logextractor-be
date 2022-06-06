@@ -214,7 +214,7 @@ definitions:
       personId:
         type: string
       iun:
-        type: integer
+        type: string
       dateFrom:
         type: string
       dateTo:
@@ -266,7 +266,7 @@ definitions:
       ticketNumber:
         type: string
       iun:
-        type: integer
+        type: string
       password:
         type: string
   PersonData:

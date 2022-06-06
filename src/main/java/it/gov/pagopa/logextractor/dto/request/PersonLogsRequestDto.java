@@ -14,7 +14,7 @@ public class PersonLogsRequestDto extends BaseRequestDto {
 	@Pattern(regexp = Constants.FISCAL_CODE_PATTERN) 
 	private String taxId;
 	private String personId;
-	private Integer iun;
+	private String iun;
 	@Pattern(regexp = Constants.INPUT_DATE_FORMAT) 
 	private String dateFrom;
 	@Pattern(regexp = Constants.INPUT_DATE_FORMAT) 
