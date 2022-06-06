@@ -102,6 +102,6 @@ public class LogServiceImpl implements LogService{
 
 	@Override
 	public PasswordResponseDto createPassword() {
-		return PasswordResponseDto.builder().password(new PasswordFactory().createPassword(2, 2, 2, Constants.PASSWORD_SPECIAL_CHARS, 2, 16)).build();
+		return PasswordResponseDto.builder().password(new PasswordFactory().createPassword(1, 1, 1, Constants.PASSWORD_SPECIAL_CHARS, 1, 16)).build();
 	}
 }
