@@ -21,6 +21,7 @@ import it.gov.pagopa.logextractor.util.opensearch.OpenSearchQueryConstructor;
 import it.gov.pagopa.logextractor.util.opensearch.OpenSearchQueryFilter;
 import it.gov.pagopa.logextractor.util.opensearch.OpenSearchQuerydata;
 import it.gov.pagopa.logextractor.util.opensearch.OpenSearchRangeQueryData;
+import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.CompressionLevel;
 import net.lingala.zip4j.model.enums.EncryptionMethod;
@@ -38,7 +39,7 @@ public class LogServiceImpl implements LogService{
 	String openSearchPassword;
 
 	@Override
-	public PasswordResponseDto getPersonLogs(String dateFrom, String dateTo, String referenceDate, String ticketNumber, Integer uin, String personId, String password) throws IOException {
+	public ZipFile getPersonLogs(String dateFrom, String dateTo, String ticketNumber, Integer uin, String personId, String password) throws IOException {
 		
 		OpenSearchApiHandler openSearchHandler = new OpenSearchApiHandler();
 		ArrayList<String> openSearchResponse = null;
@@ -61,21 +62,12 @@ public class LogServiceImpl implements LogService{
 				OpenSearchQueryFilter internalIdFilter = new OpenSearchQueryFilter("internalid", uin.toString());
 				ArrayList<OpenSearchQueryFilter> queryFilters = new ArrayList<>();
 				queryFilters.add(internalIdFilter);
-				if (referenceDate != null) {
-					OpenSearchQueryFilter timestampFilter = new OpenSearchQueryFilter("@timestamp", referenceDate);
-					queryFilters.add(timestampFilter);
-				}
 				OpenSearchQuerydata queryData = new OpenSearchQuerydata("logs-2", queryFilters, null);
 				ArrayList<OpenSearchQuerydata> listOfQueryData = new ArrayList<>();
 				listOfQueryData.add(queryData);
 				
-				String query;
-				
-				if (referenceDate != null) {					
-					query = new OpenSearchQueryConstructor().createBooleanMultiSearchQuery(listOfQueryData);
-				} else {
-					query = new OpenSearchQueryConstructor().createSimpleMultiSearchQuery(listOfQueryData);
-				}
+				//TODO: adjust the query with boolean range query with notification create date (start date) until maximum 3 months forward 
+				String query = new OpenSearchQueryConstructor().createBooleanMultiSearchQuery(listOfQueryData);
 				openSearchResponse = openSearchHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 			}
 		}
@@ -85,12 +77,11 @@ public class LogServiceImpl implements LogService{
 		utils.write(file, openSearchResponse);
 		
 		ZipFactory zipFactory = new ZipFactory();
-		var zipArchive = zipFactory.createZipArchive("logs.zip", password);
-		System.out.println(zipArchive.getFile().getName());
+		var zipArchive = zipFactory.createZipArchive("export/logs.zip", password);
 		ZipParameters params = zipFactory.createZipParameters(true, CompressionLevel.HIGHER, EncryptionMethod.AES);
 		zipArchive = zipFactory.addFile(zipArchive, params, file);
-		
-		return PasswordResponseDto.builder().password(password).build();
+		utils.deleteFile(file);
+		return zipArchive;
 	}
 
 
@@ -104,6 +95,4 @@ public class LogServiceImpl implements LogService{
 	public PasswordResponseDto createPassword() {
 		return PasswordResponseDto.builder().password(new PasswordFactory().createPassword(2, 2, 2, Constants.PASSWORD_SPECIAL_CHARS, 2, 16)).build();
 	}
-	
-	
 }
