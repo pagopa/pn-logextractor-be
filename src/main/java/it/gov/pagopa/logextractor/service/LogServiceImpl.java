@@ -1,16 +1,18 @@
 package it.gov.pagopa.logextractor.service;
 
-import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import it.gov.pagopa.logextractor.dto.response.DownloadLogResponseDto;
-import it.gov.pagopa.logextractor.util.FileUtilities;
+import com.opencsv.exceptions.CsvDataTypeMismatchException;
+import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
+
+import it.gov.pagopa.logextractor.dto.response.PasswordResponseDto;
+import it.gov.pagopa.logextractor.util.Constants;
 import it.gov.pagopa.logextractor.util.PasswordFactory;
-import it.gov.pagopa.logextractor.util.ZipFactory;
 import it.gov.pagopa.logextractor.util.opensearch.OpenSearchApiHandler;
 import it.gov.pagopa.logextractor.util.opensearch.OpenSearchQueryConstructor;
 import it.gov.pagopa.logextractor.util.opensearch.OpenSearchQueryFilter;
@@ -29,8 +31,8 @@ public class LogServiceImpl implements LogService{
 	@Value("${external.opensearch.basicauth.password}")
 	String openSearchPassword;
 
-	@Override
-	public DownloadLogResponseDto getPersonLogs(String dateFrom, String dateTo, String referenceDate, String ticketNumber, Integer uin, String personId, String password) throws IOException {
+//	@Override
+	public PasswordResponseDto getPersonLogs(String dateFrom, String dateTo, String referenceDate, String ticketNumber, Integer uin, String personId, String password) {
 		
 		OpenSearchApiHandler openSearchHandler = new OpenSearchApiHandler();
 		ArrayList<String> openSearchResponse = null;
@@ -72,17 +74,29 @@ public class LogServiceImpl implements LogService{
 			}
 		}
 		
-//		FileUtilities utils = new FileUtilities();
-//		File file = utils.getFile("C:\\Users\\msarkisian\\OneDrive - DXC Production\\Documents\\LogExtractor\\Files\\personLogs.txt");
-//		utils.write(file, openSearchResponse);
-//		
-//		System.out.println(password);
-//		var zipFile = ZipFactory.createZipArchive("C:\\Users\\msarkisian\\OneDrive - DXC Production\\Documents\\LogExtractor\\Files\\archive.zip", password);
-//		System.out.println(zipFile.getFile().getName());
-//		zipFile.addFile(file);
+//				FileUtilities utils = new FileUtilities();
+//				File file = utils.getFile("C:\\Users\\msarkisian\\OneDrive - DXC Production\\Documents\\LogExtractor\\Files\\personLogs.txt");
+//				utils.write(file, openSearchResponse);
+//				
+//				System.out.println(password);
+//				var zipFile = ZipFactory.createZipArchive("C:\\Users\\msarkisian\\OneDrive - DXC Production\\Documents\\LogExtractor\\Files\\archive.zip", password);
+//				System.out.println(zipFile.getFile().getName());
+//				zipFile.addFile(file);
 		
-		return DownloadLogResponseDto.builder().password(password).build();
+		return PasswordResponseDto.builder().password(password).build();
 	}
 
 
+	@Override
+	public PasswordResponseDto getMonthlyNotifications(String ticketNumber, String referenceMonth, String ipaCode) throws IOException, ParseException,CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
+		
+		return null;
+	}
+
+	@Override
+	public PasswordResponseDto createPassword() {
+		return PasswordResponseDto.builder().password(new PasswordFactory().createPassword(2, 2, 2, Constants.PASSWORD_SPECIAL_CHARS, 2, 16)).build();
+	}
+	
+	
 }

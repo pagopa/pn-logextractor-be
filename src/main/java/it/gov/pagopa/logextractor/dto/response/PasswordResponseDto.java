@@ -5,12 +5,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
 @Setter
+@Getter
 @Builder
 @AllArgsConstructor
-public class DomainResponseDto {
+public class PasswordResponseDto {
 
-	private String type;
-	private int code;
+	private String password;
 }

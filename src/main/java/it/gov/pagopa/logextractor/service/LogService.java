@@ -1,9 +1,16 @@
 package it.gov.pagopa.logextractor.service;
 
 import java.io.IOException;
+import java.text.ParseException;
 
-import it.gov.pagopa.logextractor.dto.response.DownloadLogResponseDto;
+import com.opencsv.exceptions.CsvDataTypeMismatchException;
+import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
+
+import it.gov.pagopa.logextractor.dto.response.PasswordResponseDto;
+
 
 public interface LogService {
-	DownloadLogResponseDto getPersonLogs(String dateFrom, String dateTo, String referenceDate, String ticketNumber, Integer uin, String personId, String password) throws IOException;
+	PasswordResponseDto getPersonLogs(String dateFrom, String dateTo, String referenceDate, String ticketNumber, Integer uin, String personId, String password);
+	PasswordResponseDto getMonthlyNotifications(String ticketNumber, String referenceMonth, String ipaCode) throws IOException, ParseException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException;
+	PasswordResponseDto createPassword();
 }

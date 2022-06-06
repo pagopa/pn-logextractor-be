@@ -28,8 +28,6 @@ public class PersonController {
 	 * A controller method used to retrieve the basic data of a person (the basic
 	 * data would be either unique identifier or tax code)
 	 * 
-	 * @param extractionType required parameter, which represents the integer value
-	 *                       of the extraction type
 	 * @param recipientType  required parameter, which represents the two values of
 	 *                       the enum {@link RecipientType}
 	 * @param ticketNumber   the ticket number of a person, this parameter should be
@@ -44,8 +42,7 @@ public class PersonController {
 	 * @return basic data of a person, depending on which parameters are present
 	 */
 	@GetMapping("/basicData")
-	public ResponseEntity<GetBasicDataResponseDto> getBasicData(@RequestParam(required = true) Integer extractionType,
-			@RequestParam(required = true) RecipientTypes recipientType,
+	public ResponseEntity<GetBasicDataResponseDto> getBasicData(@RequestParam(required = true) RecipientTypes recipientType,
 			@RequestParam(required = false) @Pattern(regexp = Constants.ALPHA_NUMERIC_WITHOUT_SPECIAL_CHAR_PATTERN, message = "Invalid ticket number") String ticketNumber,
 			@RequestParam(required = false) @Size(min = 16, max = 16) @Pattern(regexp = Constants.FISCAL_CODE_PATTERN, message = "Invalid Tax ID") String taxId,
 			@RequestParam(required = false) @Size(min = 1, max = 100, message = "Invalid person id") @Pattern(regexp = Constants.INTERNAL_ID_PATTERN) String personId) {
