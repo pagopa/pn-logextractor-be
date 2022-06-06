@@ -1,5 +1,8 @@
 package it.gov.pagopa.logextractor.rest;
 
+import java.io.IOException;
+import java.text.ParseException;
+
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
@@ -9,7 +12,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import it.gov.pagopa.logextractor.dto.response.DownloadLogResponseDto;
+
+import com.opencsv.exceptions.CsvDataTypeMismatchException;
+import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
+
+import it.gov.pagopa.logextractor.dto.response.PasswordResponseDto;
 import it.gov.pagopa.logextractor.service.LogService;
 import it.gov.pagopa.logextractor.util.Constants;
 
@@ -21,7 +28,7 @@ public class LogController {
 	LogService logService;
 
 	@GetMapping(value = "/persons", produces="application/zip")
-	public ResponseEntity<DownloadLogResponseDto> getPersonActivityLogs(@RequestParam(required = true) @Pattern(regexp = Constants.ALPHA_NUMERIC_WITHOUT_SPECIAL_CHAR_PATTERN, message = "Invalid ticket number") String ticketNumber,
+	public ResponseEntity<PasswordResponseDto> getPersonActivityLogs(@RequestParam(required = true) @Pattern(regexp = Constants.ALPHA_NUMERIC_WITHOUT_SPECIAL_CHAR_PATTERN, message = "Invalid ticket number") String ticketNumber,
 												@RequestParam(required = false) @Pattern(regexp = Constants.INPUT_DATE_FORMAT) String referenceDate,
 												@RequestParam(required = false) @Pattern(regexp = Constants.INPUT_DATE_FORMAT) String dateFrom,
 												@RequestParam(required = false) @Pattern(regexp = Constants.INPUT_DATE_FORMAT) String dateTo,
@@ -40,7 +47,7 @@ public class LogController {
 	
 	
 	@GetMapping(value = "/operators", produces="application/zip")
-	public ResponseEntity<DownloadLogResponseDto> getOperatorsActivityLogs(@RequestParam(required = true) int ticketNumber, 
+	public ResponseEntity<PasswordResponseDto> getOperatorsActivityLogs(@RequestParam(required = true) int ticketNumber, 
 											   @RequestParam(required = false) @Pattern(regexp = Constants.INPUT_DATE_FORMAT) String dateFrom ,
 											   @RequestParam(required = false) @Pattern(regexp = Constants.INPUT_DATE_FORMAT) String dateTo,
 											   @RequestParam(required = false) String taxId) {
@@ -48,16 +55,21 @@ public class LogController {
 	}
 	
 	@GetMapping(value = "/notifications/info", produces="application/zip")
-	public ResponseEntity<DownloadLogResponseDto> getNotificationInfoLogs(@RequestParam(required = true) String ticketNumber,
+	public ResponseEntity<PasswordResponseDto> getNotificationInfoLogs(@RequestParam(required = true) String ticketNumber,
 					  							@RequestParam(required = true) Integer iun){
 		return ResponseEntity.ok(null);
 	}
 	
 	@GetMapping(value = "/notifications/monthly", produces="application/zip")
-	public ResponseEntity<DownloadLogResponseDto> getNotificationMonthlyLogs(@RequestParam(required = true) String ticketNumber,
+	public ResponseEntity<PasswordResponseDto> getNotificationMonthlyLogs(@RequestParam(required = true) String ticketNumber,
 											  @RequestParam(required = true) @Pattern(regexp = Constants.INPUT_MONTH_FORMAT) String referenceMonth,
-											  @RequestParam(required = true) String ipaCode) {
+											  @RequestParam(required = true) String ipaCode) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, ParseException{
 		
 		return ResponseEntity.ok(logService.getMonthlyNotifications(ticketNumber, referenceMonth, ipaCode));
+	}
+	
+	@GetMapping(value = "/logs/passwords", produces = "application/json")
+	public ResponseEntity<PasswordResponseDto> getPassword(){
+		return ResponseEntity.ok(logService.createPassword());
 	}
 }
