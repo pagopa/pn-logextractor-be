@@ -37,6 +37,15 @@ public class LogServiceImpl implements LogService{
 	
 	@Value("${external.opensearch.basicauth.password}")
 	String openSearchPassword;
+	
+	@Value("${export.zip.archive.txt.file.name}")
+	String txtFileName;
+	
+	@Value("${export.zip.archive.name}")
+	String zipArchiveName;
+	
+	@Value("${export.zip.archive.csv.file.name}")
+	String csvFileName;
 
 	@Override
 	public ZipFile getPersonLogs(String dateFrom, String dateTo, String ticketNumber, Integer uin, String personId, String password) throws IOException {
@@ -73,14 +82,14 @@ public class LogServiceImpl implements LogService{
 		}
 		
 		FileUtilities utils = new FileUtilities();
-		File file = utils.getFile("personLogs.txt");
+		File file = utils.getFile("export/"+txtFileName);
 		utils.write(file, openSearchResponse);
 		
 		ZipFactory zipFactory = new ZipFactory();
-		var zipArchive = zipFactory.createZipArchive("export/logs.zip", password);
+		var zipArchive = zipFactory.createZipArchive("export/"+zipArchiveName, password);
 		ZipParameters params = zipFactory.createZipParameters(true, CompressionLevel.HIGHER, EncryptionMethod.AES);
 		zipArchive = zipFactory.addFile(zipArchive, params, file);
-		utils.deleteFile(file);
+		utils.cleanFile(file);
 		return zipArchive;
 	}
 

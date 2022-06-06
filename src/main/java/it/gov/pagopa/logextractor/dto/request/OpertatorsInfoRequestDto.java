@@ -1,5 +1,6 @@
 package it.gov.pagopa.logextractor.dto.request;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 import it.gov.pagopa.logextractor.util.Constants;
@@ -8,15 +9,15 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PersonLogsRequestDto extends BaseRequestDto {
+public class OpertatorsInfoRequestDto extends BaseRequestDto {
 
-	private boolean deanonimization;
-	@Pattern(regexp = Constants.FISCAL_CODE_PATTERN) 
-	private String taxId;
-	private String personId;
-	private Integer iun;
+	@NotBlank
 	@Pattern(regexp = Constants.INPUT_DATE_FORMAT) 
 	private String dateFrom;
+	@NotBlank
 	@Pattern(regexp = Constants.INPUT_DATE_FORMAT) 
 	private String dateTo;
+	@NotBlank
+	@Pattern(regexp = Constants.FISCAL_CODE_PATTERN)
+	private String taxId;
 }

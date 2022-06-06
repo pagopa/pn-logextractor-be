@@ -51,6 +51,15 @@ public class FileUtilities {
 		for(String contentTemp : contents) {
 			write(file, contentTemp+"\n");
 		}
+	}	
+	
+	/**
+	 * Clean up the input file
+	 * @param file The file to clean
+	 * @throws IOException in case of an I/O error
+	 * */
+	public void cleanFile(File file) throws IOException {
+		FileUtils.writeStringToFile(file, "", StandardCharsets.UTF_8);
 	}
 	
 	/**
