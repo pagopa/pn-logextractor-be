@@ -211,8 +211,6 @@ definitions:
         type: boolean
       taxId:
         type: string
-      referenceDate:
-        type: string
       personId:
         type: string
       iun:
