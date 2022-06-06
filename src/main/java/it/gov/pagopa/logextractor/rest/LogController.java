@@ -68,6 +68,10 @@ public class LogController {
 				HttpServletResponse response) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, ParseException{
 	}
 	
+	/**
+	 * A Controller method used to generate and retrieve a random, secure password to be used during a zip archive generation
+	 * @return A PasswordResponseDto containing the generated password
+	 * */
 	@GetMapping(value = "/passwords", produces = "application/json")
 	public ResponseEntity<PasswordResponseDto> getPassword(){
 		return ResponseEntity.ok(logService.createPassword());
