@@ -1,5 +1,6 @@
 package it.gov.pagopa.logextractor.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -12,12 +13,17 @@ import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 
 import it.gov.pagopa.logextractor.dto.response.PasswordResponseDto;
 import it.gov.pagopa.logextractor.util.Constants;
+import it.gov.pagopa.logextractor.util.FileUtilities;
 import it.gov.pagopa.logextractor.util.PasswordFactory;
+import it.gov.pagopa.logextractor.util.ZipFactory;
 import it.gov.pagopa.logextractor.util.opensearch.OpenSearchApiHandler;
 import it.gov.pagopa.logextractor.util.opensearch.OpenSearchQueryConstructor;
 import it.gov.pagopa.logextractor.util.opensearch.OpenSearchQueryFilter;
 import it.gov.pagopa.logextractor.util.opensearch.OpenSearchQuerydata;
 import it.gov.pagopa.logextractor.util.opensearch.OpenSearchRangeQueryData;
+import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.model.enums.CompressionLevel;
+import net.lingala.zip4j.model.enums.EncryptionMethod;
 
 @Service
 public class LogServiceImpl implements LogService{
@@ -31,8 +37,8 @@ public class LogServiceImpl implements LogService{
 	@Value("${external.opensearch.basicauth.password}")
 	String openSearchPassword;
 
-//	@Override
-	public PasswordResponseDto getPersonLogs(String dateFrom, String dateTo, String referenceDate, String ticketNumber, Integer uin, String personId, String password) {
+	@Override
+	public PasswordResponseDto getPersonLogs(String dateFrom, String dateTo, String referenceDate, String ticketNumber, Integer uin, String personId, String password) throws IOException {
 		
 		OpenSearchApiHandler openSearchHandler = new OpenSearchApiHandler();
 		ArrayList<String> openSearchResponse = null;
@@ -74,14 +80,15 @@ public class LogServiceImpl implements LogService{
 			}
 		}
 		
-//				FileUtilities utils = new FileUtilities();
-//				File file = utils.getFile("C:\\Users\\msarkisian\\OneDrive - DXC Production\\Documents\\LogExtractor\\Files\\personLogs.txt");
-//				utils.write(file, openSearchResponse);
-//				
-//				System.out.println(password);
-//				var zipFile = ZipFactory.createZipArchive("C:\\Users\\msarkisian\\OneDrive - DXC Production\\Documents\\LogExtractor\\Files\\archive.zip", password);
-//				System.out.println(zipFile.getFile().getName());
-//				zipFile.addFile(file);
+		FileUtilities utils = new FileUtilities();
+		File file = utils.getFile("personLogs.txt");
+		utils.write(file, openSearchResponse);
+		
+		ZipFactory zipFactory = new ZipFactory();
+		var zipArchive = zipFactory.createZipArchive("logs.zip", password);
+		System.out.println(zipArchive.getFile().getName());
+		ZipParameters params = zipFactory.createZipParameters(true, CompressionLevel.HIGHER, EncryptionMethod.AES);
+		zipArchive = zipFactory.addFile(zipArchive, params, file);
 		
 		return PasswordResponseDto.builder().password(password).build();
 	}
