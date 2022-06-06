@@ -6,7 +6,7 @@ import org.springframework.web.client.HttpServerErrorException;
 
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
-import it.gov.pagopa.logextractor.util.deanonimizationservice.DeanonimizationApiHandler;
+import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
 
 /**
  * Implementation class of {@link PersonService}

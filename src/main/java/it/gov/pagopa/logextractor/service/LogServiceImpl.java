@@ -16,11 +16,11 @@ import it.gov.pagopa.logextractor.util.Constants;
 import it.gov.pagopa.logextractor.util.FileUtilities;
 import it.gov.pagopa.logextractor.util.PasswordFactory;
 import it.gov.pagopa.logextractor.util.ZipFactory;
-import it.gov.pagopa.logextractor.util.opensearch.OpenSearchApiHandler;
-import it.gov.pagopa.logextractor.util.opensearch.OpenSearchQueryConstructor;
-import it.gov.pagopa.logextractor.util.opensearch.OpenSearchQueryFilter;
-import it.gov.pagopa.logextractor.util.opensearch.OpenSearchQuerydata;
-import it.gov.pagopa.logextractor.util.opensearch.OpenSearchRangeQueryData;
+import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandler;
+import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchQueryConstructor;
+import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchQueryFilter;
+import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchQuerydata;
+import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchRangeQueryData;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.CompressionLevel;
@@ -95,7 +95,7 @@ public class LogServiceImpl implements LogService{
 
 
 	@Override
-	public PasswordResponseDto getMonthlyNotifications(String ticketNumber, String referenceMonth, String ipaCode) throws IOException, ParseException,CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
+	public ZipFile getMonthlyNotifications(String ticketNumber, String referenceMonth, String ipaCode) throws IOException, ParseException,CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
 		
 		return null;
 	}

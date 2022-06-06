@@ -1,4 +1,4 @@
-package it.gov.pagopa.logextractor.util.deanonimizationservice;
+package it.gov.pagopa.logextractor.util.external.pnservices;
 
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;

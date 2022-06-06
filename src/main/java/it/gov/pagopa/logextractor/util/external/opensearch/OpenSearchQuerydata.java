@@ -1,4 +1,4 @@
-package it.gov.pagopa.logextractor.util.opensearch;
+package it.gov.pagopa.logextractor.util.external.opensearch;
 
 import java.util.List;
 

@@ -1,5 +1,7 @@
 package it.gov.pagopa.logextractor.dto;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,5 +17,5 @@ public class NotificationCsvBean {
 	private String sendDate;
 	private String attestationGenerationDate;
 	private String subject;
-	private String taxId;
+	private List<String> taxId;
 }
