@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.Base64Utils;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -66,7 +67,7 @@ public class LogController {
 		iStream.close();
 		final HttpHeaders headers = new HttpHeaders();
 		headers.add("Content-Disposition", "force-download; filename =\""+ zipArchiveName +"\"");
-		return ResponseEntity.ok().headers(headers).body(output);
+		return ResponseEntity.ok().headers(headers).body(Base64Utils.encode(output));
 	}
 	
 	
