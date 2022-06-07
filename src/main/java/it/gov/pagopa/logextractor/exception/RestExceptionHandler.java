@@ -29,30 +29,35 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(LogExtractorException.class)
     protected ResponseEntity<ApiError> handleLogExtractorException(LogExtractorException ex) {
         //log.error("ERROR: Business Exception: " + ExceptionUtils.getStackTrace(ex));
+		ex.printStackTrace();
         return ResponseEntity.internalServerError().body(new ApiError(ex));
     }
 	
 	@ExceptionHandler(IOException.class)
     protected ResponseEntity<ApiError> handleIOException(IOException ex) {
         //log.error("ERROR: Business Exception: " + ExceptionUtils.getStackTrace(ex));
+		ex.printStackTrace();
         return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
     }
 	
 	@ExceptionHandler(CsvDataTypeMismatchException.class)
     protected ResponseEntity<ApiError> handleCsvDataTypeMismatchException(CsvDataTypeMismatchException ex) {
         //log.error("ERROR: Business Exception: " + ExceptionUtils.getStackTrace(ex));
+		ex.printStackTrace();
         return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
     }
 	
 	@ExceptionHandler(CsvRequiredFieldEmptyException.class)
     protected ResponseEntity<ApiError> handleCsvRequiredFieldEmptyException(CsvRequiredFieldEmptyException ex) {
         //log.error("ERROR: Business Exception: " + ExceptionUtils.getStackTrace(ex));
+		ex.printStackTrace();
         return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
     }
 	
 	@ExceptionHandler(HttpServerErrorException.class)
     protected ResponseEntity<ApiError> handleHttpServerErrorException(HttpServerErrorException ex) {
         //log.error("ERROR: Business Exception: " + ExceptionUtils.getStackTrace(ex));
+		ex.printStackTrace();
         return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
     }
 	
@@ -62,6 +67,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
             builder.append(" " + violation.getMessage() + ",");
         }
+        ex.printStackTrace();
         //log.error("ERROR: Constraint Violation: " + builder);
         return ResponseEntity.badRequest().body(new ApiError("Informazioni non valide"));
     }

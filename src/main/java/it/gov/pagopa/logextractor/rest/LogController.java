@@ -2,13 +2,17 @@ package it.gov.pagopa.logextractor.rest;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.ParseException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,26 +35,38 @@ public class LogController {
 	@Autowired
 	LogService logService;
 	
-	@Value("${export.zip.archive.txt.file.name}")
-	String txtFileName;
+//	@Value("${export.zip.archive.txt.file.name}")
+//	String txtFileName;
+//	
+//	@Value("${export.zip.archive.csv.file.name}")
+//	String csvFileName;
 	
-	@Value("${export.zip.archive.csv.file.name}")
-	String csvFileName;
+	@Value("${export.zip.archive.name}")
+	String zipArchiveName;
 
 	@PostMapping(value = "/persons", produces="application/zip")
-	public void getPersonActivityLogs(@RequestBody PersonLogsRequestDto personLogsDetails, HttpServletResponse response) throws IOException {
+	public ResponseEntity<byte[]> getPersonActivityLogs(@RequestBody PersonLogsRequestDto personLogsDetails, HttpServletResponse response) throws IOException {
 		if (personLogsDetails.isDeanonimization()) {
 			
 		}
 		// use case 7 & 8
 		ZipFile zipArchive = logService.getPersonLogs(personLogsDetails.getDateFrom(), personLogsDetails.getDateTo(), 
 				personLogsDetails.getTicketNumber(), personLogsDetails.getIun(), personLogsDetails.getPersonId(), personLogsDetails.getPassword());
-		ServletOutputStream os = response.getOutputStream(); 
-		FileInputStream fis = new FileInputStream(zipArchive.getFile());
-	    IOUtils.copyLarge(fis, os);
-	    fis.close();
-	    os.close();
-	    zipArchive.removeFile(txtFileName);
+//		OutputStream os = response.getOutputStream(); 
+		InputStream iStream = new FileInputStream(zipArchive.getFile());
+//		StreamUtils.copy(fis, os);
+//	    IOUtils.copyLarge(fis, os);
+//	    fis.close();
+//	    os.close();
+//	    response.setStatus(HttpServletResponse.SC_OK);
+//		response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + zipArchive.toString() + "\"");
+//		response.addHeader(HttpHeaders.CONTENT_TYPE, "application/octet-stream");
+//	    zipArchive.removeFile(txtFileName);
+		byte[] output = iStream.readAllBytes();
+		iStream.close();
+		final HttpHeaders headers = new HttpHeaders();
+		headers.add("Content-Disposition", "force-download; filename =\""+ zipArchiveName +"\"");
+		return ResponseEntity.ok().headers(headers).body(output);
 	}
 	
 	
@@ -66,6 +82,7 @@ public class LogController {
 	@PostMapping(value = "/notifications/monthly", produces="application/zip")
 	public void getNotificationMonthlyLogs(@RequestBody MonthlyNotificationsRequestDto monthlyNotificationsData,
 				HttpServletResponse response) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, ParseException{
+//		ZipFile zipArchive = logService.getMonthlyNotifications(monthlyNotificationsData.getTicketNumber(), txtFileName, csvFileName);
 	}
 	
 	/**

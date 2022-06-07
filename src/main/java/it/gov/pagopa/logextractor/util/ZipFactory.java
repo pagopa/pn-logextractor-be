@@ -46,6 +46,8 @@ public class ZipFactory {
 	 * @return the input zip with the addition of the file
 	 * */
 	public ZipFile addFile(ZipFile archive, ZipParameters parameters, File file) throws IOException {
+		String name = file.getName();
+		archive.removeFile(name);
 		if (!file.exists()) {
 			file.createNewFile();
 		}
