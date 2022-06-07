@@ -1,7 +1,12 @@
 package it.gov.pagopa.logextractor.util;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+
+import org.springframework.util.Base64Utils;
 
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
@@ -54,5 +59,18 @@ public class ZipFactory {
 		archive.addFile(file, parameters);
 		archive.close();
 		return archive;
+	}
+	
+	/**
+	 * Convert zip archive to byte array
+	 * @param archive The zip archive to convert
+	 * @return A byte array representation of the input zip archive
+	 * @throws IOException in case of IO Error
+	 * */
+	public byte[] toByteArray(ZipFile archive) throws IOException {
+		InputStream iStream = new FileInputStream(archive.getFile());
+		byte[] output = iStream.readAllBytes();
+		iStream.close();
+		return Base64Utils.encode(output);
 	}
 }

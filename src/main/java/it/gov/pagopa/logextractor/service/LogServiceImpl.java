@@ -1,12 +1,17 @@
 package it.gov.pagopa.logextractor.service;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Base64Utils;
 
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
@@ -48,7 +53,7 @@ public class LogServiceImpl implements LogService{
 	String csvFileName;
 
 	@Override
-	public ZipFile getPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId, String password) throws IOException {
+	public byte[] getPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId, String password) throws IOException {
 		
 		OpenSearchApiHandler openSearchHandler = new OpenSearchApiHandler();
 		ArrayList<String> openSearchResponse = null;
@@ -84,19 +89,20 @@ public class LogServiceImpl implements LogService{
 		FileUtilities utils = new FileUtilities();
 		File file = utils.getFile("export/"+txtFileName);
 		utils.write(file, openSearchResponse);
-		
 		ZipFactory zipFactory = new ZipFactory();
 		var zipArchive = zipFactory.createZipArchive("export/"+zipArchiveName, password);
 		ZipParameters params = zipFactory.createZipParameters(true, CompressionLevel.HIGHER, EncryptionMethod.AES);
 		zipArchive = zipFactory.addFile(zipArchive, params, file);
 		utils.cleanFile(file);
-		return zipArchive;
+		return zipFactory.toByteArray(zipArchive);
 	}
 
 
 	@Override
-	public ZipFile getMonthlyNotifications(String ticketNumber, String referenceMonth, String ipaCode) throws IOException, ParseException,CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
-		
+	public ZipFile getMonthlyNotifications(String ticketNumber, String referenceMonth, String ipaCode, String password) throws IOException, ParseException,CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
+		String dateInString = "19590709";
+		LocalDate date = LocalDate.parse(dateInString, DateTimeFormatter.BASIC_ISO_DATE);
+		System.out.println("Date: "+ date);
 		return null;
 	}
 

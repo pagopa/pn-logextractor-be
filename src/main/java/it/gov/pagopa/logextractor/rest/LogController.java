@@ -51,23 +51,13 @@ public class LogController {
 			
 		}
 		// use case 7 & 8
-		ZipFile zipArchive = logService.getPersonLogs(personLogsDetails.getDateFrom(), personLogsDetails.getDateTo(), 
-				personLogsDetails.getTicketNumber(), personLogsDetails.getIun(), personLogsDetails.getPersonId(), personLogsDetails.getPassword());
-//		OutputStream os = response.getOutputStream(); 
-		InputStream iStream = new FileInputStream(zipArchive.getFile());
-//		StreamUtils.copy(fis, os);
-//	    IOUtils.copyLarge(fis, os);
-//	    fis.close();
-//	    os.close();
-//	    response.setStatus(HttpServletResponse.SC_OK);
-//		response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + zipArchive.toString() + "\"");
-//		response.addHeader(HttpHeaders.CONTENT_TYPE, "application/octet-stream");
-//	    zipArchive.removeFile(txtFileName);
-		byte[] output = iStream.readAllBytes();
-		iStream.close();
 		final HttpHeaders headers = new HttpHeaders();
 		headers.add("Content-Disposition", "force-download; filename =\""+ zipArchiveName +"\"");
-		return ResponseEntity.ok().headers(headers).body(Base64Utils.encode(output));
+		return ResponseEntity.ok()
+				.headers(headers)
+				.body(logService.getPersonLogs(personLogsDetails.getDateFrom(), personLogsDetails.getDateTo(), 
+						personLogsDetails.getTicketNumber(), personLogsDetails.getIun(), personLogsDetails.getPersonId(), 
+						personLogsDetails.getPassword()));
 	}
 	
 	

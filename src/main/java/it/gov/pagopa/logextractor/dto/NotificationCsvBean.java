@@ -17,5 +17,5 @@ public class NotificationCsvBean {
 	private String sendDate;
 	private String attestationGenerationDate;
 	private String subject;
-	private List<String> taxId;
+	private List<String> taxIds;
 }
