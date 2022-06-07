@@ -6,15 +6,12 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-
 import org.apache.commons.io.FileUtils;
-
 import com.opencsv.CSVWriter;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
-
 import it.gov.pagopa.logextractor.dto.NotificationCsvBean;
 
 /**
@@ -27,8 +24,8 @@ public class FileUtilities {
 	 * @param name the name of the file to retrieve
 	 * @return a new instance of a file with the given name
 	 * */
-	public File getFile(String name) {
-		return FileUtils.getFile(name);
+	public File getFile(String name, String extension) {
+		return FileUtils.getFile("export/" + name + "-" +  new RandomGenerator().generateRandomToken()+"."+extension);
 	}
 	
 	/**
@@ -64,10 +61,10 @@ public class FileUtilities {
 	
 	/**
 	 * Delete an existing file
-	 * @param name The file to be deleted
+	 * @param file The file to be deleted
 	 * */
 	public void deleteFile(File file) {
-		FileUtils.deleteQuietly(file);
+		file.delete();
 	}
 	
 	/**
@@ -84,4 +81,6 @@ public class FileUtilities {
 		beanToCsv.write(notifications);
 		writer.close();
 	}
+	
+	
 }

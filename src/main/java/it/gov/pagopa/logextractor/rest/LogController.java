@@ -35,15 +35,6 @@ public class LogController {
 
 	@Autowired
 	LogService logService;
-	
-//	@Value("${export.zip.archive.txt.file.name}")
-//	String txtFileName;
-//	
-//	@Value("${export.zip.archive.csv.file.name}")
-//	String csvFileName;
-	
-	@Value("${export.zip.archive.name}")
-	String zipArchiveName;
 
 	@PostMapping(value = "/persons", produces="application/zip")
 	public ResponseEntity<byte[]> getPersonActivityLogs(@RequestBody PersonLogsRequestDto personLogsDetails, HttpServletResponse response) throws IOException {
@@ -51,13 +42,9 @@ public class LogController {
 			
 		}
 		// use case 7 & 8
-		final HttpHeaders headers = new HttpHeaders();
-		headers.add("Content-Disposition", "force-download; filename =\""+ zipArchiveName +"\"");
-		return ResponseEntity.ok()
-				.headers(headers)
-				.body(logService.getPersonLogs(personLogsDetails.getDateFrom(), personLogsDetails.getDateTo(), 
-						personLogsDetails.getTicketNumber(), personLogsDetails.getIun(), personLogsDetails.getPersonId(), 
-						personLogsDetails.getPassword()));
+		return ResponseEntity.ok().body(logService.getPersonLogs(personLogsDetails.getDateFrom(), personLogsDetails.getDateTo(), 
+										personLogsDetails.getTicketNumber(), personLogsDetails.getIun(), personLogsDetails.getPersonId(), 
+										personLogsDetails.getPassword()));
 	}
 	
 	

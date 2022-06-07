@@ -2,7 +2,6 @@ package it.gov.pagopa.logextractor.util;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -25,7 +24,7 @@ public class ZipFactory {
 	 * @return a new instance of a zip archive with the given name protected by the given password
 	 * */
 	public ZipFile createZipArchive(String name, String password) {
-		return new ZipFile(name, password.toCharArray());
+		return new ZipFile("export/" + name + "-" +  new RandomGenerator().generateRandomToken()+".zip", password.toCharArray());
 	}
 	
 	/**
@@ -51,8 +50,6 @@ public class ZipFactory {
 	 * @return the input zip with the addition of the file
 	 * */
 	public ZipFile addFile(ZipFile archive, ZipParameters parameters, File file) throws IOException {
-		String name = file.getName();
-		archive.removeFile(name);
 		if (!file.exists()) {
 			file.createNewFile();
 		}
