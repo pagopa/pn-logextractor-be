@@ -28,7 +28,7 @@ public class OpenSearchQueryConstructor {
 					paramsBuilder.deleteCharAt(paramsBuilder.length()-1);
 				}
 				queryBuilder.append("{\"index\":\""+qTemp.getIndexName()+"\"}\n"
-									+ "{\"query\":{\"bool\":{\"must\":["+paramsBuilder+"]}}}\n");
+									+ "{\"query\":{\"bool\":{\"filter\":["+paramsBuilder+"]}}}\n");
 				paramsBuilder.setLength(0);
 			}
 		}
