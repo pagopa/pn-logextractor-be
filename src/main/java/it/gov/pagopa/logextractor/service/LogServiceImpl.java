@@ -74,7 +74,7 @@ public class LogServiceImpl implements LogService{
 		}
 		
 		FileUtilities utils = new FileUtilities();
-		File file = utils.getFile(Constants.FILE_NAME,"txt");
+		File file = utils.getFile(Constants.FILE_NAME,Constants.TXT_EXTENSION);
 		utils.write(file, openSearchResponse);
 		ZipFactory zipFactory = new ZipFactory();
 		var zipArchive = zipFactory.createZipArchive(Constants.ZIP_ARCHIVE_NAME, password);

@@ -25,7 +25,7 @@ public class FileUtilities {
 	 * @return a new instance of a file with the given name
 	 * */
 	public File getFile(String name, String extension) {
-		return FileUtils.getFile("export/" + name + "-" +  new RandomGenerator().generateRandomToken()+"."+extension);
+		return FileUtils.getFile(Constants.EXPORT_FOLDER + name + "-" +  new RandomGenerator().generateRandomToken() + extension);
 	}
 	
 	/**

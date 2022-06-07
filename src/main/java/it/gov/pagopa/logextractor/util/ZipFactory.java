@@ -24,7 +24,8 @@ public class ZipFactory {
 	 * @return a new instance of a zip archive with the given name protected by the given password
 	 * */
 	public ZipFile createZipArchive(String name, String password) {
-		return new ZipFile("export/" + name + "-" +  new RandomGenerator().generateRandomToken()+".zip", password.toCharArray());
+		return new ZipFile(Constants.EXPORT_FOLDER + name + "-" + 
+							new RandomGenerator().generateRandomToken() + Constants.ZIP_EXTENSION, password.toCharArray());
 	}
 	
 	/**
@@ -65,9 +66,9 @@ public class ZipFactory {
 	 * @throws IOException in case of IO Error
 	 * */
 	public byte[] toByteArray(ZipFile archive) throws IOException {
-		InputStream iStream = new FileInputStream(archive.getFile());
-		byte[] output = iStream.readAllBytes();
-		iStream.close();
+		InputStream stream = new FileInputStream(archive.getFile());
+		byte[] output = stream.readAllBytes();
+		stream.close();
 		return Base64Utils.encode(output);
 	}
 }

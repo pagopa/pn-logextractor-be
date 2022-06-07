@@ -10,6 +10,10 @@ public class Constants {
 	public static final String PASSWORD_SPECIAL_CHARS = "!@#$%^&()_+";
 	public static final String ZIP_ARCHIVE_NAME = "export";
 	public static final String FILE_NAME = "dati";
+	public static final String TXT_EXTENSION = ".txt";
+	public static final String CSV_EXTENSION = ".csv";
+	public static final String ZIP_EXTENSION = ".zip";
+	public static final String EXPORT_FOLDER = "export/";
 	
 	//Match all alphanumeric character and predefined wild characters. Password must consists of 16 characters
 	public static final String PASSWORD_PATTERN = "^([a-zA-Z0-9!@#$%^&()_+]{16,16})$";
