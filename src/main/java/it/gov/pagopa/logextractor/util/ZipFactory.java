@@ -69,6 +69,6 @@ public class ZipFactory {
 		InputStream stream = new FileInputStream(archive.getFile());
 		byte[] output = stream.readAllBytes();
 		stream.close();
-		return output;
+		return Base64Utils.encode(output);
 	}
 }
