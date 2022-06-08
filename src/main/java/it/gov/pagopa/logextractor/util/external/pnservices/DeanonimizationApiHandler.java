@@ -33,7 +33,7 @@ public class DeanonimizationApiHandler {
 	 */
 	public GetBasicDataResponseDto getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId,
 			String externalServiceUrl) throws HttpServerErrorException {
-		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("restTemplate");
+		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("simpleRestTemplate");
 
 		String URL = String.format(externalServiceUrl, recipientType.toString(), taxId);
 		var response = client.getForObject(URL, EnsureRecipientByExternalIdResponseDto.class);
@@ -55,7 +55,7 @@ public class DeanonimizationApiHandler {
 	 */
 	public GetBasicDataResponseDto getTaxCodeForPerson(String personId, String externalServiceUrl)
 			throws HttpServerErrorException {
-		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("restTemplate");
+		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("simpleRestTemplate");
 
 		String URL = String.format(externalServiceUrl, "123");
 		var response = client.getForObject(URL, GetRecipientDenominationByInternalIdResponseDto.class);

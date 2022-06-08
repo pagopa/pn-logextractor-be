@@ -12,7 +12,7 @@ import org.springframework.web.client.RestTemplate;
 public class BeanConfiguration {
 
 	@Bean
-	public RestTemplate restTemplate() {
+	public RestTemplate openSearchRestTemplate() {
 		//TODO: START -  to delete when deploying in dev environment, this is just for local test purposes
 		HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
 			
@@ -23,5 +23,19 @@ public class BeanConfiguration {
 		});
 		//END
 		return new RestTemplate(new SimpleClientHttpRequestWithGetBodyFactory());
+	}
+	
+	@Bean
+	public RestTemplate simpleRestTemplate() {
+		//TODO: START -  to delete when deploying in dev environment, this is just for local test purposes
+		HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+			
+			@Override
+		    public boolean verify(String hostname, SSLSession session) {
+		        return true;
+		    }
+		});
+		//END
+		return new RestTemplate();
 	}
 }

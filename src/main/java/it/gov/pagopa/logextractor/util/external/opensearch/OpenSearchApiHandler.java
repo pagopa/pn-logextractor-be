@@ -28,7 +28,7 @@ public class OpenSearchApiHandler {
 	 * @return The documents list contained into the Opensearch response
 	 * */
 	public ArrayList<String> getDocumentsByMultiSearchQuery(String query, String host, String basicAuthUsername, String basicAuthPassword) {
-		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("restTemplate");
+		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("openSearchRestTemplate");
 		HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.setBasicAuth(basicAuthUsername, basicAuthPassword);

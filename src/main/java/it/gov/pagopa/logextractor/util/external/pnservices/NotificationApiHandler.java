@@ -22,9 +22,8 @@ public class NotificationApiHandler {
 	 * @return The list of notifications' general data
 	 * */
 	public ArrayList<NotificationGeneralData> getNotificationsByPeriod(String url, String startDate, String endDate, int size) {
-		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("restTemplate");
+		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("simpleRestTemplate");
 		HttpHeaders requestHeaders = new HttpHeaders();
-		//TODO: add security header x-api-key
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         List<MediaType> acceptedTypes = new ArrayList<MediaType>();
         acceptedTypes.add(MediaType.APPLICATION_JSON);
@@ -44,9 +43,8 @@ public class NotificationApiHandler {
 	 * @return The notification legal start date
 	 * */
 	public String getNotificationLegalStartDate(String url, String iun) {
-		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("restTemplate");
+		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("simpleRestTemplate");
 		HttpHeaders requestHeaders = new HttpHeaders();
-		//TODO: add security header x-api-key
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         List<MediaType> acceptedTypes = new ArrayList<MediaType>();
         acceptedTypes.add(MediaType.APPLICATION_JSON);
