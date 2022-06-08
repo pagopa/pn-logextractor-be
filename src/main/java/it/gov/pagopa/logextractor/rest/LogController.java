@@ -1,19 +1,10 @@
 package it.gov.pagopa.logextractor.rest;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.ParseException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.Base64Utils;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,7 +18,6 @@ import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import it.gov.pagopa.logextractor.dto.response.PasswordResponseDto;
 import it.gov.pagopa.logextractor.service.LogService;
-import net.lingala.zip4j.ZipFile;
 
 @RestController
 @RequestMapping("/logextractor/v1/logs")
@@ -58,9 +48,13 @@ public class LogController {
 	}
 	
 	@PostMapping(value = "/notifications/monthly", produces="application/zip")
-	public void getNotificationMonthlyLogs(@RequestBody MonthlyNotificationsRequestDto monthlyNotificationsData,
+	public ResponseEntity<byte[]> getNotificationMonthlyLogs(@RequestBody MonthlyNotificationsRequestDto monthlyNotificationsData,
 				HttpServletResponse response) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, ParseException{
-//		ZipFile zipArchive = logService.getMonthlyNotifications(monthlyNotificationsData.getTicketNumber(), txtFileName, csvFileName);
+		
+		return ResponseEntity.ok().body(logService.getMonthlyNotifications(monthlyNotificationsData.getTicketNumber(),
+																	monthlyNotificationsData.getReferenceMonth(),
+																	monthlyNotificationsData.getIpaCode(),
+																	monthlyNotificationsData.getPassword()));
 	}
 	
 	/**

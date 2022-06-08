@@ -7,10 +7,13 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
+
+import it.gov.pagopa.logextractor.dto.NotificationGeneralData;
 import it.gov.pagopa.logextractor.dto.response.PasswordResponseDto;
 import it.gov.pagopa.logextractor.util.Constants;
 import it.gov.pagopa.logextractor.util.FileUtilities;
@@ -21,6 +24,7 @@ import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchQueryConstr
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchQueryFilter;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchQuerydata;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchRangeQueryData;
+import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.CompressionLevel;
@@ -81,7 +85,6 @@ public class LogServiceImpl implements LogService{
 		ZipParameters params = zipFactory.createZipParameters(true, CompressionLevel.HIGHER, EncryptionMethod.AES);
 		zipArchive = zipFactory.addFile(zipArchive, params, file);
 		byte[] response = zipFactory.toByteArray(zipArchive);
-		zipArchive.removeFile(file.getName());
 		utils.deleteFile(file);
 		utils.deleteFile(FileUtils.getFile(zipArchive.toString()));
 		return response;
@@ -89,10 +92,12 @@ public class LogServiceImpl implements LogService{
 
 
 	@Override
-	public ZipFile getMonthlyNotifications(String ticketNumber, String referenceMonth, String ipaCode, String password) throws IOException, ParseException,CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
-		String dateInString = "19590709";
-		LocalDate date = LocalDate.parse(dateInString, DateTimeFormatter.BASIC_ISO_DATE);
-		System.out.println("Date: "+ date);
+	public byte[] getMonthlyNotifications(String ticketNumber, String referenceMonth, String ipaCode, String password) throws IOException, ParseException,CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
+		LocalDate startDate = LocalDate.parse(StringUtils.removeIgnoreCase(referenceMonth, "-")+"01", DateTimeFormatter.BASIC_ISO_DATE);
+		LocalDate endDate = startDate.plusMonths(1);
+		NotificationApiHandler notificationApiHandler = new NotificationApiHandler();
+		ArrayList<NotificationGeneralData> notificationsGeneralData = notificationApiHandler.getNotificationsByPeriod(ipaCode, 
+																		startDate.toString(), endDate.toString(), 10);
 		return null;
 	}
 
