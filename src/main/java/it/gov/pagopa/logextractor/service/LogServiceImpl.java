@@ -12,9 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
-
 import it.gov.pagopa.logextractor.dto.NotificationGeneralData;
-import it.gov.pagopa.logextractor.dto.response.PasswordResponseDto;
+import it.gov.pagopa.logextractor.dto.request.DownloadArchiveResponseDto;
 import it.gov.pagopa.logextractor.util.Constants;
 import it.gov.pagopa.logextractor.util.FileUtilities;
 import it.gov.pagopa.logextractor.util.PasswordFactory;
@@ -43,7 +42,7 @@ public class LogServiceImpl implements LogService{
 	String openSearchPassword;
 
 	@Override
-	public byte[] getPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId, String password) throws IOException {
+	public DownloadArchiveResponseDto getPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId) throws IOException {
 		
 		OpenSearchApiHandler openSearchHandler = new OpenSearchApiHandler();
 		ArrayList<String> openSearchResponse = null;
@@ -54,7 +53,7 @@ public class LogServiceImpl implements LogService{
 			OpenSearchQueryFilter internalIdFilter = new OpenSearchQueryFilter("internalid", personId);
 			ArrayList<OpenSearchQueryFilter> simpleQueryFilters = new ArrayList<>();
 			simpleQueryFilters.add(internalIdFilter);
-			OpenSearchQuerydata simpleQueryData = new OpenSearchQuerydata("logs-1", simpleQueryFilters, new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo));
+			OpenSearchQuerydata simpleQueryData = new OpenSearchQuerydata("logs-*", simpleQueryFilters, new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo));
 			ArrayList<OpenSearchQuerydata> listOfQueryData = new ArrayList<>();
 			listOfQueryData.add(simpleQueryData);
 			String query = new OpenSearchQueryConstructor().createBooleanMultiSearchQuery(listOfQueryData);
@@ -77,32 +76,29 @@ public class LogServiceImpl implements LogService{
 			}
 		}
 		
+		PasswordFactory passwordFactory = new PasswordFactory();
+		String password = passwordFactory.createPassword(1, 1, 1, Constants.PASSWORD_SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();
 		File file = utils.getFile(Constants.FILE_NAME,Constants.TXT_EXTENSION);
 		utils.write(file, openSearchResponse);
 		ZipFactory zipFactory = new ZipFactory();
-		var zipArchive = zipFactory.createZipArchive(Constants.ZIP_ARCHIVE_NAME, password);
+		ZipFile zipArchive = zipFactory.createZipArchive(Constants.ZIP_ARCHIVE_NAME, password);
 		ZipParameters params = zipFactory.createZipParameters(true, CompressionLevel.HIGHER, EncryptionMethod.AES);
 		zipArchive = zipFactory.addFile(zipArchive, params, file);
-		byte[] response = zipFactory.toByteArray(zipArchive);
+		byte[] zipfile = zipFactory.toByteArray(zipArchive);
 		utils.deleteFile(file);
 		utils.deleteFile(FileUtils.getFile(zipArchive.toString()));
-		return response;
+		return DownloadArchiveResponseDto.builder().password(password).zip(zipfile).build();
 	}
 
 
 	@Override
-	public byte[] getMonthlyNotifications(String ticketNumber, String referenceMonth, String ipaCode, String password) throws IOException, ParseException,CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
+	public DownloadArchiveResponseDto getMonthlyNotifications(String ticketNumber, String referenceMonth, String ipaCode) throws IOException, ParseException,CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
 		LocalDate startDate = LocalDate.parse(StringUtils.removeIgnoreCase(referenceMonth, "-")+"01", DateTimeFormatter.BASIC_ISO_DATE);
 		LocalDate endDate = startDate.plusMonths(1);
 		NotificationApiHandler notificationApiHandler = new NotificationApiHandler();
 		ArrayList<NotificationGeneralData> notificationsGeneralData = notificationApiHandler.getNotificationsByPeriod(ipaCode, 
 																		startDate.toString(), endDate.toString(), 10);
 		return null;
-	}
-
-	@Override
-	public PasswordResponseDto createPassword() {
-		return PasswordResponseDto.builder().password(new PasswordFactory().createPassword(1, 1, 1, Constants.PASSWORD_SPECIAL_CHARS, 1, 16)).build();
 	}
 }

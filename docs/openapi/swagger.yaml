@@ -78,6 +78,8 @@ paths:
       responses:
         '200':
           description: OK
+          schema:
+            $ref: '#/definitions/DownloadArchive'
         '400':
           description: In case of errors during the request validation, an error message is returned
           schema:
@@ -105,6 +107,8 @@ paths:
       responses:
         '200':
           description: OK
+          schema:
+            $ref: '#/definitions/DownloadArchive'
         '400':
           description: In case of errors during the request validation, an error message is returned
           schema:
@@ -132,6 +136,8 @@ paths:
       responses:
         '200':
           description: OK
+          schema:
+            $ref: '#/definitions/DownloadArchive'
         '400':
           description: In case of errors during the request validation, an error message is returned
           schema:
@@ -159,28 +165,8 @@ paths:
       responses:
         '200':
           description: OK
-        '400':
-          description: In case of errors during the request validation, an error message is returned
           schema:
-            $ref: '#/definitions/ApiError400'
-        '500':
-          description: In case of errors during the request elaboration, an error message is returned
-          schema:
-            $ref: '#/definitions/ApiError500'
-  '/logs/passwords':
-    get:
-      tags:
-        - "logs"
-      operationId: getZipPassword
-      summary: Get an automatically generated password from the server
-      description: Return the password to access the log files for a zip archive
-      produces:
-        - application/json
-      responses:
-        '200':
-          description: The operation has been successfully completed
-          schema:
-            $ref: '#/definitions/PasswordData'
+            $ref: '#/definitions/DownloadArchive'
         '400':
           description: In case of errors during the request validation, an error message is returned
           schema:
@@ -190,20 +176,22 @@ paths:
           schema:
             $ref: '#/definitions/ApiError500'
 definitions:
-  PasswordData:
+  DownloadArchive:
     type: object
     required:
       - password
+      - zip
     properties:
       password:
         type: string
-        example: "qwerty"
+      zip:
+        type: string
+        format: byte
   PersonsData:
     type: object
     required:
       - ticketNumber
       - deanonimization
-      - password
     properties:
       ticketNumber:
         type: string
@@ -219,23 +207,18 @@ definitions:
         type: string
       dateTo:
         type: string
-      password:
-        type: string
   MonthlyNotifications:
     type: object
     required:
       - ticketNumber
       - ipaCode
       - referenceMonth
-      - password
     properties:
       ticketNumber:
         type: string
       ipaCode:
         type: integer
       referenceMonth:
-        type: string
-      password:
         type: string
   OperatorsInfo:
     type: object
@@ -244,7 +227,6 @@ definitions:
       - taxId
       - dateFrom
       - dateTo
-      - password
     properties:
       ticketNumber:
         type: string
@@ -254,20 +236,15 @@ definitions:
         type: string
       dateTo:
         type: string
-      password:
-        type: string
   NotificationInfo:
     type: object
     required:
       - ticketNumber
       - iun
-      - password
     properties:
       ticketNumber:
         type: string
       iun:
-        type: string
-      password:
         type: string
   PersonData:
     type: object
