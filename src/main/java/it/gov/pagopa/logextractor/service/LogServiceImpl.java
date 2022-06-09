@@ -8,9 +8,7 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
-import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +25,6 @@ import it.gov.pagopa.logextractor.util.PasswordFactory;
 import it.gov.pagopa.logextractor.util.ZipFactory;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandler;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchQueryConstructor;
-import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchQueryFilter;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchQuerydata;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchRangeQueryData;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
