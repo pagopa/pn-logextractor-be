@@ -13,6 +13,8 @@ import it.gov.pagopa.logextractor.dto.request.MonthlyNotificationsRequestDto;
 import it.gov.pagopa.logextractor.dto.request.NotificationInfoRequestDto;
 import it.gov.pagopa.logextractor.dto.request.OpertatorsInfoRequestDto;
 import it.gov.pagopa.logextractor.dto.request.PersonLogsRequestDto;
+import it.gov.pagopa.logextractor.dto.request.TraceIdLogsRequestDto;
+
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import it.gov.pagopa.logextractor.service.LogService;
@@ -24,12 +26,14 @@ public class LogController {
 	@Autowired
 	LogService logService;
 
+
 	@PostMapping(value = "/persons", produces="application/json")
 	public ResponseEntity<DownloadArchiveResponseDto> getPersonActivityLogs(@RequestBody PersonLogsRequestDto personLogsDetails) throws IOException {
 		if (personLogsDetails.isDeanonimization()) {
-			
+
 		}
 		// use case 7 & 8
+
 		return ResponseEntity.ok().body(logService.getPersonLogs(personLogsDetails.getDateFrom(), personLogsDetails.getDateTo(), 
 										personLogsDetails.getTicketNumber(), personLogsDetails.getIun(), personLogsDetails.getPersonId()));
 	}
@@ -50,5 +54,13 @@ public class LogController {
 		return ResponseEntity.ok().body(logService.getMonthlyNotifications(monthlyNotificationsData.getTicketNumber(),
 																	monthlyNotificationsData.getReferenceMonth(),
 																	monthlyNotificationsData.getIpaCode()));
+	}
+
+
+	@PostMapping(value = "/processes", produces = "application/json")
+	public ResponseEntity<DownloadArchiveResponseDto> getNotificationTraceIdLogs(@RequestBody TraceIdLogsRequestDto traceIdLogsDetails) throws IOException {
+		// use case 10
+		return ResponseEntity.ok().body(logService.getTraceIdLogs(traceIdLogsDetails.getDateFrom(),
+				traceIdLogsDetails.getDateTo(), traceIdLogsDetails.getTraceId()));
 	}
 }

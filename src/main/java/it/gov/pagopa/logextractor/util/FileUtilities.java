@@ -45,8 +45,10 @@ public class FileUtilities {
 	 * @throws IOException in case of an I/O error
 	 * */
 	public void write(File file, ArrayList<String> contents) throws IOException {
-		for(String contentTemp : contents) {
-			write(file, contentTemp+"\n");
+		if(contents != null) {
+			for(String contentTemp : contents) {
+				write(file, contentTemp+"\n");
+			}
 		}
 	}	
 	
