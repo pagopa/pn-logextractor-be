@@ -4,14 +4,19 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
+
 import it.gov.pagopa.logextractor.dto.NotificationGeneralData;
 import it.gov.pagopa.logextractor.dto.request.DownloadArchiveResponseDto;
 import it.gov.pagopa.logextractor.util.Constants;
@@ -40,39 +45,31 @@ public class LogServiceImpl implements LogService{
 	
 	@Value("${external.opensearch.basicauth.password}")
 	String openSearchPassword;
+	
+	@Value("${external.notification.getSentNotification.url}")
+	String notificationURL;
 
 	@Override
 	public DownloadArchiveResponseDto getPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId) throws IOException {
 		
-		OpenSearchApiHandler openSearchHandler = new OpenSearchApiHandler();
 		ArrayList<String> openSearchResponse = null;
 		
 		// use case 7
 		if (dateFrom != null && dateTo != null && personId != null && iun == null) {
-			System.out.println("use case 7");
-			OpenSearchQueryFilter internalIdFilter = new OpenSearchQueryFilter("internalid", personId);
-			ArrayList<OpenSearchQueryFilter> simpleQueryFilters = new ArrayList<>();
-			simpleQueryFilters.add(internalIdFilter);
-			OpenSearchQuerydata simpleQueryData = new OpenSearchQuerydata("logs-*", simpleQueryFilters, new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo));
-			ArrayList<OpenSearchQuerydata> listOfQueryData = new ArrayList<>();
-			listOfQueryData.add(simpleQueryData);
-			String query = new OpenSearchQueryConstructor().createBooleanMultiSearchQuery(listOfQueryData);
-			System.out.println("Query:\n" + query);
-			openSearchResponse = openSearchHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
+			openSearchResponse = getDocumentsFromOpenSearch(constructQuery("logs-1", "internalid", personId, new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo)));
 		} else {
 			// use case 8
 			if (iun != null) {
-				System.out.println("use case 8");
-				OpenSearchQueryFilter internalIdFilter = new OpenSearchQueryFilter("internalid", iun.toString());
-				ArrayList<OpenSearchQueryFilter> queryFilters = new ArrayList<>();
-				queryFilters.add(internalIdFilter);
-				OpenSearchQuerydata queryData = new OpenSearchQuerydata("logs-2", queryFilters, null);
-				ArrayList<OpenSearchQuerydata> listOfQueryData = new ArrayList<>();
-				listOfQueryData.add(queryData);
+								
+				NotificationApiHandler notificationHandler = new NotificationApiHandler();
 				
-				//TODO: adjust the query with boolean range query with notification create date (start date) until maximum 3 months forward 
-				String query = new OpenSearchQueryConstructor().createBooleanMultiSearchQuery(listOfQueryData);
-				openSearchResponse = openSearchHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
+				String legalStartDate = notificationHandler.getNotificationLegalStartDate(notificationURL, iun);
+				
+				String dateIn3Months = OffsetDateTime.parse(legalStartDate).plusMonths(3).toString();
+				System.out.println(legalStartDate);
+				System.out.println(dateIn3Months);
+
+				openSearchResponse = getDocumentsFromOpenSearch(constructQuery("logs-2", "internalid", iun, new OpenSearchRangeQueryData("@timestamp", legalStartDate, dateIn3Months)));	
 			}
 		}
 		
@@ -100,5 +97,33 @@ public class LogServiceImpl implements LogService{
 		ArrayList<NotificationGeneralData> notificationsGeneralData = notificationApiHandler.getNotificationsByPeriod(ipaCode, 
 																		startDate.toString(), endDate.toString(), 10);
 		return null;
+	}
+	
+	/**
+	 * Method that constructs a boolean multisearch query
+	 * @param indexName the name of the index in OpenSearch
+	 * @param searchField the field by which the search will be performed
+	 * @param searchValue the value of the searched field
+	 * @param rangeQueryData date range, if it is any
+	 * @return the constructed query, ready to be passed to OpenSearch
+	 */
+	private String constructQuery(String indexName, String searchField, String searchValue, OpenSearchRangeQueryData rangeQueryData) {
+		OpenSearchQueryFilter internalIdFilter = new OpenSearchQueryFilter(searchField, searchValue);
+		ArrayList<OpenSearchQueryFilter> simpleQueryFilters = new ArrayList<>();
+		simpleQueryFilters.add(internalIdFilter);
+		OpenSearchQuerydata simpleQueryData = new OpenSearchQuerydata(indexName, simpleQueryFilters, rangeQueryData);
+		ArrayList<OpenSearchQuerydata> listOfQueryData = new ArrayList<>();
+		listOfQueryData.add(simpleQueryData);
+		return new OpenSearchQueryConstructor().createBooleanMultiSearchQuery(listOfQueryData);
+	}
+	
+	/**
+	 * Method that sends a request to OpenSearch, performing multisearch with a given query
+	 * @param query boolean query that will be used in order to perform multisearch
+	 * @return documents that will be returned from OpenSearch
+	 */
+	private ArrayList<String> getDocumentsFromOpenSearch(String query) {
+		OpenSearchApiHandler openSearchHandler = new OpenSearchApiHandler();
+		return openSearchHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 	}
 }
