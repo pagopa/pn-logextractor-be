@@ -40,13 +40,12 @@ public class LogServiceImpl implements LogService{
 	
 	@Value("${external.opensearch.basicauth.password}")
 	String openSearchPassword;
+	
 
 	@Override
 	public DownloadArchiveResponseDto getPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId) throws IOException {
-		
 		OpenSearchApiHandler openSearchHandler = new OpenSearchApiHandler();
 		ArrayList<String> openSearchResponse = null;
-		
 		// use case 7
 		if (dateFrom != null && dateTo != null && personId != null && iun == null) {
 			System.out.println("use case 7");
@@ -76,19 +75,7 @@ public class LogServiceImpl implements LogService{
 			}
 		}
 		
-		PasswordFactory passwordFactory = new PasswordFactory();
-		String password = passwordFactory.createPassword(1, 1, 1, Constants.PASSWORD_SPECIAL_CHARS, 1, 16);
-		FileUtilities utils = new FileUtilities();
-		File file = utils.getFile(Constants.FILE_NAME,Constants.TXT_EXTENSION);
-		utils.write(file, openSearchResponse);
-		ZipFactory zipFactory = new ZipFactory();
-		ZipFile zipArchive = zipFactory.createZipArchive(Constants.ZIP_ARCHIVE_NAME, password);
-		ZipParameters params = zipFactory.createZipParameters(true, CompressionLevel.HIGHER, EncryptionMethod.AES);
-		zipArchive = zipFactory.addFile(zipArchive, params, file);
-		byte[] zipfile = zipFactory.toByteArray(zipArchive);
-		utils.deleteFile(file);
-		utils.deleteFile(FileUtils.getFile(zipArchive.toString()));
-		return DownloadArchiveResponseDto.builder().password(password).zip(zipfile).build();
+		return createResponse(openSearchResponse,Constants.FILE_NAME,Constants.TXT_EXTENSION,Constants.ZIP_ARCHIVE_NAME);
 	}
 
 
@@ -100,5 +87,53 @@ public class LogServiceImpl implements LogService{
 		ArrayList<NotificationGeneralData> notificationsGeneralData = notificationApiHandler.getNotificationsByPeriod(ipaCode, 
 																		startDate.toString(), endDate.toString(), 10);
 		return null;
+	}
+
+
+	@Override
+	public DownloadArchiveResponseDto getTraceIdLogs(String dateFrom, String dateTo, String traceId) throws IOException {
+		OpenSearchApiHandler openSearchHandler = new OpenSearchApiHandler();
+		ArrayList<String> openSearchResponse = null;
+		//use case 10
+		if (dateFrom != null && dateTo != null && traceId != null) {
+			System.out.println("use case 10");
+			OpenSearchQueryFilter internalIdFilter = new OpenSearchQueryFilter("trace_id", traceId);
+			ArrayList<OpenSearchQueryFilter> simpleQueryFilters = new ArrayList<>();
+			simpleQueryFilters.add(internalIdFilter);
+			OpenSearchQuerydata simpleQueryData = new OpenSearchQuerydata("logs-*", simpleQueryFilters, new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo));
+			ArrayList<OpenSearchQuerydata> listOfQueryData = new ArrayList<>();
+			listOfQueryData.add(simpleQueryData);
+			String query = new OpenSearchQueryConstructor().createBooleanMultiSearchQuery(listOfQueryData);
+			System.out.println("Query:\n" + query);
+			openSearchResponse = openSearchHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
+		}
+		
+		return createResponse(openSearchResponse,Constants.FILE_NAME,Constants.TXT_EXTENSION,Constants.ZIP_ARCHIVE_NAME);
+		
+	}
+	
+	/** 
+	 * Manages the response creation phase.
+	 * @param contents the contents to write in the output file (.txt, .csv) contained in the output zip archive
+	 * @param fileName the name of the output file contained in the output zip archive
+	 * @param fileExtension the extension of the outup file contained in the output zip archive
+	 * @param zipName the name of the output zip archive
+	 * @throws IOException in case IO errors
+	 * @return DownloadArchiveResponseDto A Dto containing a byte array rappresentation of the output zip archive and the password to access its files
+	 */
+	private DownloadArchiveResponseDto createResponse(ArrayList<String> contents, String fileName, String fileExtension, String zipName) throws IOException {
+		PasswordFactory passwordFactory = new PasswordFactory();
+		String password = passwordFactory.createPassword(1, 1, 1, Constants.PASSWORD_SPECIAL_CHARS, 1, 16);
+		FileUtilities utils = new FileUtilities();
+		File file = utils.getFile(fileName,fileExtension);
+		utils.write(file, contents);
+		ZipFactory zipFactory = new ZipFactory();
+		ZipFile zipArchive = zipFactory.createZipArchive(zipName, password);
+		ZipParameters params = zipFactory.createZipParameters(true, CompressionLevel.HIGHER, EncryptionMethod.AES);
+		zipArchive = zipFactory.addFile(zipArchive, params, file);
+		byte[] zipfile = zipFactory.toByteArray(zipArchive);
+		utils.deleteFile(file);
+		utils.deleteFile(FileUtils.getFile(zipArchive.toString()));
+		return DownloadArchiveResponseDto.builder().password(password).zip(zipfile).build();
 	}
 }
