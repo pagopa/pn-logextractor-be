@@ -21,7 +21,7 @@ paths:
       summary: Get the person's fiscal code or ID
       description: Return the person's fiscal code or ID depending on the input received
       produces:
-        - application/json
+        - "application/json"
       parameters:
         - name: recipientType
           in: query
@@ -67,7 +67,7 @@ paths:
       description: ""
       operationId: "getNotificationsInfoLogs"
       produces:
-      - "application/zip"
+      - "application/json"
       parameters:
       - in: "body"
         name: "NotificationInfo"
@@ -96,7 +96,7 @@ paths:
       description: "Download the zip file and return the password to be shown to the user"
       operationId: "getOperatorsLogs"
       produces:
-      - "application/zip"
+      - "application/json"
       parameters:
       - in: "body"
         name: "NotificationInfo"
@@ -125,7 +125,7 @@ paths:
       description: "Download the zip file and return the password to be shown to the user"
       operationId: "getNotificationsMonthlyStatsLogs"
       produces:
-      - "application/zip"
+      - "application/json"
       parameters:
       - in: "body"
         name: "MonthlyNotificationsInfo"
@@ -154,10 +154,39 @@ paths:
       description: "Download the zip file and return the password to be shown to the user"
       operationId: "getPersonsLogs"
       produces:
-      - "application/zip"
+      - "application/json"
       parameters:
       - in: "body"
         name: "PersonsLogInfo"
+        description: ""
+        required: true
+        schema:
+          $ref: "#/definitions/PersonsData"
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/DownloadArchive'
+        '400':
+          description: In case of errors during the request validation, an error message is returned
+          schema:
+            $ref: '#/definitions/ApiError400'
+        '500':
+          description: In case of errors during the request elaboration, an error message is returned
+          schema:
+            $ref: '#/definitions/ApiError500'
+  '/logs/processes':
+    post:
+      tags:
+      - "logs"
+      summary: "Download the logs' archive related to a process"
+      description: "Download the zip file and return the password to be shown to the user"
+      operationId: "getProcessesLogs"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "ProcessesLogInfo"
         description: ""
         required: true
         schema:
