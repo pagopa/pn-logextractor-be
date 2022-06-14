@@ -19,4 +19,5 @@ public class OpenSearchQuerydata {
 	private String indexName;
 	private List<OpenSearchQueryFilter> matchFields;
 	private OpenSearchRangeQueryData rangeData;
+	private OpenSearchSortFilter sortFilter;
 }

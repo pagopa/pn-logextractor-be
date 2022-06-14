@@ -8,25 +8,25 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
-
+import it.gov.pagopa.logextractor.dto.NotificationCsvBean;
 import it.gov.pagopa.logextractor.dto.NotificationGeneralData;
 import it.gov.pagopa.logextractor.dto.request.DownloadArchiveResponseDto;
 import it.gov.pagopa.logextractor.util.Constants;
 import it.gov.pagopa.logextractor.util.FileUtilities;
 import it.gov.pagopa.logextractor.util.PasswordFactory;
+import it.gov.pagopa.logextractor.util.SortOrders;
 import it.gov.pagopa.logextractor.util.ZipFactory;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandler;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchQueryConstructor;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchQuerydata;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchRangeQueryData;
+import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchSortFilter;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
@@ -60,8 +60,9 @@ public class LogServiceImpl implements LogService{
 		
 		// use case 7
 		if (dateFrom != null && dateTo != null && personId != null && iun == null) {
-			queryParams.put("internalid", personId);
-			queryData.add(queryConstructor.prepareQueryData("logs-1", queryParams, new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo)));
+			queryParams.put("uuid", personId);
+			queryData.add(queryConstructor.prepareQueryData("logs-*", queryParams, 
+					new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 			query = queryConstructor.createBooleanMultiSearchQuery(queryData);
 			System.out.println("Query:\n" + query);
 			openSearchResponse = openSearchHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
@@ -72,7 +73,8 @@ public class LogServiceImpl implements LogService{
 				String legalStartDate = notificationHandler.getNotificationLegalStartDate(notificationURL, iun);	
 				String dateIn3Months = OffsetDateTime.parse(legalStartDate).plusMonths(3).toString();
 				queryParams.put("iun", iun);
-				queryData.add(queryConstructor.prepareQueryData("logs-2", queryParams, new OpenSearchRangeQueryData("@timestamp", legalStartDate, dateIn3Months)));
+				queryData.add(queryConstructor.prepareQueryData("logs-*", queryParams, 
+						new OpenSearchRangeQueryData("@timestamp", legalStartDate, dateIn3Months), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 				query = queryConstructor.createBooleanMultiSearchQuery(queryData);
 				System.out.println("Query:\n" + query);
 				openSearchResponse = openSearchHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
@@ -87,10 +89,41 @@ public class LogServiceImpl implements LogService{
 	public DownloadArchiveResponseDto getMonthlyNotifications(String ticketNumber, String referenceMonth, String ipaCode) throws IOException, ParseException,CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
 		LocalDate startDate = LocalDate.parse(StringUtils.removeIgnoreCase(referenceMonth, "-")+"01", DateTimeFormatter.BASIC_ISO_DATE);
 		LocalDate endDate = startDate.plusMonths(1);
+		String finaldatePart = "T00:00:00.000Z";
 		NotificationApiHandler notificationApiHandler = new NotificationApiHandler();
-		ArrayList<NotificationGeneralData> notificationsGeneralData = notificationApiHandler.getNotificationsByPeriod(ipaCode, 
-																		startDate.toString(), endDate.toString(), 10);
-		return null;
+		ArrayList<NotificationCsvBean> notifications = new ArrayList<NotificationCsvBean>();
+		ArrayList<NotificationGeneralData> notificationsGeneralData = notificationApiHandler.getNotificationsByPeriod(notificationURL, 
+																		startDate.toString()+finaldatePart, 
+																		endDate.toString()+finaldatePart, 
+																		10);
+		if(notificationsGeneralData != null) {
+			for(NotificationGeneralData nTemp : notificationsGeneralData) {
+				String legalStartDate = notificationApiHandler.getNotificationLegalStartDate(notificationURL, nTemp.getIun());
+				ArrayList<String> taxIds = new ArrayList<String>();
+				taxIds.addAll(nTemp.getRecipients());
+				NotificationCsvBean notification = NotificationCsvBean.builder()
+													.iun(nTemp.getIun())
+													.sendDate(nTemp.getSentAt())
+													.attestationGenerationDate(legalStartDate)
+													.subject(nTemp.getSubject())
+													.taxIds(taxIds)
+													.build();
+				notifications.add(notification);
+			}
+		}
+		PasswordFactory passwordFactory = new PasswordFactory();
+		String password = passwordFactory.createPassword(1, 1, 1, Constants.PASSWORD_SPECIAL_CHARS, 1, 16);
+		FileUtilities utils = new FileUtilities();
+		File file = utils.getFile(Constants.FILE_NAME,Constants.CSV_EXTENSION);
+		utils.writeCsv(file, notifications);
+		ZipFactory zipFactory = new ZipFactory();
+		ZipFile zipArchive = zipFactory.createZipArchive(Constants.ZIP_ARCHIVE_NAME, password);
+		ZipParameters params = zipFactory.createZipParameters(true, CompressionLevel.HIGHER, EncryptionMethod.AES);
+		zipArchive = zipFactory.addFile(zipArchive, params, file);
+		byte[] zipfile = zipFactory.toByteArray(zipArchive);
+		utils.deleteFile(file);
+		utils.deleteFile(FileUtils.getFile(zipArchive.toString()));
+		return DownloadArchiveResponseDto.builder().password(password).zip(zipfile).build();
 	}
 	
 	@Override
@@ -102,8 +135,9 @@ public class LogServiceImpl implements LogService{
 		if (dateFrom != null && dateTo != null && traceId != null) {
 			System.out.println("use case 10");
 			HashMap<String, Object> queryParams = new HashMap<String, Object>();
-			queryParams.put("trace_id", traceId);
-			OpenSearchQuerydata queryData = queryConstructor.prepareQueryData("logs-*", queryParams, new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo));
+			queryParams.put("trace_id.keyword", traceId);
+			OpenSearchQuerydata queryData = queryConstructor.prepareQueryData("logs-*", queryParams, 
+					new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC));
 			ArrayList<OpenSearchQuerydata> listOfQueryData = new ArrayList<>();
 			listOfQueryData.add(queryData);
 			String query = queryConstructor.createBooleanMultiSearchQuery(listOfQueryData);

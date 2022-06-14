@@ -30,7 +30,11 @@ public class OpenSearchQueryConstructor {
 					paramsBuilder.deleteCharAt(paramsBuilder.length()-1);
 				}
 				queryBuilder.append("{\"index\":\""+qTemp.getIndexName()+"\"}\n"
-									+ "{\"query\":{\"bool\":{\"filter\":["+paramsBuilder+"]}}}\n");
+									+ "{\"query\":{\"bool\":{\"filter\":["+paramsBuilder+"]}}");
+				if(null != qTemp.getSortFilter()) {
+					queryBuilder.append(",\"sort\":[{\""+qTemp.getSortFilter().getSortField()+"\": "
+							+ "{\"order\":\""+qTemp.getSortFilter().getSortOrder().toString()+"\"}}]}\n");
+				}
 				paramsBuilder.setLength(0);
 			}
 		}
@@ -64,12 +68,12 @@ public class OpenSearchQueryConstructor {
 	 * @param rangeQueryData date range, if it is any
 	 * @return {@link OpenSearchQuerydata} ready to be passed to the query constructor
 	 */
-	public OpenSearchQuerydata prepareQueryData(String indexName, Map<String, Object> searchData, OpenSearchRangeQueryData rangeQueryData) {
+	public OpenSearchQuerydata prepareQueryData(String indexName, Map<String, Object> searchData, OpenSearchRangeQueryData rangeQueryData, OpenSearchSortFilter sortFilters) {
 		ArrayList<OpenSearchQueryFilter> simpleQueryFilters = new ArrayList<>();
 		for (Map.Entry<String, Object> entry : searchData.entrySet()) { 
 			OpenSearchQueryFilter internalIdFilter = new OpenSearchQueryFilter(entry.getKey(), entry.getValue().toString());
 			simpleQueryFilters.add(internalIdFilter);
 		}
-		return new OpenSearchQuerydata(indexName, simpleQueryFilters, rangeQueryData);
+		return new OpenSearchQuerydata(indexName, simpleQueryFilters, rangeQueryData, sortFilters);
 	}
 }
