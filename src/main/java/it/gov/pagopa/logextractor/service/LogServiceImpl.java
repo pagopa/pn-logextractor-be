@@ -148,6 +148,12 @@ public class LogServiceImpl implements LogService{
 		return createResponse(openSearchResponse,Constants.FILE_NAME,Constants.TXT_EXTENSION,Constants.ZIP_ARCHIVE_NAME);
 		
 	}
+	
+	@Override
+	public DownloadArchiveResponseDto getNotificationInfoLogs(String iun) throws IOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 	
 	/** 
