@@ -2,6 +2,9 @@ package it.gov.pagopa.logextractor.rest;
 
 import java.io.IOException;
 import java.text.ParseException;
+
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +31,7 @@ public class LogController {
 
 
 	@PostMapping(value = "/persons", produces="application/json")
-	public ResponseEntity<DownloadArchiveResponseDto> getPersonActivityLogs(@RequestBody PersonLogsRequestDto personLogsDetails) throws IOException {
+	public ResponseEntity<DownloadArchiveResponseDto> getPersonActivityLogs(@Valid @RequestBody PersonLogsRequestDto personLogsDetails) throws IOException {
 		if (personLogsDetails.isDeanonimization()) {
 
 		}
