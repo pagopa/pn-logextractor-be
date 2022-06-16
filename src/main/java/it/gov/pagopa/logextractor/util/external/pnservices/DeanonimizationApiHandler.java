@@ -57,7 +57,7 @@ public class DeanonimizationApiHandler {
 			throws HttpServerErrorException {
 		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("simpleRestTemplate");
 
-		String URL = String.format(externalServiceUrl, "123");
+		String URL = String.format(externalServiceUrl, personId);
 		var response = client.getForObject(URL, GetRecipientDenominationByInternalIdResponseDto.class);
 
 		return GetBasicDataResponseDto.builder().data(response.getTaxId()).build();
