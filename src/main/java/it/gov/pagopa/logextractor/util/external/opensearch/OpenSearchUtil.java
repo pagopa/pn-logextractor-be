@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
+import it.gov.pagopa.logextractor.util.JsonUtilities;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
-import it.gov.pagopa.logextractor.util.json.JsonUtilities;
 
 public class OpenSearchUtil {
 	
