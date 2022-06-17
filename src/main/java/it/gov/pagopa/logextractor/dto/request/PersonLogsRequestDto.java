@@ -4,6 +4,7 @@ import javax.validation.constraints.Pattern;
 
 import it.gov.pagopa.logextractor.annotation.PeriodOf3Months;
 import it.gov.pagopa.logextractor.util.Constants;
+import it.gov.pagopa.logextractor.util.RecipientTypes;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +12,8 @@ import lombok.Setter;
 @Setter
 @PeriodOf3Months
 public class PersonLogsRequestDto extends BaseRequestDto {
-
+	
+    private RecipientTypes recipientType;
 	private boolean deanonimization;
 	
 	@Pattern(regexp = Constants.FISCAL_CODE_PATTERN) 

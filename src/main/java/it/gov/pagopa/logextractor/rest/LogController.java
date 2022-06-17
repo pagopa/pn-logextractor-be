@@ -21,6 +21,7 @@ import it.gov.pagopa.logextractor.dto.request.TraceIdLogsRequestDto;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import it.gov.pagopa.logextractor.service.LogService;
+import it.gov.pagopa.logextractor.service.PersonService;
 
 @RestController
 @RequestMapping("/logextractor/v1/logs")
@@ -28,16 +29,18 @@ public class LogController {
 
 	@Autowired
 	LogService logService;
-
+	@Autowired
+	PersonService personService;
 
 	@PostMapping(value = "/persons", produces="application/json")
 	public ResponseEntity<DownloadArchiveResponseDto> getPersonActivityLogs(@Valid @RequestBody PersonLogsRequestDto personLogsDetails) throws IOException {
 		if (personLogsDetails.isDeanonimization()) {
-
+			//use case 3 & 4
+			return ResponseEntity.ok().body(logService.getDeanonymizedPersonLogs(personLogsDetails.getRecipientType(), personLogsDetails.getDateFrom(), personLogsDetails.getDateTo(), 
+					personLogsDetails.getTicketNumber(), personLogsDetails.getTaxId(),personLogsDetails.getIun()));
 		}
 		// use case 7 & 8
-
-		return ResponseEntity.ok().body(logService.getPersonLogs(personLogsDetails.getDateFrom(), personLogsDetails.getDateTo(), 
+		return ResponseEntity.ok().body(logService.getAnonymizedPersonLogs(personLogsDetails.getDateFrom(), personLogsDetails.getDateTo(), 
 										personLogsDetails.getTicketNumber(), personLogsDetails.getIun(), personLogsDetails.getPersonId()));
 	}
 	
@@ -66,4 +69,5 @@ public class LogController {
 		return ResponseEntity.ok().body(logService.getTraceIdLogs(traceIdLogsDetails.getDateFrom(),
 				traceIdLogsDetails.getDateTo(), traceIdLogsDetails.getTraceId()));
 	}
+	
 }
