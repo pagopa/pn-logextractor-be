@@ -15,6 +15,7 @@
 	<description>Microservice for log extraction</description>
 	<properties>
 		<java.version>11</java.version>
+		<testcontainer-version>1.15.3</testcontainer-version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -72,6 +73,17 @@
 		    <groupId>org.json</groupId>
 		    <artifactId>json</artifactId>
 		    <version>20220320</version>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.vintage</groupId>
+			<artifactId>junit-vintage-engine</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>${testcontainer-version}</version>
+			<scope>test</scope>
 		</dependency>
 		<!-- AWS dependencies START-->
 		<!-- Redis related dependencies -->

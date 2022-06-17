@@ -1,5 +1,6 @@
 package it.gov.pagopa.logextractor.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpServerErrorException;
@@ -19,12 +20,14 @@ public class PersonServiceImpl implements PersonService {
 
 	@Value("${external.denomination.getRecipientDenominationByInternalId.url}")
 	String getTaxCodeURL;
-
+	
+	@Autowired
+	DeanonimizationApiHandler handler;
+	
 	@Override
 	public GetBasicDataResponseDto getPersonsBasicData(RecipientTypes recipientType, String ticketNumber, String taxId,
 			String personId) throws HttpServerErrorException {
 
-		DeanonimizationApiHandler handler = new DeanonimizationApiHandler();
 		GetBasicDataResponseDto basicData = null;
 
 		if (ticketNumber != null && taxId != null && personId == null) {

@@ -1,10 +1,12 @@
 package it.gov.pagopa.logextractor.util.external.pnservices;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import it.gov.pagopa.logextractor.annotation.RecipientType;
-import it.gov.pagopa.logextractor.config.ApplicationContextProvider;
 import it.gov.pagopa.logextractor.dto.response.EnsureRecipientByExternalIdResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInternalIdResponseDto;
@@ -14,8 +16,13 @@ import it.gov.pagopa.logextractor.util.RecipientTypes;
  * A utility class containing methods that make calls to Piattaforma Notifiche
  * deanonimization external service
  */
+@Component
 public class DeanonimizationApiHandler {
 
+	@Autowired
+	@Qualifier("simpleRestTemplate")
+	RestTemplate client;
+	
 	/**
 	 * Method that makes a request to Piattaforma Notifiche external service to
 	 * retrieve the unique identifier of a person, given the recipient type and tax
@@ -32,11 +39,9 @@ public class DeanonimizationApiHandler {
 	 * @throws HttpServerErrorException
 	 */
 	public GetBasicDataResponseDto getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId,
-			String externalServiceUrl) throws HttpServerErrorException {
-		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("simpleRestTemplate");
-
-		String URL = String.format(externalServiceUrl, recipientType.toString(), taxId.toUpperCase());
-		var response = client.getForObject(URL, EnsureRecipientByExternalIdResponseDto.class);
+			String externalServiceUrl) {
+		String url = String.format(externalServiceUrl, recipientType.toString(), taxId.toUpperCase());
+		EnsureRecipientByExternalIdResponseDto response = client.getForObject(url, EnsureRecipientByExternalIdResponseDto.class);
 
 		return GetBasicDataResponseDto.builder().data(response.getInternalId()).build();
 	}
@@ -53,12 +58,9 @@ public class DeanonimizationApiHandler {
 	 *         code of a person
 	 * @throws HttpServerErrorException
 	 */
-	public GetBasicDataResponseDto getTaxCodeForPerson(String personId, String externalServiceUrl)
-			throws HttpServerErrorException {
-		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("simpleRestTemplate");
-
-		String URL = String.format(externalServiceUrl, personId);
-		var response = client.getForObject(URL, GetRecipientDenominationByInternalIdResponseDto.class);
+	public GetBasicDataResponseDto getTaxCodeForPerson(String personId, String externalServiceUrl) {
+		String url = String.format(externalServiceUrl, personId);
+		GetRecipientDenominationByInternalIdResponseDto response = client.getForObject(url, GetRecipientDenominationByInternalIdResponseDto.class);
 
 		return GetBasicDataResponseDto.builder().data(response.getTaxId()).build();
 	}
