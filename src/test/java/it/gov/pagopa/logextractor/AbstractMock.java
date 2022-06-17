@@ -17,8 +17,8 @@ import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInterna
 public class AbstractMock {
 	
 	public static final MediaType APPLICATION_JSON_UTF8 = new MediaType(MediaType.APPLICATION_JSON.getType(), MediaType.APPLICATION_JSON.getSubtype(), Charset.forName("utf8"));	
-	protected final String identifierUrl = "/logextractor/v1/persons/basicData?recipientType=PG&ticketNumber=123&taxId=1";
-	protected final String taxCodeUrl = "/logextractor/v1/persons/basicData?recipientType=PF&personId=1";
+	protected final String identifierUrl = "/logextractor/v1/persons/person-id/basicData?recipientType=PG&ticketNumber=123&taxId=1";
+	protected final String taxCodeUrl = "/logextractor/v1/persons/tax-id/basicData?recipientType=PF&personId=1";
 	protected final String personUrl ="/logextractor/v1/logs/persons";
 	private static ObjectMapper mapper = new ObjectMapper();
 	
