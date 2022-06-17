@@ -1,4 +1,4 @@
-package it.gov.pagopa.logextractor.util.json;
+package it.gov.pagopa.logextractor.util;
 
 import java.util.HashMap;
 import java.util.Map;

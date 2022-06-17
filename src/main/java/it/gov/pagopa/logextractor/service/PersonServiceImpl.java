@@ -21,19 +21,12 @@ public class PersonServiceImpl implements PersonService {
 	String getTaxCodeURL;
 
 	@Override
-	public GetBasicDataResponseDto getPersonsBasicData(RecipientTypes recipientType, String ticketNumber, String taxId,
-			String personId) throws HttpServerErrorException {
-
-		DeanonimizationApiHandler handler = new DeanonimizationApiHandler();
-		GetBasicDataResponseDto basicData = null;
-
-		if (ticketNumber != null && taxId != null && personId == null) {
-			basicData = handler.getUniqueIdentifierForPerson(recipientType, taxId, getUniqueIdURL);
-		} else {
-			if (personId != null && ticketNumber == null && taxId == null) {
-				basicData = handler.getTaxCodeForPerson(personId, getTaxCodeURL);
-			}
-		}
-		return basicData;
+	public GetBasicDataResponseDto getTaxId(String personId) throws HttpServerErrorException {
+		return new DeanonimizationApiHandler().getTaxCodeForPerson(personId, getTaxCodeURL);
 	}
+
+	@Override
+	public GetBasicDataResponseDto getPersonId(RecipientTypes recipientType, String ticketNumber, String taxId) throws HttpServerErrorException {
+		return new DeanonimizationApiHandler().getUniqueIdentifierForPerson(recipientType, taxId, getUniqueIdURL);
+	}	
 }

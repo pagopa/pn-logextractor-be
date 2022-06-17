@@ -13,39 +13,51 @@ schemes:
   - https
   - http
 paths:
-  '/persons/basicData':
-    get:
+  '/persons/person-id':
+    post:
       tags:
         - persons
-      operationId: getPersonBasicData
-      summary: Get the person's fiscal code or ID
-      description: Return the person's fiscal code or ID depending on the input received
+      operationId: getPersonUniqueIdentifier
+      summary: Get the person's unique identifier
+      description: Return the person's unique identifier
       produces:
         - "application/json"
       parameters:
-        - name: recipientType
-          in: query
-          description: >-
-            The type of person we're getting the data of
-          type: string
-          enum: [ "PF", "PG"]
+        - in: "body"
+          name: "PersonPersonId"
+          description: ""
           required: true
-        - name: ticketNumber
-          in: query
-          description: >-
-            The number of the ticket for which the user is performing the extraction
-          type: string
-          required: false
-        - name: taxId
-          in: query
-          description: Fiscal code of the person whose ID must be returned
-          type: string
-          required: false
-        - name: personId
-          in: query
-          description: ID of the person whose fiscal code must be returned
-          type: string
-          required: false
+          schema:
+            $ref: "#/definitions/PersonPersonIdRequest"
+      responses:
+        '200':
+          description: The operation has been successfully completed
+          schema:
+            $ref: '#/definitions/PersonData'
+        '400':
+          description: In case of errors during the request validation, an error message is returned
+          schema:
+            $ref: '#/definitions/ApiError400'
+        '500':
+          description: In case of errors during the request elaboration, an error message is returned
+          schema:
+            $ref: '#/definitions/ApiError500'
+  '/persons/tax-id':
+    post:
+      tags:
+        - persons
+      operationId: getPersonTaxId
+      summary: Get the person's unique identifier
+      description: Return the person's tax id
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "PersonTaxId"
+          description: ""
+          required: true
+          schema:
+            $ref: "#/definitions/PersonTaxIdRequest"
       responses:
         '200':
           description: The operation has been successfully completed
@@ -205,6 +217,27 @@ paths:
           schema:
             $ref: '#/definitions/ApiError500'
 definitions:
+  PersonTaxIdRequest:
+    type: object
+    required:
+      - personId
+    properties:
+      personId:
+        type: string
+  PersonPersonIdRequest:
+    type: object
+    required:
+      - ticketNumber
+      - taxId
+      - recipientType
+    properties:
+      ticketNumber:
+        type: string
+      taxId:
+        type: string
+      recipientType:
+        type: string
+        enum: [ "PF", "PG"]
   DownloadArchive:
     type: object
     required:
