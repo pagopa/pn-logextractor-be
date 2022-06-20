@@ -40,7 +40,7 @@ public class NotificationApiHandler {
         parameters.put("startDate", startDate);
         parameters.put("endDate", endDate);
         parameters.put("size", size);
-        var response = client.getForEntity(url, String.class, parameters);
+        ResponseEntity<String> response = client.getForEntity(url, String.class, parameters);
         return getNotificationsGeneralData(response.getBody());
 	}
 	

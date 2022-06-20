@@ -2,6 +2,7 @@ package it.gov.pagopa.logextractor;
 
 import java.nio.charset.Charset;
 import java.time.LocalDate;
+import java.util.HashMap;
 
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -15,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import it.gov.pagopa.logextractor.dto.request.MonthlyNotificationsRequestDto;
 import it.gov.pagopa.logextractor.dto.request.PersonLogsRequestDto;
 import it.gov.pagopa.logextractor.dto.request.PersonPersonIdRequestDto;
 import it.gov.pagopa.logextractor.dto.request.PersonTaxIdRequestDto;
@@ -28,7 +30,7 @@ public class AbstractMock {
 	protected final String identifierUrl = "/logextractor/v1/persons/person-id";
 	protected final String taxCodeUrl = "/logextractor/v1/persons/tax-id";
 	protected final String personUrl ="/logextractor/v1/logs/persons";
-	protected final String notificationUrl = "/notifications/monthly";
+	protected final String notificationUrl = "/logextractor/v1/logs/notifications/monthly";
 	private static ObjectMapper mapper = new ObjectMapper();
 	
 	@SuppressWarnings("unchecked")
@@ -43,7 +45,7 @@ public class AbstractMock {
 				.thenReturn(GetRecipientDenominationByInternalIdResponseDto.builder().taxId("BRMRSS63A02A001D").build());
 	}
 	
-	protected void mockPersonsLogResponseUseCase4(RestTemplate client, RestTemplate client2) {
+	protected void mockPersonsLogResponse(RestTemplate client, RestTemplate client2) {
 		String jsonResponse= "{\"timeline\":[{\"category\":\"REQUEST_ACCEPTED\",\"timestamp\":\"2007-12-03T10:15:30+01:00\"}]}";
 		ResponseEntity<Object> response = new ResponseEntity<Object>(jsonResponse, HttpStatus.OK);	
 		Mockito.when(client.getForEntity(Mockito.anyString(), Mockito.any())).thenReturn(response);	
@@ -55,7 +57,16 @@ public class AbstractMock {
                 ArgumentMatchers.any(HttpEntity.class),
                 ArgumentMatchers.<Class<String>>any())
         ).thenReturn(responseSearch);
+
         mockUniqueIdentifierForPerson(client);
+		
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected void mockNotificationResponse(RestTemplate client) {
+		String mock = "{\"resultsPage\":[{\"recipients\":[{\"recipients\":{\"iun\":\"ABC\",\"sentAt\":\"123\",\"subject\":\"test\"}}],\"iun\":\"ABC\",\"sentAt\":\"123\",\"subject\":\"test\"}]}";
+		ResponseEntity<Object> response = new ResponseEntity<Object>(mock, HttpStatus.OK);	
+		Mockito.when(client.getForEntity(Mockito.anyString(), Mockito.any(), Mockito.any(HashMap.class))).thenReturn(response);	
 		
 	}
 
@@ -96,5 +107,12 @@ public class AbstractMock {
 		dto.setPersonId("123");
 		return mapper.writeValueAsString(dto);
 	}
-
+	
+	protected static String getMockMonthlyNotificationsRequestDto() throws JsonProcessingException {
+		MonthlyNotificationsRequestDto dto = new MonthlyNotificationsRequestDto();
+		dto.setIpaCode("123");
+		dto.setReferenceMonth("2022-06");
+		dto.setTicketNumber("345");
+		return mapper.writeValueAsString(dto);
+	}
 }

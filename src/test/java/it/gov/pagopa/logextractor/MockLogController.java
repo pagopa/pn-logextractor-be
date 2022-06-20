@@ -18,6 +18,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 @SpringBootTest(classes = PnLogextractorBeApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -46,15 +48,22 @@ public class MockLogController extends AbstractMock {
 
 	public void test_getPersonsLogs(int useCase, boolean isDeanonimization) throws Exception {
 		//use case 3,4,7,8
-		mockPersonsLogResponseUseCase4(client, openClient);
+		mockPersonsLogResponse(client, openClient);
 		MockHttpServletResponse response = mvc.perform(post(personUrl).accept(APPLICATION_JSON_UTF8)
 				.content(getMockPersonLogsRequestDto(useCase, isDeanonimization)).contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("password");
 	}
 	
-	public void test_getNotificationLogs() {
-		
+	@Test
+	public void test_getNotificationLogs() throws JsonProcessingException, Exception {
+		//use case 6
+		mockNotificationResponse(client);
+		mockPersonsLogResponse(client, openClient);
+		MockHttpServletResponse response = mvc.perform(post(notificationUrl).accept(APPLICATION_JSON_UTF8)
+				.content(getMockMonthlyNotificationsRequestDto()).contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+		assertThat(response.getContentAsString()).contains("password");
 	}
 
 }
