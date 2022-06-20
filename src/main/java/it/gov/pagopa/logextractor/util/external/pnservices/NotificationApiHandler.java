@@ -3,15 +3,24 @@ package it.gov.pagopa.logextractor.util.external.pnservices;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import it.gov.pagopa.logextractor.config.ApplicationContextProvider;
-import it.gov.pagopa.logextractor.dto.NotificationGeneralData;
 
+import it.gov.pagopa.logextractor.dto.NotificationGeneralData;
+@Component
 public class NotificationApiHandler {
+	
+	@Autowired
+	@Qualifier("simpleRestTemplate")
+	RestTemplate client;
 	
 	/**
 	 * Performs a GET HTTP request to the PN external service to retrieve the general data of the notifications managed within a period
@@ -22,7 +31,6 @@ public class NotificationApiHandler {
 	 * @return The list of notifications' general data
 	 * */
 	public ArrayList<NotificationGeneralData> getNotificationsByPeriod(String url, String startDate, String endDate, int size) {
-		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("simpleRestTemplate");
 		HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         List<MediaType> acceptedTypes = new ArrayList<MediaType>();
@@ -43,13 +51,12 @@ public class NotificationApiHandler {
 	 * @return The notification legal start date
 	 * */
 	public String getNotificationLegalStartDate(String url, String iun) {
-		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("simpleRestTemplate");
 		HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         List<MediaType> acceptedTypes = new ArrayList<MediaType>();
         acceptedTypes.add(MediaType.APPLICATION_JSON);
         requestHeaders.setAccept(acceptedTypes);
-        var response = client.getForEntity(url+"/"+iun, String.class);
+        ResponseEntity<String> response = client.getForEntity(url+"/"+iun, String.class);
         return getLegalStartDate(response.getBody());
 	}
 	

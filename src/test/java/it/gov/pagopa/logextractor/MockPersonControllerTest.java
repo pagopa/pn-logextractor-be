@@ -33,18 +33,10 @@ public class MockPersonControllerTest extends AbstractMock {
 	@Autowired
 	MockMvc mvc;
 
-	@InjectMocks
-	PersonController personController;
-
-	@InjectMocks
-	PersonServiceImpl personService;
-
 	@MockBean
 	@Qualifier("simpleRestTemplate")
 	RestTemplate client;
 
-	@InjectMocks
-	DeanonimizationApiHandler handher;
 
 	@Test
 	public void test_getPersonsBasicDataWithUniqueIdentifier() throws Exception {

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
@@ -57,12 +58,20 @@ public class LogServiceImpl implements LogService{
 	
 	@Value("${external.notification.getSentNotification.url}")
 	String notificationURL;
+	
+	@Autowired
+	NotificationApiHandler notificationApiHandler;
+	
+	@Autowired
+	OpenSearchApiHandler openSearchApiHandler;
+	
+	@Autowired
+	DeanonimizationApiHandler deanonimizationApiHandler;;
 
 	@Override
 	public DownloadArchiveResponseDto getAnonymizedPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId) throws IOException {
 
 		ArrayList<String> openSearchResponse = null;
-		OpenSearchApiHandler openSearchHandler = new OpenSearchApiHandler();
 		ArrayList<OpenSearchQuerydata> queryData = new ArrayList<OpenSearchQuerydata>();
 		HashMap<String, Object> queryParams = new HashMap<String, Object>();
 		String query = null;
@@ -75,19 +84,18 @@ public class LogServiceImpl implements LogService{
 					new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 			query = queryConstructor.createBooleanMultiSearchQuery(queryData);
 			System.out.println("Query:\n" + query);
-			openSearchResponse = openSearchHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
+			openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 		} else {
 			// use case 8
 			if (iun != null) {
-				NotificationApiHandler notificationHandler = new NotificationApiHandler();
-				String legalStartDate = notificationHandler.getNotificationLegalStartDate(notificationURL, iun);	
+				String legalStartDate = notificationApiHandler.getNotificationLegalStartDate(notificationURL, iun);	
 				String dateIn3Months = OffsetDateTime.parse(legalStartDate).plusMonths(3).toString();
 				queryParams.put("iun", iun);
 				queryData.add(queryConstructor.prepareQueryData("logs-*", queryParams, 
 						new OpenSearchRangeQueryData("@timestamp", legalStartDate, dateIn3Months), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 				query = queryConstructor.createBooleanMultiSearchQuery(queryData);
 				System.out.println("Query:\n" + query);
-				openSearchResponse = openSearchHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
+				openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 			}
 		}
 		
@@ -100,7 +108,7 @@ public class LogServiceImpl implements LogService{
 		LocalDate startDate = LocalDate.parse(StringUtils.removeIgnoreCase(referenceMonth, "-")+"01", DateTimeFormatter.BASIC_ISO_DATE);
 		LocalDate endDate = startDate.plusMonths(1);
 		String finaldatePart = "T00:00:00.000Z";
-		NotificationApiHandler notificationApiHandler = new NotificationApiHandler();
+
 		ArrayList<NotificationCsvBean> notifications = new ArrayList<NotificationCsvBean>();
 		ArrayList<NotificationGeneralData> notificationsGeneralData = notificationApiHandler.getNotificationsByPeriod(notificationURL, 
 																		startDate.toString()+finaldatePart, 
@@ -138,7 +146,6 @@ public class LogServiceImpl implements LogService{
 	
 	@Override
 	public DownloadArchiveResponseDto getTraceIdLogs(String dateFrom, String dateTo, String traceId) throws IOException {
-		OpenSearchApiHandler openSearchHandler = new OpenSearchApiHandler();
 		ArrayList<String> openSearchResponse = null;
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		//use case 10
@@ -152,7 +159,7 @@ public class LogServiceImpl implements LogService{
 			listOfQueryData.add(queryData);
 			String query = queryConstructor.createBooleanMultiSearchQuery(listOfQueryData);
 			System.out.println("Query:\n" + query);
-			openSearchResponse = openSearchHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
+			openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 		}
 
 		return createResponse(openSearchResponse,Constants.FILE_NAME,Constants.TXT_EXTENSION,Constants.ZIP_ARCHIVE_NAME);
@@ -166,27 +173,24 @@ public class LogServiceImpl implements LogService{
 	}
 		
 	public DownloadArchiveResponseDto getDeanonymizedPersonLogs(RecipientTypes recipientType, String dateFrom, String dateTo, String ticketNumber, String taxid, String iun) throws IOException {
-		OpenSearchApiHandler openSearchHandler = new OpenSearchApiHandler();
 		ArrayList<String> openSearchResponse = null;
 		ArrayList<OpenSearchQuerydata> queryData = new ArrayList<OpenSearchQuerydata>();
 		HashMap<String, Object> queryParams = new HashMap<String, Object>();
 		String query = null;
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		ArrayList<String> deanonymizedOpenSearchResponse = new ArrayList<String>();
-		NotificationApiHandler notificationHandler = new NotificationApiHandler();
-		String legalStartDate = notificationHandler.getNotificationLegalStartDate(notificationURL, iun);	
+		String legalStartDate = notificationApiHandler.getNotificationLegalStartDate(notificationURL, iun);	
 		String dateIn3Months = OffsetDateTime.parse(legalStartDate).plusMonths(3).toString();
 		//use case 3
 		if (dateFrom != null && dateTo != null && taxid != null && recipientType!=null && ticketNumber!=null && iun==null) {
-			DeanonimizationApiHandler handler = new DeanonimizationApiHandler();
-			GetBasicDataResponseDto internalidDto = handler.getUniqueIdentifierForPerson(recipientType, taxid, getUniqueIdURL);
+			GetBasicDataResponseDto internalidDto = deanonimizationApiHandler.getUniqueIdentifierForPerson(recipientType, taxid, getUniqueIdURL);
 			System.out.println("use case 3");
 			queryParams.put("uid", internalidDto.getData());
 			queryData.add(queryConstructor.prepareQueryData("logs-*", queryParams, 
 					new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 			query = queryConstructor.createBooleanMultiSearchQuery(queryData);
 			System.out.println("Query:\n" + query);
-			openSearchResponse = openSearchHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
+			openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 			deanonymizedOpenSearchResponse = OpenSearchUtil.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL);	
 		} else{
 			//use case 4
@@ -197,7 +201,7 @@ public class LogServiceImpl implements LogService{
 						new OpenSearchRangeQueryData("@timestamp", legalStartDate, dateIn3Months), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 				query = queryConstructor.createBooleanMultiSearchQuery(queryData);
 				System.out.println("Query:\n" + query);
-				openSearchResponse = openSearchHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
+				openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 				deanonymizedOpenSearchResponse = OpenSearchUtil.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL);
 			}
 		}
