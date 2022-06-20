@@ -2,6 +2,7 @@ package it.gov.pagopa.logextractor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,8 +49,9 @@ public class MockPersonControllerTest extends AbstractMock {
 	@Test
 	public void test_getPersonsBasicDataWithUniqueIdentifier() throws Exception {
 		mockUniqueIdentifierForPerson(client);
-		MockHttpServletResponse response = mvc.perform(get(identifierUrl).accept(MediaType.APPLICATION_JSON))
-				.andReturn().getResponse();
+		MockHttpServletResponse response = mvc.perform(post(identifierUrl).accept(APPLICATION_JSON_UTF8)
+				.content(getMockPersonPersonIdRequestDto()).contentType(APPLICATION_JSON_UTF8)).andReturn()
+				.getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("data");
 		assertThat(response.getContentAsString()).contains("123");
@@ -58,11 +60,12 @@ public class MockPersonControllerTest extends AbstractMock {
 	@Test
 	public void test_getPersonsBasicDataWithTaxCode() throws Exception {
 		mockTaxCodeForPerson(client);
-		MockHttpServletResponse response = mvc.perform(get(taxCodeUrl).accept(MediaType.APPLICATION_JSON)).andReturn()
+		MockHttpServletResponse response = mvc.perform(post(taxCodeUrl).accept(APPLICATION_JSON_UTF8)
+				.content(getMockPersonTaxIdRequestDto()).contentType(APPLICATION_JSON_UTF8)).andReturn()
 				.getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("data");
-		assertThat(response.getContentAsString()).contains("ABC");
+		assertThat(response.getContentAsString()).contains("BRMRSS63A02A001D");
 	}
 
 }

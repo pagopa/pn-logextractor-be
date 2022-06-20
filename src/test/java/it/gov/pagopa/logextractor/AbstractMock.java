@@ -11,14 +11,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.gov.pagopa.logextractor.dto.request.PersonLogsRequestDto;
+import it.gov.pagopa.logextractor.dto.request.PersonPersonIdRequestDto;
+import it.gov.pagopa.logextractor.dto.request.PersonTaxIdRequestDto;
 import it.gov.pagopa.logextractor.dto.response.EnsureRecipientByExternalIdResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInternalIdResponseDto;
 
 public class AbstractMock {
 	
 	public static final MediaType APPLICATION_JSON_UTF8 = new MediaType(MediaType.APPLICATION_JSON.getType(), MediaType.APPLICATION_JSON.getSubtype(), Charset.forName("utf8"));	
-	protected final String identifierUrl = "/logextractor/v1/persons/person-id/basicData?recipientType=PG&ticketNumber=123&taxId=1";
-	protected final String taxCodeUrl = "/logextractor/v1/persons/tax-id/basicData?recipientType=PF&personId=1";
+	protected final String identifierUrl = "/logextractor/v1/persons/person-id";
+	protected final String taxCodeUrl = "/logextractor/v1/persons/tax-id";
 	protected final String personUrl ="/logextractor/v1/logs/persons";
 	private static ObjectMapper mapper = new ObjectMapper();
 	
@@ -31,8 +33,9 @@ public class AbstractMock {
 	@SuppressWarnings("unchecked")
 	protected void mockTaxCodeForPerson(RestTemplate client) {
 		Mockito.when(client.getForObject(Mockito.anyString(), Mockito.any(Class.class)))
-				.thenReturn(GetRecipientDenominationByInternalIdResponseDto.builder().taxId("ABC").build());
+				.thenReturn(GetRecipientDenominationByInternalIdResponseDto.builder().taxId("BRMRSS63A02A001D").build());
 	}
+	
 
 	protected static String getMockPersonLogsRequestDto() throws JsonProcessingException {
 		PersonLogsRequestDto dto = new PersonLogsRequestDto();
@@ -43,6 +46,20 @@ public class AbstractMock {
 		dto.setPersonId("123");
 		dto.setTaxId("BRMRSS63A02A001D");
 		dto.setTicketNumber("123");
+		return mapper.writeValueAsString(dto);
+	}
+	
+	protected static String getMockPersonPersonIdRequestDto() throws JsonProcessingException {
+		PersonPersonIdRequestDto dto = new PersonPersonIdRequestDto();
+		dto.setRecipientType("PF");
+		dto.setTaxId("BRMRSS63A02A001D");
+		dto.setTicketNumber("123");
+		return mapper.writeValueAsString(dto);
+	}
+	
+	protected static String getMockPersonTaxIdRequestDto() throws JsonProcessingException {
+		PersonTaxIdRequestDto dto = new PersonTaxIdRequestDto();
+		dto.setPersonId("123");
 		return mapper.writeValueAsString(dto);
 	}
 
