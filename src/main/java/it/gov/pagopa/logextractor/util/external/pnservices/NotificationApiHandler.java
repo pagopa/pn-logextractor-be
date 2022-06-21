@@ -3,7 +3,6 @@ package it.gov.pagopa.logextractor.util.external.pnservices;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +12,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-
+import it.gov.pagopa.logextractor.config.ApplicationContextProvider;
 import it.gov.pagopa.logextractor.dto.NotificationGeneralData;
+
 @Component
 public class NotificationApiHandler {
 	
@@ -30,9 +30,10 @@ public class NotificationApiHandler {
 	 * @param size The maximum number of results to be retrieved
 	 * @return The list of notifications' general data
 	 * */
-	public ArrayList<NotificationGeneralData> getNotificationsByPeriod(String url, String startDate, String endDate, int size) {
+	public ArrayList<NotificationGeneralData> getNotificationsByPeriod(String url, String encodedIpaCode, String startDate, String endDate, int size) {	
 		HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+        requestHeaders.set("x-ipa-code", encodedIpaCode);
         List<MediaType> acceptedTypes = new ArrayList<MediaType>();
         acceptedTypes.add(MediaType.APPLICATION_JSON);
         requestHeaders.setAccept(acceptedTypes);

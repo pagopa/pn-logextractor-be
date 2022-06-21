@@ -31,7 +31,7 @@ public class OpenSearchUtil {
 				GetBasicDataResponseDto NotificationDto = handler.getTaxCodeForPerson(cxId, getTaxCodeURL);//TODO: add the url string for cx_id deanonymization service
 				keyValues.put("cx_id", NotificationDto.getData());
 			}
-			document = JsonUtilities.deanonymizeDocument(document, keyValues);
+			document = JsonUtilities.replaceValues(document, keyValues);
 			deanonymizedDocuments.add(document);
 		}
 		return deanonymizedDocuments;

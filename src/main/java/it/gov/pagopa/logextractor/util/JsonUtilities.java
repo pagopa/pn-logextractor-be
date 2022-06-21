@@ -60,7 +60,7 @@ public class JsonUtilities {
 	 * @param keyValue the map containing the keys and the new associated values
 	 * @return document the edited document with the specified value replacement
 	 */
-	public static String deanonymizeDocument(String document, HashMap<String, String> keyValue ){
+	public static String replaceValues(String document, HashMap<String, String> keyValue ){
 		return replaceValues(new JSONObject(document),keyValue).toString();
 	}
 }

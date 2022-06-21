@@ -2,9 +2,7 @@ package it.gov.pagopa.logextractor.rest;
 
 import java.io.IOException;
 import java.text.ParseException;
-
 import javax.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,10 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import it.gov.pagopa.logextractor.dto.request.DownloadArchiveResponseDto;
 import it.gov.pagopa.logextractor.dto.request.MonthlyNotificationsRequestDto;
 import it.gov.pagopa.logextractor.dto.request.NotificationInfoRequestDto;
-import it.gov.pagopa.logextractor.dto.request.OpertatorsInfoRequestDto;
 import it.gov.pagopa.logextractor.dto.request.PersonLogsRequestDto;
 import it.gov.pagopa.logextractor.dto.request.TraceIdLogsRequestDto;
-
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import it.gov.pagopa.logextractor.service.LogService;
@@ -44,11 +40,6 @@ public class LogController {
 										personLogsDetails.getTicketNumber(), personLogsDetails.getIun(), personLogsDetails.getPersonId()));
 	}
 	
-	
-	@PostMapping(value = "/operators", produces="application/json")
-	public void getOperatorsActivityLogs(@RequestBody OpertatorsInfoRequestDto operatorsInfo) {
-	}
-	
 	@PostMapping(value = "/notifications/info", produces="application/json")
 	public void getNotificationInfoLogs(@RequestBody NotificationInfoRequestDto notificationInfo){
 		
@@ -61,7 +52,6 @@ public class LogController {
 																	monthlyNotificationsData.getReferenceMonth(),
 																	monthlyNotificationsData.getIpaCode()));
 	}
-
 
 	@PostMapping(value = "/processes", produces = "application/json")
 	public ResponseEntity<DownloadArchiveResponseDto> getNotificationTraceIdLogs(@RequestBody TraceIdLogsRequestDto traceIdLogsDetails) throws IOException {
