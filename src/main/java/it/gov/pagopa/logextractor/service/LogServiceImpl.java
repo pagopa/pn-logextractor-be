@@ -116,25 +116,30 @@ public class LogServiceImpl implements LogService{
 		LocalDate startDate = LocalDate.parse(StringUtils.removeIgnoreCase(referenceMonth, "-")+"01", DateTimeFormatter.BASIC_ISO_DATE);
 		LocalDate endDate = startDate.plusMonths(1);
 		String finaldatePart = "T00:00:00.000Z";
-		String encodedIpaCode = selfCareApiHandler.getEncodedIpaCode(finaldatePart, ipaCode);
+		String encodedIpaCode = selfCareApiHandler.getEncodedIpaCode(selfCareEncodedIpaCodeURL, ipaCode);
 		ArrayList<NotificationCsvBean> notifications = new ArrayList<NotificationCsvBean>();
-		ArrayList<NotificationGeneralData> notificationsGeneralData = notificationApiHandler.getNotificationsByPeriod(notificationURL, 
-																		encodedIpaCode,
-																		startDate.toString()+finaldatePart, 
-																		endDate.toString()+finaldatePart, 
-																		100);
+        HashMap<String, Object> parameters = new HashMap<String, Object>();
+        parameters.put("startDate", startDate.toString()+finaldatePart);
+        parameters.put("endDate", endDate.toString()+finaldatePart);
+        parameters.put("size", 100);
+		ArrayList<NotificationGeneralData> notificationsGeneralData = notificationApiHandler.getNotificationsByPeriod(notificationURL,
+																		parameters, encodedIpaCode, 0, new ArrayList<NotificationGeneralData>());
 		if(notificationsGeneralData != null) {
 			for(NotificationGeneralData nTemp : notificationsGeneralData) {
 				String legalStartDate = notificationApiHandler.getNotificationLegalStartDate(notificationURL, nTemp.getIun());
-				ArrayList<String> taxIds = new ArrayList<String>();
-				taxIds.addAll(nTemp.getRecipients());
+				StringBuilder recipientsBuilder = new StringBuilder();
+				for(String tempRecipient : nTemp.getRecipients()) {
+					recipientsBuilder.append(tempRecipient + "-");
+				}
+				recipientsBuilder.deleteCharAt(recipientsBuilder.length()-1);
 				NotificationCsvBean notification = NotificationCsvBean.builder()
 													.iun(nTemp.getIun())
 													.sendDate(nTemp.getSentAt())
 													.attestationGenerationDate(legalStartDate)
 													.subject(nTemp.getSubject())
-													.taxIds(taxIds)
+													.taxIds(recipientsBuilder.toString())
 													.build();
+				recipientsBuilder.setLength(0);
 				notifications.add(notification);
 			}
 		}

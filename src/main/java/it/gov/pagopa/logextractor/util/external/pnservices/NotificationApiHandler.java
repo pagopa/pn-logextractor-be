@@ -3,7 +3,7 @@ package it.gov.pagopa.logextractor.util.external.pnservices;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +13,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-
 import it.gov.pagopa.logextractor.dto.NotificationGeneralData;
+import it.gov.pagopa.logextractor.util.JsonUtilities;
 
 @Component
 public class NotificationApiHandler {
@@ -31,7 +31,8 @@ public class NotificationApiHandler {
 	 * @param size The maximum number of results to be retrieved
 	 * @return The list of notifications' general data
 	 * */
-	public ArrayList<NotificationGeneralData> getNotificationsByPeriod(String url, String encodedIpaCode, String startDate, String endDate, int size) {	
+	public ArrayList<NotificationGeneralData> getNotificationsByPeriod(String url, HashMap<String, Object> params, 
+				String encodedIpaCode, int currentKey, ArrayList<NotificationGeneralData> notifications) {
 		HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.set("x-ipa-code", encodedIpaCode);
@@ -39,11 +40,18 @@ public class NotificationApiHandler {
         acceptedTypes.add(MediaType.APPLICATION_JSON);
         requestHeaders.setAccept(acceptedTypes);
         HashMap<String, Object> parameters = new HashMap<String, Object>();
-        parameters.put("startDate", startDate);
-        parameters.put("endDate", endDate);
-        parameters.put("size", size);
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
+        	parameters.put(entry.getKey(), entry.getValue());
+        }
         ResponseEntity<String> response = client.getForEntity(url, String.class, parameters);
-        return getNotificationsGeneralData(response.getBody());
+        JSONArray pageKeys = JsonUtilities.getArray(response.getBody(), "nextPagesKey");
+        notifications.addAll(getNotificationsGeneralData(response.getBody()));
+        if(null == pageKeys || pageKeys.length() == 0 || currentKey == pageKeys.length()) {
+        	return notifications;
+        }
+    	HashMap<String, Object> newParameters = new HashMap<String, Object>();
+    	newParameters.put("nextPagesKey", pageKeys.get(currentKey));
+        return getNotificationsByPeriod(url, newParameters, encodedIpaCode, currentKey+1, notifications);
 	}
 	
 	/**

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import it.gov.pagopa.logextractor.config.ApplicationContextProvider;
+import it.gov.pagopa.logextractor.util.JsonUtilities;
 
 @Component
 public class SelfCareApiHandler {
@@ -39,6 +40,6 @@ public class SelfCareApiHandler {
         HashMap<String, Object> parameters = new HashMap<String, Object>();
         parameters.put("ipaCode", ipdaCode);
         ResponseEntity<String> response = client.getForEntity(url, String.class, parameters);
-        return response.getBody();
+        return JsonUtilities.getValue(response.getBody(), "internalCode");
 	}
 }
