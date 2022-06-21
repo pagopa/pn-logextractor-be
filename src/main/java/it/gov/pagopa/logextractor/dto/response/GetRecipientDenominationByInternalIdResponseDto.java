@@ -1,5 +1,7 @@
 package it.gov.pagopa.logextractor.dto.response;
 
+import java.io.Serializable;
+
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
@@ -8,11 +10,13 @@ import it.gov.pagopa.logextractor.util.Constants;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
 @AllArgsConstructor
-public class GetRecipientDenominationByInternalIdResponseDto {
+@NoArgsConstructor
+public class GetRecipientDenominationByInternalIdResponseDto implements Serializable {
 
 	@Size(min = 16, max = 16)
 	@Pattern(regexp = Constants.FISCAL_CODE_PATTERN, message = "Invalid Tax ID")

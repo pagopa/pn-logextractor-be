@@ -18,7 +18,7 @@ import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import it.gov.pagopa.logextractor.dto.NotificationCsvBean;
 import it.gov.pagopa.logextractor.dto.NotificationGeneralData;
-import it.gov.pagopa.logextractor.dto.request.DownloadArchiveResponseDto;
+import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.util.Constants;
 import it.gov.pagopa.logextractor.util.FileUtilities;

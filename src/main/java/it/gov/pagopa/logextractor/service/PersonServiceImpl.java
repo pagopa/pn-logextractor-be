@@ -8,11 +8,13 @@ import org.springframework.web.client.HttpServerErrorException;
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Implementation class of {@link PersonService}
  */
 @Service
+@Slf4j
 public class PersonServiceImpl implements PersonService {
 
 	@Value("${external.denomination.ensureRecipientByExternalId.url}")
@@ -26,6 +28,7 @@ public class PersonServiceImpl implements PersonService {
 
 	@Override
 	public GetBasicDataResponseDto getTaxId(String personId) throws HttpServerErrorException {
+		log.info("Tax id retrieve process - START");
 		return handler.getTaxCodeForPerson(personId, getTaxCodeURL);
 	}
 

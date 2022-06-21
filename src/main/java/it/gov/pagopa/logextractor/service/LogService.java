@@ -5,7 +5,7 @@ import java.text.ParseException;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 
-import it.gov.pagopa.logextractor.dto.request.DownloadArchiveResponseDto;
+import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
 
 public interface LogService {

@@ -45,8 +45,7 @@ public class DeanonimizationApiHandler {
 	 */
 	
 	@Cacheable(cacheNames="services")
-	public GetBasicDataResponseDto getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId,
-			String externalServiceUrl) {
+	public GetBasicDataResponseDto getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId, String externalServiceUrl) {
 		System.out.println(externalServiceUrl);
 		String url = String.format(externalServiceUrl, recipientType.toString(), taxId.toUpperCase());
 		EnsureRecipientByExternalIdResponseDto response = client.getForObject(url, EnsureRecipientByExternalIdResponseDto.class);
@@ -70,7 +69,6 @@ public class DeanonimizationApiHandler {
 	public GetBasicDataResponseDto getTaxCodeForPerson(String personId, String externalServiceUrl) {
 		String url = String.format(externalServiceUrl, personId);
 		GetRecipientDenominationByInternalIdResponseDto response = client.getForObject(url, GetRecipientDenominationByInternalIdResponseDto.class);
-
 		return GetBasicDataResponseDto.builder().data(response.getTaxId()).build();
 	}
 }

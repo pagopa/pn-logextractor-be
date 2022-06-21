@@ -11,11 +11,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import it.gov.pagopa.logextractor.dto.request.DownloadArchiveResponseDto;
+
 import it.gov.pagopa.logextractor.dto.request.MonthlyNotificationsRequestDto;
 import it.gov.pagopa.logextractor.dto.request.NotificationInfoRequestDto;
 import it.gov.pagopa.logextractor.dto.request.PersonLogsRequestDto;
 import it.gov.pagopa.logextractor.dto.request.TraceIdLogsRequestDto;
+import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
+
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import it.gov.pagopa.logextractor.service.LogService;

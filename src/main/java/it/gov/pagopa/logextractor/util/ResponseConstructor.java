@@ -10,7 +10,7 @@ import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 
 import it.gov.pagopa.logextractor.dto.NotificationCsvBean;
-import it.gov.pagopa.logextractor.dto.request.DownloadArchiveResponseDto;
+import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.CompressionLevel;
