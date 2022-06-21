@@ -11,6 +11,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -40,9 +41,15 @@ public class AbstractMock {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected void mockTaxCodeForPerson(RestTemplate client) {
+	protected void mockTaxCodeForPerson200(RestTemplate client) {
 		Mockito.when(client.getForObject(Mockito.anyString(), Mockito.any(Class.class)))
 				.thenReturn(GetRecipientDenominationByInternalIdResponseDto.builder().taxId("BRMRSS63A02A001D").build());
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected void mockTaxCodeForPerson500(RestTemplate client) {
+    	HttpServerErrorException errorResponse = new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "", "".getBytes(), Charset.defaultCharset());	   	
+		Mockito.when(client.getForObject(Mockito.anyString(), Mockito.any(Class.class))).thenThrow(errorResponse);
 	}
 	
 	protected void mockPersonsLogResponse(RestTemplate client, RestTemplate client2) {
