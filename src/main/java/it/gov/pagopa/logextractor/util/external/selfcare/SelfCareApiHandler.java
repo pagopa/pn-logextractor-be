@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,7 @@ public class SelfCareApiHandler {
 	 * @param size The maximum number of results to be retrieved
 	 * @return The list of notifications' general data
 	 * */
+	@Cacheable(cacheNames="services")
 	public String getEncodedIpaCode(String url, String ipdaCode) {	
 		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("simpleRestTemplate");
 		HttpHeaders requestHeaders = new HttpHeaders();

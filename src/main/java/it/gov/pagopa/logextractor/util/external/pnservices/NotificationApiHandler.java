@@ -8,6 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,7 @@ public class NotificationApiHandler {
 	 * @param size The maximum number of results to be retrieved
 	 * @return The list of notifications' general data
 	 * */
+	@Cacheable(cacheNames="services")
 	public ArrayList<NotificationGeneralData> getNotificationsByPeriod(String url, HashMap<String, Object> params, 
 				String encodedIpaCode, int currentKey, ArrayList<NotificationGeneralData> notifications) {
 		HttpHeaders requestHeaders = new HttpHeaders();
@@ -60,6 +62,7 @@ public class NotificationApiHandler {
 	 * @param iun The notification IUN
 	 * @return The notification legal start date
 	 * */
+	@Cacheable(cacheNames="services")
 	public String getNotificationLegalStartDate(String url, String iun) {
 		HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);

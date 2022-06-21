@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.stereotype.Service;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
@@ -42,7 +43,7 @@ import net.lingala.zip4j.model.enums.EncryptionMethod;
 
 @Service
 public class LogServiceImpl implements LogService{
-	//
+	
 	@Value("${external.denomination.ensureRecipientByExternalId.url}")
 	String getUniqueIdURL;
 	
@@ -61,9 +62,11 @@ public class LogServiceImpl implements LogService{
 	@Value("${external.notification.getSentNotification.url}")
 	String notificationURL;
 	
+
 	@Value("${external.selfcare.encodedIpaCode.url}")
 	String selfCareEncodedIpaCodeURL;
 	
+
 	@Autowired
 	NotificationApiHandler notificationApiHandler;
 	
@@ -75,6 +78,7 @@ public class LogServiceImpl implements LogService{
 	
 	@Autowired
 	SelfCareApiHandler selfCareApiHandler;
+
 
 	@Override
 	public DownloadArchiveResponseDto getAnonymizedPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId) throws IOException {

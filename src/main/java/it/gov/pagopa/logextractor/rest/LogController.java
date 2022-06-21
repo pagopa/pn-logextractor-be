@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.text.ParseException;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,13 +23,14 @@ import it.gov.pagopa.logextractor.service.PersonService;
 
 @RestController
 @RequestMapping("/logextractor/v1/logs")
+@EnableCaching
 public class LogController {
 
 	@Autowired
 	LogService logService;
 	@Autowired
 	PersonService personService;
-
+    
 	@PostMapping(value = "/persons", produces="application/json")
 	public ResponseEntity<DownloadArchiveResponseDto> getPersonActivityLogs(@Valid @RequestBody PersonLogsRequestDto personLogsDetails) throws IOException {
 		if (personLogsDetails.isDeanonimization()) {
