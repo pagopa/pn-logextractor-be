@@ -14,9 +14,7 @@ import lombok.ToString;
 
 @Getter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-@ToString
 public class GetRecipientDenominationByInternalIdResponseDto {
 
 	@Size(min = 16, max = 16)

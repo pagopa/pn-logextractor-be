@@ -26,6 +26,7 @@ import it.gov.pagopa.logextractor.dto.request.MonthlyNotificationsRequestDto;
 import it.gov.pagopa.logextractor.dto.request.PersonLogsRequestDto;
 import it.gov.pagopa.logextractor.dto.request.PersonPersonIdRequestDto;
 import it.gov.pagopa.logextractor.dto.request.PersonTaxIdRequestDto;
+import it.gov.pagopa.logextractor.dto.request.TraceIdLogsRequestDto;
 import it.gov.pagopa.logextractor.dto.response.EnsureRecipientByExternalIdResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInternalIdResponseDto;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
@@ -43,6 +44,7 @@ public abstract class AbstractMock {
 	protected final String taxCodeUrl = "/logextractor/v1/persons/tax-id";
 	protected final String personUrl ="/logextractor/v1/logs/persons";
 	protected final String notificationUrl = "/logextractor/v1/logs/notifications/monthly";
+	protected final String processesUrl = "/logextractor/v1/logs/processes";
 	private static ObjectMapper mapper = new ObjectMapper();
 	
 	@SuppressWarnings("unchecked")
@@ -115,6 +117,15 @@ public abstract class AbstractMock {
 			default:
 				break;
 		}
+		return mapper.writeValueAsString(dto);
+	}
+	
+	protected static String getMockTraceIdLogsRequestDto(String dateFrom, String dateTo, String ticketNumber, String traceId) throws JsonProcessingException {
+		TraceIdLogsRequestDto dto = new TraceIdLogsRequestDto();
+		dto.setDateFrom(dateFrom);
+		dto.setDateTo(dateTo);
+		dto.setTicketNumber(ticketNumber);
+		dto.setTraceId(traceId);
 		return mapper.writeValueAsString(dto);
 	}
 	
