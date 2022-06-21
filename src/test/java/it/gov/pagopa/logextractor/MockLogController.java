@@ -5,17 +5,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -26,17 +21,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 @AutoConfigureMockMvc
 @EnableWebMvc
 public class MockLogController extends AbstractMock {
-
-	@Autowired
-	MockMvc mvc;
-
-	@MockBean
-	@Qualifier("simpleRestTemplate")
-	RestTemplate client;
-	
-	@MockBean
-	@Qualifier("openSearchRestTemplate")
-	RestTemplate openClient;
 	
 	@Test
 	public void test_useCase3_4_7_8() throws Exception {

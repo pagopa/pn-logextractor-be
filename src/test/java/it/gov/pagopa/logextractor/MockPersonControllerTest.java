@@ -5,17 +5,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 @SpringBootTest(classes = PnLogextractorBeApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -23,45 +20,39 @@ import org.springframework.web.client.RestTemplate;
 @AutoConfigureMockMvc
 public class MockPersonControllerTest extends AbstractMock {
 
-	@Autowired
-	MockMvc mvc;
-
-	@MockBean
-	@Qualifier("simpleRestTemplate")
-	RestTemplate client;
-
+	public void mvcPostPerform(String url, String body, String key, String value, HttpStatus responseCode) throws JsonProcessingException, Exception {
+		MockHttpServletResponse response = mvc.perform(post(url).accept(APPLICATION_JSON_UTF8)
+				.content(body).contentType(APPLICATION_JSON_UTF8)).andReturn()
+				.getResponse();
+		assertThat(response.getStatus()).isEqualTo(responseCode.value());
+		assertThat(response.getContentAsString()).contains(key);
+		assertThat(response.getContentAsString()).contains(value);
+	}
 
 	@Test
 	public void test_getPersonsBasicDataWithUniqueIdentifier_ok() throws Exception {
 		mockUniqueIdentifierForPerson(client);
-		MockHttpServletResponse response = mvc.perform(post(identifierUrl).accept(APPLICATION_JSON_UTF8)
-				.content(getMockPersonPersonIdRequestDto()).contentType(APPLICATION_JSON_UTF8)).andReturn()
-				.getResponse();
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-		assertThat(response.getContentAsString()).contains("data");
-		assertThat(response.getContentAsString()).contains("123");
+		mvcPostPerform(identifierUrl, getMockPersonPersonIdRequestDto(), "data", "123", HttpStatus.OK);
 	}
 
 	@Test
 	public void test_getPersonsBasicDataWithTaxCode_ok() throws Exception {
 		mockTaxCodeForPerson200(client);
-		MockHttpServletResponse response = mvc.perform(post(taxCodeUrl).accept(APPLICATION_JSON_UTF8)
-				.content(getMockPersonTaxIdRequestDto()).contentType(APPLICATION_JSON_UTF8)).andReturn()
-				.getResponse();
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-		assertThat(response.getContentAsString()).contains("data");
-		assertThat(response.getContentAsString()).contains("BRMRSS63A02A001D");
+		mvcPostPerform(taxCodeUrl, getMockPersonTaxIdRequestDto(), "data", "BRMRSS63A02A001D", HttpStatus.OK);
 	}
 	
 	@Test
-	public void test_getPersonsBasicDataWithTaxCode_ko() throws Exception {
-		mockTaxCodeForPerson500(client);
-		MockHttpServletResponse response = mvc.perform(post(taxCodeUrl).accept(APPLICATION_JSON_UTF8)
-				.content(getMockPersonTaxIdRequestDto()).contentType(APPLICATION_JSON_UTF8)).andReturn()
-				.getResponse();
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
-		assertThat(response.getContentAsString()).contains("Errore nell'elaborazione della richiesta");
-
+	public void test_getPersonsBasicDataWithTaxCode_5xx() throws Exception {
+		mockTaxCodeForPersonServerError(client, HttpStatus.INTERNAL_SERVER_ERROR);
+		String errorResponse = "Errore nell'elaborazione della richiesta";
+		mvcPostPerform(taxCodeUrl, getMockPersonTaxIdRequestDto(), errorResponse, errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
+	@Test
+	public void test_getPersonsBasicDataWithTaxCode_4xx() throws Exception {
+		mockTaxCodeForPersonClientError(client, HttpStatus.METHOD_NOT_ALLOWED);
+		String errorResponse = "Errore nell'elaborazione della richiesta";
+		mvcPostPerform(taxCodeUrl, getMockPersonTaxIdRequestDto(), errorResponse, errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
 }

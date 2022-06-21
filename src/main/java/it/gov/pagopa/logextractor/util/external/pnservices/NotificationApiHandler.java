@@ -3,6 +3,7 @@ package it.gov.pagopa.logextractor.util.external.pnservices;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import it.gov.pagopa.logextractor.config.ApplicationContextProvider;
+
 import it.gov.pagopa.logextractor.dto.NotificationGeneralData;
 
 @Component

@@ -7,7 +7,6 @@ import lombok.Setter;
 
 @Setter
 @Getter
-@Builder
 @AllArgsConstructor
 public class PasswordResponseDto {
 
