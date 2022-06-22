@@ -1,14 +1,15 @@
 package it.gov.pagopa.logextractor.util.external.pnservices;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import it.gov.pagopa.logextractor.annotation.RecipientType;
+import it.gov.pagopa.logextractor.dto.request.EnsureRecipientByExternalIdRequestDto;
 import it.gov.pagopa.logextractor.dto.response.EnsureRecipientByExternalIdResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInternalIdResponseDto;
@@ -46,9 +47,10 @@ public class DeanonimizationApiHandler {
 	
 	@Cacheable(cacheNames="services")
 	public GetBasicDataResponseDto getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId, String externalServiceUrl) {
-		System.out.println(externalServiceUrl);
-		String url = String.format(externalServiceUrl, recipientType.toString(), taxId.toUpperCase());
-		EnsureRecipientByExternalIdResponseDto response = client.getForObject(url, EnsureRecipientByExternalIdResponseDto.class);
+		String url = String.format(externalServiceUrl, recipientType.toString());
+		EnsureRecipientByExternalIdRequestDto requestBody = EnsureRecipientByExternalIdRequestDto.builder().taxId(taxId).build();
+		HttpEntity<String> request =  new HttpEntity<String>(requestBody.toString());
+		EnsureRecipientByExternalIdResponseDto response = client.postForObject(url, request, EnsureRecipientByExternalIdResponseDto.class);
 		return GetBasicDataResponseDto.builder().data(response.getInternalId()).build();
 	}
 
