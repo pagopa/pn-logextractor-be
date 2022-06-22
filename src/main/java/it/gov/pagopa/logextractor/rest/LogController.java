@@ -35,11 +35,9 @@ public class LogController {
 	@PostMapping(value = "/persons", produces="application/json")
 	public ResponseEntity<DownloadArchiveResponseDto> getPersonActivityLogs(@Valid @RequestBody PersonLogsRequestDto personLogsDetails) throws IOException {
 		if (personLogsDetails.isDeanonimization()) {
-			//use case 3 & 4
 			return ResponseEntity.ok().body(logService.getDeanonymizedPersonLogs(personLogsDetails.getRecipientType(), personLogsDetails.getDateFrom(), personLogsDetails.getDateTo(), 
 					personLogsDetails.getTicketNumber(), personLogsDetails.getTaxId(),personLogsDetails.getIun()));
 		}
-		// use case 7 & 8
 		return ResponseEntity.ok().body(logService.getAnonymizedPersonLogs(personLogsDetails.getDateFrom(), personLogsDetails.getDateTo(), 
 										personLogsDetails.getTicketNumber(), personLogsDetails.getIun(), personLogsDetails.getPersonId()));
 	}
@@ -51,7 +49,6 @@ public class LogController {
 	
 	@PostMapping(value = "/notifications/monthly", produces="application/json")
 	public ResponseEntity<DownloadArchiveResponseDto> getNotificationMonthlyLogs(@RequestBody MonthlyNotificationsRequestDto monthlyNotificationsData) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, ParseException{
-		
 		return ResponseEntity.ok().body(logService.getMonthlyNotifications(monthlyNotificationsData.getTicketNumber(),
 																	monthlyNotificationsData.getReferenceMonth(),
 																	monthlyNotificationsData.getIpaCode()));
@@ -59,7 +56,6 @@ public class LogController {
 
 	@PostMapping(value = "/processes", produces = "application/json")
 	public ResponseEntity<DownloadArchiveResponseDto> getNotificationTraceIdLogs(@RequestBody TraceIdLogsRequestDto traceIdLogsDetails) throws IOException {
-		// use case 10
 		return ResponseEntity.ok().body(logService.getTraceIdLogs(traceIdLogsDetails.getDateFrom(),
 				traceIdLogsDetails.getDateTo(), traceIdLogsDetails.getTraceId()));
 	}
