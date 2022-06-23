@@ -49,7 +49,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
     }
 	
-	@ExceptionHandler({ ConstraintViolationException.class })
+	/*@ExceptionHandler({ ConstraintViolationException.class })
     protected ResponseEntity<ApiError> handleConstraintViolationException(ConstraintViolationException ex, WebRequest request) {
         StringBuilder builder = new StringBuilder("");
         for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
@@ -57,7 +57,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         }
         log.error("Constraint violation exception:\n" + builder);
         return ResponseEntity.badRequest().body(new ApiError("Informazioni non valide"));
-    }
+    }*/
 	
 	@ExceptionHandler(HttpClientErrorException.class)
 	protected ResponseEntity<ApiError> handleHttpServerErrorException(HttpClientErrorException ex) {

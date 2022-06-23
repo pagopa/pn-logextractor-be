@@ -49,7 +49,7 @@ public abstract class AbstractMock {
 	
 	@SuppressWarnings("unchecked")
 	protected void mockUniqueIdentifierForPerson(RestTemplate client) {
-		Mockito.when(client.getForObject(Mockito.anyString(), Mockito.any(Class.class)))
+		Mockito.when(client.postForObject(Mockito.anyString(),Mockito.any(), Mockito.any(Class.class)))
 				.thenReturn(EnsureRecipientByExternalIdResponseDto.builder().internalId("123").build());
 	}
 
@@ -132,8 +132,8 @@ public abstract class AbstractMock {
 	protected static String getMockPersonPersonIdRequestDto() throws JsonProcessingException {
 		PersonPersonIdRequestDto dto = new PersonPersonIdRequestDto();
 		dto.setRecipientType("PF");
-		dto.setTaxId("BRMRSS63A02A001D");
 		dto.setTicketNumber("123");
+		dto.setTaxId("BRMRSS63A02A001D");
 		return mapper.writeValueAsString(dto);
 	}
 	
