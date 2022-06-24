@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import it.gov.pagopa.logextractor.config.ApplicationContextProvider;
+import it.gov.pagopa.logextractor.util.JsonUtilities;
 
 @Component
 public class SelfCareApiHandler {
@@ -29,6 +31,7 @@ public class SelfCareApiHandler {
 	 * @param size The maximum number of results to be retrieved
 	 * @return The list of notifications' general data
 	 * */
+	@Cacheable(cacheNames="services")
 	public String getEncodedIpaCode(String url, String ipdaCode) {	
 		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("simpleRestTemplate");
 		HttpHeaders requestHeaders = new HttpHeaders();
@@ -39,6 +42,6 @@ public class SelfCareApiHandler {
         HashMap<String, Object> parameters = new HashMap<String, Object>();
         parameters.put("ipaCode", ipdaCode);
         ResponseEntity<String> response = client.getForEntity(url, String.class, parameters);
-        return response.getBody();
+        return JsonUtilities.getValue(response.getBody(), "internalCode");
 	}
 }

@@ -6,11 +6,16 @@ import java.util.HashMap;
 
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -21,22 +26,30 @@ import it.gov.pagopa.logextractor.dto.request.MonthlyNotificationsRequestDto;
 import it.gov.pagopa.logextractor.dto.request.PersonLogsRequestDto;
 import it.gov.pagopa.logextractor.dto.request.PersonPersonIdRequestDto;
 import it.gov.pagopa.logextractor.dto.request.PersonTaxIdRequestDto;
+import it.gov.pagopa.logextractor.dto.request.TraceIdLogsRequestDto;
 import it.gov.pagopa.logextractor.dto.response.EnsureRecipientByExternalIdResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInternalIdResponseDto;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
 
-public class AbstractMock {
+public abstract class AbstractMock {	
+
+	@Autowired MockMvc mvc;
+	@MockBean
+	@Qualifier("simpleRestTemplate") RestTemplate client;	
+	@MockBean
+	@Qualifier("openSearchRestTemplate") RestTemplate openClient;
 	
 	public static final MediaType APPLICATION_JSON_UTF8 = new MediaType(MediaType.APPLICATION_JSON.getType(), MediaType.APPLICATION_JSON.getSubtype(), Charset.forName("utf8"));	
 	protected final String identifierUrl = "/logextractor/v1/persons/person-id";
 	protected final String taxCodeUrl = "/logextractor/v1/persons/tax-id";
 	protected final String personUrl ="/logextractor/v1/logs/persons";
 	protected final String notificationUrl = "/logextractor/v1/logs/notifications/monthly";
+	protected final String processesUrl = "/logextractor/v1/logs/processes";
 	private static ObjectMapper mapper = new ObjectMapper();
 	
 	@SuppressWarnings("unchecked")
 	protected void mockUniqueIdentifierForPerson(RestTemplate client) {
-		Mockito.when(client.getForObject(Mockito.anyString(), Mockito.any(Class.class)))
+		Mockito.when(client.postForObject(Mockito.anyString(),Mockito.any(), Mockito.any(Class.class)))
 				.thenReturn(EnsureRecipientByExternalIdResponseDto.builder().internalId("123").build());
 	}
 
@@ -47,9 +60,15 @@ public class AbstractMock {
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected void mockTaxCodeForPerson500(RestTemplate client) {
-    	HttpServerErrorException errorResponse = new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "", "".getBytes(), Charset.defaultCharset());	   	
-		Mockito.when(client.getForObject(Mockito.anyString(), Mockito.any(Class.class))).thenThrow(errorResponse);
+	protected void mockTaxCodeForPersonServerError(RestTemplate client, HttpStatus errorStatus) {
+    	HttpServerErrorException errorResponse = new HttpServerErrorException(errorStatus, "", "".getBytes(), Charset.defaultCharset());	   	
+    	Mockito.when(client.getForObject(Mockito.anyString(), Mockito.any(Class.class))).thenThrow(errorResponse);
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected void mockTaxCodeForPersonClientError(RestTemplate client, HttpStatus errorStatus) {
+    	HttpClientErrorException errorResponse = new HttpClientErrorException(errorStatus, "", "".getBytes(), Charset.defaultCharset());	   	
+    	Mockito.when(client.getForObject(Mockito.anyString(), Mockito.any(Class.class))).thenThrow(errorResponse);
 	}
 	
 	protected void mockPersonsLogResponse(RestTemplate client, RestTemplate client2) {
@@ -101,11 +120,20 @@ public class AbstractMock {
 		return mapper.writeValueAsString(dto);
 	}
 	
+	protected static String getMockTraceIdLogsRequestDto(String dateFrom, String dateTo, String ticketNumber, String traceId) throws JsonProcessingException {
+		TraceIdLogsRequestDto dto = new TraceIdLogsRequestDto();
+		dto.setDateFrom(dateFrom);
+		dto.setDateTo(dateTo);
+		dto.setTicketNumber(ticketNumber);
+		dto.setTraceId(traceId);
+		return mapper.writeValueAsString(dto);
+	}
+	
 	protected static String getMockPersonPersonIdRequestDto() throws JsonProcessingException {
 		PersonPersonIdRequestDto dto = new PersonPersonIdRequestDto();
 		dto.setRecipientType("PF");
-		dto.setTaxId("BRMRSS63A02A001D");
 		dto.setTicketNumber("123");
+		dto.setTaxId("BRMRSS63A02A001D");
 		return mapper.writeValueAsString(dto);
 	}
 	

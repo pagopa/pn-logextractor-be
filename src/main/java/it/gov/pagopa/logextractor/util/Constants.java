@@ -17,4 +17,7 @@ public class Constants {
 	public static final String CSV_EXTENSION = ".csv";
 	public static final String ZIP_EXTENSION = ".zip";
 	public static final String EXPORT_FOLDER = "export/";
+	public static final String PROBLEM_ERROR_CODE_PATTERN = "^[0-9]{3}-[0-9]{4}$";
+	public static final String PROBLEM_TITLE_PATTERN = "^[ -~]{0,64}$";
+	public static final String PROBLEM_DETAIL_PATTERN = "^.{0,1024}$";
 }

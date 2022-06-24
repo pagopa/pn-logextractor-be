@@ -13,4 +13,12 @@ public class RandomGenerator {
 	public String generateRandomToken() {
 		return Instant.now().toEpochMilli() + "-" + RandomStringUtils.random(10, true, true);
 	}
+	
+	/**
+	 * Generate a random string with format - Root=<random_alpha_numeric_string>
+	 * @return The randomly generated string
+	 * */
+	public String generateRandomTraceId() {
+		return "Root=" + RandomStringUtils.random(16, true, true).toLowerCase();
+	}
 }

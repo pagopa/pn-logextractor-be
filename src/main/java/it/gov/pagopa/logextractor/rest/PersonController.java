@@ -12,6 +12,7 @@ import it.gov.pagopa.logextractor.dto.request.PersonTaxIdRequestDto;
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.service.PersonService;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/logextractor/v1/persons")

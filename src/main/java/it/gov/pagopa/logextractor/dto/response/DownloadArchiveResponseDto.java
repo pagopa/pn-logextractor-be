@@ -1,4 +1,4 @@
-package it.gov.pagopa.logextractor.dto.request;
+package it.gov.pagopa.logextractor.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;

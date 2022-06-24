@@ -10,11 +10,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import it.gov.pagopa.logextractor.config.ApplicationContextProvider;
@@ -22,6 +22,7 @@ import it.gov.pagopa.logextractor.dto.NotificationGeneralData;
 import it.gov.pagopa.logextractor.dto.PaymentDocumentData;
 import it.gov.pagopa.logextractor.dto.response.LegalFactDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationAttachmentDownloadMetadataResponseDto;
+import it.gov.pagopa.logextractor.util.JsonUtilities;
 
 @Component
 public class NotificationApiHandler {
@@ -38,7 +39,9 @@ public class NotificationApiHandler {
 	 * @param size The maximum number of results to be retrieved
 	 * @return The list of notifications' general data
 	 * */
-	public ArrayList<NotificationGeneralData> getNotificationsByPeriod(String url, String encodedIpaCode, String startDate, String endDate, int size) {	
+	@Cacheable(cacheNames="services")
+	public ArrayList<NotificationGeneralData> getNotificationsByPeriod(String url, HashMap<String, Object> params, 
+				String encodedIpaCode, int currentKey, ArrayList<NotificationGeneralData> notifications) {
 		HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.set("x-ipa-code", encodedIpaCode);
@@ -46,11 +49,18 @@ public class NotificationApiHandler {
         acceptedTypes.add(MediaType.APPLICATION_JSON);
         requestHeaders.setAccept(acceptedTypes);
         HashMap<String, Object> parameters = new HashMap<String, Object>();
-        parameters.put("startDate", startDate);
-        parameters.put("endDate", endDate);
-        parameters.put("size", size);
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
+        	parameters.put(entry.getKey(), entry.getValue());
+        }
         ResponseEntity<String> response = client.getForEntity(url, String.class, parameters);
-        return getNotificationsGeneralData(response.getBody());
+        JSONArray pageKeys = JsonUtilities.getArray(response.getBody(), "nextPagesKey");
+        notifications.addAll(getNotificationsGeneralData(response.getBody()));
+        if(null == pageKeys || pageKeys.length() == 0 || currentKey == pageKeys.length()) {
+        	return notifications;
+        }
+    	HashMap<String, Object> newParameters = new HashMap<String, Object>();
+    	newParameters.put("nextPagesKey", pageKeys.get(currentKey));
+        return getNotificationsByPeriod(url, newParameters, encodedIpaCode, currentKey+1, notifications);
 	}
 	
 	public String getLegalFactMetadata(String externalServiceUrl, String iun,
@@ -109,6 +119,7 @@ public class NotificationApiHandler {
 	 * @param iun The notification IUN
 	 * @return The notification legal start date
 	 * */
+	@Cacheable(cacheNames="services")
 	public String getNotificationLegalStartDate(String url, String iun) {
 		HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
