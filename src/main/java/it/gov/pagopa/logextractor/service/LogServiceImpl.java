@@ -8,24 +8,27 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
+
 import it.gov.pagopa.logextractor.dto.NotificationCsvBean;
 import it.gov.pagopa.logextractor.dto.NotificationGeneralData;
+import it.gov.pagopa.logextractor.dto.PaymentDocumentData;
 import it.gov.pagopa.logextractor.dto.request.DownloadArchiveResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.util.Constants;
 import it.gov.pagopa.logextractor.util.FileUtilities;
-import it.gov.pagopa.logextractor.util.PasswordFactory;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
 import it.gov.pagopa.logextractor.util.ResponseConstructor;
 import it.gov.pagopa.logextractor.util.SortOrders;
-import it.gov.pagopa.logextractor.util.ZipFactory;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandler;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchQueryConstructor;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchQuerydata;
@@ -35,10 +38,6 @@ import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchUtil;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 import it.gov.pagopa.logextractor.util.external.selfcare.SelfCareApiHandler;
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.model.ZipParameters;
-import net.lingala.zip4j.model.enums.CompressionLevel;
-import net.lingala.zip4j.model.enums.EncryptionMethod;
 
 @Service
 public class LogServiceImpl implements LogService{
@@ -63,6 +62,15 @@ public class LogServiceImpl implements LogService{
 	
 	@Value("${external.selfcare.encodedIpaCode.url}")
 	String selfCareEncodedIpaCodeURL;
+	
+	@Value("${external.notification.getLegalFactDownloadMetadata.url}")
+	String legalFactDownloadMetadataURL;
+	
+	@Value("${external.notification.getNotificationAttachmentDownloadMetadata.url}")
+	String notificationAttachmentDownloadMetadataURL;
+	
+	@Value("${external.notification.getPaymentAttachmentDownloadMetadata.url}")
+	String paymentAttachmentDownloadMetadataURL;
 	
 	@Autowired
 	NotificationApiHandler notificationApiHandler;
@@ -107,7 +115,7 @@ public class LogServiceImpl implements LogService{
 			}
 		}
 		
-		return ResponseConstructor.createSimpleLogResponse(openSearchResponse,Constants.FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
+		return ResponseConstructor.createSimpleLogResponse(openSearchResponse,Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
 	}
 
 
@@ -138,7 +146,7 @@ public class LogServiceImpl implements LogService{
 				notifications.add(notification);
 			}
 		}
-		return ResponseConstructor.createCsvLogResponse(notifications, Constants.FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
+		return ResponseConstructor.createCsvLogResponse(notifications, Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
 	}
 	
 	@Override
@@ -159,14 +167,71 @@ public class LogServiceImpl implements LogService{
 			openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 		}
 
-		return ResponseConstructor.createSimpleLogResponse(openSearchResponse,Constants.FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
+		return ResponseConstructor.createSimpleLogResponse(openSearchResponse,Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
 		
 	}
 	
 	@Override
 	public DownloadArchiveResponseDto getNotificationInfoLogs(String iun) throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		OpenSearchApiHandler openSearchHandler = new OpenSearchApiHandler();
+        OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
+        NotificationApiHandler notificationHandler = new NotificationApiHandler();
+        ArrayList<String> openSearchResponse = null;
+        HashMap<String, Object> queryParams = new HashMap<>();
+        queryParams.put("iun", iun);
+        OpenSearchQuerydata queryData = queryConstructor.prepareQueryData("pn-logs", queryParams, null, null);
+        ArrayList<OpenSearchQuerydata> listOfQueryData = new ArrayList<>();
+        listOfQueryData.add(queryData);
+        String query = queryConstructor.createBooleanMultiSearchQuery(listOfQueryData);
+        System.out.println("Query:\n" + query);
+        
+//        openSearchResponse = openSearchHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
+        
+        Map<String, String> legalFactIds = notificationHandler.getNotificationLegalFactIdsAndTimestamp(notificationURL, iun);
+        String docIdx = notificationHandler.getDocumentId(notificationURL, iun);
+        ArrayList<PaymentDocumentData> paymentData = notificationHandler.getNotificationPaymentKeys(notificationURL, iun);
+        
+        System.out.println(docIdx);
+        System.out.println(paymentData);
+        System.out.println(paymentData.size());
+        System.out.println(paymentData.get(0).getPaymentKeys().size());
+        System.out.println(paymentData.get(0).getPaymentKeys());
+        
+		FileUtilities utils = new FileUtilities();
+        
+		// send request to
+		// '/delivery-push/{iun}/legal-facts/{legalFactType}/{legalFactId}'
+//		String urlForLegalFactDownload = notificationHandler.getLegalFactMetadata(legalFactDownloadMetadataURL, iun, legalFactIds.get("legalFactId"), legalFactIds.get("legalFactType"));
+		
+		
+//		System.out.println(urlForLegalFactDownload);
+		
+//		byte[] legalFactByteArr = notificationHandler.getFile(urlForLegalFactDownload);
+//		File legalFactFile = utils.getFile(Constants.LEGAL_FACT_FILE_NAME, Constants.TXT_EXTENSION);
+//		FileUtils.writeByteArrayToFile(legalFactFile, legalFactByteArr);
+
+		// send request to
+		// /delivery/notifications/sent/{iun}/attachments/documents/{docIdx}
+		String urlForNotificationDocument = notificationHandler
+				.getNotificationDocuments(notificationAttachmentDownloadMetadataURL, iun, docIdx);
+		
+		byte[] notificationDocumentByteArr = notificationHandler.getFile(urlForNotificationDocument);
+		File notificationDocumentFile = utils.getFile(Constants.NOTIFICAION_DOCUMENT_FILE_NAME, Constants.TXT_EXTENSION);
+		FileUtils.writeByteArrayToFile(notificationDocumentFile, notificationDocumentByteArr);
+
+		// send requests to
+		// /delivery/notifications/sent/{iun}/attachments/payment/{recipientIdx}/{attachmentName}
+		for (int recipients = 0; recipients < paymentData.size(); recipients++) {
+			paymentData.get(recipients).getPaymentKeys().forEach((key, value) -> {
+				if (value != null) {
+					String urlForPaymentDocument = notificationHandler
+							.getPaymentDocuments(paymentAttachmentDownloadMetadataURL, iun, value);
+				}
+			});
+		}
+
+        return null;
+    
 	}
 		
 	public DownloadArchiveResponseDto getDeanonymizedPersonLogs(RecipientTypes recipientType, String dateFrom, String dateTo, String ticketNumber, String taxid, String iun) throws IOException {
@@ -202,7 +267,7 @@ public class LogServiceImpl implements LogService{
 				deanonymizedOpenSearchResponse = OpenSearchUtil.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL);
 			}
 		}
-		return ResponseConstructor.createSimpleLogResponse(deanonymizedOpenSearchResponse,Constants.FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
+		return ResponseConstructor.createSimpleLogResponse(deanonymizedOpenSearchResponse,Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
 
 	}
 }
