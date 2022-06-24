@@ -14,8 +14,10 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
@@ -44,6 +46,9 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class LogServiceImpl implements LogService{
+	@Autowired
+	@Qualifier("simpleRestTemplate")
+	RestTemplate client;
 	
 	@Value("${external.denomination.ensureRecipientByExternalId.url}")
 	String getUniqueIdURL;
@@ -287,7 +292,7 @@ public class LogServiceImpl implements LogService{
 			log.info("Executing query:"+query);
 			openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 			log.info("Deanonymizing results...");
-			deanonymizedOpenSearchResponse = OpenSearchUtil.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL);	
+			deanonymizedOpenSearchResponse = OpenSearchUtil.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL, deanonimizationApiHandler);	
 		} else{
 			//use case 4
 			if (iun!=null && ticketNumber!=null) {
@@ -300,7 +305,7 @@ public class LogServiceImpl implements LogService{
 				log.info("Executing query:"+query);
 				openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 				log.info("Deanonymizing results...");
-				deanonymizedOpenSearchResponse = OpenSearchUtil.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL);
+				deanonymizedOpenSearchResponse = OpenSearchUtil.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL, deanonimizationApiHandler);
 			}
 		}
 		log.info("Constructing response...");

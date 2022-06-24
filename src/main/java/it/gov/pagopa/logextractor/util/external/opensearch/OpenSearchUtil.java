@@ -15,8 +15,7 @@ public class OpenSearchUtil {
 	 * @param getTaxCodeURL the url of deanonymization service
 	 * @return deanonymizedDocuments the deanonymized documents 
 	 */
-	public static ArrayList<String> toDeanonymizedDocuments(ArrayList<String> anonymizedDocuments, String getTaxCodeURL){
-		DeanonimizationApiHandler handler = new DeanonimizationApiHandler();
+	public static ArrayList<String> toDeanonymizedDocuments(ArrayList<String> anonymizedDocuments, String getTaxCodeURL, DeanonimizationApiHandler handler){
 		ArrayList<String> deanonymizedDocuments = new ArrayList<String>();
 		for(int i=0; i<anonymizedDocuments.size(); i++) {
 			String uuid = JsonUtilities.getValue(anonymizedDocuments.get(i), "uid");
