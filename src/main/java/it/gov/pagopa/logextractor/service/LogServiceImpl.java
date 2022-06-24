@@ -233,14 +233,13 @@ public class LogServiceImpl implements LogService{
         
 		// send request to
 		// '/delivery-push/{iun}/legal-facts/{legalFactType}/{legalFactId}'
-//		String urlForLegalFactDownload = notificationHandler.getLegalFactMetadata(legalFactDownloadMetadataURL, iun, legalFactIds.get("legalFactId"), legalFactIds.get("legalFactType"));
+		String urlForLegalFactDownload = notificationHandler.getLegalFactMetadata(legalFactDownloadMetadataURL, iun, legalFactIds.get("legalFactId"), legalFactIds.get("legalFactType"));
 		
+		System.out.println(urlForLegalFactDownload);
 		
-//		System.out.println(urlForLegalFactDownload);
-		
-//		byte[] legalFactByteArr = notificationHandler.getFile(urlForLegalFactDownload);
-//		File legalFactFile = utils.getFile(Constants.LEGAL_FACT_FILE_NAME, Constants.TXT_EXTENSION);
-//		FileUtils.writeByteArrayToFile(legalFactFile, legalFactByteArr);
+		byte[] legalFactByteArr = notificationHandler.getFile(urlForLegalFactDownload);
+		File legalFactFile = utils.getFile(Constants.LEGAL_FACT_FILE_NAME, Constants.TXT_EXTENSION);
+		FileUtils.writeByteArrayToFile(legalFactFile, legalFactByteArr);
 
 		// send request to
 		// /delivery/notifications/sent/{iun}/attachments/documents/{docIdx}

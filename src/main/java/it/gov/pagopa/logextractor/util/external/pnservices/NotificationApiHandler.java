@@ -71,12 +71,8 @@ public class NotificationApiHandler {
 		acceptedTypes.add(MediaType.APPLICATION_JSON);
 		requestHeaders.setAccept(acceptedTypes);
 		String url = String.format(externalServiceUrl, iun, legalFactType, legalFactId);
-		ResponseEntity<LegalFactDownloadMetadataResponseDto> response = client.getForEntity(url, LegalFactDownloadMetadataResponseDto.class);
-//		LegalFactDownloadMetadataResponseDto response = client.getForObject(url, LegalFactDownloadMetadataResponseDto.class);
-		System.out.println(response);
-//		System.out.println(response);
-//		return response.getUrl();
-		return "aide";
+		LegalFactDownloadMetadataResponseDto response = client.getForObject(url, LegalFactDownloadMetadataResponseDto.class);
+		return response.getUrl();
 	}
 	
 	public String getNotificationDocuments(String externalServiceUrl, String iun, String docIdx) {
