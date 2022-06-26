@@ -13,6 +13,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -94,7 +95,7 @@ public class LogServiceImpl implements LogService{
 
 	@Override
 	public DownloadArchiveResponseDto getAnonymizedPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId) throws IOException {
-		log.info("Anonymized logs retrieve process - START - ticketNumber={}", ticketNumber);
+		log.info("Anonymized logs retrieve process - START - user={}, ticket number={}", MDC.get("user_identifier"), ticketNumber);
 		//TODO: Add audit trail log
 		long millis = Instant.now().getEpochSecond();
 		ArrayList<String> openSearchResponse = null;
@@ -135,7 +136,7 @@ public class LogServiceImpl implements LogService{
 
 	@Override
 	public DownloadArchiveResponseDto getMonthlyNotifications(String ticketNumber, String referenceMonth, String ipaCode) throws IOException, ParseException,CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
-		log.info("Monthly notifications retrieve process - START - ticketNumber={}", ticketNumber);
+		log.info("Monthly notifications retrieve process - START - user={}, ticket number={}", MDC.get("user_identifier"), ticketNumber);
 		//TODO: Add audit trail log
 		long millis = Instant.now().getEpochSecond();
 		LocalDate startDate = LocalDate.parse(StringUtils.removeIgnoreCase(referenceMonth, "-")+"01", DateTimeFormatter.BASIC_ISO_DATE);
@@ -178,7 +179,7 @@ public class LogServiceImpl implements LogService{
 	
 	@Override
 	public DownloadArchiveResponseDto getTraceIdLogs(String dateFrom, String dateTo, String traceId) throws IOException {
-		log.info("Anonymized logs retrieve process - START");
+		log.info("Anonymized logs retrieve process - START - user={}", MDC.get("user_identifier"));
 		//TODO: Add audit trail log
 		long millis = Instant.now().getEpochSecond();
 		ArrayList<String> openSearchResponse = null;
@@ -266,7 +267,7 @@ public class LogServiceImpl implements LogService{
 	}
 		
 	public DownloadArchiveResponseDto getDeanonymizedPersonLogs(RecipientTypes recipientType, String dateFrom, String dateTo, String ticketNumber, String taxid, String iun) throws IOException {
-		log.info("Deanonymized logs retrieve process - START - ticketNumber={}", ticketNumber);
+		log.info("Deanonymized logs retrieve process - START - user={}, ticket number={}", MDC.get("user_identifier"), ticketNumber);
 		//TODO: Add audit trail log
 		long millis = Instant.now().getEpochSecond();
 		ArrayList<String> openSearchResponse = null;

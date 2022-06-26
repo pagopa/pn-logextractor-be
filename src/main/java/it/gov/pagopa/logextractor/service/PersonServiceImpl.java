@@ -42,7 +42,7 @@ public class PersonServiceImpl implements PersonService {
 
 	@Override
 	public GetBasicDataResponseDto getPersonId(RecipientTypes recipientType, String ticketNumber, String taxId) throws HttpServerErrorException {
-		log.info("Internal id retrieve process - START");
+		log.info("Internal id retrieve process - START - user={}, ticket number={}", MDC.get("user_identifier"), ticketNumber);
 		long millis = Instant.now().getEpochSecond();
 		log.info("Calling deanonimization service, recipientType={}, taxId={}", recipientType, taxId);
 		GetBasicDataResponseDto response =  handler.getUniqueIdentifierForPerson(recipientType, taxId, getUniqueIdURL);
