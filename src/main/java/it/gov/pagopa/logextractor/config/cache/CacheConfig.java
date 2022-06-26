@@ -8,7 +8,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Configuration
+@Slf4j
 @EnableScheduling
 public class CacheConfig {
 	
@@ -21,10 +24,12 @@ public class CacheConfig {
 	}
 	
 	@Scheduled(cron = "0 0 22 * * *")
+	//@Scheduled(fixedRate = 6000)
 	public void evictAllcachesAtIntervals() {
 		SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
-		System.out.println("evicting caches at: " + formatter.format(System.currentTimeMillis()));
+		log.info("Evicting caches at: " + formatter.format(System.currentTimeMillis()));
 	    evictAllCaches();
+	    log.info("Caches evicted at: " + formatter.format(System.currentTimeMillis()));
 	}
 
 }

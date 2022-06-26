@@ -1,10 +1,7 @@
 package it.gov.pagopa.logextractor.util.external.opensearch;
 
-import java.time.Instant;
 import java.util.ArrayList;
-//import java.util.Base64;
 import java.util.List;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * Uility class for integrations with OpenSearch service
  * */
-@Slf4j
 @Component
 public class OpenSearchApiHandler {
 	
@@ -39,7 +33,6 @@ public class OpenSearchApiHandler {
 	 * @return The documents list contained into the Opensearch response
 	 * */
 	public ArrayList<String> getDocumentsByMultiSearchQuery(String query, String host, String basicAuthUsername, String basicAuthPassword) {
-		long millis = Instant.now().getEpochSecond();
 		HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.setBasicAuth(basicAuthUsername, basicAuthPassword);
@@ -48,7 +41,6 @@ public class OpenSearchApiHandler {
         requestHeaders.setAccept(acceptedTypes);
         HttpEntity<String> request = new HttpEntity<String>(query, requestHeaders);
         ResponseEntity<String> response = client.exchange(host+"/_msearch", HttpMethod.GET, request, String.class);
-        log.info("Query execution completed in {} milliseconds", Instant.now().getEpochSecond() - millis);
         return getDocuments(response.getBody());
 	}
 	

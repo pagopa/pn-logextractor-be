@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,8 +97,7 @@ public class LogServiceImpl implements LogService{
 	@Override
 	public DownloadArchiveResponseDto getAnonymizedPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId) throws IOException {
 		log.info("Anonymized logs retrieve process - START - user={}, ticket number={}", MDC.get("user_identifier"), ticketNumber);
-		//TODO: Add audit trail log
-		long millis = Instant.now().getEpochSecond();
+		long millis = System.currentTimeMillis();
 		ArrayList<String> openSearchResponse = null;
 		ArrayList<OpenSearchQuerydata> queryData = new ArrayList<OpenSearchQuerydata>();
 		HashMap<String, Object> queryParams = new HashMap<String, Object>();
@@ -111,7 +111,7 @@ public class LogServiceImpl implements LogService{
 					new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 			log.info("Constructing Opensearch query...");
 			query = queryConstructor.createBooleanMultiSearchQuery(queryData);
-			log.info("Executing query:"+query);
+			log.info("Executing query:"+ RegExUtils.removeAll(query, "\n"));
 			openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 		} else {
 			// use case 8
@@ -119,26 +119,25 @@ public class LogServiceImpl implements LogService{
 				log.info("Getting anonymized path, notification={}", iun);
 				String legalStartDate = notificationApiHandler.getNotificationLegalStartDate(notificationURL, iun);	
 				String dateIn3Months = OffsetDateTime.parse(legalStartDate).plusMonths(3).toString();
-				queryParams.put("iun", iun);
+				queryParams.put("iun.keyword", iun);
 				queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
 						new OpenSearchRangeQueryData("@timestamp", legalStartDate, dateIn3Months), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 				log.info("Constructing Opensearch query...");
 				query = queryConstructor.createBooleanMultiSearchQuery(queryData);
-				log.info("Executing query:"+query);
+				log.info("Executing query:" + RegExUtils.removeAll(query, "\n"));
 				openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 			}
 		}
-		log.info("Constructing response...");
+		log.info("Query execution completed in {} milliseconds, constructing response...", System.currentTimeMillis() - millis);
 		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(openSearchResponse,Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
-		log.info("Anonymized logs retrieve process - END in {} milliseconds", Instant.now().getEpochSecond() - millis);
+		log.info("Anonymized logs retrieve process - END in {} milliseconds", System.currentTimeMillis() - millis);
 		return response;
 	}
 
 	@Override
 	public DownloadArchiveResponseDto getMonthlyNotifications(String ticketNumber, String referenceMonth, String ipaCode) throws IOException, ParseException,CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
 		log.info("Monthly notifications retrieve process - START - user={}, ticket number={}", MDC.get("user_identifier"), ticketNumber);
-		//TODO: Add audit trail log
-		long millis = Instant.now().getEpochSecond();
+		long millis = System.currentTimeMillis();
 		LocalDate startDate = LocalDate.parse(StringUtils.removeIgnoreCase(referenceMonth, "-")+"01", DateTimeFormatter.BASIC_ISO_DATE);
 		LocalDate endDate = startDate.plusMonths(1);
 		String finaldatePart = "T00:00:00.000Z";
@@ -171,17 +170,16 @@ public class LogServiceImpl implements LogService{
 				notifications.add(notification);
 			}
 		}
-		log.info("Constructing response...");
+		log.info("Notification details recovered in {} milliseconds, constructing response...", System.currentTimeMillis() - millis);
 		DownloadArchiveResponseDto response = ResponseConstructor.createCsvLogResponse(notifications, Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
-		log.info("Monthly notifications retrieve process - END in {} milliseconds", Instant.now().getEpochSecond() - millis);
+		log.info("Monthly notifications retrieve process - END in {} milliseconds", System.currentTimeMillis() - millis);
 		return response;
 	}
 	
 	@Override
 	public DownloadArchiveResponseDto getTraceIdLogs(String dateFrom, String dateTo, String traceId) throws IOException {
 		log.info("Anonymized logs retrieve process - START - user={}", MDC.get("user_identifier"));
-		//TODO: Add audit trail log
-		long millis = Instant.now().getEpochSecond();
+		long millis = System.currentTimeMillis();
 		ArrayList<String> openSearchResponse = null;
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		//use case 10
@@ -195,12 +193,12 @@ public class LogServiceImpl implements LogService{
 			listOfQueryData.add(queryData);
 			log.info("Constructing Opensearch query...");
 			String query = queryConstructor.createBooleanMultiSearchQuery(listOfQueryData);
-			log.info("Executing query:"+query);
+			log.info("Executing query:"+ RegExUtils.removeAll(query, "\n"));
 			openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 		}
-		log.info("Constructing response...");
+		log.info("Query execution completed in {} milliseconds, constructing response...", System.currentTimeMillis() - millis);
 		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(openSearchResponse,Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
-		log.info("Anonymized logs retrieve process - END in {} milliseconds", Instant.now().getEpochSecond() - millis);
+		log.info("Anonymized logs retrieve process - END in {} milliseconds", System.currentTimeMillis() - millis);
 		return response;
 	}
 	
@@ -268,8 +266,7 @@ public class LogServiceImpl implements LogService{
 		
 	public DownloadArchiveResponseDto getDeanonymizedPersonLogs(RecipientTypes recipientType, String dateFrom, String dateTo, String ticketNumber, String taxid, String iun) throws IOException {
 		log.info("Deanonymized logs retrieve process - START - user={}, ticket number={}", MDC.get("user_identifier"), ticketNumber);
-		//TODO: Add audit trail log
-		long millis = Instant.now().getEpochSecond();
+		long millis = System.currentTimeMillis();
 		ArrayList<String> openSearchResponse = null;
 		ArrayList<OpenSearchQuerydata> queryData = new ArrayList<OpenSearchQuerydata>();
 		HashMap<String, Object> queryParams = new HashMap<String, Object>();
@@ -289,28 +286,28 @@ public class LogServiceImpl implements LogService{
 					new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 			log.info("Constructing Opensearch query...");
 			query = queryConstructor.createBooleanMultiSearchQuery(queryData);
-			log.info("Executing query:"+query);
+			log.info("Executing query:"+ RegExUtils.removeAll(query, "\n"));
 			openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
-			log.info("Deanonymizing results...");
+			log.info("Query execution completed in {} milliseconds, Deanonymizing results...", System.currentTimeMillis() - millis);
 			deanonymizedOpenSearchResponse = OpenSearchUtil.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL, deanonimizationApiHandler);	
 		} else{
 			//use case 4
 			if (iun!=null && ticketNumber!=null) {
 				log.info("Getting deanonymized path, notification={}", iun);
-				queryParams.put("iun", iun);
+				queryParams.put("iun.keyword", iun);
 				queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
 						new OpenSearchRangeQueryData("@timestamp", legalStartDate, dateIn3Months), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 				log.info("Constructing Opensearch query...");
 				query = queryConstructor.createBooleanMultiSearchQuery(queryData);
-				log.info("Executing query:"+query);
+				log.info("Executing query:"+ RegExUtils.removeAll(query, "\n"));
 				openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
-				log.info("Deanonymizing results...");
+				log.info("Query execution completed in {} milliseconds, Deanonymizing results...", System.currentTimeMillis() - millis);
 				deanonymizedOpenSearchResponse = OpenSearchUtil.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL, deanonimizationApiHandler);
 			}
 		}
-		log.info("Constructing response...");
+		log.info("Deanonymization completed in {} milliseconds, Constructing response...", System.currentTimeMillis() - millis);
 		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(deanonymizedOpenSearchResponse,Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
-		log.info("Deanonymized logs retrieve process - END in {} milliseconds", Instant.now().getEpochSecond() - millis);
+		log.info("Deanonymized logs retrieve process - END in {} milliseconds", System.currentTimeMillis() - millis);
 		return response;
 	}
 }
