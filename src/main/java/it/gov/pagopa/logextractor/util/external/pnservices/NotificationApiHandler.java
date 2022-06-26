@@ -135,7 +135,7 @@ public class NotificationApiHandler {
 	 * @return the notification legal fact id, type and timestamp
 	 */
 	public Map<String, String> getNotificationLegalFactIdsAndTimestamp(String url, String iun) {
-		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("simpleRestTemplate");
+		//RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("simpleRestTemplate");
 		HttpHeaders requestHeaders = new HttpHeaders();
 		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
 		List<MediaType> acceptedTypes = new ArrayList<MediaType>();
@@ -165,7 +165,7 @@ public class NotificationApiHandler {
 	}
 	
 	public ArrayList<PaymentDocumentData> getNotificationPaymentKeys(String url, String iun) {
-		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("simpleRestTemplate");
+		//RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("simpleRestTemplate");
 		HttpHeaders requestHeaders = new HttpHeaders();
 		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
 		List<MediaType> acceptedTypes = new ArrayList<MediaType>();
