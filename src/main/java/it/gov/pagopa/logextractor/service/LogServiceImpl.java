@@ -3,7 +3,6 @@ package it.gov.pagopa.logextractor.service;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -204,63 +203,62 @@ public class LogServiceImpl implements LogService{
 	
 	@Override
 	public DownloadArchiveResponseDto getNotificationInfoLogs(String iun) throws IOException {
-		OpenSearchApiHandler openSearchHandler = new OpenSearchApiHandler();
         OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
-        NotificationApiHandler notificationHandler = new NotificationApiHandler();
         ArrayList<String> openSearchResponse = null;
+                
+        Map<String, String> legalFactIds = notificationApiHandler.getNotificationLegalFactIdsAndTimestamp(notificationURL, iun);
+        String docIdx = notificationApiHandler.getDocumentId(notificationURL, iun);
+        ArrayList<PaymentDocumentData> paymentData = notificationApiHandler.getNotificationPaymentKeys(notificationURL, iun);
+        
+        String dateIn3Months = OffsetDateTime.parse(legalFactIds.get("timestamp")).plusMonths(3).toString();
+        
+		FileUtilities utils = new FileUtilities();
+		ArrayList<File> filesToAdd = new ArrayList<>();
+        
+		String urlForLegalFactDownload = notificationApiHandler.getLegalFactMetadata(legalFactDownloadMetadataURL, iun, legalFactIds.get("legalFactId"), legalFactIds.get("legalFactType"));
+		
+		System.out.println(urlForLegalFactDownload);
+		
+		byte[] legalFactByteArr = notificationApiHandler.getNotificationFile(urlForLegalFactDownload);
+		File legalFactFile = utils.getFile(Constants.LEGAL_FACT_FILE_NAME, Constants.PDF_EXTENSION);
+		FileUtils.writeByteArrayToFile(legalFactFile, legalFactByteArr);
+		filesToAdd.add(legalFactFile);
+
+		String urlForNotificationDocument = notificationApiHandler.getNotificationDocuments(notificationAttachmentDownloadMetadataURL, iun, docIdx);
+		
+		byte[] notificationDocumentByteArr = notificationApiHandler.getNotificationFile(urlForNotificationDocument);
+		File notificationDocumentFile = utils.getFile(Constants.NOTIFICAION_DOCUMENT_FILE_NAME, Constants.PDF_EXTENSION);
+		FileUtils.writeByteArrayToFile(notificationDocumentFile, notificationDocumentByteArr);
+		filesToAdd.add(notificationDocumentFile);
+
+		for (int recipients = 0; recipients < paymentData.size(); recipients++) {
+			Map<String, String> paymentKeys = paymentData.get(recipients).getPaymentKeys();
+			for (String key : paymentKeys.keySet()) {
+				if (paymentKeys.get(key) != null) {
+					String urlForPaymentDocument = notificationApiHandler.getPaymentDocuments(paymentAttachmentDownloadMetadataURL, iun, recipients, paymentKeys.get(key));
+					System.out.println(urlForPaymentDocument);
+					byte[] paymentDocumentByteArr = notificationApiHandler.getNotificationFile(urlForPaymentDocument);
+					File paymentDocumentFile = utils.getFile(Constants.PAYMENT_DOCUMENT_FILE_NAME, Constants.PDF_EXTENSION);
+					FileUtils.writeByteArrayToFile(paymentDocumentFile, paymentDocumentByteArr);
+					filesToAdd.add(paymentDocumentFile);
+				}
+			}
+		}
+		
         HashMap<String, Object> queryParams = new HashMap<>();
-        queryParams.put("iun", iun);
-        OpenSearchQuerydata queryData = queryConstructor.prepareQueryData("pn-logs", queryParams, null, null);
+        queryParams.put("iun.keyword", iun);
+		OpenSearchQuerydata queryData = queryConstructor.prepareQueryData("pn-logs", queryParams,
+				new OpenSearchRangeQueryData("@timestamp", legalFactIds.get("timestamp"), dateIn3Months),
+				new OpenSearchSortFilter("@timestamp", SortOrders.ASC));
         ArrayList<OpenSearchQuerydata> listOfQueryData = new ArrayList<>();
         listOfQueryData.add(queryData);
         String query = queryConstructor.createBooleanMultiSearchQuery(listOfQueryData);
         System.out.println("Query:\n" + query);
         
-//        openSearchResponse = openSearchHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
-        
-        Map<String, String> legalFactIds = notificationHandler.getNotificationLegalFactIdsAndTimestamp(notificationURL, iun);
-        String docIdx = notificationHandler.getDocumentId(notificationURL, iun);
-        ArrayList<PaymentDocumentData> paymentData = notificationHandler.getNotificationPaymentKeys(notificationURL, iun);
-        
-        System.out.println(docIdx);
-        System.out.println(paymentData);
-        System.out.println(paymentData.size());
-        System.out.println(paymentData.get(0).getPaymentKeys().size());
-        System.out.println(paymentData.get(0).getPaymentKeys());
-        
-		FileUtilities utils = new FileUtilities();
-        
-		// send request to
-		// '/delivery-push/{iun}/legal-facts/{legalFactType}/{legalFactId}'
-		String urlForLegalFactDownload = notificationHandler.getLegalFactMetadata(legalFactDownloadMetadataURL, iun, legalFactIds.get("legalFactId"), legalFactIds.get("legalFactType"));
+		openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 		
-		System.out.println(urlForLegalFactDownload);
-		
-		byte[] legalFactByteArr = notificationHandler.getFile(urlForLegalFactDownload);
-		File legalFactFile = utils.getFile(Constants.LEGAL_FACT_FILE_NAME, Constants.TXT_EXTENSION);
-		FileUtils.writeByteArrayToFile(legalFactFile, legalFactByteArr);
-
-		// send request to
-		// /delivery/notifications/sent/{iun}/attachments/documents/{docIdx}
-		String urlForNotificationDocument = notificationHandler
-				.getNotificationDocuments(notificationAttachmentDownloadMetadataURL, iun, docIdx);
-		
-		byte[] notificationDocumentByteArr = notificationHandler.getFile(urlForNotificationDocument);
-		File notificationDocumentFile = utils.getFile(Constants.NOTIFICAION_DOCUMENT_FILE_NAME, Constants.TXT_EXTENSION);
-		FileUtils.writeByteArrayToFile(notificationDocumentFile, notificationDocumentByteArr);
-
-		// send requests to
-		// /delivery/notifications/sent/{iun}/attachments/payment/{recipientIdx}/{attachmentName}
-		for (int recipients = 0; recipients < paymentData.size(); recipients++) {
-			paymentData.get(recipients).getPaymentKeys().forEach((key, value) -> {
-				if (value != null) {
-					String urlForPaymentDocument = notificationHandler
-							.getPaymentDocuments(paymentAttachmentDownloadMetadataURL, iun, value);
-				}
-			});
-		}
-
-        return null;
+		DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(openSearchResponse, filesToAdd, Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
+        return response;
     
 	}
 		
