@@ -25,5 +25,5 @@ public interface LogService {
 	 *         its files
 	 * @throws IOException
 	 */
-	DownloadArchiveResponseDto getNotificationInfoLogs(String iun) throws IOException;
+	DownloadArchiveResponseDto getNotificationInfoLogs(String ticketNumber, String iun) throws IOException;
 }

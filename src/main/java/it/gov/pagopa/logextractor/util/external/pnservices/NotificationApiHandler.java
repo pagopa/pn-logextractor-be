@@ -66,6 +66,23 @@ public class NotificationApiHandler {
 	}
 	
 	/**
+	 * Performs a GET HTTP request to the PN external service to retrieve a
+	 * notification legal start date
+	 * 
+	 * @param url The PN external service base URL
+	 * @param iun The notification IUN
+	 * @return The notification legal start date
+	 */
+	public String getNotificationDetails(String externalServiceUrl, String iun) {
+		HttpHeaders requestHeaders = new HttpHeaders();
+		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+		List<MediaType> acceptedTypes = new ArrayList<MediaType>();
+		acceptedTypes.add(MediaType.APPLICATION_JSON);
+		requestHeaders.setAccept(acceptedTypes);
+		return client.getForEntity(externalServiceUrl + "/" + iun, String.class).getBody();
+	}
+	
+	/**
 	 * Performs a GET HTTP request to the PN external service to retrieve the legal
 	 * fact metadata of a notification
 	 * 
@@ -105,7 +122,6 @@ public class NotificationApiHandler {
 		acceptedTypes.add(MediaType.APPLICATION_JSON);
 		requestHeaders.setAccept(acceptedTypes);
 		String url = String.format(externalServiceUrl, iun, docIdx);
-		System.out.println(url);
 		NotificationAttachmentDownloadMetadataResponseDto response = client.getForObject(url,
 				NotificationAttachmentDownloadMetadataResponseDto.class);
 		return response.getUrl();
@@ -129,7 +145,6 @@ public class NotificationApiHandler {
 		acceptedTypes.add(MediaType.APPLICATION_JSON);
 		requestHeaders.setAccept(acceptedTypes);
 		String url = String.format(externalServiceUrl, iun, recipients, key);
-		System.out.println(url);
 		NotificationAttachmentDownloadMetadataResponseDto response = client.getForObject(url,
 				NotificationAttachmentDownloadMetadataResponseDto.class);
 		return response.getUrl();
@@ -149,81 +164,6 @@ public class NotificationApiHandler {
 		acceptedTypes.add(MediaType.APPLICATION_PDF);
 		requestHeaders.setAccept(acceptedTypes);
 		return client.getForObject(url, byte[].class);
-	}
-
-	/**
-	 * Performs a GET HTTP request to the PN external service to retrieve a
-	 * notification legal start date
-	 * 
-	 * @param url The PN external service base URL
-	 * @param iun The notification IUN
-	 * @return The notification legal start date
-	 */
-	@Cacheable(cacheNames="services")
-	public String getNotificationLegalStartDate(String url, String iun) {
-		HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-        List<MediaType> acceptedTypes = new ArrayList<MediaType>();
-        acceptedTypes.add(MediaType.APPLICATION_JSON);
-        requestHeaders.setAccept(acceptedTypes);
-        ResponseEntity<String> response = client.getForEntity(url+"/"+iun, String.class);
-        return getLegalStartDate(response.getBody());
-	}
-	
-	/**
-	 * Performs a GET HTTP request to the PN external service to retrieve a
-	 * notification legal fact id, type and timestamp
-	 * 
-	 * @param url the PN external service base URL
-	 * @param iun the notification iun
-	 * @return the notification legal fact id, type and timestamp
-	 */
-	public Map<String, String> getNotificationLegalFactIdsAndTimestamp(String url, String iun) {
-		HttpHeaders requestHeaders = new HttpHeaders();
-		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-		List<MediaType> acceptedTypes = new ArrayList<MediaType>();
-		acceptedTypes.add(MediaType.APPLICATION_JSON);
-		requestHeaders.setAccept(acceptedTypes);
-		var response = client.getForEntity(url + "/" + iun, String.class);
-		return getLegalFactIdsAndTimestamp(response.getBody());
-	}
-
-	/**
-	 * Performs a GET HTTP request to the PN external service to retrieve the id of
-	 * the documents that are attached to the notification
-	 * 
-	 * @param url the PN external service base URL
-	 * @param iun the notification iun
-	 * @return the document id
-	 */
-	public String getDocumentId(String url, String iun) {
-		RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("simpleRestTemplate");
-		HttpHeaders requestHeaders = new HttpHeaders();
-		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-		List<MediaType> acceptedTypes = new ArrayList<MediaType>();
-		acceptedTypes.add(MediaType.APPLICATION_JSON);
-		requestHeaders.setAccept(acceptedTypes);
-		var response = client.getForEntity(url + "/" + iun, String.class);
-		return getId(response.getBody());
-	}
-	
-	/**
-	 * Performs a GET HTTP request to the PN external service to retrieve the
-	 * notification payment keys
-	 * 
-	 * @param url the PN external service base URL
-	 * @param iun the notification iun
-	 * @return list of {@link PaymentDocumentData}, containing the payment keys for
-	 *         a particular recipient
-	 */
-	public ArrayList<PaymentDocumentData> getNotificationPaymentKeys(String url, String iun) {
-		HttpHeaders requestHeaders = new HttpHeaders();
-		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-		List<MediaType> acceptedTypes = new ArrayList<MediaType>();
-		acceptedTypes.add(MediaType.APPLICATION_JSON);
-		requestHeaders.setAccept(acceptedTypes);
-		var response = client.getForEntity(url + "/" + iun, String.class);
-		return getPaymentKeys(response.getBody());
 	}
 	
 	/**
@@ -260,7 +200,7 @@ public class NotificationApiHandler {
 	 *                         notification details
 	 * @return The notification legal start date
 	 */
-	private String getLegalStartDate(String notificationInfo) {
+	public String getLegalStartDate(String notificationInfo) {
 		String legalStartDate = null;
 		JSONArray timelineObjectsArray = new JSONObject(notificationInfo).getJSONArray("timeline");
         for(int index = 0; index < timelineObjectsArray.length(); index++) {
@@ -280,7 +220,7 @@ public class NotificationApiHandler {
 	 *                         notification details
 	 * @return the notification legal fact id, type and timestamp
 	 */
-	private Map<String, String> getLegalFactIdsAndTimestamp(String notificationInfo) {
+	public  Map<String, String> getLegalFactIdsAndTimestamp(String notificationInfo) {
 		Map<String, String> legalFactIds = new HashMap<>();
 		JSONArray timelineObjectsArray = new JSONObject(notificationInfo).getJSONArray("timeline");
 		for (int index = 0; index < timelineObjectsArray.length(); index++) {
@@ -306,14 +246,13 @@ public class NotificationApiHandler {
 	 *                         notification details
 	 * @return the document id
 	 */
-	private String getId(String notificationInfo) {
-		String docIdx = null;
+	public ArrayList<String> getDocumentIds(String notificationInfo) {
+		ArrayList<String> docIdxs = new ArrayList<String>();
 		JSONArray documentObjectsArray = new JSONObject(notificationInfo).getJSONArray("documents");
 		for (int index = 0; index < documentObjectsArray.length(); index++) {
-			JSONObject documentObject = documentObjectsArray.getJSONObject(index);
-			docIdx = documentObject.getString("docIdx");
+			docIdxs.add(documentObjectsArray.getJSONObject(index).getString("docIdx"));
 		}
-		return docIdx;
+		return docIdxs;
 	}
 	
 	/**
@@ -323,31 +262,29 @@ public class NotificationApiHandler {
 	 *                         notification details
 	 * @return the keys of each recipients
 	 */
-	private ArrayList<PaymentDocumentData> getPaymentKeys(String notificationInfo) {
+	public ArrayList<PaymentDocumentData> getPaymentKeys(String notificationInfo) {
 		ArrayList<PaymentDocumentData> paymentData = new ArrayList<PaymentDocumentData>();
 		Map<String, String> paymentKeys = new HashMap<>();
 		JSONArray recipientsObjectsArray = new JSONObject(notificationInfo).getJSONArray("recipients");
 		for (int recipient = 0; recipient < recipientsObjectsArray.length(); recipient++) {
 			JSONObject paymentObject = recipientsObjectsArray.getJSONObject(recipient).getJSONObject("payment");
-			
-			try {
+			if(!paymentObject.isNull("pagoPaForm") && paymentObject.has(paymentObject.getJSONObject("pagoPaForm").getJSONObject("ref").getString("key"))) {
 				paymentKeys.put("pagoPaFormKey", paymentObject.getJSONObject("pagoPaForm").getJSONObject("ref").getString("key"));
-			} catch(JSONException e) {
+			} else {
 				paymentKeys.put("pagoPaFormKey", null);
 			}
 			
-			try {
+			if(!paymentObject.isNull("f24flatRate") && paymentObject.has(paymentObject.getJSONObject("f24flatRate").getJSONObject("ref").getString("key"))) {
 				paymentKeys.put("f24flatRateKey", paymentObject.getJSONObject("f24flatRate").getJSONObject("ref").getString("key"));
-			} catch(JSONException e) {
+			} else {
 				paymentKeys.put("f24flatRateKey", null);
 			}
 			
-			try {
+			if(!paymentObject.isNull("f24standard") && paymentObject.has(paymentObject.getJSONObject("f24standard").getJSONObject("ref").getString("key"))) {
 				paymentKeys.put("f24standardKey", paymentObject.getJSONObject("f24standard").getJSONObject("ref").getString("key"));
-			} catch(JSONException e) {
+			} else {
 				paymentKeys.put("f24standardKey", null);
 			}
-			
 			paymentData.add(new PaymentDocumentData(recipient, paymentKeys));
 		}
 		return paymentData;

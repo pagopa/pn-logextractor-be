@@ -6,6 +6,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.MDC;
@@ -18,9 +19,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import it.gov.pagopa.logextractor.util.Constants;
 import it.gov.pagopa.logextractor.util.RandomGenerator;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This WebFilter puts in the MDC log map a unique identifier for incoming requests.
@@ -46,10 +49,12 @@ public class MDCWebFilter extends OncePerRequestFilter {
 	
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-    	RandomGenerator traceIdGenerator = new RandomGenerator();
-    	MDC.put("trace_id", traceIdGenerator.generateRandomTraceId());
-    	MDC.put("user_identifier", getUserIdentifier(request.getHeader("Auth")));
+    	if(StringUtils.isBlank(request.getHeader("Auth"))) {
+    		throw new RuntimeException("No Auth header found for current request");
+    	}
         try {
+        	MDC.put("trace_id", new RandomGenerator().generateRandomTraceId());
+        	MDC.put("user_identifier", getUserIdentifier(request.getHeader("Auth")));
             filterChain.doFilter(request, response);
         } finally {
             MDC.remove("trace_id");
@@ -67,7 +72,11 @@ public class MDCWebFilter extends OncePerRequestFilter {
         requestHeaders.set("Content-Length",String.valueOf(accessToken.getBytes().length));
         HttpEntity<String> request = new HttpEntity<String>(requestBody.toString(), requestHeaders);
         String response = client.postForObject(url, request, String.class);
-        return deanonimizationHandler.getUniqueIdentifierForPerson(RecipientTypes.PF, getUserUniqueIdentifier(response), getUniqueIdURL).getData();
+        String identifier = getUserUniqueIdentifier(response);
+        if(StringUtils.isBlank(identifier)) {
+    		throw new RuntimeException("Exception in " + MDC.get("trace_id") + " process, no identifier for logged in user");
+    	}
+        return deanonimizationHandler.getUniqueIdentifierForPerson(RecipientTypes.PF, identifier, getUniqueIdURL).getData();
 	}
 	
 	private String getUserUniqueIdentifier(String userAttributes) {
@@ -75,8 +84,7 @@ public class MDCWebFilter extends OncePerRequestFilter {
 		for(int objIndex = 0; objIndex <attributes.length(); objIndex++) {
 			JSONObject currentAttribute = attributes.getJSONObject(objIndex);
 			String currentKey = currentAttribute.getString("Name");
-			//TODO: Get identifier attribute instead of email
-			if("email".equalsIgnoreCase(currentKey)) {
+			if((Constants.COGNITO_CUSTOM_ATTRIBUTE_PREFIX + "log_identifier").equalsIgnoreCase(currentKey)) {
 				return currentAttribute.getString("Value");
 			}
 		}

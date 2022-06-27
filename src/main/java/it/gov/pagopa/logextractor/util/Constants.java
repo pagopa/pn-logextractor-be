@@ -22,4 +22,5 @@ public class Constants {
 	public static final String PROBLEM_ERROR_CODE_PATTERN = "^[0-9]{3}-[0-9]{4}$";
 	public static final String PROBLEM_TITLE_PATTERN = "^[ -~]{0,64}$";
 	public static final String PROBLEM_DETAIL_PATTERN = "^.{0,1024}$";
+	public static final String COGNITO_CUSTOM_ATTRIBUTE_PREFIX = "custom:";
 }

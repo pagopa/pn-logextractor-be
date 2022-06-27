@@ -44,7 +44,7 @@ public class LogController {
 	
 	@PostMapping(value = "/notifications/info", produces="application/json")
 	public ResponseEntity<DownloadArchiveResponseDto> getNotificationInfoLogs(@RequestBody NotificationInfoRequestDto notificationInfo) throws IOException{
-		return ResponseEntity.ok().body(logService.getNotificationInfoLogs(notificationInfo.getIun()));
+		return ResponseEntity.ok().body(logService.getNotificationInfoLogs(notificationInfo.getTicketNumber(), notificationInfo.getIun()));
 	}
 	
 	@PostMapping(value = "/notifications/monthly", produces="application/json")
