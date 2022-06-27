@@ -36,7 +36,7 @@ public class PersonServiceImpl implements PersonService {
 		log.info("Calling deanonimization service, internalId={}", personId);
 		GetBasicDataResponseDto response = handler.getTaxCodeForPerson(personId, getTaxCodeURL);
 		log.info("Returning deanonimized data: " + response);
-		log.info("Tax id retrieve process - END in {} milliseconds", Instant.now().getEpochSecond() - millis);
+		log.info("Tax id retrieve process - END in {} milliseconds", System.currentTimeMillis() - millis);
 		return response;
 	}
 
@@ -47,7 +47,7 @@ public class PersonServiceImpl implements PersonService {
 		log.info("Calling deanonimization service, recipientType={}, taxId={}", recipientType, taxId);
 		GetBasicDataResponseDto response =  handler.getUniqueIdentifierForPerson(recipientType, taxId, getUniqueIdURL);
 		log.info("Returning deanonimized data: " + response);
-		log.info("Internal id retrieve process - END in {} milliseconds", Instant.now().getEpochSecond() - millis);
+		log.info("Internal id retrieve process - END in {} milliseconds", System.currentTimeMillis() - millis);
 		return response;
 	}	
 }
