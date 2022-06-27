@@ -32,13 +32,15 @@ public class NotificationApiHandler {
 	RestTemplate client;
 	
 	/**
-	 * Performs a GET HTTP request to the PN external service to retrieve the general data of the notifications managed within a period
-	 * @param url The PN external service base URL
+	 * Performs a GET HTTP request to the PN external service to retrieve the
+	 * general data of the notifications managed within a period
+	 * 
+	 * @param url       The PN external service base URL
 	 * @param startDate The period start date
-	 * @param endDate The period end date
-	 * @param size The maximum number of results to be retrieved
+	 * @param endDate   The period end date
+	 * @param size      The maximum number of results to be retrieved
 	 * @return The list of notifications' general data
-	 * */
+	 */
 	@Cacheable(cacheNames="services")
 	public ArrayList<NotificationGeneralData> getNotificationsByPeriod(String url, HashMap<String, Object> params, 
 				String encodedIpaCode, int currentKey, ArrayList<NotificationGeneralData> notifications) {
@@ -63,6 +65,17 @@ public class NotificationApiHandler {
         return getNotificationsByPeriod(url, newParameters, encodedIpaCode, currentKey+1, notifications);
 	}
 	
+	/**
+	 * Performs a GET HTTP request to the PN external service to retrieve the legal
+	 * fact metadata of a notification
+	 * 
+	 * @param externalServiceUrl The PN external service base URL
+	 * @param iun                the notification IUN
+	 * @param legalFactId        the legal fact key
+	 * @param legalFactType      the legal fact category
+	 * @return a URL needed afterwards in order to retrieve a file for the
+	 *         notification
+	 */
 	public String getLegalFactMetadata(String externalServiceUrl, String iun,
 			String legalFactId, String legalFactType) {
 		HttpHeaders requestHeaders = new HttpHeaders();
@@ -75,6 +88,16 @@ public class NotificationApiHandler {
 		return response.getUrl();
 	}
 	
+	/**
+	 * Performs a GET HTTP request to the PN external service to retrieve the
+	 * attached documents to a notification
+	 * 
+	 * @param externalServiceUrl The PN external service base URL
+	 * @param iun                the notification IUN
+	 * @param docIdx             the document id
+	 * @return a URL needed afterwards in order to retrieve a file for the
+	 *         notification
+	 */
 	public String getNotificationDocuments(String externalServiceUrl, String iun, String docIdx) {
 		HttpHeaders requestHeaders = new HttpHeaders();
 		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -88,19 +111,38 @@ public class NotificationApiHandler {
 		return response.getUrl();
 	}
 
-	public String getPaymentDocuments(String externalServiceUrl, String iun, String key) {
+	/**
+	 * Performs a GET HTTP request to the PN external service to retrieve the
+	 * payment documents to a notification
+	 * 
+	 * @param externalServiceUrl The PN external service base URL
+	 * @param iun                the notification IUN
+	 * @param recipients         the specific recipient
+	 * @param key                the payment keys for the recipient
+	 * @return a URL needed afterwards in order to retrieve a file for the
+	 *         notification
+	 */
+	public String getPaymentDocuments(String externalServiceUrl, String iun, Integer recipients, String key) {
 		HttpHeaders requestHeaders = new HttpHeaders();
 		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
 		List<MediaType> acceptedTypes = new ArrayList<MediaType>();
 		acceptedTypes.add(MediaType.APPLICATION_JSON);
 		requestHeaders.setAccept(acceptedTypes);
-		String url = String.format(externalServiceUrl, iun, 0, key);
+		String url = String.format(externalServiceUrl, iun, recipients, key);
+		System.out.println(url);
 		NotificationAttachmentDownloadMetadataResponseDto response = client.getForObject(url,
 				NotificationAttachmentDownloadMetadataResponseDto.class);
 		return response.getUrl();
 	}
 	
-	public byte[] getFile(String url) {
+	/**
+	 * Performs a GET HTTP request to an URL to retrieve a file for notification
+	 * 
+	 * @param url the url to which the GET HTTP request should be made. The URL is
+	 *            given by a PN external service
+	 * @return a byte array containing a file
+	 */
+	public byte[] getNotificationFile(String url) {
 		HttpHeaders requestHeaders = new HttpHeaders();
 		requestHeaders.setContentType(MediaType.APPLICATION_PDF);
 		List<MediaType> acceptedTypes = new ArrayList<MediaType>();
@@ -110,11 +152,13 @@ public class NotificationApiHandler {
 	}
 
 	/**
-	 * Performs a GET HTTP request to the PN external service to retrieve a notification legal start date
+	 * Performs a GET HTTP request to the PN external service to retrieve a
+	 * notification legal start date
+	 * 
 	 * @param url The PN external service base URL
 	 * @param iun The notification IUN
 	 * @return The notification legal start date
-	 * */
+	 */
 	@Cacheable(cacheNames="services")
 	public String getNotificationLegalStartDate(String url, String iun) {
 		HttpHeaders requestHeaders = new HttpHeaders();
@@ -135,7 +179,6 @@ public class NotificationApiHandler {
 	 * @return the notification legal fact id, type and timestamp
 	 */
 	public Map<String, String> getNotificationLegalFactIdsAndTimestamp(String url, String iun) {
-		//RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("simpleRestTemplate");
 		HttpHeaders requestHeaders = new HttpHeaders();
 		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
 		List<MediaType> acceptedTypes = new ArrayList<MediaType>();
@@ -164,8 +207,16 @@ public class NotificationApiHandler {
 		return getId(response.getBody());
 	}
 	
+	/**
+	 * Performs a GET HTTP request to the PN external service to retrieve the
+	 * notification payment keys
+	 * 
+	 * @param url the PN external service base URL
+	 * @param iun the notification iun
+	 * @return list of {@link PaymentDocumentData}, containing the payment keys for
+	 *         a particular recipient
+	 */
 	public ArrayList<PaymentDocumentData> getNotificationPaymentKeys(String url, String iun) {
-		//RestTemplate client = (RestTemplate) ApplicationContextProvider.getBean("simpleRestTemplate");
 		HttpHeaders requestHeaders = new HttpHeaders();
 		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
 		List<MediaType> acceptedTypes = new ArrayList<MediaType>();
@@ -177,9 +228,11 @@ public class NotificationApiHandler {
 	
 	/**
 	 * Gets the general data of a notification
-	 * @param notificationResponse The PN external service response containing the notification general data
+	 * 
+	 * @param notificationResponse The PN external service response containing the
+	 *                             notification general data
 	 * @return A list containing all the notifications' general data
-	 * */
+	 */
 	private ArrayList<NotificationGeneralData> getNotificationsGeneralData(String notificationResponse) {
 		ArrayList<NotificationGeneralData> notificationsGeneralData = new ArrayList<NotificationGeneralData>();
 		JSONArray timelineObjectsArray = new JSONObject(notificationResponse).getJSONArray("resultsPage");
@@ -202,9 +255,11 @@ public class NotificationApiHandler {
 	
 	/**
 	 * Gets the legal start date of a notification
-	 * @param notificationInfo The PN external service response containing the notification details
+	 * 
+	 * @param notificationInfo The PN external service response containing the
+	 *                         notification details
 	 * @return The notification legal start date
-	 * */
+	 */
 	private String getLegalStartDate(String notificationInfo) {
 		String legalStartDate = null;
 		JSONArray timelineObjectsArray = new JSONObject(notificationInfo).getJSONArray("timeline");
