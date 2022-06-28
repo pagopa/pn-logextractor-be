@@ -40,7 +40,6 @@ public class NotificationApiHandler {
 	 * @param size      The maximum number of results to be retrieved
 	 * @return The list of notifications' general data
 	 */
-	@Cacheable(cacheNames="services")
 	public ArrayList<NotificationGeneralData> getNotificationsByPeriod(String url, HashMap<String, Object> params, 
 				String encodedIpaCode, int currentKey, ArrayList<NotificationGeneralData> notifications) {
 		HttpHeaders requestHeaders = new HttpHeaders();
