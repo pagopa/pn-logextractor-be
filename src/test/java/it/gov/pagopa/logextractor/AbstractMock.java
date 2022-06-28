@@ -4,12 +4,16 @@ import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.util.HashMap;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -45,12 +49,16 @@ public abstract class AbstractMock {
 	protected final String personUrl ="/logextractor/v1/logs/persons";
 	protected final String notificationUrl = "/logextractor/v1/logs/notifications/monthly";
 	protected final String processesUrl = "/logextractor/v1/logs/processes";
+	protected final String fakeHeader = "Basic YWxhZGRpbjpvcGVuc2VzYW1l";
+	protected final String authResponse = "{\"UserAttributes\":[{\"Name\":\"custom:log_identifier\",\"Value\":\"BRMRSS63A02A001D\"}]}";
 	private static ObjectMapper mapper = new ObjectMapper();
 	
+
 	@SuppressWarnings("unchecked")
 	protected void mockUniqueIdentifierForPerson(RestTemplate client) {
+		//The first return is used to simulate authentication
 		Mockito.when(client.postForObject(Mockito.anyString(),Mockito.any(), Mockito.any(Class.class)))
-				.thenReturn(EnsureRecipientByExternalIdResponseDto.builder().internalId("123").build());
+				.thenReturn(authResponse, EnsureRecipientByExternalIdResponseDto.builder().internalId("123").build());
 	}
 
 	@SuppressWarnings("unchecked")
