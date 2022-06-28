@@ -1,6 +1,7 @@
 package it.gov.pagopa.logextractor.dto.request;
 
 import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 import it.gov.pagopa.logextractor.annotation.PeriodOf3Months;
 import it.gov.pagopa.logextractor.util.Constants;
@@ -22,6 +23,7 @@ public class PersonLogsRequestDto extends BaseRequestDto {
 	private String personId;
 	
 	@Pattern(regexp = Constants.IUN_PATTERN)
+	@Size(min = 25, max = 25)
 	private String iun;
 	
 	@Pattern(regexp = Constants.INPUT_DATE_FORMAT)
