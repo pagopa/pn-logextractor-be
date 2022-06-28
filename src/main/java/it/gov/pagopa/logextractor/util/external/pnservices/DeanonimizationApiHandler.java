@@ -16,10 +16,8 @@ import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInterna
 import it.gov.pagopa.logextractor.util.RecipientTypes;
 
 /**
- * A utility class containing methods that make calls to Piattaforma Notifiche
- * deanonimization external service
- */
-
+ * Uility class for integrations with Piattaforma Notifiche de-anonymization service
+ * */
 @Component
 @EnableCaching
 public class DeanonimizationApiHandler {

@@ -16,6 +16,9 @@ import org.springframework.web.client.RestTemplate;
 import it.gov.pagopa.logextractor.config.ApplicationContextProvider;
 import it.gov.pagopa.logextractor.util.JsonUtilities;
 
+/**
+ * Uility class for integrations with Selfcare service
+ * */
 @Component
 public class SelfCareApiHandler {
 

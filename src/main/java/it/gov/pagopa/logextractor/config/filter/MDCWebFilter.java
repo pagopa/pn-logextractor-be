@@ -5,7 +5,6 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -18,15 +17,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import it.gov.pagopa.logextractor.util.Constants;
 import it.gov.pagopa.logextractor.util.RandomGenerator;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
-import lombok.extern.slf4j.Slf4j;
 
 /**
- * This WebFilter puts in the MDC log map a unique identifier for incoming requests.
+ * WebFilter that puts in the MDC log map a unique identifier for incoming requests.
  */
 @Component
 public class MDCWebFilter extends OncePerRequestFilter {

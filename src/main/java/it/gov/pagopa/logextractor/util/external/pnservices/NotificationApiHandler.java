@@ -1,13 +1,9 @@
 package it.gov.pagopa.logextractor.util.external.pnservices;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.function.Function;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,22 +13,17 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
-import io.github.resilience4j.core.IntervalFunction;
-import io.github.resilience4j.retry.Retry;
-import io.github.resilience4j.retry.RetryConfig;
-import io.github.resilience4j.retry.RetryRegistry;
 import it.gov.pagopa.logextractor.dto.NotificationGeneralData;
 import it.gov.pagopa.logextractor.dto.PaymentDocumentData;
 import it.gov.pagopa.logextractor.dto.response.LegalFactDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationAttachmentDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.util.JsonUtilities;
-import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Uility class for integrations with Piattaforma Notifiche notifcations related services
+ * */
 @Component
-@Slf4j
 public class NotificationApiHandler {
 	
 	@Autowired
@@ -98,8 +89,7 @@ public class NotificationApiHandler {
 	 * @param iun                the notification IUN
 	 * @param legalFactId        the legal fact key
 	 * @param legalFactType      the legal fact category
-	 * @return a URL needed afterwards in order to retrieve a file for the
-	 *         notification
+	 * @return a new {@link LegalFactDownloadMetadataResponseDto} instance representing the service response
 	 */
 	public LegalFactDownloadMetadataResponseDto getLegalFactMetadata(String externalServiceUrl, String iun,
 			String legalFactId, String legalFactType) {
@@ -115,15 +105,14 @@ public class NotificationApiHandler {
 	
 	/**
 	 * Performs a GET HTTP request to the PN external service to retrieve the
-	 * attached documents to a notification
+	 * attached documents metadata to a notification
 	 * 
 	 * @param externalServiceUrl The PN external service base URL
 	 * @param iun                the notification IUN
 	 * @param docIdx             the document id
-	 * @return a URL needed afterwards in order to retrieve a file for the
-	 *         notification
+	 * @return a new {@link NotificationAttachmentDownloadMetadataResponseDto} instance representing the service response
 	 */
-	public NotificationAttachmentDownloadMetadataResponseDto getNotificationDocuments(String externalServiceUrl, String iun, String docIdx) {
+	public NotificationAttachmentDownloadMetadataResponseDto getNotificationDocumentsMetadata(String externalServiceUrl, String iun, String docIdx) {
 		HttpHeaders requestHeaders = new HttpHeaders();
 		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
 		List<MediaType> acceptedTypes = new ArrayList<MediaType>();
@@ -141,17 +130,17 @@ public class NotificationApiHandler {
 	 * @param iun                the notification IUN
 	 * @param recipients         the specific recipient
 	 * @param key                the payment keys for the recipient
-	 * @return a URL needed afterwards in order to retrieve a file for the
-	 *         notification
+	 * @return a new {@link NotificationAttachmentDownloadMetadataResponseDto} instance representing the service response
 	 */
-	public NotificationAttachmentDownloadMetadataResponseDto getPaymentDocuments(String externalServiceUrl, String iun, Integer recipients, String key) {
+	public NotificationAttachmentDownloadMetadataResponseDto getPaymentDocumentsMetadata(String externalServiceUrl, String iun, Integer recipients, String key) {
 		HttpHeaders requestHeaders = new HttpHeaders();
 		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
 		List<MediaType> acceptedTypes = new ArrayList<MediaType>();
 		acceptedTypes.add(MediaType.APPLICATION_JSON);
 		requestHeaders.setAccept(acceptedTypes);
 		String url = String.format(externalServiceUrl, iun, recipients, key);
-		return client.getForObject(url,NotificationAttachmentDownloadMetadataResponseDto.class);
+		NotificationAttachmentDownloadMetadataResponseDto response = client.getForObject(url,NotificationAttachmentDownloadMetadataResponseDto.class);
+		return response;
 	}
 	
 	/**
@@ -168,17 +157,6 @@ public class NotificationApiHandler {
 		acceptedTypes.add(MediaType.APPLICATION_PDF);
 		requestHeaders.setAccept(acceptedTypes);
 		return client.getForObject(url, byte[].class);
-	}
-	
-	public byte[] getFileAfterInterval(String url, Integer waitTime) {
-		RetryConfig retryConfig = RetryConfig.custom()
-				.waitDuration(Duration.ofSeconds(waitTime))
-				.maxAttempts(2)
-				.build();
-		Retry retry = Retry.of("getFileWithRetry", retryConfig);
-		Function<Object, byte[]> getFileFn = Retry.decorateFunction(retry, serviceUrl -> getFile((String)serviceUrl));
-		log.info("Trying to call service {} after {} seconds...", url, waitTime);
-		return getFileFn.apply(url);
 	}
 	
 	/**
@@ -233,9 +211,9 @@ public class NotificationApiHandler {
 	 * 
 	 * @param notificationInfo The PN external service response containing the
 	 *                         notification details
-	 * @return the notification legal fact id, type and timestamp
+	 * @return A map containing the notification legal fact id, type and timestamp
 	 */
-	public  Map<String, String> getLegalFactIdsAndTimestamp(String notificationInfo) {
+	public Map<String, String> getLegalFactIdsAndTimestamp(String notificationInfo) {
 		Map<String, String> legalFactIds = new HashMap<>();
 		JSONArray timelineObjectsArray = new JSONObject(notificationInfo).getJSONArray("timeline");
 		for (int index = 0; index < timelineObjectsArray.length(); index++) {
@@ -259,7 +237,7 @@ public class NotificationApiHandler {
 	 * 
 	 * @param notificationInfo The PN external service response containing the
 	 *                         notification details
-	 * @return the document id
+	 * @return A list containing the document ids
 	 */
 	public ArrayList<String> getDocumentIds(String notificationInfo) {
 		ArrayList<String> docIdxs = new ArrayList<String>();
@@ -275,7 +253,7 @@ public class NotificationApiHandler {
 	 * 
 	 * @param notificationInfo The PN external service response containing the
 	 *                         notification details
-	 * @return the keys of each recipients
+	 * @return A list containing the keys of each recipient
 	 */
 	public ArrayList<PaymentDocumentData> getPaymentKeys(String notificationInfo) {
 		ArrayList<PaymentDocumentData> paymentData = new ArrayList<PaymentDocumentData>();

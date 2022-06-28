@@ -18,7 +18,7 @@ public class ZipFactory {
 	 * Create a new zip archive protected by password
 	 * @param name the name of the new zip archive
 	 * @param password the password to protect the new archive
-	 * @return a new instance of a zip archive with the given name protected by the given password
+	 * @return a new {@link ZipFile} instance of a zip archive with the given name protected by the given password
 	 * */
 	public ZipFile createZipArchive(String name, String password) {
 		return new ZipFile(Constants.EXPORT_FOLDER + name + "-" + 
@@ -30,7 +30,7 @@ public class ZipFactory {
 	 * @param encryptFiles set if the files should be encrypted or not
 	 * @param compressionLevel the level of the compression that should be applied to the files
 	 * @param encryptionMethod the encryption method
-	 * @return a new instance of zip parameters
+	 * @return a new {@link ZipParameters} instance of zip parameters
 	 * */
 	public ZipParameters createZipParameters(boolean encryptFiles, CompressionLevel compressionLevel, EncryptionMethod encryptionMethod) {
 		ZipParameters zipParameters = new ZipParameters();
@@ -45,7 +45,7 @@ public class ZipFactory {
 	 * @param archive the zip archive where to add the file
 	 * @param parameters the parameters for the file
 	 * @param file the file add
-	 * @return the input zip with the addition of the file
+	 * @return the {@link ZipFile} input zip with the addition of the file
 	 * */
 	public ZipFile addFile(ZipFile archive, ZipParameters parameters, File file) throws IOException {
 		if (!file.exists()) {

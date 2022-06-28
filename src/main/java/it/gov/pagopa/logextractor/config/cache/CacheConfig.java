@@ -10,6 +10,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Configuration class to manage the cache eviction logics*/
 @Configuration
 @Slf4j
 @EnableScheduling
@@ -18,11 +20,17 @@ public class CacheConfig {
 	@Autowired
 	CacheManager cacheManager;
 	
+	/**
+	 * Evicts all active caches
+	 * */
 	public void evictAllCaches() {
 	    cacheManager.getCacheNames().stream()
 	      .forEach(cacheName -> cacheManager.getCache(cacheName).clear());
 	}
 	
+	/**
+	 * Scheduled task that evicts all active caches at a specific time
+	 * */
 	@Scheduled(cron = "0 0 22 * * *")
 	//@Scheduled(fixedRate = 6000)
 	public void evictAllcachesAtIntervals() {

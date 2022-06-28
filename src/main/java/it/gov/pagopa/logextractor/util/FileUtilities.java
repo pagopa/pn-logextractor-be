@@ -7,6 +7,8 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import org.apache.commons.io.FileUtils;
+import org.json.JSONObject;
+
 import com.opencsv.CSVWriter;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
@@ -22,7 +24,7 @@ public class FileUtilities {
 	/**
 	 * Create a new file with the given name
 	 * @param name the name of the file to retrieve
-	 * @return a new instance of a file with the given name
+	 * @return a new {@link File} instance of a file with the given name
 	 * */
 	public File getFile(String name, String extension) {
 		return FileUtils.getFile(Constants.EXPORT_FOLDER + name + "-" +  new RandomGenerator().generateRandomToken() + extension);

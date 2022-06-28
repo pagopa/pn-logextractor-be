@@ -7,13 +7,16 @@ import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.util.JsonUtilities;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
 
+/**
+ * Utility class for Opensearch service response related operations
+ * */
 public class OpenSearchUtil {
 	
 	/** 
 	 * Returns the value associated with the specified key.
 	 * @param anonymizedDocument the document containing the content to write in the output file (.txt, .csv) contained in the output zip archive
-	 * @param getTaxCodeURL the url of deanonymization service
-	 * @return deanonymizedDocuments the deanonymized documents 
+	 * @param getTaxCodeURL the url of de-anonymization service
+	 * @return A list representing the de-anonymized documents 
 	 */
 	public static ArrayList<String> toDeanonymizedDocuments(ArrayList<String> anonymizedDocuments, String getTaxCodeURL, DeanonimizationApiHandler handler){
 		ArrayList<String> deanonymizedDocuments = new ArrayList<String>();

@@ -3,12 +3,15 @@ package it.gov.pagopa.logextractor.service;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RegExUtils;
@@ -211,7 +214,7 @@ public class LogServiceImpl implements LogService{
 	}
 	
 	@Override
-	public DownloadArchiveResponseDto getNotificationInfoLogs(String ticketNumber, String iun) throws IOException {
+	public DownloadArchiveResponseDto getNotificationInfoLogs(String ticketNumber, String iun) throws IOException, InterruptedException {
 		log.info("Notification data retrieve process - START - user={}, ticket number={}", MDC.get("user_identifier"), ticketNumber);
 		long serviceStartTime = System.currentTimeMillis();
         OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
@@ -227,19 +230,27 @@ public class LogServiceImpl implements LogService{
         ArrayList<String> docIdxs = notificationApiHandler.getDocumentIds(notificationDetails);
         ArrayList<PaymentDocumentData> paymentData = notificationApiHandler.getPaymentKeys(notificationDetails);
         LegalFactDownloadMetadataResponseDto legalFactDownload = notificationApiHandler.getLegalFactMetadata(legalFactDownloadMetadataURL, iun, legalFactIds.get("legalFactId"), legalFactIds.get("legalFactType"));
+        if(legalFactDownload.getUrl() == null) {
+        	log.info("No URL for {} file download provided, retrying in {} seconds", legalFactDownload.getFilename(), legalFactDownload.getRetryAfter());
+	    	TimeUnit.SECONDS.sleep(legalFactDownload.getRetryAfter());
+	    	log.info("Retrying to get download URL");
+	    	legalFactDownload = notificationApiHandler.getLegalFactMetadata(legalFactDownloadMetadataURL, iun, legalFactIds.get("legalFactId"), legalFactIds.get("legalFactType"));
+        }
         log.info("Legal facts and notification documents metadata retrieved in {} ms, getting physical files...", System.currentTimeMillis() - performanceMillis);
-    	byte[] legalFactByteArr = (legalFactDownload.getRetryAfter() != null && legalFactDownload.getRetryAfter() > 0 && legalFactDownload.getUrl() == null) ? 
-				notificationApiHandler.getFileAfterInterval(legalFactDownload.getUrl(), legalFactDownload.getRetryAfter())
-				: notificationApiHandler.getFile(legalFactDownload.getUrl());
+    	byte[] legalFactByteArr = notificationApiHandler.getFile(legalFactDownload.getUrl());
 		File legalFactFile = utils.getFile(Constants.LEGAL_FACT_FILE_NAME, Constants.PDF_EXTENSION);
 		FileUtils.writeByteArrayToFile(legalFactFile, legalFactByteArr);
 		filesToAdd.add(legalFactFile);
 		performanceMillis = System.currentTimeMillis();
 		for(String currentDocId : docIdxs) {
-			NotificationAttachmentDownloadMetadataResponseDto notificationDocumentMetadata = notificationApiHandler.getNotificationDocuments(notificationAttachmentDownloadMetadataURL, iun, currentDocId);
-			byte[] notificationDocumentByteArr = (notificationDocumentMetadata.getRetryAfter() != null && notificationDocumentMetadata.getRetryAfter() > 0 && notificationDocumentMetadata.getUrl() == null) ?
-													notificationApiHandler.getFileAfterInterval(notificationDocumentMetadata.getUrl(), notificationDocumentMetadata.getRetryAfter())
-													: notificationApiHandler.getFile(notificationDocumentMetadata.getUrl());
+			NotificationAttachmentDownloadMetadataResponseDto notificationDocumentMetadata = notificationApiHandler.getNotificationDocumentsMetadata(notificationAttachmentDownloadMetadataURL, iun, currentDocId);
+			if(notificationDocumentMetadata.getUrl() == null) {
+				log.info("No URL for {} file download provided, retrying in {} seconds", notificationDocumentMetadata.getFilename(), notificationDocumentMetadata.getRetryAfter());
+				TimeUnit.SECONDS.sleep(notificationDocumentMetadata.getRetryAfter());
+				log.info("Retrying to get download URL");
+				notificationDocumentMetadata = notificationApiHandler.getNotificationDocumentsMetadata(notificationAttachmentDownloadMetadataURL, iun, currentDocId);
+			}
+			byte[] notificationDocumentByteArr = notificationApiHandler.getFile(notificationDocumentMetadata.getUrl());
 			File notificationDocumentFile = utils.getFile(Constants.NOTIFICAION_DOCUMENT_FILE_NAME, Constants.PDF_EXTENSION);
 			FileUtils.writeByteArrayToFile(notificationDocumentFile, notificationDocumentByteArr);
 			filesToAdd.add(notificationDocumentFile);
@@ -248,10 +259,14 @@ public class LogServiceImpl implements LogService{
 			Map<String, String> paymentKeys = paymentData.get(recipients).getPaymentKeys();
 			for (String key : paymentKeys.keySet()) {
 				if (paymentKeys.get(key) != null) {
-					NotificationAttachmentDownloadMetadataResponseDto paymentDocumentMetadata = notificationApiHandler.getPaymentDocuments(paymentAttachmentDownloadMetadataURL, iun, recipients, paymentKeys.get(key));
-					byte[] paymentDocumentByteArr = (paymentDocumentMetadata.getRetryAfter() != null && paymentDocumentMetadata.getRetryAfter() > 0 && paymentDocumentMetadata.getUrl() == null) ?
-														notificationApiHandler.getFileAfterInterval(paymentDocumentMetadata.getUrl(), paymentDocumentMetadata.getRetryAfter())
-														: notificationApiHandler.getFile(paymentDocumentMetadata.getUrl());
+					NotificationAttachmentDownloadMetadataResponseDto paymentDocumentMetadata = notificationApiHandler.getPaymentDocumentsMetadata(paymentAttachmentDownloadMetadataURL, iun, recipients, paymentKeys.get(key));
+					if(paymentDocumentMetadata.getUrl() == null) {
+						log.info("No URL for {} file download provided, retrying in {} seconds", paymentDocumentMetadata.getFilename(), paymentDocumentMetadata.getRetryAfter());
+						TimeUnit.SECONDS.sleep(paymentDocumentMetadata.getRetryAfter());
+						log.info("Retrying to get download URL");
+						paymentDocumentMetadata = notificationApiHandler.getPaymentDocumentsMetadata(paymentAttachmentDownloadMetadataURL, iun, recipients, paymentKeys.get(key));
+					}
+					byte[] paymentDocumentByteArr = notificationApiHandler.getFile(paymentDocumentMetadata.getUrl());
 					File paymentDocumentFile = utils.getFile(Constants.PAYMENT_DOCUMENT_FILE_NAME, Constants.PDF_EXTENSION);
 					FileUtils.writeByteArrayToFile(paymentDocumentFile, paymentDocumentByteArr);
 					filesToAdd.add(paymentDocumentFile);

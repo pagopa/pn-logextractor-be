@@ -16,6 +16,9 @@ import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.CompressionLevel;
 import net.lingala.zip4j.model.enums.EncryptionMethod;
 
+/**
+ * Utility class to manage the server response construction
+ */
 public class ResponseConstructor {
 
 	/**
@@ -27,7 +30,7 @@ public class ResponseConstructor {
 	 *                 archive
 	 * @param zipName  the name of the output zip archive
 	 * @throws IOException in case IO errors
-	 * @return DownloadArchiveResponseDto A Dto containing a byte array
+	 * @return {@link DownloadArchiveResponseDto} A Dto containing a byte array
 	 *         representation of the output zip archive and the password to access
 	 *         its files
 	 */
@@ -56,7 +59,7 @@ public class ResponseConstructor {
 	 *                 archive
 	 * @param zipName  the name of the output zip archive
 	 * @throws IOException in case IO errors
-	 * @return DownloadArchiveResponseDto A Dto containing a byte array
+	 * @return {@link DownloadArchiveResponseDto} A Dto containing a byte array
 	 *         representation of the output zip archive and the password to access
 	 *         its files
 	 * @throws CsvRequiredFieldEmptyException

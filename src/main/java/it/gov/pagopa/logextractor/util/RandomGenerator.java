@@ -4,6 +4,9 @@ import java.time.Instant;
 
 import org.apache.commons.lang3.RandomStringUtils;
 
+/**
+ * Utility class to generate random values
+ */
 public class RandomGenerator {
 
 	/**

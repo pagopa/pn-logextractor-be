@@ -8,6 +8,9 @@ import javax.validation.ConstraintValidatorContext;
 import it.gov.pagopa.logextractor.annotation.PeriodOf3Months;
 import it.gov.pagopa.logextractor.dto.request.PersonLogsRequestDto;
 
+/**
+ * Validation class for {@link PeriodOf3Months} custom annotation
+ * */
 public class PeriodOf3MonthsValidator implements ConstraintValidator<PeriodOf3Months, PersonLogsRequestDto> {
 
 	@Override
