@@ -90,6 +90,29 @@
 			<version>${testcontainer-version}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+		    <groupId>io.github.resilience4j</groupId>
+		    <artifactId>resilience4j-retry</artifactId>
+		    <version>1.7.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/io.github.resilience4j/resilience4j-annotations -->
+		<dependency>
+		    <groupId>io.github.resilience4j</groupId>
+		    <artifactId>resilience4j-annotations</artifactId>
+		    <version>1.7.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/io.github.resilience4j/resilience4j-reactor -->
+		<dependency>
+		    <groupId>io.github.resilience4j</groupId>
+		    <artifactId>resilience4j-reactor</artifactId>
+		    <version>1.7.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/io.github.resilience4j/resilience4j-spring-boot2 -->
+		<dependency>
+		    <groupId>io.github.resilience4j</groupId>
+		    <artifactId>resilience4j-spring-boot2</artifactId>
+		    <version>1.7.1</version>
+		</dependency>
 		<!-- AWS dependencies START -->
 		<!-- Redis related dependencies -->
 		<!-- TODO: enable when redis configuration is ready -->

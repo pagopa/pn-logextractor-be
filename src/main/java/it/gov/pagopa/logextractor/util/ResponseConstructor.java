@@ -107,6 +107,9 @@ public class ResponseConstructor {
 			zipArchive = zipFactory.addFile(zipArchive, params, fileToAdd);
 		}
 		byte[] zipfile = zipFactory.toByteArray(zipArchive);
+		for(File fileToDelete : filesToAdd) {
+			utils.deleteFile(fileToDelete);
+		}
 		utils.deleteFile(file);
 		utils.deleteFile(FileUtils.getFile(zipArchive.toString()));
 		return DownloadArchiveResponseDto.builder().password(password).zip(zipfile).build();

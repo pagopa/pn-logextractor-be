@@ -1,12 +1,14 @@
 package it.gov.pagopa.logextractor.util.external.pnservices;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.function.Function;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,16 +17,22 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
-
-import it.gov.pagopa.logextractor.config.ApplicationContextProvider;
+import io.github.resilience4j.core.IntervalFunction;
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryConfig;
+import io.github.resilience4j.retry.RetryRegistry;
 import it.gov.pagopa.logextractor.dto.NotificationGeneralData;
 import it.gov.pagopa.logextractor.dto.PaymentDocumentData;
 import it.gov.pagopa.logextractor.dto.response.LegalFactDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationAttachmentDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.util.JsonUtilities;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class NotificationApiHandler {
 	
 	@Autowired
@@ -93,7 +101,7 @@ public class NotificationApiHandler {
 	 * @return a URL needed afterwards in order to retrieve a file for the
 	 *         notification
 	 */
-	public String getLegalFactMetadata(String externalServiceUrl, String iun,
+	public LegalFactDownloadMetadataResponseDto getLegalFactMetadata(String externalServiceUrl, String iun,
 			String legalFactId, String legalFactType) {
 		HttpHeaders requestHeaders = new HttpHeaders();
 		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -102,7 +110,7 @@ public class NotificationApiHandler {
 		requestHeaders.setAccept(acceptedTypes);
 		String url = String.format(externalServiceUrl, iun, legalFactType, legalFactId);
 		LegalFactDownloadMetadataResponseDto response = client.getForObject(url, LegalFactDownloadMetadataResponseDto.class);
-		return response.getUrl();
+		return response;
 	}
 	
 	/**
@@ -115,16 +123,14 @@ public class NotificationApiHandler {
 	 * @return a URL needed afterwards in order to retrieve a file for the
 	 *         notification
 	 */
-	public String getNotificationDocuments(String externalServiceUrl, String iun, String docIdx) {
+	public NotificationAttachmentDownloadMetadataResponseDto getNotificationDocuments(String externalServiceUrl, String iun, String docIdx) {
 		HttpHeaders requestHeaders = new HttpHeaders();
 		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
 		List<MediaType> acceptedTypes = new ArrayList<MediaType>();
 		acceptedTypes.add(MediaType.APPLICATION_JSON);
 		requestHeaders.setAccept(acceptedTypes);
 		String url = String.format(externalServiceUrl, iun, docIdx);
-		NotificationAttachmentDownloadMetadataResponseDto response = client.getForObject(url,
-				NotificationAttachmentDownloadMetadataResponseDto.class);
-		return response.getUrl();
+		return client.getForObject(url,NotificationAttachmentDownloadMetadataResponseDto.class);
 	}
 
 	/**
@@ -138,16 +144,14 @@ public class NotificationApiHandler {
 	 * @return a URL needed afterwards in order to retrieve a file for the
 	 *         notification
 	 */
-	public String getPaymentDocuments(String externalServiceUrl, String iun, Integer recipients, String key) {
+	public NotificationAttachmentDownloadMetadataResponseDto getPaymentDocuments(String externalServiceUrl, String iun, Integer recipients, String key) {
 		HttpHeaders requestHeaders = new HttpHeaders();
 		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
 		List<MediaType> acceptedTypes = new ArrayList<MediaType>();
 		acceptedTypes.add(MediaType.APPLICATION_JSON);
 		requestHeaders.setAccept(acceptedTypes);
 		String url = String.format(externalServiceUrl, iun, recipients, key);
-		NotificationAttachmentDownloadMetadataResponseDto response = client.getForObject(url,
-				NotificationAttachmentDownloadMetadataResponseDto.class);
-		return response.getUrl();
+		return client.getForObject(url,NotificationAttachmentDownloadMetadataResponseDto.class);
 	}
 	
 	/**
@@ -157,13 +161,24 @@ public class NotificationApiHandler {
 	 *            given by a PN external service
 	 * @return a byte array containing a file
 	 */
-	public byte[] getNotificationFile(String url) {
+	public byte[] getFile(String url) {
 		HttpHeaders requestHeaders = new HttpHeaders();
 		requestHeaders.setContentType(MediaType.APPLICATION_PDF);
 		List<MediaType> acceptedTypes = new ArrayList<MediaType>();
 		acceptedTypes.add(MediaType.APPLICATION_PDF);
 		requestHeaders.setAccept(acceptedTypes);
 		return client.getForObject(url, byte[].class);
+	}
+	
+	public byte[] getFileAfterInterval(String url, Integer waitTime) {
+		RetryConfig retryConfig = RetryConfig.custom()
+				.waitDuration(Duration.ofSeconds(waitTime))
+				.maxAttempts(2)
+				.build();
+		Retry retry = Retry.of("getFileWithRetry", retryConfig);
+		Function<Object, byte[]> getFileFn = Retry.decorateFunction(retry, serviceUrl -> getFile((String)serviceUrl));
+		log.info("Trying to call service {} after {} seconds...", url, waitTime);
+		return getFileFn.apply(url);
 	}
 	
 	/**
@@ -265,25 +280,29 @@ public class NotificationApiHandler {
 	public ArrayList<PaymentDocumentData> getPaymentKeys(String notificationInfo) {
 		ArrayList<PaymentDocumentData> paymentData = new ArrayList<PaymentDocumentData>();
 		Map<String, String> paymentKeys = new HashMap<>();
-		JSONArray recipientsObjectsArray = new JSONObject(notificationInfo).getJSONArray("recipients");
+		JSONObject payObj = null;
+		JSONObject paymentObject = null;
+		JSONObject notificationDetails = new JSONObject(notificationInfo);
+		JSONArray recipientsObjectsArray = new JSONArray();
+		if(notificationDetails.isNull("recipients")) {
+			return paymentData;
+		}
+		recipientsObjectsArray = notificationDetails.getJSONArray("recipients");
 		for (int recipient = 0; recipient < recipientsObjectsArray.length(); recipient++) {
-			JSONObject paymentObject = recipientsObjectsArray.getJSONObject(recipient).getJSONObject("payment");
-			if(!paymentObject.isNull("pagoPaForm") && paymentObject.has(paymentObject.getJSONObject("pagoPaForm").getJSONObject("ref").getString("key"))) {
-				paymentKeys.put("pagoPaFormKey", paymentObject.getJSONObject("pagoPaForm").getJSONObject("ref").getString("key"));
-			} else {
-				paymentKeys.put("pagoPaFormKey", null);
-			}
-			
-			if(!paymentObject.isNull("f24flatRate") && paymentObject.has(paymentObject.getJSONObject("f24flatRate").getJSONObject("ref").getString("key"))) {
-				paymentKeys.put("f24flatRateKey", paymentObject.getJSONObject("f24flatRate").getJSONObject("ref").getString("key"));
-			} else {
-				paymentKeys.put("f24flatRateKey", null);
-			}
-			
-			if(!paymentObject.isNull("f24standard") && paymentObject.has(paymentObject.getJSONObject("f24standard").getJSONObject("ref").getString("key"))) {
-				paymentKeys.put("f24standardKey", paymentObject.getJSONObject("f24standard").getJSONObject("ref").getString("key"));
-			} else {
-				paymentKeys.put("f24standardKey", null);
+			if(!recipientsObjectsArray.getJSONObject(recipient).isNull("payment")) {
+				paymentObject = recipientsObjectsArray.getJSONObject(recipient).getJSONObject("payment");
+				if(!paymentObject.isNull("pagoPaForm")) {
+					payObj = paymentObject.getJSONObject("pagoPaForm").getJSONObject("ref");
+					paymentKeys.put("pagoPaFormKey", !payObj.isNull("key") ? payObj.getString("key") : null);
+				}
+				if(!paymentObject.isNull("f24flatRate")) {
+					payObj = paymentObject.getJSONObject("f24flatRate").getJSONObject("ref");
+					paymentKeys.put("f24flatRateKey", !payObj.isNull("key") ? payObj.getString("key") : null);
+				}
+				if(!paymentObject.isNull("f24standard")) {
+					payObj = paymentObject.getJSONObject("f24standard").getJSONObject("ref");
+					paymentKeys.put("f24standardKey", !payObj.isNull("key") ? payObj.getString("key") : null);
+				}
 			}
 			paymentData.add(new PaymentDocumentData(recipient, paymentKeys));
 		}
