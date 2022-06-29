@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.CompressionLevel;
@@ -46,6 +48,7 @@ public class ZipFactory {
 	 * @param parameters the parameters for the file
 	 * @param file the file add
 	 * @return the {@link ZipFile} input zip with the addition of the file
+	 * @throws {@link IOException}
 	 * */
 	public ZipFile addFile(ZipFile archive, ZipParameters parameters, File file) throws IOException {
 		if (!file.exists()) {
@@ -53,6 +56,21 @@ public class ZipFactory {
 		}
 		archive.addFile(file, parameters);
 		archive.close();
+		return archive;
+	}
+	
+	/**
+	 * Add a list of files with zip parameters to a zip archive 
+	 * @param archive the zip archive where to add the file
+	 * @param parameters the parameters for the file
+	 * @param file the file add
+	 * @return the {@link ZipFile} input zip with the addition of the file
+	 * @throws {@link IOException}
+	 * */
+	public ZipFile addFiles(ZipFile archive, ZipParameters parameters, ArrayList<File> files) throws IOException {
+		for (File fileToAdd : files) {
+			archive = addFile(archive, parameters, fileToAdd);
+		}
 		return archive;
 	}
 	

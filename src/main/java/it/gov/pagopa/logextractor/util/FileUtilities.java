@@ -72,6 +72,16 @@ public class FileUtilities {
 	}
 	
 	/**
+	 * Delete the files of the input file list
+	 * @param files The list of files to be deleted
+	 * */
+	public void deleteFiles(ArrayList<File> files) {
+		for(File fileToDelete : files) {
+			deleteFile(fileToDelete);
+		}
+	}
+	
+	/**
 	 * Write notification data to a csv file
 	 * @param file the file where to write the content into
 	 * @param notifications the list of notifications

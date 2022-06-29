@@ -146,21 +146,22 @@ public class LogServiceImpl implements LogService{
 		log.info("Monthly notifications retrieve process - START - user={}, ticket number={}", MDC.get("user_identifier"), ticketNumber);
 		long serviceStartTime = System.currentTimeMillis();
 		CommonUtilities commonUtils = new CommonUtilities();
-		long performanceMillis = 0;
 		LocalDate startDate = LocalDate.parse(StringUtils.removeIgnoreCase(referenceMonth, "-")+"01", DateTimeFormatter.BASIC_ISO_DATE);
 		LocalDate endDate = startDate.plusMonths(1);
 		String finaldatePart = "T00:00:00.000Z";
+		log.info("Getting encoded public authority code...");
+		long performanceMillis = System.currentTimeMillis();
 		String encodedIpaCode = selfCareApiHandler.getEncodedIpaCode(selfCareEncodedIpaCodeURL, ipaCode);
 		ArrayList<NotificationCsvBean> notifications = new ArrayList<NotificationCsvBean>();
         HashMap<String, Object> parameters = new HashMap<String, Object>();
         parameters.put("startDate", startDate.toString()+finaldatePart);
         parameters.put("endDate", endDate.toString()+finaldatePart);
         parameters.put("size", 100);
-        log.info("Getting notifications general data, publicAuthority={}, startDate={}, endDate={}", encodedIpaCode, startDate, endDate);
+        log.info("Encoded public authority code retrieved in {} ms, getting notifications general data, publicAuthority={}, startDate={}, endDate={}", System.currentTimeMillis() - performanceMillis, encodedIpaCode, startDate, endDate);
         performanceMillis = System.currentTimeMillis();
 		ArrayList<NotificationGeneralData> notificationsGeneralData = notificationApiHandler.getNotificationsByPeriod(notificationURL,
-																		parameters, encodedIpaCode, new ArrayList<NotificationGeneralData>()
-																		, "", new JSONArray());
+																		parameters, encodedIpaCode, new ArrayList<NotificationGeneralData>(), 
+																		"", new JSONArray(), MDC.get("user_identifier"));
 		if(notificationsGeneralData != null) {
 			log.info("Notifications general data retrieved in {} ms, getting notifications' details", System.currentTimeMillis() - performanceMillis);
 			performanceMillis = System.currentTimeMillis();
@@ -239,7 +240,7 @@ public class LogServiceImpl implements LogService{
         }
         log.info("Legal facts and notification documents metadata retrieved in {} ms, getting physical files...", System.currentTimeMillis() - performanceMillis);
     	byte[] legalFactByteArr = notificationApiHandler.getFile(legalFactDownload.getUrl());
-		File legalFactFile = utils.getFile(Constants.LEGAL_FACT_FILE_NAME, Constants.PDF_EXTENSION);
+		File legalFactFile = utils.getFile(legalFactDownload.getFilename(), Constants.PDF_EXTENSION);
 		FileUtils.writeByteArrayToFile(legalFactFile, legalFactByteArr);
 		filesToAdd.add(legalFactFile);
 		performanceMillis = System.currentTimeMillis();
@@ -252,7 +253,7 @@ public class LogServiceImpl implements LogService{
 				notificationDocumentMetadata = notificationApiHandler.getNotificationDocumentsMetadata(notificationAttachmentDownloadMetadataURL, iun, currentDocId);
 			}
 			byte[] notificationDocumentByteArr = notificationApiHandler.getFile(notificationDocumentMetadata.getUrl());
-			File notificationDocumentFile = utils.getFile(Constants.NOTIFICAION_DOCUMENT_FILE_NAME, Constants.PDF_EXTENSION);
+			File notificationDocumentFile = utils.getFile(notificationDocumentMetadata.getFilename(), Constants.PDF_EXTENSION);
 			FileUtils.writeByteArrayToFile(notificationDocumentFile, notificationDocumentByteArr);
 			filesToAdd.add(notificationDocumentFile);
 		}
@@ -268,7 +269,7 @@ public class LogServiceImpl implements LogService{
 						paymentDocumentMetadata = notificationApiHandler.getPaymentDocumentsMetadata(paymentAttachmentDownloadMetadataURL, iun, recipients, paymentKeys.get(key));
 					}
 					byte[] paymentDocumentByteArr = notificationApiHandler.getFile(paymentDocumentMetadata.getUrl());
-					File paymentDocumentFile = utils.getFile(Constants.PAYMENT_DOCUMENT_FILE_NAME, Constants.PDF_EXTENSION);
+					File paymentDocumentFile = utils.getFile(paymentDocumentMetadata.getFilename(), Constants.PDF_EXTENSION);
 					FileUtils.writeByteArrayToFile(paymentDocumentFile, paymentDocumentByteArr);
 					filesToAdd.add(paymentDocumentFile);
 				}

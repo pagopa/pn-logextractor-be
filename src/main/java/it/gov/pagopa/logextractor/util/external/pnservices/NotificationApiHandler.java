@@ -40,10 +40,11 @@ public class NotificationApiHandler {
 	 * @return The list of notifications' general data
 	 */
 	public ArrayList<NotificationGeneralData> getNotificationsByPeriod(String url, HashMap<String, Object> params, 
-			String encodedIpaCode, ArrayList<NotificationGeneralData> notifications, String nextUrlKey, JSONArray pages) {
+			String encodedIpaCode, ArrayList<NotificationGeneralData> notifications, String nextUrlKey, JSONArray pages, String userIdentifier) {
 		HttpHeaders requestHeaders = new HttpHeaders();
 	    requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-	    requestHeaders.set("x-ipa-code", encodedIpaCode);
+	    requestHeaders.set("x-pagopa-pn-cx-id", encodedIpaCode);
+	    requestHeaders.set("x-pagopa-pn-uid", "HD-"+userIdentifier);
 	    List<MediaType> acceptedTypes = new ArrayList<MediaType>();
 	    acceptedTypes.add(MediaType.APPLICATION_JSON);
 	    requestHeaders.setAccept(acceptedTypes);
@@ -64,7 +65,7 @@ public class NotificationApiHandler {
 	    	HashMap<String, Object> newParameters = new HashMap<String, Object>();
 		    newParameters.putAll(parameters);
 			newParameters.put("nextPagesKey", nextKey);
-			notifications.addAll(getNotificationsByPeriod(url, newParameters, encodedIpaCode, notifications, nextKey, pageKeys));
+			notifications.addAll(getNotificationsByPeriod(url, newParameters, encodedIpaCode, notifications, nextKey, pageKeys, userIdentifier));
 	    }
 	    return notifications;
 	}

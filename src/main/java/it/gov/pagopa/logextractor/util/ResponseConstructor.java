@@ -106,13 +106,9 @@ public class ResponseConstructor {
 		ZipFile zipArchive = zipFactory.createZipArchive(zipName, password);
 		ZipParameters params = zipFactory.createZipParameters(true, CompressionLevel.HIGHER, EncryptionMethod.AES);
 		zipArchive = zipFactory.addFile(zipArchive, params, file);
-		for (File fileToAdd : filesToAdd) {
-			zipArchive = zipFactory.addFile(zipArchive, params, fileToAdd);
-		}
+		zipFactory.addFiles(zipArchive, params, filesToAdd);
 		byte[] zipfile = zipFactory.toByteArray(zipArchive);
-		for(File fileToDelete : filesToAdd) {
-			utils.deleteFile(fileToDelete);
-		}
+		utils.deleteFiles(filesToAdd);
 		utils.deleteFile(file);
 		utils.deleteFile(FileUtils.getFile(zipArchive.toString()));
 		return DownloadArchiveResponseDto.builder().password(password).zip(zipfile).build();
