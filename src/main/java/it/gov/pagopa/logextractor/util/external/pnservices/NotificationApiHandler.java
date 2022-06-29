@@ -52,18 +52,20 @@ public class NotificationApiHandler {
 	    	parameters.put(entry.getKey(), entry.getValue());
 	    }
 	    ResponseEntity<String> response = client.getForEntity(url, String.class, parameters);
-	    System.out.println("SONO ENTRATO NEL METODO");
 	    JSONObject responseObj = new JSONObject(response.getBody());
 	    if(responseObj.isNull("nextPagesKey") || !responseObj.getBoolean("moreResult")) {
 	    	return getNotificationsGeneralData(response.getBody());
 	    }
 	    JSONArray pageKeys = JsonUtilities.getArray(response.getBody(), "nextPagesKey");
-	    HashMap<String, Object> newParameters = new HashMap<String, Object>();
-	    newParameters.putAll(parameters);
-		newParameters.put("nextPagesKey", pageKeys.get(0));
-		String nextKey = pageKeys.remove(0).toString();
-		notifications.addAll(getNotificationsGeneralData(response.getBody()));
-		notifications.addAll(getNotificationsByPeriod(url, newParameters, encodedIpaCode, notifications, nextKey, pageKeys));
+	    notifications.addAll(getNotificationsGeneralData(response.getBody()));
+	    int keySize = pageKeys.length();
+	    for(int index = 0; index < keySize; index++) {
+	    	String nextKey = pageKeys.getString(index);
+	    	HashMap<String, Object> newParameters = new HashMap<String, Object>();
+		    newParameters.putAll(parameters);
+			newParameters.put("nextPagesKey", nextKey);
+			notifications.addAll(getNotificationsByPeriod(url, newParameters, encodedIpaCode, notifications, nextKey, pageKeys));
+	    }
 	    return notifications;
 	}
 	/*public ArrayList<NotificationGeneralData> getNotificationsByPeriod(String url, HashMap<String, Object> params, 
