@@ -13,9 +13,6 @@ public class Constants {
 	public static final String INPUT_MONTH_FORMAT = "([0-9]{4})-(?:[0-9]{2})";
 	public static final String PASSWORD_SPECIAL_CHARS = "!@#$%^&()_+";
 	public static final String ZIP_ARCHIVE_NAME = "export";
-	public static final String LEGAL_FACT_FILE_NAME="atto_opponibile_a_terzi";
-	public static final String NOTIFICAION_DOCUMENT_FILE_NAME="documento_timeline_notifica";
-	public static final String PAYMENT_DOCUMENT_FILE_NAME="atto_di_pagamento";
 	public static final String LOG_FILE_NAME = "dati";
 	public static final String TXT_EXTENSION = ".txt";
 	public static final String PDF_EXTENSION = ".pdf";
