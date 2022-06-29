@@ -8,7 +8,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +40,33 @@ public class NotificationApiHandler {
 	 * @return The list of notifications' general data
 	 */
 	public ArrayList<NotificationGeneralData> getNotificationsByPeriod(String url, HashMap<String, Object> params, 
+			String encodedIpaCode, ArrayList<NotificationGeneralData> notifications, String nextUrlKey, JSONArray pages) {
+		HttpHeaders requestHeaders = new HttpHeaders();
+	    requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+	    requestHeaders.set("x-ipa-code", encodedIpaCode);
+	    List<MediaType> acceptedTypes = new ArrayList<MediaType>();
+	    acceptedTypes.add(MediaType.APPLICATION_JSON);
+	    requestHeaders.setAccept(acceptedTypes);
+	    HashMap<String, Object> parameters = new HashMap<String, Object>();
+	    for (Map.Entry<String, Object> entry : params.entrySet()) {
+	    	parameters.put(entry.getKey(), entry.getValue());
+	    }
+	    ResponseEntity<String> response = client.getForEntity(url, String.class, parameters);
+	    System.out.println("SONO ENTRATO NEL METODO");
+	    JSONObject responseObj = new JSONObject(response.getBody());
+	    if(responseObj.isNull("nextPagesKey") || !responseObj.getBoolean("moreResult")) {
+	    	return getNotificationsGeneralData(response.getBody());
+	    }
+	    JSONArray pageKeys = JsonUtilities.getArray(response.getBody(), "nextPagesKey");
+	    HashMap<String, Object> newParameters = new HashMap<String, Object>();
+	    newParameters.putAll(parameters);
+		newParameters.put("nextPagesKey", pageKeys.get(0));
+		String nextKey = pageKeys.remove(0).toString();
+		notifications.addAll(getNotificationsGeneralData(response.getBody()));
+		notifications.addAll(getNotificationsByPeriod(url, newParameters, encodedIpaCode, notifications, nextKey, pageKeys));
+	    return notifications;
+	}
+	/*public ArrayList<NotificationGeneralData> getNotificationsByPeriod(String url, HashMap<String, Object> params, 
 				String encodedIpaCode, int currentKey, ArrayList<NotificationGeneralData> notifications) {
 		HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -65,7 +91,7 @@ public class NotificationApiHandler {
     	HashMap<String, Object> newParameters = new HashMap<String, Object>();
     	newParameters.put("nextPagesKey", pageKeys.get(currentKey));
         return getNotificationsByPeriod(url, newParameters, encodedIpaCode, currentKey+1, notifications);
-	}
+	}*/
 	
 	/**
 	 * Performs a GET HTTP request to the PN external service to retrieve a

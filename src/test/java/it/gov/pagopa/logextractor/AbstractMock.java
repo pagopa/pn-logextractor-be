@@ -49,6 +49,8 @@ public abstract class AbstractMock {
 	private Resource mockNotification;
 	@Value("classpath:data/notification_general_data.json")
 	private Resource mockNotificationGeneralData;
+	@Value("classpath:data/notification_general_data2.json")
+	private Resource mockNotificationGeneralData2;
 	
 	public static final MediaType APPLICATION_JSON_UTF8 = new MediaType(MediaType.APPLICATION_JSON.getType(), MediaType.APPLICATION_JSON.getSubtype(), Charset.forName("utf8"));	
 	protected final String identifierUrl = "/logextractor/v1/persons/person-id";
@@ -113,9 +115,10 @@ public abstract class AbstractMock {
 	@SuppressWarnings("unchecked")
 	protected void mockNotificationResponse() throws IOException {
 		String mock = StreamUtils.copyToString(mockNotificationGeneralData.getInputStream(), Charset.defaultCharset());
-		ResponseEntity<Object> response = new ResponseEntity<Object>(mock, HttpStatus.OK);	
-		Mockito.when(client.getForEntity(Mockito.anyString(), Mockito.any(), Mockito.any(HashMap.class))).thenReturn(response);	
-		
+		String mock2 = StreamUtils.copyToString(mockNotificationGeneralData2.getInputStream(), Charset.defaultCharset());
+		ResponseEntity<Object> response = new ResponseEntity<Object>(mock, HttpStatus.OK);
+		ResponseEntity<Object> response2 = new ResponseEntity<Object>(mock2, HttpStatus.OK);
+		Mockito.when(client.getForEntity(Mockito.anyString(), Mockito.any(), Mockito.any(HashMap.class))).thenReturn(response2);	
 	}
 	
 	protected LegalFactDownloadMetadataResponseDto mockLegalFactDownloadMetadataResponseDto() {

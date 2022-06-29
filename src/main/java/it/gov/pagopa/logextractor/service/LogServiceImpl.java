@@ -10,10 +10,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import org.json.JSONArray;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -157,7 +159,8 @@ public class LogServiceImpl implements LogService{
         log.info("Getting notifications general data, publicAuthority={}, startDate={}, endDate={}", encodedIpaCode, startDate, endDate);
         performanceMillis = System.currentTimeMillis();
 		ArrayList<NotificationGeneralData> notificationsGeneralData = notificationApiHandler.getNotificationsByPeriod(notificationURL,
-																		parameters, encodedIpaCode, 0, new ArrayList<NotificationGeneralData>());
+																		parameters, encodedIpaCode, new ArrayList<NotificationGeneralData>()
+																		, "", new JSONArray());
 		if(notificationsGeneralData != null) {
 			log.info("Notifications general data retrieved in {} ms, getting notifications' details", System.currentTimeMillis() - performanceMillis);
 			performanceMillis = System.currentTimeMillis();
