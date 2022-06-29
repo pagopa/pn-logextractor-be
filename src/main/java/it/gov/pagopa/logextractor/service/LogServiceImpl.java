@@ -3,21 +3,17 @@ package it.gov.pagopa.logextractor.service;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -172,13 +168,12 @@ public class LogServiceImpl implements LogService{
 					recipientsBuilder.append(tempRecipient + "-");
 				}
 				recipientsBuilder.deleteCharAt(recipientsBuilder.length()-1);
-				NotificationCsvBean notification = NotificationCsvBean.builder()
-													.IUN(commonUtils.escapeForCsv(nTemp.getIun()))
-													.Data_invio(commonUtils.escapeForCsv(nTemp.getSentAt()))
-													.Data_generazione_attestazione_opponibile_a_terzi(commonUtils.escapeForCsv(notificationApiHandler.getLegalStartDate(notificationDetails)))
-													.Oggetto(commonUtils.escapeForCsv(nTemp.getSubject()))
-													.Codici_fiscali(commonUtils.escapeForCsv(recipientsBuilder.toString()))
-													.build();
+				NotificationCsvBean notification = new NotificationCsvBean();
+				notification.setIUN(commonUtils.escapeForCsv(nTemp.getIun()));
+				notification.setData_invio(commonUtils.escapeForCsv(nTemp.getSentAt()));
+				notification.setData_generazione_attestazione_opponibile_a_terzi(commonUtils.escapeForCsv(notificationApiHandler.getLegalStartDate(notificationDetails)));
+				notification.setOggetto(commonUtils.escapeForCsv(nTemp.getSubject()));
+				notification.setCodici_fiscali(commonUtils.escapeForCsv(recipientsBuilder.toString()));
 				recipientsBuilder.setLength(0);
 				notifications.add(notification);
 			}

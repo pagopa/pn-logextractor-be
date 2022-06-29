@@ -47,6 +47,8 @@ public abstract class AbstractMock {
 	@Qualifier("openSearchRestTemplate") RestTemplate openClient;
 	@Value("classpath:data/notification.json")
 	private Resource mockNotification;
+	@Value("classpath:data/notification_general_data.json")
+	private Resource mockNotificationGeneralData;
 	
 	public static final MediaType APPLICATION_JSON_UTF8 = new MediaType(MediaType.APPLICATION_JSON.getType(), MediaType.APPLICATION_JSON.getSubtype(), Charset.forName("utf8"));	
 	protected final String identifierUrl = "/logextractor/v1/persons/person-id";
@@ -109,8 +111,8 @@ public abstract class AbstractMock {
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected void mockNotificationResponse() {
-		String mock = "{\"resultsPage\":[{\"recipients\":[{\"recipients\":{\"iun\":\"ABC\",\"sentAt\":\"123\",\"subject\":\"test\"}}],\"iun\":\"ABC\",\"sentAt\":\"123\",\"subject\":\"test\"}]}";
+	protected void mockNotificationResponse() throws IOException {
+		String mock = StreamUtils.copyToString(mockNotificationGeneralData.getInputStream(), Charset.defaultCharset());
 		ResponseEntity<Object> response = new ResponseEntity<Object>(mock, HttpStatus.OK);	
 		Mockito.when(client.getForEntity(Mockito.anyString(), Mockito.any(), Mockito.any(HashMap.class))).thenReturn(response);	
 		
