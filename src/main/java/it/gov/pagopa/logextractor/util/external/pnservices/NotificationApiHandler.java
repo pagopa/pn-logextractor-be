@@ -182,12 +182,11 @@ public class NotificationApiHandler {
         	for(int indexRecipient = 0; indexRecipient < recipients.length(); indexRecipient++) {
         		recipientsList.add(recipients.getString(indexRecipient));
         	}
-        	NotificationGeneralData currentNotificationData = NotificationGeneralData.builder()
-        														.iun(timelineObjectsArray.getJSONObject(index).getString("iun"))
-        														.sentAt(timelineObjectsArray.getJSONObject(index).getString("sentAt"))
-        														.subject(timelineObjectsArray.getJSONObject(index).getString("subject"))
-        														.recipients(recipientsList)
-        														.build();
+        	NotificationGeneralData currentNotificationData = new NotificationGeneralData();
+        	currentNotificationData.setIun(timelineObjectsArray.getJSONObject(index).getString("iun"));
+        	currentNotificationData.setSentAt(timelineObjectsArray.getJSONObject(index).getString("sentAt"));
+        	currentNotificationData.setSubject(timelineObjectsArray.getJSONObject(index).getString("subject"));
+        	currentNotificationData.setRecipients(recipientsList);
         	notificationsGeneralData.add(currentNotificationData);
         }
         return notificationsGeneralData;

@@ -10,11 +10,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Getter
-@Setter
-@NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@ToString
 public class PaymentDocumentData {
 	private Integer recipients;
 	private Map<String, String> paymentKeys;

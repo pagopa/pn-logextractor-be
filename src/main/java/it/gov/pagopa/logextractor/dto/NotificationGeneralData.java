@@ -5,9 +5,10 @@ import java.util.ArrayList;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
-@Builder
+@Setter
 public class NotificationGeneralData implements Serializable{
 	private static final long serialVersionUID = 1L;
 	private String iun;

@@ -31,29 +31,29 @@ public class MockPersonControllerTest extends AbstractMock {
 
 	@Test
 	public void test_getPersonsBasicDataWithUniqueIdentifier_ok() throws Exception {
-		mockUniqueIdentifierForPerson(client);
+		mockUniqueIdentifierForPerson();
 		mvcPostPerform(identifierUrl, getMockPersonPersonIdRequestDto(), "data", "123", HttpStatus.OK);
 	}
 
 	@Test
 	public void test_getPersonsBasicDataWithTaxCode_ok() throws Exception {
-		mockUniqueIdentifierForPerson(client);
-		mockTaxCodeForPerson200(client);
+		mockUniqueIdentifierForPerson();
+		mockTaxCodeForPerson200();
 		mvcPostPerform(taxCodeUrl, getMockPersonTaxIdRequestDto(), "data", "BRMRSS63A02A001D", HttpStatus.OK);
 	}
 	
 	@Test
 	public void test_getPersonsBasicDataWithTaxCode_5xx() throws Exception {
-		mockUniqueIdentifierForPerson(client);
-		mockTaxCodeForPersonServerError(client, HttpStatus.INTERNAL_SERVER_ERROR);
+		mockUniqueIdentifierForPerson();
+		mockTaxCodeForPersonServerError(HttpStatus.INTERNAL_SERVER_ERROR);
 		String errorResponse = "Errore nell'elaborazione della richiesta";
 		mvcPostPerform(taxCodeUrl, getMockPersonTaxIdRequestDto(), errorResponse, errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 	
 	@Test
 	public void test_getPersonsBasicDataWithTaxCode_4xx() throws Exception {
-		mockUniqueIdentifierForPerson(client);
-		mockTaxCodeForPersonClientError(client, HttpStatus.METHOD_NOT_ALLOWED);
+		mockUniqueIdentifierForPerson();
+		mockTaxCodeForPersonClientError(HttpStatus.METHOD_NOT_ALLOWED);
 		String errorResponse = "Errore nell'elaborazione della richiesta";
 		mvcPostPerform(taxCodeUrl, getMockPersonTaxIdRequestDto(), errorResponse, errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
