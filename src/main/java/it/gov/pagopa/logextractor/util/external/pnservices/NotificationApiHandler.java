@@ -53,6 +53,10 @@ public class NotificationApiHandler {
         	parameters.put(entry.getKey(), entry.getValue());
         }
         ResponseEntity<String> response = client.getForEntity(url, String.class, parameters);
+        JSONObject responseObj = new JSONObject(response.getBody());
+        if(responseObj.isNull("nextPagesKey")) {
+        	return notifications;
+        }
         JSONArray pageKeys = JsonUtilities.getArray(response.getBody(), "nextPagesKey");
         notifications.addAll(getNotificationsGeneralData(response.getBody()));
         if(null == pageKeys || pageKeys.length() == 0 || currentKey == pageKeys.length()) {
@@ -167,6 +171,10 @@ public class NotificationApiHandler {
 	 */
 	private ArrayList<NotificationGeneralData> getNotificationsGeneralData(String notificationResponse) {
 		ArrayList<NotificationGeneralData> notificationsGeneralData = new ArrayList<NotificationGeneralData>();
+		JSONObject responseObj = new JSONObject(notificationResponse);
+        if(responseObj.isNull("resultsPage")) {
+        	return notificationsGeneralData;
+        }
 		JSONArray timelineObjectsArray = new JSONObject(notificationResponse).getJSONArray("resultsPage");
         for(int index = 0; index < timelineObjectsArray.length(); index++) {
         	JSONArray recipients = timelineObjectsArray.getJSONObject(index).getJSONArray("recipients");

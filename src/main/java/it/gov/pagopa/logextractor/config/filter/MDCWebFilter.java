@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.OncePerRequestFilter;
 import it.gov.pagopa.logextractor.util.Constants;
-import it.gov.pagopa.logextractor.util.RandomGenerator;
+import it.gov.pagopa.logextractor.util.CommonUtilities;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
 
@@ -50,7 +50,7 @@ public class MDCWebFilter extends OncePerRequestFilter {
     		throw new RuntimeException("No Auth header found for current request");
     	}
         try {
-        	MDC.put("trace_id", new RandomGenerator().generateRandomTraceId());
+        	MDC.put("trace_id", new CommonUtilities().generateRandomTraceId());
         	MDC.put("user_identifier", getUserIdentifier(request.getHeader("Auth")));
             filterChain.doFilter(request, response);
         } finally {

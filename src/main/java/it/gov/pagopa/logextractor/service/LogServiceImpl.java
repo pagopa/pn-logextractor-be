@@ -17,6 +17,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -34,6 +35,7 @@ import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.LegalFactDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationAttachmentDownloadMetadataResponseDto;
+import it.gov.pagopa.logextractor.util.CommonUtilities;
 import it.gov.pagopa.logextractor.util.Constants;
 import it.gov.pagopa.logextractor.util.FileUtilities;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
@@ -112,7 +114,7 @@ public class LogServiceImpl implements LogService{
 		// use case 7
 		if (dateFrom != null && dateTo != null && personId != null && iun == null) {
 			log.info("Getting activities' anonymized history, user={}, startDate={}, endDate={}, constructing Opensearch query...", personId, dateFrom, dateTo);
-			queryParams.put("uid", personId);
+			queryParams.put("uid.keyword", personId);
 			queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
 					new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 			query = queryConstructor.createBooleanMultiSearchQuery(queryData);
@@ -145,6 +147,7 @@ public class LogServiceImpl implements LogService{
 	public DownloadArchiveResponseDto getMonthlyNotifications(String ticketNumber, String referenceMonth, String ipaCode) throws IOException, ParseException,CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
 		log.info("Monthly notifications retrieve process - START - user={}, ticket number={}", MDC.get("user_identifier"), ticketNumber);
 		long serviceStartTime = System.currentTimeMillis();
+		CommonUtilities commonUtils = new CommonUtilities();
 		long performanceMillis = 0;
 		LocalDate startDate = LocalDate.parse(StringUtils.removeIgnoreCase(referenceMonth, "-")+"01", DateTimeFormatter.BASIC_ISO_DATE);
 		LocalDate endDate = startDate.plusMonths(1);
@@ -170,11 +173,11 @@ public class LogServiceImpl implements LogService{
 				}
 				recipientsBuilder.deleteCharAt(recipientsBuilder.length()-1);
 				NotificationCsvBean notification = NotificationCsvBean.builder()
-													.iun(nTemp.getIun())
-													.sendDate(nTemp.getSentAt())
-													.attestationGenerationDate(notificationApiHandler.getLegalStartDate(notificationDetails))
-													.subject(nTemp.getSubject())
-													.taxIds(recipientsBuilder.toString())
+													.IUN(commonUtils.escapeForCsv(nTemp.getIun()))
+													.Data_invio(commonUtils.escapeForCsv(nTemp.getSentAt()))
+													.Data_generazione_attestazione_opponibile_a_terzi(commonUtils.escapeForCsv(notificationApiHandler.getLegalStartDate(notificationDetails)))
+													.Oggetto(commonUtils.escapeForCsv(nTemp.getSubject()))
+													.Codici_fiscali(commonUtils.escapeForCsv(recipientsBuilder.toString()))
 													.build();
 				recipientsBuilder.setLength(0);
 				notifications.add(notification);
@@ -309,7 +312,7 @@ public class LogServiceImpl implements LogService{
 			log.info("Getting activities' deanonymized history, user={}, startDate={}, endDate={}, calling deanonimization service...", taxid, dateFrom, dateTo);
 			GetBasicDataResponseDto internalidDto = deanonimizationApiHandler.getUniqueIdentifierForPerson(recipientType, taxid, getUniqueIdURL);
 			log.info("Returned deanonimized data: " + internalidDto.toString());
-			queryParams.put("uid", internalidDto.getData());
+			queryParams.put("uid.keyword", internalidDto.getData());
 			queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
 					new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 			log.info("Constructing Opensearch query...");

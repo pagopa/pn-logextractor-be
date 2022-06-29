@@ -22,7 +22,7 @@ public class ZipFactory {
 	 * */
 	public ZipFile createZipArchive(String name, String password) {
 		return new ZipFile(Constants.EXPORT_FOLDER + name + "-" + 
-							new RandomGenerator().generateRandomToken() + Constants.ZIP_EXTENSION, password.toCharArray());
+							new CommonUtilities().generateRandomToken() + Constants.ZIP_EXTENSION, password.toCharArray());
 	}
 	
 	/**
