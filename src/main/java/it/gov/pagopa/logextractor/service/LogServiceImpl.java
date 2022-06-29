@@ -44,10 +44,8 @@ import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchQueryConstr
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchQuerydata;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchRangeQueryData;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchSortFilter;
-import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchUtil;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
-import it.gov.pagopa.logextractor.util.external.selfcare.SelfCareApiHandler;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -75,7 +73,7 @@ public class LogServiceImpl implements LogService{
 	@Value("${external.notification.getSentNotification.url}")
 	String notificationURL;
 	
-	@Value("${external.selfcare.encodedIpaCode.url}")
+	@Value("${external.selfcare.getEncodedIpaCode.url}")
 	String selfCareEncodedIpaCodeURL;
 	
 	@Value("${external.notification.getLegalFactDownloadMetadata.url}")
@@ -87,6 +85,9 @@ public class LogServiceImpl implements LogService{
 	@Value("${external.notification.getPaymentAttachmentDownloadMetadata.url}")
 	String paymentAttachmentDownloadMetadataURL;
 	
+	@Value("${external.selfcare.getPublicAuthorityName.url}")
+	String getPublicAuthorityNameUrl;
+	
 	@Autowired
 	NotificationApiHandler notificationApiHandler;
 	
@@ -95,9 +96,6 @@ public class LogServiceImpl implements LogService{
 	
 	@Autowired
 	DeanonimizationApiHandler deanonimizationApiHandler;
-	
-	@Autowired
-	SelfCareApiHandler selfCareApiHandler;
 
 	@Override
 	public DownloadArchiveResponseDto getAnonymizedPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId) throws IOException {
@@ -149,9 +147,9 @@ public class LogServiceImpl implements LogService{
 		LocalDate startDate = LocalDate.parse(StringUtils.removeIgnoreCase(referenceMonth, "-")+"01", DateTimeFormatter.BASIC_ISO_DATE);
 		LocalDate endDate = startDate.plusMonths(1);
 		String finaldatePart = "T00:00:00.000Z";
-		log.info("Getting encoded public authority code...");
+		log.info("Getting public authority id...");
 		long performanceMillis = System.currentTimeMillis();
-		String encodedIpaCode = selfCareApiHandler.getEncodedIpaCode(selfCareEncodedIpaCodeURL, ipaCode);
+		String encodedIpaCode = deanonimizationApiHandler.getEncodedIpaCode(selfCareEncodedIpaCodeURL, ipaCode);
 		ArrayList<NotificationCsvBean> notifications = new ArrayList<NotificationCsvBean>();
         HashMap<String, Object> parameters = new HashMap<String, Object>();
         parameters.put("startDate", startDate.toString()+finaldatePart);
@@ -321,7 +319,7 @@ public class LogServiceImpl implements LogService{
 			openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 			log.info("Query execution completed in {} ms, Deanonymizing results...", System.currentTimeMillis() - performanceMillis);
 			performanceMillis = System.currentTimeMillis();
-			deanonymizedOpenSearchResponse = OpenSearchUtil.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL, deanonimizationApiHandler);	
+			deanonymizedOpenSearchResponse = deanonimizationApiHandler.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL, getPublicAuthorityNameUrl);	
 		} else{
 			//use case 4
 			if (iun!=null && ticketNumber!=null) {
@@ -336,7 +334,7 @@ public class LogServiceImpl implements LogService{
 				openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 				log.info("Query execution completed in {} ms, Deanonymizing results...", System.currentTimeMillis() - performanceMillis);
 				performanceMillis = System.currentTimeMillis();
-				deanonymizedOpenSearchResponse = OpenSearchUtil.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL, deanonimizationApiHandler);
+				deanonymizedOpenSearchResponse = deanonimizationApiHandler.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL, getPublicAuthorityNameUrl);
 			}
 		}
 		log.info("Deanonymization completed in {} ms, Constructing service response...", System.currentTimeMillis() - performanceMillis);
