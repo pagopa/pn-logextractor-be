@@ -32,7 +32,7 @@ public class CacheConfig {
 	 * Scheduled task that evicts all active caches at a specific time
 	 * */
 	@Scheduled(cron = "0 0 22 * * *")
-	//@Scheduled(fixedRate = 6000)
+	//@Scheduled(fixedRate = 20000)
 	public void evictAllcachesAtIntervals() {
 		SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd 'at' HH:mm:ss z");
 		log.info("Evicting caches at: " + formatter.format(System.currentTimeMillis()));

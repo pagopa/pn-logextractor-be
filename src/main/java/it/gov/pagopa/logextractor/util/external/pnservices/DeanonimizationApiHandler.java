@@ -101,7 +101,7 @@ public class DeanonimizationApiHandler {
 	 * @return The public authority id
 	 * */
 	public String getIpaCode(String pnResponse, String ipaCode) {
-		JSONArray jsonResponse = new JSONObject(pnResponse).getJSONArray("PaSummariesList");
+		JSONArray jsonResponse = new JSONArray(pnResponse);
 		for(int index = 0; index < jsonResponse.length(); index++) {
 			JSONObject currentObj = jsonResponse.getJSONObject(index);
 			if(ipaCode.equals(currentObj.getString("name"))) {

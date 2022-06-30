@@ -13,8 +13,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.text.StringEscapeUtils;
 import org.json.JSONArray;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -306,13 +304,13 @@ public class LogServiceImpl implements LogService{
 		String dateIn3Months = OffsetDateTime.parse(legalStartDate).plusMonths(3).toString();
 		//use case 3
 		if (dateFrom != null && dateTo != null && taxid != null && recipientType!=null && ticketNumber!=null && iun==null) {
-			log.info("Getting activities' deanonymized history, user={}, startDate={}, endDate={}, calling deanonimization service...", taxid, dateFrom, dateTo);
+			log.info("Getting activities' de-anonymized history, user={}, startDate={}, endDate={}, calling deanonimization service...", taxid, dateFrom, dateTo);
 			GetBasicDataResponseDto internalidDto = deanonimizationApiHandler.getUniqueIdentifierForPerson(recipientType, taxid, getUniqueIdURL);
-			log.info("Returned deanonimized data: " + internalidDto.toString());
+			log.info("Returned de-anonimized data: " + internalidDto.getData());
 			queryParams.put("uid.keyword", internalidDto.getData());
 			queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
 					new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
-			log.info("Constructing Opensearch query...");
+			log.info("De-anonimized data retrieved, constructing Opensearch query...");
 			performanceMillis = System.currentTimeMillis();
 			query = queryConstructor.createBooleanMultiSearchQuery(queryData);
 			log.info("Executing query:"+ RegExUtils.removeAll(query, "\n"));
@@ -323,7 +321,7 @@ public class LogServiceImpl implements LogService{
 		} else{
 			//use case 4
 			if (iun!=null && ticketNumber!=null) {
-				log.info("Getting deanonymized path, notification={}", iun);
+				log.info("Getting de-anonymized path, notification={}", iun);
 				queryParams.put("iun.keyword", iun);
 				queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
 						new OpenSearchRangeQueryData("@timestamp", legalStartDate, dateIn3Months), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));

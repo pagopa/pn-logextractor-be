@@ -7,7 +7,6 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import org.apache.commons.io.FileUtils;
-import org.json.JSONObject;
 
 import com.opencsv.CSVWriter;
 import com.opencsv.bean.StatefulBeanToCsv;
