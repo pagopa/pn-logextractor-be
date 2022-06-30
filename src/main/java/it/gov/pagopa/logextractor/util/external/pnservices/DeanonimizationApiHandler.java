@@ -152,13 +152,13 @@ public class DeanonimizationApiHandler {
 			String uuid = JsonUtilities.getValue(anonymizedDocuments.get(index), "uid");
 			String cxId = JsonUtilities.getValue(anonymizedDocuments.get(index), "cx_id");
 			String document = anonymizedDocuments.get(index);
-			HashMap<String,String> keyValues = new HashMap<String,String>() ;
+			HashMap<String,String> keyValues = new HashMap<String,String>();
 			if(uuid != null) {
 				GetBasicDataResponseDto taxCodeDto = getTaxCodeForPerson(uuid, getTaxCodeURL);
 				keyValues.put("uid", taxCodeDto.getData());
 			}
 			if(cxId != null) {
-				String publicAuthorityName = getPublicAuthorityName(cxId, getPublicAuthorityNameUrl);//TODO: add the url string for cx_id deanonymization service
+				String publicAuthorityName = getPublicAuthorityName(cxId, getPublicAuthorityNameUrl);
 				keyValues.put("cx_id", publicAuthorityName);
 			}
 			document = JsonUtilities.replaceValues(document, keyValues);

@@ -276,9 +276,12 @@ public class NotificationApiHandler {
 	 */
 	public ArrayList<String> getDocumentIds(String notificationInfo) {
 		ArrayList<String> docIdxs = new ArrayList<String>();
-		JSONArray documentObjectsArray = new JSONObject(notificationInfo).getJSONArray("documents");
-		for (int index = 0; index < documentObjectsArray.length(); index++) {
-			docIdxs.add(documentObjectsArray.getJSONObject(index).getString("docIdx"));
+		JSONObject json = new JSONObject(notificationInfo);
+		if(!json.isNull("documents")) {
+			JSONArray documentObjectsArray = json.getJSONArray("documents");
+			for (int index = 0; index < documentObjectsArray.length(); index++) {
+				docIdxs.add(documentObjectsArray.getJSONObject(index).getString("docIdx"));
+			}
 		}
 		return docIdxs;
 	}
