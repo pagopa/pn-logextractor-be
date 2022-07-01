@@ -90,33 +90,8 @@
 			<version>${testcontainer-version}</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-		    <groupId>io.github.resilience4j</groupId>
-		    <artifactId>resilience4j-retry</artifactId>
-		    <version>1.7.1</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/io.github.resilience4j/resilience4j-annotations -->
-		<dependency>
-		    <groupId>io.github.resilience4j</groupId>
-		    <artifactId>resilience4j-annotations</artifactId>
-		    <version>1.7.1</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/io.github.resilience4j/resilience4j-reactor -->
-		<dependency>
-		    <groupId>io.github.resilience4j</groupId>
-		    <artifactId>resilience4j-reactor</artifactId>
-		    <version>1.7.1</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/io.github.resilience4j/resilience4j-spring-boot2 -->
-		<dependency>
-		    <groupId>io.github.resilience4j</groupId>
-		    <artifactId>resilience4j-spring-boot2</artifactId>
-		    <version>1.7.1</version>
-		</dependency>
-		<!-- AWS dependencies START -->
-		<!-- Redis related dependencies -->
-		<!-- TODO: enable when redis configuration is ready -->
-		<!-- 
+		<!-- AWS Elasticache related dependencies START -->
+		<!-- TODO: disable for local environment -->
 		<dependency>
 			<groupId>io.awspring.cloud</groupId>
 			<artifactId>spring-cloud-aws</artifactId>
@@ -133,10 +108,12 @@
 			<artifactId>aws-java-sdk-elasticache</artifactId>
 			<version>1.12.210</version>
 		</dependency>
-		<dependency> <groupId>com.amazonaws</groupId> <artifactId>aws-java-sdk-cloudformation</artifactId> 
-			<version>1.12.210</version> </dependency> -->
-		<!-- Redis related dependencies -->
-		<!-- AWS dependencies END -->
+		<dependency> 
+			<groupId>com.amazonaws</groupId> 
+			<artifactId>aws-java-sdk-cloudformation</artifactId> 
+			<version>1.12.210</version>
+		</dependency> 
+		<!-- AWS Elasticache related dependencies END -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-redis</artifactId>
@@ -147,11 +124,12 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
+		<!-- TODO: enable for local environment -->
+		<!-- <dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-cache</artifactId>
 			<version>2.4.0</version>
-		</dependency>
+		</dependency> -->
 	</dependencies>
 	<build>
 		<plugins>
