@@ -230,13 +230,17 @@ public class NotificationApiHandler {
 	 */
 	public String getLegalStartDate(String notificationInfo) {
 		String legalStartDate = null;
-		JSONArray timelineObjectsArray = new JSONObject(notificationInfo).getJSONArray("timeline");
-        for(int index = 0; index < timelineObjectsArray.length(); index++) {
-        	JSONObject timelineObject = timelineObjectsArray.getJSONObject(index);
-        	if("REQUEST_ACCEPTED".equalsIgnoreCase(timelineObject.getString("category"))) {
-        		legalStartDate = timelineObject.getString("timestamp");
-        	}
-        }
+		JSONObject json = new JSONObject(notificationInfo);
+		if(!json.isNull("timeline")) {
+			JSONArray timelineObjectsArray = new JSONObject(notificationInfo).getJSONArray("timeline");
+	        for(int index = 0; index < timelineObjectsArray.length(); index++) {
+	        	JSONObject timelineObject = timelineObjectsArray.getJSONObject(index);
+				if (timelineObject.getString("category") != null
+						&& "REQUEST_ACCEPTED".equalsIgnoreCase(timelineObject.getString("category"))) {
+	        		legalStartDate = timelineObject.getString("timestamp");
+	        	}
+	        }
+		}
         return legalStartDate;
 	}
 	
@@ -250,16 +254,20 @@ public class NotificationApiHandler {
 	 */
 	public Map<String, String> getLegalFactIdsAndTimestamp(String notificationInfo) {
 		Map<String, String> legalFactIds = new HashMap<>();
-		JSONArray timelineObjectsArray = new JSONObject(notificationInfo).getJSONArray("timeline");
-		for (int index = 0; index < timelineObjectsArray.length(); index++) {
-			JSONObject timelineObject = timelineObjectsArray.getJSONObject(index);
-			if ("REQUEST_ACCEPTED".equalsIgnoreCase(timelineObject.getString("category"))) {
-				legalFactIds.put("timestamp", timelineObject.getString("timestamp"));
-				JSONArray legalFactIdsArray = timelineObjectsArray.getJSONObject(index).getJSONArray("legalFactsIds");
-				for (int indexFactsIds = 0; indexFactsIds < legalFactIdsArray.length(); indexFactsIds++) {
-					JSONObject legalFactsObject = legalFactIdsArray.getJSONObject(indexFactsIds);
-					legalFactIds.put("legalFactId", legalFactsObject.getString("key"));
-					legalFactIds.put("legalFactType", legalFactsObject.getString("category"));
+		JSONObject json = new JSONObject(notificationInfo);
+		if(!json.isNull("timeline")) {
+			JSONArray timelineObjectsArray = new JSONObject(notificationInfo).getJSONArray("timeline");
+			for (int index = 0; index < timelineObjectsArray.length(); index++) {
+				JSONObject timelineObject = timelineObjectsArray.getJSONObject(index);
+				if (timelineObject.getString("category") != null
+						&& "REQUEST_ACCEPTED".equalsIgnoreCase(timelineObject.getString("category"))) {
+					legalFactIds.put("timestamp", timelineObject.getString("timestamp"));
+					JSONArray legalFactIdsArray = timelineObjectsArray.getJSONObject(index).getJSONArray("legalFactsIds");
+					for (int indexFactsIds = 0; indexFactsIds < legalFactIdsArray.length(); indexFactsIds++) {
+						JSONObject legalFactsObject = legalFactIdsArray.getJSONObject(indexFactsIds);
+						legalFactIds.put("legalFactId", legalFactsObject.getString("key"));
+						legalFactIds.put("legalFactType", legalFactsObject.getString("category"));
+					}
 				}
 			}
 		}
