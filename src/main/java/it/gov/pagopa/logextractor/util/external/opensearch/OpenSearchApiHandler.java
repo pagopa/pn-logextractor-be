@@ -55,12 +55,14 @@ public class OpenSearchApiHandler {
 		if(!json.isNull("responses")) {
 			JSONArray responsesObject = new JSONObject(openSearchResponseBody).getJSONArray("responses");
 	        for(int index = 0; index < responsesObject.length(); index++) {
-	        	if(responsesObject.getJSONObject(index).getJSONObject("hits") != null) {
+	        	if(!responsesObject.getJSONObject(index).isNull("hits")) {
 		        	JSONObject obj = responsesObject.getJSONObject(index).getJSONObject("hits");
 		        	if(!obj.isNull("hits")) {
 			        	JSONArray opensearchEnrichedDoc = obj.getJSONArray("hits");
 			        	for(int hitIndex = 0; hitIndex < opensearchEnrichedDoc.length(); hitIndex++) {
-			        		documents.add(opensearchEnrichedDoc.getJSONObject(hitIndex).getJSONObject("_source").toString());
+			        		if(!opensearchEnrichedDoc.getJSONObject(hitIndex).isNull("_source")) {
+			        			documents.add(opensearchEnrichedDoc.getJSONObject(hitIndex).getJSONObject("_source").toString());
+			        		}
 			        	}
 		        	}
 	        	}

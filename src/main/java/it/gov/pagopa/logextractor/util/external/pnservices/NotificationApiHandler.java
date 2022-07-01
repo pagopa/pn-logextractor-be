@@ -201,22 +201,21 @@ public class NotificationApiHandler {
 	private ArrayList<NotificationGeneralData> getNotificationsGeneralData(String notificationResponse) {
 		ArrayList<NotificationGeneralData> notificationsGeneralData = new ArrayList<NotificationGeneralData>();
 		JSONObject responseObj = new JSONObject(notificationResponse);
-        if(responseObj.isNull("resultsPage")) {
-        	return notificationsGeneralData;
-        }
-		JSONArray timelineObjectsArray = new JSONObject(notificationResponse).getJSONArray("resultsPage");
-        for(int index = 0; index < timelineObjectsArray.length(); index++) {
-        	JSONArray recipients = timelineObjectsArray.getJSONObject(index).getJSONArray("recipients");
-        	ArrayList<String> recipientsList = new ArrayList<String>();
-        	for(int indexRecipient = 0; indexRecipient < recipients.length(); indexRecipient++) {
-        		recipientsList.add(recipients.getString(indexRecipient));
-        	}
-        	NotificationGeneralData currentNotificationData = new NotificationGeneralData();
-        	currentNotificationData.setIun(timelineObjectsArray.getJSONObject(index).getString("iun"));
-        	currentNotificationData.setSentAt(timelineObjectsArray.getJSONObject(index).getString("sentAt"));
-        	currentNotificationData.setSubject(timelineObjectsArray.getJSONObject(index).getString("subject"));
-        	currentNotificationData.setRecipients(recipientsList);
-        	notificationsGeneralData.add(currentNotificationData);
+        if(!responseObj.isNull("resultsPage")) {
+        	JSONArray timelineObjectsArray = new JSONObject(notificationResponse).getJSONArray("resultsPage");
+            for(int index = 0; index < timelineObjectsArray.length(); index++) {
+            	JSONArray recipients = timelineObjectsArray.getJSONObject(index).getJSONArray("recipients");
+            	ArrayList<String> recipientsList = new ArrayList<String>();
+            	for(int indexRecipient = 0; indexRecipient < recipients.length(); indexRecipient++) {
+            		recipientsList.add(recipients.getString(indexRecipient));
+            	}
+            	NotificationGeneralData currentNotificationData = new NotificationGeneralData();
+            	currentNotificationData.setIun(timelineObjectsArray.getJSONObject(index).getString("iun"));
+            	currentNotificationData.setSentAt(timelineObjectsArray.getJSONObject(index).getString("sentAt"));
+            	currentNotificationData.setSubject(timelineObjectsArray.getJSONObject(index).getString("subject"));
+            	currentNotificationData.setRecipients(recipientsList);
+            	notificationsGeneralData.add(currentNotificationData);
+            }
         }
         return notificationsGeneralData;
 	}
@@ -259,14 +258,15 @@ public class NotificationApiHandler {
 			JSONArray timelineObjectsArray = new JSONObject(notificationInfo).getJSONArray("timeline");
 			for (int index = 0; index < timelineObjectsArray.length(); index++) {
 				JSONObject timelineObject = timelineObjectsArray.getJSONObject(index);
-				if (timelineObject.getString("category") != null
-						&& "REQUEST_ACCEPTED".equalsIgnoreCase(timelineObject.getString("category"))) {
+				if (!timelineObject.isNull("category") && "REQUEST_ACCEPTED".equalsIgnoreCase(timelineObject.getString("category"))) {
 					legalFactIds.put("timestamp", timelineObject.getString("timestamp"));
-					JSONArray legalFactIdsArray = timelineObjectsArray.getJSONObject(index).getJSONArray("legalFactsIds");
-					for (int indexFactsIds = 0; indexFactsIds < legalFactIdsArray.length(); indexFactsIds++) {
-						JSONObject legalFactsObject = legalFactIdsArray.getJSONObject(indexFactsIds);
-						legalFactIds.put("legalFactId", legalFactsObject.getString("key"));
-						legalFactIds.put("legalFactType", legalFactsObject.getString("category"));
+					if(!timelineObjectsArray.getJSONObject(index).isNull("legalFactsIds")) {
+						JSONArray legalFactIdsArray = timelineObjectsArray.getJSONObject(index).getJSONArray("legalFactsIds");
+						for (int indexFactsIds = 0; indexFactsIds < legalFactIdsArray.length(); indexFactsIds++) {
+							JSONObject legalFactsObject = legalFactIdsArray.getJSONObject(indexFactsIds);
+							legalFactIds.put("legalFactId", legalFactsObject.getString("key"));
+							legalFactIds.put("legalFactType", legalFactsObject.getString("category"));
+						}
 					}
 				}
 			}
@@ -308,27 +308,26 @@ public class NotificationApiHandler {
 		JSONObject paymentObject = null;
 		JSONObject notificationDetails = new JSONObject(notificationInfo);
 		JSONArray recipientsObjectsArray = new JSONArray();
-		if(notificationDetails.isNull("recipients")) {
-			return paymentData;
-		}
-		recipientsObjectsArray = notificationDetails.getJSONArray("recipients");
-		for (int recipient = 0; recipient < recipientsObjectsArray.length(); recipient++) {
-			if(!recipientsObjectsArray.getJSONObject(recipient).isNull("payment")) {
-				paymentObject = recipientsObjectsArray.getJSONObject(recipient).getJSONObject("payment");
-				if(!paymentObject.isNull("pagoPaForm")) {
-					payObj = paymentObject.getJSONObject("pagoPaForm").getJSONObject("ref");
-					paymentKeys.put("pagoPaFormKey", !payObj.isNull("key") ? payObj.getString("key") : null);
+		if(!notificationDetails.isNull("recipients")) {
+			recipientsObjectsArray = notificationDetails.getJSONArray("recipients");
+			for (int recipient = 0; recipient < recipientsObjectsArray.length(); recipient++) {
+				if(!recipientsObjectsArray.getJSONObject(recipient).isNull("payment")) {
+					paymentObject = recipientsObjectsArray.getJSONObject(recipient).getJSONObject("payment");
+					if(!paymentObject.isNull("pagoPaForm")) {
+						payObj = paymentObject.getJSONObject("pagoPaForm").getJSONObject("ref");
+						paymentKeys.put("pagoPaFormKey", !payObj.isNull("key") ? payObj.getString("key") : null);
+					}
+					if(!paymentObject.isNull("f24flatRate")) {
+						payObj = paymentObject.getJSONObject("f24flatRate").getJSONObject("ref");
+						paymentKeys.put("f24flatRateKey", !payObj.isNull("key") ? payObj.getString("key") : null);
+					}
+					if(!paymentObject.isNull("f24standard")) {
+						payObj = paymentObject.getJSONObject("f24standard").getJSONObject("ref");
+						paymentKeys.put("f24standardKey", !payObj.isNull("key") ? payObj.getString("key") : null);
+					}
 				}
-				if(!paymentObject.isNull("f24flatRate")) {
-					payObj = paymentObject.getJSONObject("f24flatRate").getJSONObject("ref");
-					paymentKeys.put("f24flatRateKey", !payObj.isNull("key") ? payObj.getString("key") : null);
-				}
-				if(!paymentObject.isNull("f24standard")) {
-					payObj = paymentObject.getJSONObject("f24standard").getJSONObject("ref");
-					paymentKeys.put("f24standardKey", !payObj.isNull("key") ? payObj.getString("key") : null);
-				}
+				paymentData.add(new PaymentDocumentData(recipient, paymentKeys));
 			}
-			paymentData.add(new PaymentDocumentData(recipient, paymentKeys));
 		}
 		return paymentData;
 	}
