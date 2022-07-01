@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -45,12 +46,11 @@ public abstract class AbstractMock {
 	@Qualifier("simpleRestTemplate") RestTemplate client;	
 	@MockBean
 	@Qualifier("openSearchRestTemplate") RestTemplate openClient;
-	@Value("classpath:data/notification.json")
-	private Resource mockNotification;
-	@Value("classpath:data/notification_general_data.json")
-	private Resource mockNotificationGeneralData;
-	@Value("classpath:data/notification_general_data2.json")
-	private Resource mockNotificationGeneralData2;
+	@Value("classpath:data/notification.json")	private Resource mockNotification;
+	@Value("classpath:data/notification_general_data.json")	private Resource mockNotificationGeneralData;
+	@Value("classpath:data/notification_general_data2.json") private Resource mockNotificationGeneralData2;
+	@Value("classpath:data/authresponse.json") private Resource authResponse;
+	@Value("classpath:data/pasummarieslist.json") private Resource paSummariesList;
 	
 	public static final MediaType APPLICATION_JSON_UTF8 = new MediaType(MediaType.APPLICATION_JSON.getType(), MediaType.APPLICATION_JSON.getSubtype(), Charset.forName("utf8"));	
 	protected final String identifierUrl = "/logextractor/v1/persons/person-id";
@@ -60,15 +60,14 @@ public abstract class AbstractMock {
 	protected final String notificationInfoUrl = "/logextractor/v1/logs/notifications/info";
 	protected final String processesUrl = "/logextractor/v1/logs/processes";
 	protected final String fakeHeader = "Basic YWxhZGRpbjpvcGVuc2VzYW1l";
-	protected final String authResponse = "{\"UserAttributes\":[{\"Name\":\"custom:log_identifier\",\"Value\":\"BRMRSS63A02A001D\"}]}";
 	private static ObjectMapper mapper = new ObjectMapper();
 	
 
 	@SuppressWarnings("unchecked")
-	protected void mockUniqueIdentifierForPerson() {
+	protected void mockUniqueIdentifierForPerson() throws RestClientException, IOException {
 		//The first return is used to simulate authentication
 		Mockito.when(client.postForObject(Mockito.anyString(),Mockito.any(), Mockito.any(Class.class)))
-				.thenReturn(authResponse, EnsureRecipientByExternalIdResponseDto.builder().internalId("123").build());
+				.thenReturn(getStringFromResourse(authResponse), EnsureRecipientByExternalIdResponseDto.builder().internalId("123").build());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -89,8 +88,9 @@ public abstract class AbstractMock {
     	Mockito.when(client.getForObject(Mockito.anyString(), Mockito.any(Class.class))).thenThrow(errorResponse);
 	}
 	
+	@SuppressWarnings("unchecked")
 	protected void mockPersonsLogResponse() throws IOException {
-		String jsonResponse = StreamUtils.copyToString(mockNotification.getInputStream(), Charset.defaultCharset());
+		String jsonResponse = getStringFromResourse(mockNotification);
 		ResponseEntity<Object> response = new ResponseEntity<Object>(jsonResponse, HttpStatus.OK);
 		Mockito.when(client.getForEntity(Mockito.anyString(), Mockito.any())).thenReturn(response);
 		String jsonDocSearch = "{\"responses\":[{\"hits\":{\"hits\":[{\"_source\":{\"_source\":\"3242342323\"}}]}}]}";
@@ -113,10 +113,24 @@ public abstract class AbstractMock {
 	}
 	
 	@SuppressWarnings("unchecked")
+	protected void mockPersonsLogUseCase6Response() throws IOException {
+		String jsonResponse = getStringFromResourse(mockNotification);
+		String mock = getStringFromResourse(paSummariesList);
+		ResponseEntity<Object> response2 = new ResponseEntity<Object>(mock, HttpStatus.OK);
+		ResponseEntity<Object> response = new ResponseEntity<Object>(jsonResponse, HttpStatus.OK);
+		Mockito.when(client.getForEntity(Mockito.anyString(), Mockito.any())).thenReturn(response2, response);
+		String jsonDocSearch = "{\"responses\":[{\"hits\":{\"hits\":[{\"_source\":{\"_source\":\"3242342323\"}}]}}]}";
+		ResponseEntity<String> responseSearch = new ResponseEntity<String>(jsonDocSearch, HttpStatus.OK);
+		Mockito.when(openClient.exchange(ArgumentMatchers.anyString(), ArgumentMatchers.any(HttpMethod.class),
+				ArgumentMatchers.any(HttpEntity.class), ArgumentMatchers.<Class<String>>any()))
+				.thenReturn(responseSearch);
+		mockUniqueIdentifierForPerson();
+
+	}
+	
+	@SuppressWarnings("unchecked")
 	protected void mockNotificationResponse() throws IOException {
-		String mock = StreamUtils.copyToString(mockNotificationGeneralData.getInputStream(), Charset.defaultCharset());
-		String mock2 = StreamUtils.copyToString(mockNotificationGeneralData2.getInputStream(), Charset.defaultCharset());
-		ResponseEntity<Object> response = new ResponseEntity<Object>(mock, HttpStatus.OK);
+		String mock2 = getStringFromResourse(mockNotificationGeneralData2);	
 		ResponseEntity<Object> response2 = new ResponseEntity<Object>(mock2, HttpStatus.OK);
 		Mockito.when(client.getForEntity(Mockito.anyString(), Mockito.any(), Mockito.any(HashMap.class))).thenReturn(response2);	
 	}
@@ -196,11 +210,14 @@ public abstract class AbstractMock {
 		return mapper.writeValueAsString(dto);
 	}
 	
-	
 	protected static String getMockNotificationsRequestDto() throws JsonProcessingException {
 		NotificationInfoRequestDto dto = new NotificationInfoRequestDto();
 		dto.setTicketNumber("345");
 		dto.setIun("ABCHFGJRENDLAPEORIFKDNSME");
 		return mapper.writeValueAsString(dto);
+	}	
+	
+	private static String getStringFromResourse(Resource resource) throws IOException {
+		return StreamUtils.copyToString(resource.getInputStream(), Charset.defaultCharset());
 	}
 }
