@@ -13,19 +13,15 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONObject;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
-
 import it.gov.pagopa.logextractor.dto.LegalFactBasicData;
 import it.gov.pagopa.logextractor.dto.LegalFactData;
 import it.gov.pagopa.logextractor.dto.NotificationCsvBean;
@@ -165,8 +161,7 @@ public class LogServiceImpl implements LogService{
         performanceMillis = System.currentTimeMillis();
 		ArrayList<NotificationGeneralData> notificationsGeneralData = notificationApiHandler.getNotificationsByPeriod(notificationURL,
 																		parameters, encodedIpaCode, new ArrayList<NotificationGeneralData>(), 
-																		"", new ArrayList<String>()/*new JSONArray()*/, MDC.get("user_identifier"));
-		log.info("Service response: notificationList={}",notificationsGeneralData.toString());
+																		"", new ArrayList<String>(), MDC.get("user_identifier"));
 		if(notificationsGeneralData != null) {
 			log.info("Notifications general data retrieved in {} ms, getting notifications' details", System.currentTimeMillis() - performanceMillis);
 			performanceMillis = System.currentTimeMillis();

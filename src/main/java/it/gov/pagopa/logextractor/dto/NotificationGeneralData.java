@@ -15,9 +15,4 @@ public class NotificationGeneralData implements Serializable{
 	private String sentAt;
 	private String subject;
 	private ArrayList<String> recipients;
-	
-	@Override
-	public String toString() {
-		return "iun="+this.iun;
-	}
 }
