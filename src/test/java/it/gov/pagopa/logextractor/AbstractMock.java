@@ -25,6 +25,8 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.exc.StreamReadException;
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.gov.pagopa.logextractor.dto.request.MonthlyNotificationsRequestDto;
@@ -37,6 +39,8 @@ import it.gov.pagopa.logextractor.dto.response.EnsureRecipientByExternalIdRespon
 import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInternalIdResponseDto;
 import it.gov.pagopa.logextractor.dto.response.LegalFactDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationAttachmentDownloadMetadataResponseDto;
+import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
+import it.gov.pagopa.logextractor.dto.response.NotificationsGeneralDataResponseDto;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
 
 public abstract class AbstractMock {	
@@ -90,7 +94,8 @@ public abstract class AbstractMock {
 	
 	@SuppressWarnings("unchecked")
 	protected void mockPersonsLogResponse() throws IOException {
-		String jsonResponse = getStringFromResourse(mockNotification);
+		//String jsonResponse = getStringFromResourse(mockNotification);
+		NotificationDetailsResponseDto jsonResponse = getNotificationFromResource(mockNotification);
 		ResponseEntity<Object> response = new ResponseEntity<Object>(jsonResponse, HttpStatus.OK);
 		Mockito.when(client.getForEntity(Mockito.anyString(), Mockito.any())).thenReturn(response);
 		String jsonDocSearch = "{\"responses\":[{\"hits\":{\"hits\":[{\"_source\":{\"_source\":\"3242342323\"}}]}}]}";
@@ -114,7 +119,8 @@ public abstract class AbstractMock {
 	
 	@SuppressWarnings("unchecked")
 	protected void mockPersonsLogUseCase6Response() throws IOException {
-		String jsonResponse = getStringFromResourse(mockNotification);
+		//String jsonResponse = getStringFromResourse(mockNotification);
+		NotificationDetailsResponseDto jsonResponse = getNotificationFromResource(mockNotification);
 		String mock = getStringFromResourse(paSummariesList);
 		ResponseEntity<Object> response2 = new ResponseEntity<Object>(mock, HttpStatus.OK);
 		ResponseEntity<Object> response = new ResponseEntity<Object>(jsonResponse, HttpStatus.OK);
@@ -130,7 +136,8 @@ public abstract class AbstractMock {
 	
 	@SuppressWarnings("unchecked")
 	protected void mockNotificationResponse() throws IOException {
-		String mock2 = getStringFromResourse(mockNotificationGeneralData2);	
+		//String mock2 = getStringFromResourse(mockNotificationGeneralData2);
+		NotificationsGeneralDataResponseDto mock2 = getNotificationGeneralDataFromResource(mockNotificationGeneralData2);
 		ResponseEntity<Object> response2 = new ResponseEntity<Object>(mock2, HttpStatus.OK);
 		Mockito.when(client.getForEntity(Mockito.anyString(), Mockito.any(), Mockito.any(HashMap.class))).thenReturn(response2);	
 	}
@@ -219,5 +226,13 @@ public abstract class AbstractMock {
 	
 	private static String getStringFromResourse(Resource resource) throws IOException {
 		return StreamUtils.copyToString(resource.getInputStream(), Charset.defaultCharset());
+	}
+	
+	private static NotificationDetailsResponseDto getNotificationFromResource(Resource resource) throws StreamReadException, DatabindException, IOException {
+		return mapper.readValue(resource.getInputStream(), NotificationDetailsResponseDto.class);
+	}
+	
+	private static NotificationsGeneralDataResponseDto getNotificationGeneralDataFromResource(Resource resource) throws StreamReadException, DatabindException, IOException {
+		return mapper.readValue(resource.getInputStream(), NotificationsGeneralDataResponseDto.class);
 	}
 }

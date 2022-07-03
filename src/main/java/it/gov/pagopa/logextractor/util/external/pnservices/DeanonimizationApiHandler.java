@@ -20,6 +20,7 @@ import it.gov.pagopa.logextractor.dto.request.EnsureRecipientByExternalIdRequest
 import it.gov.pagopa.logextractor.dto.response.EnsureRecipientByExternalIdResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInternalIdResponseDto;
+import it.gov.pagopa.logextractor.dto.response.SelfCarePaDataResponseDto;
 import it.gov.pagopa.logextractor.util.JsonUtilities;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
 
@@ -122,22 +123,8 @@ public class DeanonimizationApiHandler {
 	@Cacheable(cacheNames="services")
 	public String getPublicAuthorityName(String publicAuthorityId, String serviceUrl) {
 		String url = String.format(serviceUrl, publicAuthorityId); 
-		ResponseEntity<String> response = client.getForEntity(url, String.class);
-        return getAuthorityName(response.getBody(), publicAuthorityId);
-	}
-	
-	/**
-	 * Extracts the public authority name from the pn service response
-	 * @param pnResponse The PN external service response
-	 * @param authorityId The public authority id
-	 * @return The public authority name
-	 * */
-	public String getAuthorityName(String pnResponse, String authorityId) {
-		JSONObject jsonResponse = new JSONObject(pnResponse);
-		if(!jsonResponse.isNull("id")) {
-			return jsonResponse.getString("name");
-		}
-		return null;
+		ResponseEntity<SelfCarePaDataResponseDto> response = client.getForEntity(url, SelfCarePaDataResponseDto.class);
+		return response.getBody().getName();
 	}
 	
 	/** 

@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
@@ -13,11 +11,20 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import it.gov.pagopa.logextractor.dto.NotificationDetailsDocumentData;
+import it.gov.pagopa.logextractor.dto.NotificationDetailsPaymentData;
+import it.gov.pagopa.logextractor.dto.NotificationDetailsRefData;
+import it.gov.pagopa.logextractor.dto.NotificationDetailsTimelineData;
+import it.gov.pagopa.logextractor.dto.NotificationDetailsTimelineLegalFactsData;
 import it.gov.pagopa.logextractor.dto.NotificationGeneralData;
+import it.gov.pagopa.logextractor.dto.LegalFactBasicData;
+import it.gov.pagopa.logextractor.dto.LegalFactData;
+import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.dto.PaymentDocumentData;
 import it.gov.pagopa.logextractor.dto.response.LegalFactDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationAttachmentDownloadMetadataResponseDto;
-import it.gov.pagopa.logextractor.util.JsonUtilities;
+import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
+import it.gov.pagopa.logextractor.dto.response.NotificationsGeneralDataResponseDto;
 
 /**
  * Uility class for integrations with Piattaforma Notifiche notifcations related services
@@ -40,7 +47,7 @@ public class NotificationApiHandler {
 	 * @return The list of notifications' general data
 	 */
 	public ArrayList<NotificationGeneralData> getNotificationsByPeriod(String url, HashMap<String, Object> params, 
-			String encodedIpaCode, ArrayList<NotificationGeneralData> notifications, String nextUrlKey, JSONArray pages, String userIdentifier) {
+			String encodedIpaCode, ArrayList<NotificationGeneralData> notifications, String nextUrlKey, ArrayList<String> pages/*JSONArray pages*/, String userIdentifier) {
 		HttpHeaders requestHeaders = new HttpHeaders();
 	    requestHeaders.setContentType(MediaType.APPLICATION_JSON);
 	    requestHeaders.set("x-pagopa-pn-cx-id", encodedIpaCode);
@@ -52,16 +59,14 @@ public class NotificationApiHandler {
 	    for (Map.Entry<String, Object> entry : params.entrySet()) {
 	    	parameters.put(entry.getKey(), entry.getValue());
 	    }
-	    ResponseEntity<String> response = client.getForEntity(url, String.class, parameters);
-	    JSONObject responseObj = new JSONObject(response.getBody());
-	    if(responseObj.isNull("nextPagesKey") || !responseObj.getBoolean("moreResult")) {
+	    ResponseEntity<NotificationsGeneralDataResponseDto> response = client.getForEntity(url, NotificationsGeneralDataResponseDto.class, parameters);
+	    if(response.getBody().getNextPagesKey() == null || !response.getBody().getMoreResult()) {
 	    	return getNotificationsGeneralData(response.getBody());
 	    }
-	    JSONArray pageKeys = JsonUtilities.getArray(response.getBody(), "nextPagesKey");
+	    ArrayList<String> pageKeys = response.getBody().getNextPagesKey();
 	    notifications.addAll(getNotificationsGeneralData(response.getBody()));
-	    int keySize = pageKeys.length();
-	    for(int index = 0; index < keySize; index++) {
-	    	String nextKey = pageKeys.getString(index);
+	    for(int index = 0; index < pageKeys.size(); index++) {
+	    	String nextKey = pageKeys.get(index);
 	    	HashMap<String, Object> newParameters = new HashMap<String, Object>();
 		    newParameters.putAll(parameters);
 			newParameters.put("nextPagesKey", nextKey);
@@ -69,32 +74,6 @@ public class NotificationApiHandler {
 	    }
 	    return notifications;
 	}
-	/*public ArrayList<NotificationGeneralData> getNotificationsByPeriod(String url, HashMap<String, Object> params, 
-				String encodedIpaCode, int currentKey, ArrayList<NotificationGeneralData> notifications) {
-		HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-        requestHeaders.set("x-ipa-code", encodedIpaCode);
-        List<MediaType> acceptedTypes = new ArrayList<MediaType>();
-        acceptedTypes.add(MediaType.APPLICATION_JSON);
-        requestHeaders.setAccept(acceptedTypes);
-        HashMap<String, Object> parameters = new HashMap<String, Object>();
-        for (Map.Entry<String, Object> entry : params.entrySet()) {
-        	parameters.put(entry.getKey(), entry.getValue());
-        }
-        ResponseEntity<String> response = client.getForEntity(url, String.class, parameters);
-        JSONObject responseObj = new JSONObject(response.getBody());
-        if(responseObj.isNull("nextPagesKey")) {
-        	return notifications;
-        }
-        JSONArray pageKeys = JsonUtilities.getArray(response.getBody(), "nextPagesKey");
-        notifications.addAll(getNotificationsGeneralData(response.getBody()));
-        if(null == pageKeys || pageKeys.length() == 0 || currentKey == pageKeys.length()) {
-        	return notifications;
-        }
-    	HashMap<String, Object> newParameters = new HashMap<String, Object>();
-    	newParameters.put("nextPagesKey", pageKeys.get(currentKey));
-        return getNotificationsByPeriod(url, newParameters, encodedIpaCode, currentKey+1, notifications);
-	}*/
 	
 	/**
 	 * Performs a GET HTTP request to the PN external service to retrieve a
@@ -104,13 +83,13 @@ public class NotificationApiHandler {
 	 * @param iun The notification IUN
 	 * @return The notification legal start date
 	 */
-	public String getNotificationDetails(String externalServiceUrl, String iun) {
+	public NotificationDetailsResponseDto getNotificationDetails(String externalServiceUrl, String iun) {
 		HttpHeaders requestHeaders = new HttpHeaders();
 		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
 		List<MediaType> acceptedTypes = new ArrayList<MediaType>();
 		acceptedTypes.add(MediaType.APPLICATION_JSON);
 		requestHeaders.setAccept(acceptedTypes);
-		return client.getForEntity(externalServiceUrl + "/" + iun, String.class).getBody();
+        return client.getForEntity(externalServiceUrl + "/" + iun, NotificationDetailsResponseDto.class).getBody();
 	}
 	
 	/**
@@ -198,22 +177,16 @@ public class NotificationApiHandler {
 	 *                             notification general data
 	 * @return A list containing all the notifications' general data
 	 */
-	private ArrayList<NotificationGeneralData> getNotificationsGeneralData(String notificationResponse) {
+	private ArrayList<NotificationGeneralData> getNotificationsGeneralData(NotificationsGeneralDataResponseDto notificationResponse) {
 		ArrayList<NotificationGeneralData> notificationsGeneralData = new ArrayList<NotificationGeneralData>();
-		JSONObject responseObj = new JSONObject(notificationResponse);
-        if(!responseObj.isNull("resultsPage")) {
-        	JSONArray timelineObjectsArray = new JSONObject(notificationResponse).getJSONArray("resultsPage");
-            for(int index = 0; index < timelineObjectsArray.length(); index++) {
-            	JSONArray recipients = timelineObjectsArray.getJSONObject(index).getJSONArray("recipients");
-            	ArrayList<String> recipientsList = new ArrayList<String>();
-            	for(int indexRecipient = 0; indexRecipient < recipients.length(); indexRecipient++) {
-            		recipientsList.add(recipients.getString(indexRecipient));
-            	}
+		ArrayList<NotificationData> notifications =  notificationResponse.getResultsPage();
+		if(null != notifications) {
+			for(int index = 0; index < notifications.size(); index++) {
             	NotificationGeneralData currentNotificationData = new NotificationGeneralData();
-            	currentNotificationData.setIun(timelineObjectsArray.getJSONObject(index).getString("iun"));
-            	currentNotificationData.setSentAt(timelineObjectsArray.getJSONObject(index).getString("sentAt"));
-            	currentNotificationData.setSubject(timelineObjectsArray.getJSONObject(index).getString("subject"));
-            	currentNotificationData.setRecipients(recipientsList);
+            	currentNotificationData.setIun(notifications.get(index).getIun());
+            	currentNotificationData.setSentAt(notifications.get(index).getSentAt());
+            	currentNotificationData.setSubject(notifications.get(index).getSubject());
+            	currentNotificationData.setRecipients(notifications.get(index).getRecipients());
             	notificationsGeneralData.add(currentNotificationData);
             }
         }
@@ -227,16 +200,12 @@ public class NotificationApiHandler {
 	 *                         notification details
 	 * @return The notification legal start date
 	 */
-	public String getLegalStartDate(String notificationInfo) {
+	public String getLegalStartDate(NotificationDetailsResponseDto notificationInfo) {
 		String legalStartDate = null;
-		JSONObject json = new JSONObject(notificationInfo);
-		if(!json.isNull("timeline")) {
-			JSONArray timelineObjectsArray = new JSONObject(notificationInfo).getJSONArray("timeline");
-	        for(int index = 0; index < timelineObjectsArray.length(); index++) {
-	        	JSONObject timelineObject = timelineObjectsArray.getJSONObject(index);
-				if (timelineObject.getString("category") != null
-						&& "REQUEST_ACCEPTED".equalsIgnoreCase(timelineObject.getString("category"))) {
-	        		legalStartDate = timelineObject.getString("timestamp");
+		if(null != notificationInfo.getTimeline()) {
+			for(NotificationDetailsTimelineData timelineObject : notificationInfo.getTimeline()) {
+				if (null != timelineObject.getCategory() && "REQUEST_ACCEPTED".equalsIgnoreCase(timelineObject.getCategory())) {
+	        		legalStartDate = timelineObject.getTimestamp();
 	        	}
 	        }
 		}
@@ -251,27 +220,26 @@ public class NotificationApiHandler {
 	 *                         notification details
 	 * @return A map containing the notification legal fact id, type and timestamp
 	 */
-	public Map<String, String> getLegalFactIdsAndTimestamp(String notificationInfo) {
-		Map<String, String> legalFactIds = new HashMap<>();
-		JSONObject json = new JSONObject(notificationInfo);
-		if(!json.isNull("timeline")) {
-			JSONArray timelineObjectsArray = new JSONObject(notificationInfo).getJSONArray("timeline");
-			for (int index = 0; index < timelineObjectsArray.length(); index++) {
-				JSONObject timelineObject = timelineObjectsArray.getJSONObject(index);
-				if (!timelineObject.isNull("category") && "REQUEST_ACCEPTED".equalsIgnoreCase(timelineObject.getString("category"))) {
-					legalFactIds.put("timestamp", timelineObject.getString("timestamp"));
-					if(!timelineObjectsArray.getJSONObject(index).isNull("legalFactsIds")) {
-						JSONArray legalFactIdsArray = timelineObjectsArray.getJSONObject(index).getJSONArray("legalFactsIds");
-						for (int indexFactsIds = 0; indexFactsIds < legalFactIdsArray.length(); indexFactsIds++) {
-							JSONObject legalFactsObject = legalFactIdsArray.getJSONObject(indexFactsIds);
-							legalFactIds.put("legalFactId", legalFactsObject.getString("key"));
-							legalFactIds.put("legalFactType", legalFactsObject.getString("category"));
+	public ArrayList<LegalFactData> getLegalFactIdsAndTimestamp(NotificationDetailsResponseDto notificationInfo) {
+		ArrayList<LegalFactData> legalFactData = new ArrayList<LegalFactData>();
+		if(null != notificationInfo.getTimeline()) {
+			for (NotificationDetailsTimelineData timelineObject : notificationInfo.getTimeline()) {
+				if (null != timelineObject.getCategory() && "REQUEST_ACCEPTED".equalsIgnoreCase(timelineObject.getCategory())) {
+					LegalFactData currentLegalFact = new LegalFactData();
+					currentLegalFact.setTimestamp(timelineObject.getTimestamp());
+					if(null != timelineObject.getLegalFactsIds()) {
+						for(NotificationDetailsTimelineLegalFactsData legalFactsObject : timelineObject.getLegalFactsIds()) {
+							LegalFactBasicData currentBasicData = new LegalFactBasicData();
+							currentBasicData.setKey(legalFactsObject.getKey());
+							currentBasicData.setCategory(legalFactsObject.getCategory());
+							currentLegalFact.getBasicData().add(currentBasicData);
 						}
 					}
+					legalFactData.add(currentLegalFact);
 				}
 			}
 		}
-		return legalFactIds;
+		return legalFactData;
 	}
 	
 	/**
@@ -282,13 +250,11 @@ public class NotificationApiHandler {
 	 *                         notification details
 	 * @return A list containing the document ids
 	 */
-	public ArrayList<String> getDocumentIds(String notificationInfo) {
+	public ArrayList<String> getDocumentIds(NotificationDetailsResponseDto notificationInfo) {
 		ArrayList<String> docIdxs = new ArrayList<String>();
-		JSONObject json = new JSONObject(notificationInfo);
-		if(!json.isNull("documents")) {
-			JSONArray documentObjectsArray = json.getJSONArray("documents");
-			for (int index = 0; index < documentObjectsArray.length(); index++) {
-				docIdxs.add(documentObjectsArray.getJSONObject(index).getString("docIdx"));
+		if(null != notificationInfo.getDocuments()) {
+			for (NotificationDetailsDocumentData doc : notificationInfo.getDocuments()) {
+				docIdxs.add(doc.getDocIdx());
 			}
 		}
 		return docIdxs;
@@ -301,29 +267,25 @@ public class NotificationApiHandler {
 	 *                         notification details
 	 * @return A list containing the keys of each recipient
 	 */
-	public ArrayList<PaymentDocumentData> getPaymentKeys(String notificationInfo) {
+	public ArrayList<PaymentDocumentData> getPaymentKeys(NotificationDetailsResponseDto notificationInfo) {
 		ArrayList<PaymentDocumentData> paymentData = new ArrayList<PaymentDocumentData>();
-		Map<String, String> paymentKeys = new HashMap<>();
-		JSONObject payObj = null;
-		JSONObject paymentObject = null;
-		JSONObject notificationDetails = new JSONObject(notificationInfo);
-		JSONArray recipientsObjectsArray = new JSONArray();
-		if(!notificationDetails.isNull("recipients")) {
-			recipientsObjectsArray = notificationDetails.getJSONArray("recipients");
-			for (int recipient = 0; recipient < recipientsObjectsArray.length(); recipient++) {
-				if(!recipientsObjectsArray.getJSONObject(recipient).isNull("payment")) {
-					paymentObject = recipientsObjectsArray.getJSONObject(recipient).getJSONObject("payment");
-					if(!paymentObject.isNull("pagoPaForm")) {
-						payObj = paymentObject.getJSONObject("pagoPaForm").getJSONObject("ref");
-						paymentKeys.put("pagoPaFormKey", !payObj.isNull("key") ? payObj.getString("key") : null);
+		if(null != notificationInfo.getRecipients()) {
+			Map<String, String> paymentKeys = new HashMap<>();
+			NotificationDetailsRefData payObj = null;
+			for (int recipient = 0; recipient < notificationInfo.getRecipients().size(); recipient++ ) {
+				if(null !=  notificationInfo.getRecipients().get(recipient).getPayment()) {
+					NotificationDetailsPaymentData paymentObject = notificationInfo.getRecipients().get(recipient).getPayment();
+					if(null != paymentObject.getPagoPaForm()) {
+						payObj = paymentObject.getPagoPaForm().getRef();
+						paymentKeys.put("pagoPaFormKey", null != payObj.getKey() ? payObj.getKey() : null);
 					}
-					if(!paymentObject.isNull("f24flatRate")) {
-						payObj = paymentObject.getJSONObject("f24flatRate").getJSONObject("ref");
-						paymentKeys.put("f24flatRateKey", !payObj.isNull("key") ? payObj.getString("key") : null);
+					if(null != paymentObject.getF24flatRate()) {
+						payObj = paymentObject.getF24flatRate().getRef();
+						paymentKeys.put("f24flatRateKey", null != payObj.getKey() ? payObj.getKey() : null);
 					}
-					if(!paymentObject.isNull("f24standard")) {
-						payObj = paymentObject.getJSONObject("f24standard").getJSONObject("ref");
-						paymentKeys.put("f24standardKey", !payObj.isNull("key") ? payObj.getString("key") : null);
+					if(null != paymentObject.getF24standard()) {
+						payObj = paymentObject.getF24standard().getRef();
+						paymentKeys.put("f24standardKey", null != payObj.getKey() ? payObj.getKey() : null);
 					}
 				}
 				paymentData.add(new PaymentDocumentData(recipient, paymentKeys));

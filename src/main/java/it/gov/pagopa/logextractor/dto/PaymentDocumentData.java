@@ -14,4 +14,9 @@ import lombok.ToString;
 public class PaymentDocumentData {
 	private Integer recipients;
 	private Map<String, String> paymentKeys;
+	
+	@Override
+	public String toString() {
+		return "payment="+paymentKeys.toString();
+	}
 }

@@ -28,20 +28,23 @@ public class PersonServiceImpl implements PersonService {
 
 	@Override
 	public GetBasicDataResponseDto getTaxId(String personId) throws HttpServerErrorException {
-		log.info("Tax id retrieve process - START");
+		log.info("Tax id retrieve process - START - user={} - internalId={}", MDC.get("user_identifier"), personId);
 		long serviceStartTime = System.currentTimeMillis();
-		log.info("Calling deanonimization service, internalId={}", personId);
+		log.info("Getting tax id...");
 		GetBasicDataResponseDto response = handler.getTaxCodeForPerson(personId, getTaxCodeURL);
+		log.info("Service response: taxId={}", response.getData());
 		log.info("Tax id retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
 		return response;
 	}
 
 	@Override
 	public GetBasicDataResponseDto getPersonId(RecipientTypes recipientType, String ticketNumber, String taxId) throws HttpServerErrorException {
-		log.info("Internal id retrieve process - START - user={}, ticket number={}", MDC.get("user_identifier"), ticketNumber);
+		log.info("Internal id retrieve process - START - user={}, ticket number={}, recipientType={}, taxId={}", 
+				MDC.get("user_identifier"), ticketNumber, recipientType, taxId);
 		long serviceStartTime = System.currentTimeMillis();
-		log.info("Calling deanonimization service, recipientType={}, taxId={}", recipientType, taxId);
+		log.info("Getting internal id...");
 		GetBasicDataResponseDto response =  handler.getUniqueIdentifierForPerson(recipientType, taxId, getUniqueIdURL);
+		log.info("Service response: internalId={}", response.getData());
 		log.info("Internal id retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
 		return response;
 	}	

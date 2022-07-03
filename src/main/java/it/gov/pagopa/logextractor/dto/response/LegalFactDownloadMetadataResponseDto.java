@@ -1,6 +1,5 @@
 package it.gov.pagopa.logextractor.dto.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,4 +13,9 @@ public class LegalFactDownloadMetadataResponseDto {
 	private Integer contentLength;
 	private String url;
 	private Integer retryAfter;
+	
+	@Override
+	public String toString() {
+		return String.format("fileName=%s", this.filename);
+	}
 }
