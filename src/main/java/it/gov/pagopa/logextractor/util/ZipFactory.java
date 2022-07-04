@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.CompressionLevel;
@@ -18,11 +20,11 @@ public class ZipFactory {
 	 * Create a new zip archive protected by password
 	 * @param name the name of the new zip archive
 	 * @param password the password to protect the new archive
-	 * @return a new instance of a zip archive with the given name protected by the given password
+	 * @return a new {@link ZipFile} instance of a zip archive with the given name protected by the given password
 	 * */
 	public ZipFile createZipArchive(String name, String password) {
 		return new ZipFile(Constants.EXPORT_FOLDER + name + "-" + 
-							new RandomGenerator().generateRandomToken() + Constants.ZIP_EXTENSION, password.toCharArray());
+							new CommonUtilities().generateRandomToken() + Constants.ZIP_EXTENSION, password.toCharArray());
 	}
 	
 	/**
@@ -30,7 +32,7 @@ public class ZipFactory {
 	 * @param encryptFiles set if the files should be encrypted or not
 	 * @param compressionLevel the level of the compression that should be applied to the files
 	 * @param encryptionMethod the encryption method
-	 * @return a new instance of zip parameters
+	 * @return a new {@link ZipParameters} instance of zip parameters
 	 * */
 	public ZipParameters createZipParameters(boolean encryptFiles, CompressionLevel compressionLevel, EncryptionMethod encryptionMethod) {
 		ZipParameters zipParameters = new ZipParameters();
@@ -45,7 +47,8 @@ public class ZipFactory {
 	 * @param archive the zip archive where to add the file
 	 * @param parameters the parameters for the file
 	 * @param file the file add
-	 * @return the input zip with the addition of the file
+	 * @return the {@link ZipFile} input zip with the addition of the file
+	 * @throws {@link IOException}
 	 * */
 	public ZipFile addFile(ZipFile archive, ZipParameters parameters, File file) throws IOException {
 		if (!file.exists()) {
@@ -53,6 +56,21 @@ public class ZipFactory {
 		}
 		archive.addFile(file, parameters);
 		archive.close();
+		return archive;
+	}
+	
+	/**
+	 * Add a list of files with zip parameters to a zip archive 
+	 * @param archive the zip archive where to add the file
+	 * @param parameters the parameters for the file
+	 * @param file the file add
+	 * @return the {@link ZipFile} input zip with the addition of the file
+	 * @throws {@link IOException}
+	 * */
+	public ZipFile addFiles(ZipFile archive, ZipParameters parameters, ArrayList<File> files) throws IOException {
+		for (File fileToAdd : files) {
+			archive = addFile(archive, parameters, fileToAdd);
+		}
 		return archive;
 	}
 	

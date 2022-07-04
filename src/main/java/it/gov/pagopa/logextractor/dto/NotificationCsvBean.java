@@ -5,12 +5,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-@Builder
+@Setter
 public class NotificationCsvBean {
 
-	private String iun;
-	private String sendDate;
-	private String attestationGenerationDate;
-	private String subject;
-	private String taxIds;
+	private String IUN;
+	private String Data_invio;
+	private String Data_generazione_attestazione_opponibile_a_terzi;
+	private String Oggetto;
+	private String Codici_fiscali;
 }

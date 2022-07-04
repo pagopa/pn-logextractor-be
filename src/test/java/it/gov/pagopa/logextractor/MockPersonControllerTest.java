@@ -21,7 +21,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 public class MockPersonControllerTest extends AbstractMock {
 
 	public void mvcPostPerform(String url, String body, String key, String value, HttpStatus responseCode) throws JsonProcessingException, Exception {
-		MockHttpServletResponse response = mvc.perform(post(url).accept(APPLICATION_JSON_UTF8)
+		MockHttpServletResponse response = mvc.perform(post(url).accept(APPLICATION_JSON_UTF8).header("Auth", fakeHeader)
 				.content(body).contentType(APPLICATION_JSON_UTF8)).andReturn()
 				.getResponse();
 		assertThat(response.getStatus()).isEqualTo(responseCode.value());
@@ -31,26 +31,29 @@ public class MockPersonControllerTest extends AbstractMock {
 
 	@Test
 	public void test_getPersonsBasicDataWithUniqueIdentifier_ok() throws Exception {
-		mockUniqueIdentifierForPerson(client);
+		mockUniqueIdentifierForPerson();
 		mvcPostPerform(identifierUrl, getMockPersonPersonIdRequestDto(), "data", "123", HttpStatus.OK);
 	}
 
 	@Test
 	public void test_getPersonsBasicDataWithTaxCode_ok() throws Exception {
-		mockTaxCodeForPerson200(client);
+		mockUniqueIdentifierForPerson();
+		mockTaxCodeForPerson200();
 		mvcPostPerform(taxCodeUrl, getMockPersonTaxIdRequestDto(), "data", "BRMRSS63A02A001D", HttpStatus.OK);
 	}
 	
 	@Test
 	public void test_getPersonsBasicDataWithTaxCode_5xx() throws Exception {
-		mockTaxCodeForPersonServerError(client, HttpStatus.INTERNAL_SERVER_ERROR);
+		mockUniqueIdentifierForPerson();
+		mockTaxCodeForPersonServerError(HttpStatus.INTERNAL_SERVER_ERROR);
 		String errorResponse = "Errore nell'elaborazione della richiesta";
 		mvcPostPerform(taxCodeUrl, getMockPersonTaxIdRequestDto(), errorResponse, errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 	
 	@Test
 	public void test_getPersonsBasicDataWithTaxCode_4xx() throws Exception {
-		mockTaxCodeForPersonClientError(client, HttpStatus.METHOD_NOT_ALLOWED);
+		mockUniqueIdentifierForPerson();
+		mockTaxCodeForPersonClientError(HttpStatus.METHOD_NOT_ALLOWED);
 		String errorResponse = "Errore nell'elaborazione della richiesta";
 		mvcPostPerform(taxCodeUrl, getMockPersonTaxIdRequestDto(), errorResponse, errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 	}

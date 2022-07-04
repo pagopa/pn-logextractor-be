@@ -1,8 +1,6 @@
 package it.gov.pagopa.logextractor.service;
 
 import org.springframework.web.client.HttpServerErrorException;
-
-import it.gov.pagopa.logextractor.annotation.RecipientType;
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
 

@@ -37,8 +37,8 @@ public class MockLogController extends AbstractMock {
 
 	public void test_getPersonsLogs(int useCase, boolean isDeanonimization) throws Exception {
 		//use case 3,4,7,8
-		mockPersonsLogResponse(client, openClient);
-		MockHttpServletResponse response = mvc.perform(post(personUrl).accept(APPLICATION_JSON_UTF8)
+		mockPersonsLogResponse();
+		MockHttpServletResponse response = mvc.perform(post(personUrl).accept(APPLICATION_JSON_UTF8).header("Auth", fakeHeader)
 				.content(getMockPersonLogsRequestDto(useCase, isDeanonimization)).contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("password");
@@ -47,18 +47,28 @@ public class MockLogController extends AbstractMock {
 	@Test
 	public void test_getNotificationLogs() throws JsonProcessingException, Exception {
 		//use case 6
-		mockNotificationResponse(client);
-		mockPersonsLogResponse(client, openClient);
-		MockHttpServletResponse response = mvc.perform(post(notificationUrl).accept(APPLICATION_JSON_UTF8)
+		mockNotificationResponse();
+		mockPersonsLogUseCase6Response();
+		MockHttpServletResponse response = mvc.perform(post(notificationUrl).accept(APPLICATION_JSON_UTF8).header("Auth", fakeHeader)
 				.content(getMockMonthlyNotificationsRequestDto()).contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("password");
 	}
-		
-	public void test_getProcesses(String dateFrom, String dateTo, String ticketNumber, String traceId) throws JsonProcessingException, Exception {
+	
+	@Test
+	public void test_getNotificationInfoLogs() throws JsonProcessingException, Exception {
+		mockNotificationResponse();
+		mockPersonsLogResponse();
+		MockHttpServletResponse response = mvc.perform(post(notificationInfoUrl).accept(APPLICATION_JSON_UTF8).header("Auth", fakeHeader)
+				.content(getMockNotificationsRequestDto()).contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+		assertThat(response.getContentAsString()).contains("password");
+	}
 
-		mockPersonsLogResponse(client, openClient);
-		MockHttpServletResponse response = mvc.perform(post(processesUrl).accept(APPLICATION_JSON_UTF8)
+
+	public void test_getProcesses(String dateFrom, String dateTo, String ticketNumber, String traceId) throws JsonProcessingException, Exception {
+		mockPersonsLogResponse();
+		MockHttpServletResponse response = mvc.perform(post(processesUrl).accept(APPLICATION_JSON_UTF8).header("Auth", fakeHeader)
 				.content(getMockTraceIdLogsRequestDto(dateFrom, dateTo, ticketNumber,  traceId)).contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("password");

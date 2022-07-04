@@ -10,6 +10,9 @@ import javax.validation.Payload;
 
 import it.gov.pagopa.logextractor.annotation.validator.PeriodOf3MonthsValidator;
 
+/**
+ * Custom annotation to validate a period of 3 months 
+ * */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = PeriodOf3MonthsValidator.class)

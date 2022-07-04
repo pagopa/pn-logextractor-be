@@ -37,7 +37,7 @@ public class PasswordFactory {
 	/**
 	 * Generates a special chars CharacterData instance from the input string containing the list of special chars
 	 * @param specialCharList the list of special chars
-	 * @return the random generated password with the given specifications
+	 * @return a new {@link CharacterData} instance
 	 * */
 	private CharacterData specialChars(String specialCharList) {
 		return new CharacterData() {

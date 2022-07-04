@@ -5,6 +5,9 @@ import java.net.HttpURLConnection;
 
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 
+/**
+ * Utility class for overriding the default restTemplate class configuration for GET requests
+ * */
 public class SimpleClientHttpRequestWithGetBodyFactory extends SimpleClientHttpRequestFactory {
 
 	@Override

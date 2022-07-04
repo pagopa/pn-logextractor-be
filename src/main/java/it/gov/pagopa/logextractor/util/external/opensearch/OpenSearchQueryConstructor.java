@@ -46,7 +46,7 @@ public class OpenSearchQueryConstructor {
 	 * @param queryData The query data
 	 * @return A string representing the multi-search simple query 
 	 * */
-	public String createSimpleMultiSearchQuery(List<OpenSearchQuerydata> queryData) {
+	/*public String createSimpleMultiSearchQuery(List<OpenSearchQuerydata> queryData) {
 		StringBuilder queryBuilder = new StringBuilder();
 		if(null != queryData && queryData.size() > 0) {
 			for(OpenSearchQuerydata qTemp : queryData) {
@@ -59,7 +59,7 @@ public class OpenSearchQueryConstructor {
 			}
 		}
 		return queryBuilder.toString();
-	}
+	}*/
 	
 	/**
 	 * Method that prepares query data

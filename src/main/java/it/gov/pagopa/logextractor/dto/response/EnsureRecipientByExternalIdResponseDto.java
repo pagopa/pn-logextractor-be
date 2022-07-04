@@ -12,7 +12,6 @@ import lombok.ToString;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
 public class EnsureRecipientByExternalIdResponseDto implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String internalId;

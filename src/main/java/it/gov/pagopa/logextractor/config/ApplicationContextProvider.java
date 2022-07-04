@@ -4,6 +4,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
+/**
+ * Utility class for retrieving the context beans
+ * */
 @Component
 public class ApplicationContextProvider implements ApplicationContextAware {
     private static ApplicationContext context;

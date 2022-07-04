@@ -1,10 +1,7 @@
 package it.gov.pagopa.logextractor.util.external.opensearch;
 
-import java.time.Instant;
 import java.util.ArrayList;
-//import java.util.Base64;
 import java.util.List;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * Uility class for integrations with OpenSearch service
  * */
-@Slf4j
 @Component
 public class OpenSearchApiHandler {
 	
@@ -39,7 +33,6 @@ public class OpenSearchApiHandler {
 	 * @return The documents list contained into the Opensearch response
 	 * */
 	public ArrayList<String> getDocumentsByMultiSearchQuery(String query, String host, String basicAuthUsername, String basicAuthPassword) {
-		long millis = Instant.now().getEpochSecond();
 		HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.setBasicAuth(basicAuthUsername, basicAuthPassword);
@@ -48,7 +41,6 @@ public class OpenSearchApiHandler {
         requestHeaders.setAccept(acceptedTypes);
         HttpEntity<String> request = new HttpEntity<String>(query, requestHeaders);
         ResponseEntity<String> response = client.exchange(host+"/_msearch", HttpMethod.GET, request, String.class);
-        log.info("Query execution completed in {} milliseconds", Instant.now().getEpochSecond() - millis);
         return getDocuments(response.getBody());
 	}
 	
@@ -59,14 +51,23 @@ public class OpenSearchApiHandler {
 	 * */
 	private ArrayList<String> getDocuments(String openSearchResponseBody) {
 		ArrayList<String> documents = new ArrayList<String>();
-		JSONArray responsesObject = new JSONObject(openSearchResponseBody).getJSONArray("responses");
-        for(int index = 0; index < responsesObject.length(); index++) {
-        	JSONObject obj = responsesObject.getJSONObject(index).getJSONObject("hits");
-        	JSONArray opensearchEnrichedDoc = obj.getJSONArray("hits");
-        	for(int hitIndex = 0; hitIndex < opensearchEnrichedDoc.length(); hitIndex++) {
-        		documents.add(opensearchEnrichedDoc.getJSONObject(hitIndex).getJSONObject("_source").toString());
-        	}
-        }
+		JSONObject json = new JSONObject(openSearchResponseBody);
+		if(!json.isNull("responses")) {
+			JSONArray responsesObject = new JSONObject(openSearchResponseBody).getJSONArray("responses");
+	        for(int index = 0; index < responsesObject.length(); index++) {
+	        	if(!responsesObject.getJSONObject(index).isNull("hits")) {
+		        	JSONObject obj = responsesObject.getJSONObject(index).getJSONObject("hits");
+		        	if(!obj.isNull("hits")) {
+			        	JSONArray opensearchEnrichedDoc = obj.getJSONArray("hits");
+			        	for(int hitIndex = 0; hitIndex < opensearchEnrichedDoc.length(); hitIndex++) {
+			        		if(!opensearchEnrichedDoc.getJSONObject(hitIndex).isNull("_source")) {
+			        			documents.add(opensearchEnrichedDoc.getJSONObject(hitIndex).getJSONObject("_source").toString());
+			        		}
+			        	}
+		        	}
+	        	}
+	        }
+		}
         return documents;
 	}
 }

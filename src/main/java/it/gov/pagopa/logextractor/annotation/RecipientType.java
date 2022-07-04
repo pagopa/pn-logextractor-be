@@ -8,7 +8,11 @@ import javax.validation.Constraint;
 import javax.validation.Payload;
 
 import it.gov.pagopa.logextractor.annotation.validator.RecipientTypeValidator;
+import it.gov.pagopa.logextractor.util.RecipientTypes;
 
+/**
+ * Custom annotation to validate if the input field value is contained in the {@link RecipientTypes} enum
+ * */
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = RecipientTypeValidator.class)

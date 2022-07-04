@@ -15,9 +15,8 @@ import lombok.ToString;
 
 @Getter
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-@ToString
+@AllArgsConstructor
 public class GetRecipientDenominationByInternalIdResponseDto implements Serializable {
 	private static final long serialVersionUID = 1L;
 

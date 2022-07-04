@@ -6,6 +6,9 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+/**
+ * Utility class to manage the core operations for json files
+ */
 public class JsonUtilities {
 	/** 
 	 * Returns the value associated with the specified key.
@@ -31,7 +34,7 @@ public class JsonUtilities {
 	 * Gets the array object associated with the specified key.
 	 * @param document the single document represented as a JSONObject containing the content to write in the output file (.txt, .csv) contained in the output zip archive
 	 * @param key the name of the key whose associated value is to be returned
-	 * @return the array object associated with the specified key
+	 * @return the {@link JSONArray} array object associated with the specified key
 	 */
 	public static JSONArray getArray(JSONObject document, String key) {
 		return document.has(key) ? document.getJSONArray(key) : null;
@@ -42,7 +45,7 @@ public class JsonUtilities {
 	 * Gets the array object associated with the specified key.
 	 * @param document the single document represented as a Json formatted string
 	 * @param key the name of the key whose associated value is to be returned
-	 * @return the array object associated with the specified key
+	 * @return the {@link JSONArray} array object associated with the specified key
 	 */
 	public static JSONArray getArray(String document, String key) {
 		return getArray(new JSONObject(document), key);
@@ -53,7 +56,7 @@ public class JsonUtilities {
 	 * @param document the single document converted to JSONObject containing the content to write in the output file (.txt, .csv) contained in the output zip archive
 	 * @param key the name of the key whose associated value is to be replaced
 	 * @param newValue the new value associated with the key
-	 * @return document the edited document with the specified value replacement
+	 * @return The {@link JSONObject} document edited with the specified value replacement
 	 */
 	public static JSONObject replaceValue(JSONObject document, String key, String newValue) {
 			if(document.has(key)) {
@@ -67,7 +70,7 @@ public class JsonUtilities {
 	 * Returns the edited document with the specified value replacement. It works for more couples key,value.
 	 * @param document the single document represented as a JSONObject containing the content to write in the output file (.txt, .csv) contained in the output zip archive
 	 * @param keyValue the map containing the keys and the new associated values
-	 * @return document the edited document with the specified value replacement
+	 * @return the {@link JSONObject} document edited with the specified value replacement
 	 */
 	public static JSONObject replaceValues(JSONObject document, HashMap<String, String> keyValue ){
 			for(Map.Entry<String, String> entry : keyValue.entrySet()) {
@@ -80,7 +83,7 @@ public class JsonUtilities {
 	 * Returns the edited document with the specified value replacement. It works for more couples key,value.
 	 * @param document the single document represented as a Json formatted string
 	 * @param keyValue the map containing the keys and the new associated values
-	 * @return document the edited document with the specified value replacement
+	 * @return A string representation of the edited document with the specified value replacement
 	 */
 	public static String replaceValues(String document, HashMap<String, String> keyValue ){
 		return replaceValues(new JSONObject(document),keyValue).toString();
