@@ -531,6 +531,10 @@ Resources:
                 - Name: !Select [ 0, !Split [ "=", !Ref ContainerEnvEntry40 ] ]
                   Value: !Select [ 1, !Split [ "=", !Ref ContainerEnvEntry40 ] ]
                 - !Ref "AWS::NoValue"
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - "curl -f http://localhost:8080/logextractor/v1/health-check/status || exit 1"
           PortMappings:
             - ContainerPort: 8080
           # Send logs to CloudWatch Logs
@@ -572,7 +576,7 @@ Resources:
             Principal:
               Service: ecs-tasks.amazonaws.com
             Action: 'sts:AssumeRole'
-
+            
   # Role policy needed to access the ECR registry of the CiCd account
   EcrAccessTaskPolicy:
     Type: AWS::IAM::Policy
@@ -591,7 +595,22 @@ Resources:
               - ecr:BatchGetImage
             Resource:
               - '*'
-
+              
+  CloudFormationTaskPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub '${MicroServiceUniqueName}-CloudFormationTaskPolicy'
+      Roles:
+        - !Ref TaskRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - cloudformation:ListStackResources
+            Resource:
+              - '*'
+              
   # Load balancer target group
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -601,7 +620,7 @@ Resources:
       Port: 8080
       HealthCheckEnabled: true
       HealthCheckIntervalSeconds: 300
-      HealthCheckPath: /
+      HealthCheckPath: /logextractor/v1/health-check/status
       HealthCheckPort: 8080
       HealthCheckProtocol: HTTP
       Matcher:
