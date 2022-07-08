@@ -51,7 +51,7 @@ public class DeanonimizationApiHandler {
 	 * @throws {@link HttpServerErrorException}
 	 * @throws {@link HttpClientErrorException}
 	 */
-	@Cacheable(cacheNames="services")
+	@Cacheable(cacheNames="Cluster")
 	public GetBasicDataResponseDto getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId, String externalServiceUrl) {
 		String url = String.format(externalServiceUrl, recipientType.toString());
 		EnsureRecipientByExternalIdRequestDto requestBody = EnsureRecipientByExternalIdRequestDto.builder().taxId(taxId).build();
@@ -74,7 +74,7 @@ public class DeanonimizationApiHandler {
 	 * @throws {@link HttpServerErrorException}
 	 * @throws {@link HttpClientErrorException}
 	 */
-	@Cacheable(cacheNames="services")
+	@Cacheable(cacheNames="Cluster")
 	public GetBasicDataResponseDto getTaxCodeForPerson(String personId, String externalServiceUrl) {
 		String url = String.format(externalServiceUrl, personId);
 		GetRecipientDenominationByInternalIdResponseDto response = client.getForObject(url, GetRecipientDenominationByInternalIdResponseDto.class);
@@ -89,7 +89,7 @@ public class DeanonimizationApiHandler {
 	 * @throws {@link HttpServerErrorException}
 	 * @throws {@link HttpClientErrorException}
 	 * */
-	@Cacheable(cacheNames="services")
+	@Cacheable(cacheNames="Cluster")
 	public String getEncodedIpaCode(String url, String ipaCode) {
         ResponseEntity<String> response = client.getForEntity(url, String.class);
         return getIpaCode(response.getBody(), ipaCode);

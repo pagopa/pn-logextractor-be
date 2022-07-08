@@ -12,7 +12,7 @@ import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 public class SimpleCacheCustomizer implements CacheManagerCustomizer<ConcurrentMapCacheManager> {
 	 @Override
 	    public void customize(ConcurrentMapCacheManager cacheManager) {
-		 List<String> list = Arrays.asList("services");
+		 List<String> list = Arrays.asList("Cluster");
 	        cacheManager.setCacheNames(list);
 	    }
 }

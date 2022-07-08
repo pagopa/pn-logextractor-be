@@ -46,8 +46,9 @@ public class MDCWebFilter extends OncePerRequestFilter {
 	
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+		
     	if(StringUtils.isBlank(request.getHeader("Auth"))) {
-    		throw new RuntimeException("No Auth header found for current request");
+    		throw new RuntimeException("No Auth header found for current request: " + request.getRequestURI());
     	}
         try {
         	MDC.put("trace_id", new CommonUtilities().generateRandomTraceId());
@@ -59,7 +60,12 @@ public class MDCWebFilter extends OncePerRequestFilter {
         }
     }
     
-    private String getUserIdentifier(String accessToken) {
+	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+		return "/logextractor/v1/health-check/status".equals(request.getRequestURI());
+	}
+
+	private String getUserIdentifier(String accessToken) {
 		String url = String.format(cognitoUserUrl, cognitoRegion);
 		JSONObject requestBody = new JSONObject();
 		requestBody.put("AccessToken", accessToken);
