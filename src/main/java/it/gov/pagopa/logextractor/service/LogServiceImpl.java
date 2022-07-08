@@ -116,6 +116,7 @@ public class LogServiceImpl implements LogService{
 			log.info("Executing query:"+ RegExUtils.removeAll(query, "\n"));
 			performanceMillis = System.currentTimeMillis();
 			openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
+			log.info("Query execution completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
 		} else {
 			// use case 8
 			if (iun != null && ticketNumber!=null) {
@@ -132,9 +133,9 @@ public class LogServiceImpl implements LogService{
 				log.info("Executing query:" + RegExUtils.removeAll(query, "\n"));
 				performanceMillis = System.currentTimeMillis();
 				openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
+				log.info("Query execution completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
 			}
 		}
-		log.info("Query execution completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
 		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(openSearchResponse,Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
 		log.info("Anonymized logs retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
 		return response;
@@ -340,6 +341,7 @@ public class LogServiceImpl implements LogService{
 			log.info("Query execution completed in {} ms, de-anonymizing results...", System.currentTimeMillis() - performanceMillis);
 			performanceMillis = System.currentTimeMillis();
 			deanonymizedOpenSearchResponse = deanonimizationApiHandler.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL, getPublicAuthorityNameUrl);	
+			log.info("Deanonymization completed in {} ms, Constructing service response...", System.currentTimeMillis() - performanceMillis);
 		} else{
 			//use case 4
 			if (iun!=null && ticketNumber!=null) {
@@ -359,9 +361,9 @@ public class LogServiceImpl implements LogService{
 				log.info("Query execution completed in {} ms, de-anonymizing results...", System.currentTimeMillis() - performanceMillis);
 				performanceMillis = System.currentTimeMillis();
 				deanonymizedOpenSearchResponse = deanonimizationApiHandler.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL, getPublicAuthorityNameUrl);
+				log.info("Deanonymization completed in {} ms, Constructing service response...", System.currentTimeMillis() - performanceMillis);
 			}
 		}
-		log.info("Deanonymization completed in {} ms, Constructing service response...", System.currentTimeMillis() - performanceMillis);
 		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(deanonymizedOpenSearchResponse,Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
 		log.info("Deanonymized logs retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
 		return response;
