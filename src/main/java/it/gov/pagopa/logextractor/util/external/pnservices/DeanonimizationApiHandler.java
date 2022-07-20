@@ -2,13 +2,11 @@ package it.gov.pagopa.logextractor.util.external.pnservices;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -28,7 +26,6 @@ import it.gov.pagopa.logextractor.util.RecipientTypes;
  * Uility class for integrations with Piattaforma Notifiche de-anonymization service
  * */
 @Component
-@EnableCaching
 public class DeanonimizationApiHandler {
 
 	@Autowired
@@ -51,7 +48,8 @@ public class DeanonimizationApiHandler {
 	 * @throws {@link HttpServerErrorException}
 	 * @throws {@link HttpClientErrorException}
 	 */
-	@Cacheable(cacheNames="Cluster")
+	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
+//	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager1Minute")
 	public GetBasicDataResponseDto getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId, String externalServiceUrl) {
 		String url = String.format(externalServiceUrl, recipientType.toString());
 		EnsureRecipientByExternalIdRequestDto requestBody = EnsureRecipientByExternalIdRequestDto.builder().taxId(taxId).build();
@@ -74,7 +72,8 @@ public class DeanonimizationApiHandler {
 	 * @throws {@link HttpServerErrorException}
 	 * @throws {@link HttpClientErrorException}
 	 */
-	@Cacheable(cacheNames="Cluster")
+	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
+//	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager1Minute")
 	public GetBasicDataResponseDto getTaxCodeForPerson(String personId, String externalServiceUrl) {
 		String url = String.format(externalServiceUrl, personId);
 		GetRecipientDenominationByInternalIdResponseDto response = client.getForObject(url, GetRecipientDenominationByInternalIdResponseDto.class);
@@ -89,7 +88,8 @@ public class DeanonimizationApiHandler {
 	 * @throws {@link HttpServerErrorException}
 	 * @throws {@link HttpClientErrorException}
 	 * */
-	@Cacheable(cacheNames="Cluster")
+	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
+//	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager1Minute")
 	public String getEncodedIpaCode(String url, String ipaCode) {
         ResponseEntity<String> response = client.getForEntity(url, String.class);
         return getIpaCode(response.getBody(), ipaCode);
@@ -120,7 +120,8 @@ public class DeanonimizationApiHandler {
 	 * @throws {@link HttpServerErrorException}
 	 * @throws {@link HttpClientErrorException}
 	 * */
-	@Cacheable(cacheNames="services")
+	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
+//	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager1Minute")
 	public String getPublicAuthorityName(String publicAuthorityId, String serviceUrl) {
 		String url = String.format(serviceUrl, publicAuthorityId); 
 		ResponseEntity<SelfCarePaDataResponseDto> response = client.getForEntity(url, SelfCarePaDataResponseDto.class);

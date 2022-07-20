@@ -21,10 +21,12 @@ import it.gov.pagopa.logextractor.util.Constants;
 import it.gov.pagopa.logextractor.util.CommonUtilities;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * WebFilter that puts in the MDC log map a unique identifier for incoming requests.
  */
+@Slf4j
 @Component
 public class MDCWebFilter extends OncePerRequestFilter {
 
@@ -53,6 +55,7 @@ public class MDCWebFilter extends OncePerRequestFilter {
         try {
         	MDC.put("trace_id", new CommonUtilities().generateRandomTraceId());
         	MDC.put("user_identifier", getUserIdentifier(request.getHeader("Auth")));
+        	log.info("User {} is requesting resource {}", MDC.get("user_identifier"), request.getRequestURI());
             filterChain.doFilter(request, response);
         } finally {
             MDC.remove("trace_id");
@@ -79,7 +82,11 @@ public class MDCWebFilter extends OncePerRequestFilter {
         if(StringUtils.isBlank(identifier)) {
     		throw new RuntimeException("Exception in " + MDC.get("trace_id") + " process, no identifier for logged in user");
     	}
-        return deanonimizationHandler.getUniqueIdentifierForPerson(RecipientTypes.PF, identifier, getUniqueIdURL).getData();
+        log.info("Getting user identifier...");
+        long serviceStartTime = System.currentTimeMillis();
+        String userIdentifier = deanonimizationHandler.getUniqueIdentifierForPerson(RecipientTypes.PF, identifier, getUniqueIdURL).getData();
+        log.info("User identifier retrieved in {} ms", System.currentTimeMillis() - serviceStartTime);
+        return userIdentifier;
 	}
 	
 	private String getUserUniqueIdentifier(String userAttributes) {
