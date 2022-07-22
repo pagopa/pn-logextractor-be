@@ -43,9 +43,9 @@ public class PersonServiceImpl implements PersonService {
 				MDC.get("user_identifier"), ticketNumber, recipientType, taxId);
 		long serviceStartTime = System.currentTimeMillis();
 		log.info("Getting internal id...");
-		GetBasicDataResponseDto response =  handler.getUniqueIdentifierForPerson(recipientType, taxId, getUniqueIdURL);
-		log.info("Service response: internalId={}", response.getData());
+		String response =  handler.getUniqueIdentifierForPerson(recipientType, taxId, getUniqueIdURL);
+		log.info("Service response: internalId={}", response);
 		log.info("Internal id retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
-		return response;
+		return GetBasicDataResponseDto.builder().data(response).build();
 	}	
 }

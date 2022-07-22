@@ -84,7 +84,7 @@ public class MDCWebFilter extends OncePerRequestFilter {
     	}
         log.info("Getting user identifier...");
         long serviceStartTime = System.currentTimeMillis();
-        String userIdentifier = deanonimizationHandler.getUniqueIdentifierForPerson(RecipientTypes.PF, identifier, getUniqueIdURL).getData();
+        String userIdentifier = deanonimizationHandler.getUniqueIdentifierForPerson(RecipientTypes.PF, identifier, getUniqueIdURL);
         log.info("User identifier retrieved in {} ms", System.currentTimeMillis() - serviceStartTime);
         return userIdentifier;
 	}

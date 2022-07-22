@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.CompressionLevel;
@@ -51,6 +50,9 @@ public class ZipFactory {
 	 * @throws {@link IOException}
 	 * */
 	public ZipFile addFile(ZipFile archive, ZipParameters parameters, File file) throws IOException {
+		if (!file.getParentFile().exists()) {
+			file.getParentFile().mkdirs();
+		}
 		if (!file.exists()) {
 			file.createNewFile();
 		}

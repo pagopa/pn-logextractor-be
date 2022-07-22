@@ -28,7 +28,6 @@ import it.gov.pagopa.logextractor.dto.NotificationCsvBean;
 import it.gov.pagopa.logextractor.dto.NotificationGeneralData;
 import it.gov.pagopa.logextractor.dto.PaymentDocumentData;
 import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
-import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.LegalFactDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationAttachmentDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
@@ -194,7 +193,7 @@ public class LogServiceImpl implements LogService{
 	
 	@Override
 	public DownloadArchiveResponseDto getTraceIdLogs(String dateFrom, String dateTo, String traceId) throws IOException {
-		log.info("Anonymized logs retrieve process - START - user={}, traceId={} startDate={}, endDate={}", MDC.get("user_identifier"), traceId, dateFrom, dateTo);
+		log.info("Anonymized logs retrieve process - START - user={}, traceId={}, startDate={}, endDate={}", MDC.get("user_identifier"), traceId, dateFrom, dateTo);
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
 		ArrayList<String> openSearchResponse = null;
@@ -328,10 +327,10 @@ public class LogServiceImpl implements LogService{
 		//use case 3
 		if (dateFrom != null && dateTo != null && taxid != null && recipientType!=null && ticketNumber!=null && iun==null) {
 			log.info("Getting activities' de-anonymized history - START - getting internal id...");
-			GetBasicDataResponseDto internalIdDto = deanonimizationApiHandler.getUniqueIdentifierForPerson(recipientType, taxid, getUniqueIdURL);
-			log.info("Service response: internalId={} " + internalIdDto.getData());
+			String internalId = deanonimizationApiHandler.getUniqueIdentifierForPerson(recipientType, taxid, getUniqueIdURL);
+			log.info("Service response: internalId={} " + internalId);
 			log.info("Internal id retrieved in {} ms, constructing Opensearch query...", System.currentTimeMillis() - serviceStartTime);
-			queryParams.put("uid.keyword", internalIdDto.getData());
+			queryParams.put("uid.keyword", internalId);
 			queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
 					new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 			query = queryConstructor.createBooleanMultiSearchQuery(queryData);

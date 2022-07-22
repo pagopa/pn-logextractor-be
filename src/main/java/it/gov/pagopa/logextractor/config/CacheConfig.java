@@ -13,12 +13,10 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Configuration class to manage the cache logics*/
 @Configuration
-@Slf4j
 @EnableCaching
 public class CacheConfig {
 	
@@ -30,7 +28,6 @@ public class CacheConfig {
  
     @Bean
     JedisConnectionFactory jedisConnectionFactory() {
-    	log.info("Connecting to host: {}, port: {}", redisHostName, redisPort);
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(redisHostName, redisPort);
         JedisConnectionFactory conf = new JedisConnectionFactory(redisStandaloneConfiguration);
         conf.getPoolConfig().setMaxIdle(30);

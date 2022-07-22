@@ -2,6 +2,7 @@ package it.gov.pagopa.logextractor.util.external.pnservices;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,17 +16,18 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import it.gov.pagopa.logextractor.annotation.RecipientType;
 import it.gov.pagopa.logextractor.dto.request.EnsureRecipientByExternalIdRequestDto;
-import it.gov.pagopa.logextractor.dto.response.EnsureRecipientByExternalIdResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInternalIdResponseDto;
 import it.gov.pagopa.logextractor.dto.response.SelfCarePaDataResponseDto;
 import it.gov.pagopa.logextractor.util.JsonUtilities;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Uility class for integrations with Piattaforma Notifiche de-anonymization service
  * */
 @Component
+@Slf4j
 public class DeanonimizationApiHandler {
 
 	@Autowired
@@ -50,12 +52,13 @@ public class DeanonimizationApiHandler {
 	 */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 //	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager1Minute")
-	public GetBasicDataResponseDto getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId, String externalServiceUrl) {
+	public String getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId, String externalServiceUrl) {
 		String url = String.format(externalServiceUrl, recipientType.toString());
 		EnsureRecipientByExternalIdRequestDto requestBody = EnsureRecipientByExternalIdRequestDto.builder().taxId(taxId).build();
 		HttpEntity<String> request =  new HttpEntity<String>(requestBody.toString());
-		EnsureRecipientByExternalIdResponseDto response = client.postForObject(url, request, EnsureRecipientByExternalIdResponseDto.class);
-		return GetBasicDataResponseDto.builder().data(response.getInternalId()).build();
+		String response = client.postForObject(url, request, String.class);
+		log.info("Anonymized data: {}", response);
+		return StringUtils.substring(response, 4);
 	}
 
 
