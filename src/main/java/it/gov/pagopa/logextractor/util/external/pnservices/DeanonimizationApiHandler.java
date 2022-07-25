@@ -2,6 +2,8 @@ package it.gov.pagopa.logextractor.util.external.pnservices;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -9,11 +11,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import it.gov.pagopa.logextractor.annotation.RecipientType;
 import it.gov.pagopa.logextractor.dto.request.EnsureRecipientByExternalIdRequestDto;
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
@@ -54,11 +61,10 @@ public class DeanonimizationApiHandler {
 //	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager1Minute")
 	public String getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId, String externalServiceUrl) {
 		String url = String.format(externalServiceUrl, recipientType.toString());
-		EnsureRecipientByExternalIdRequestDto requestBody = EnsureRecipientByExternalIdRequestDto.builder().taxId(taxId).build();
-		HttpEntity<String> request =  new HttpEntity<String>(requestBody.toString());
+		HttpEntity<String> request =  new HttpEntity<String>(taxId);
 		String response = client.postForObject(url, request, String.class);
 		log.info("Anonymized data: {}", response);
-		return StringUtils.substring(response, 4);
+		return response;
 	}
 
 
@@ -78,9 +84,25 @@ public class DeanonimizationApiHandler {
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 //	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager1Minute")
 	public GetBasicDataResponseDto getTaxCodeForPerson(String personId, String externalServiceUrl) {
-		String url = String.format(externalServiceUrl, personId);
-		GetRecipientDenominationByInternalIdResponseDto response = client.getForObject(url, GetRecipientDenominationByInternalIdResponseDto.class);
-		return GetBasicDataResponseDto.builder().data(response.getTaxId()).build();
+		HttpHeaders headers = new HttpHeaders();
+		headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+		HttpEntity<?> entity = new HttpEntity<>(headers);
+		String urlTemplate = UriComponentsBuilder.fromHttpUrl(externalServiceUrl)
+		        .queryParam("internalId", "{internalId}")
+		        .encode()
+		        .toUriString();
+		Map<String, String> params = new HashMap<>();
+		params.put("internalId", personId);
+		log.info("Service URL: {}, parameters: {}", urlTemplate, personId);
+		GetRecipientDenominationByInternalIdResponseDto[] response = client.exchange(
+				urlTemplate, 
+				HttpMethod.GET,
+				entity,
+				GetRecipientDenominationByInternalIdResponseDto[].class,
+		        params)
+				.getBody();
+		log.info("Service Response: {}" , response.toString());
+		return GetBasicDataResponseDto.builder().data(response[0].getTaxId()).build();
 	}
 	
 	/**
@@ -137,15 +159,16 @@ public class DeanonimizationApiHandler {
 	 * @param getTaxCodeURL the url of de-anonymization service
 	 * @return A list representing the de-anonymized documents 
 	 */
-	public ArrayList<String> toDeanonymizedDocuments(ArrayList<String> anonymizedDocuments, String getTaxCodeURL, String getPublicAuthorityNameUrl){
+	public ArrayList<String> toDeanonymizedDocuments(ArrayList<String> anonymizedDocuments, String getTaxCodeURL, 
+			String getPublicAuthorityNameUrl, RecipientTypes recipientType){
 		ArrayList<String> deanonymizedDocuments = new ArrayList<String>();
 		for(int index=0; index<anonymizedDocuments.size(); index++) {
 			String uuid = JsonUtilities.getValue(anonymizedDocuments.get(index), "uid");
 			String cxId = JsonUtilities.getValue(anonymizedDocuments.get(index), "cx_id");
 			String document = anonymizedDocuments.get(index);
 			HashMap<String,String> keyValues = new HashMap<String,String>();
-			if(uuid != null) {
-				GetBasicDataResponseDto taxCodeDto = getTaxCodeForPerson(uuid, getTaxCodeURL);
+			if(uuid != null && !StringUtils.startsWith(uuid, "APIKEY-")) {
+				GetBasicDataResponseDto taxCodeDto = getTaxCodeForPerson(recipientType.toString() + "-" + uuid, getTaxCodeURL);
 				keyValues.put("uid", taxCodeDto.getData());
 			}
 			if(cxId != null) {

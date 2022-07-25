@@ -33,7 +33,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	 * */
 	@ExceptionHandler(IOException.class)
     protected ResponseEntity<ApiError> handleIOException(IOException ex) {
-        log.error("IOException:\n" + ExceptionUtils.getStackTrace(ex));
+        log.error(ExceptionUtils.getStackTrace(ex));
         return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
     }
 	
@@ -45,7 +45,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	 * */
 	@ExceptionHandler(CsvDataTypeMismatchException.class)
     protected ResponseEntity<ApiError> handleCsvDataTypeMismatchException(CsvDataTypeMismatchException ex) {
-        log.error("CsvDataTypeMismatchException:\n" + ExceptionUtils.getStackTrace(ex));
+        log.error(ExceptionUtils.getStackTrace(ex));
         return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
     }
 	
@@ -57,7 +57,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	 * */
 	@ExceptionHandler(CsvRequiredFieldEmptyException.class)
     protected ResponseEntity<ApiError> handleCsvRequiredFieldEmptyException(CsvRequiredFieldEmptyException ex) {
-        log.error("CsvRequiredFieldEmptyException:\n" + ExceptionUtils.getStackTrace(ex));
+        log.error(ExceptionUtils.getStackTrace(ex));
         return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
     }
 	
@@ -69,7 +69,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	 * */
 	@ExceptionHandler(HttpServerErrorException.class)
     protected ResponseEntity<ApiError> handleHttpServerErrorException(HttpServerErrorException ex) {
-        log.error("HttpServerErrorException:\n" + ExceptionUtils.getStackTrace(ex));
+        log.error(ExceptionUtils.getStackTrace(ex));
         return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
     }
 	
@@ -81,7 +81,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	 * */
 	@ExceptionHandler(HttpClientErrorException.class)
 	protected ResponseEntity<ApiError> handleHttpServerErrorException(HttpClientErrorException ex) {
-		log.error("HttpClientErrorException:\n" + ExceptionUtils.getStackTrace(ex));
+		log.error(ExceptionUtils.getStackTrace(ex));
 		return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
 	}
 	
@@ -93,7 +93,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	 * */
 	@ExceptionHandler(InterruptedException.class)
     protected ResponseEntity<ApiError> handleInterruptedException(InterruptedException ex) {
-        log.error("InterruptedException exception:\n" + ExceptionUtils.getStackTrace(ex));
+        log.error(ExceptionUtils.getStackTrace(ex));
         return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
     }
 	

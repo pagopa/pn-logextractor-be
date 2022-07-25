@@ -108,8 +108,8 @@ public class LogServiceImpl implements LogService{
 		// use case 7
 		if (dateFrom != null && dateTo != null && personId != null && iun == null) {
 			log.info("Getting activities' anonymized history - START - constructing Opensearch query...");
-//			queryParams.put("uid.keyword", personId);
-			queryParams.put("uid", personId);
+//			queryParams.put("uid.keyword", StringUtils.substring(personId, 4));
+			queryParams.put("uid", StringUtils.substring(personId, 4 ));
 			queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
 					new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 			query = queryConstructor.createBooleanMultiSearchQuery(queryData);
@@ -127,7 +127,8 @@ public class LogServiceImpl implements LogService{
 				log.info("Notification details retrieved in {} ms, constructing Opensearch query...", System.currentTimeMillis() - serviceStartTime);
 				String legalStartDate = notificationApiHandler.getLegalStartDate(notificationDetails);
 				String dateIn3Months = OffsetDateTime.parse(legalStartDate).plusMonths(3).toString();
-				queryParams.put("iun.keyword", iun);
+//				queryParams.put("iun.keyword", iun);
+				queryParams.put("iun", iun);
 				queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
 						new OpenSearchRangeQueryData("@timestamp", legalStartDate, dateIn3Months), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 				query = queryConstructor.createBooleanMultiSearchQuery(queryData);
@@ -300,7 +301,8 @@ public class LogServiceImpl implements LogService{
 		}
 		log.info("Physical files retrieved in {} ms, constructing Opensearch query...", System.currentTimeMillis() - performanceMillis);
         HashMap<String, Object> queryParams = new HashMap<>();
-        queryParams.put("iun.keyword", iun);
+//      queryParams.put("iun.keyword", iun);
+        queryParams.put("iun", iun);
 		OpenSearchQuerydata queryData = queryConstructor.prepareQueryData("pn-logs", queryParams,
 				new OpenSearchRangeQueryData("@timestamp", legalStartDate, dateIn3Months),
 				new OpenSearchSortFilter("@timestamp", SortOrders.ASC));
@@ -332,8 +334,8 @@ public class LogServiceImpl implements LogService{
 			String internalId = deanonimizationApiHandler.getUniqueIdentifierForPerson(recipientType, taxid, getUniqueIdURL);
 			log.info("Service response: internalId={} " + internalId);
 			log.info("Internal id retrieved in {} ms, constructing Opensearch query...", System.currentTimeMillis() - serviceStartTime);
-//			queryParams.put("uid.keyword", internalId);
-			queryParams.put("uid", internalId);
+//			queryParams.put("uid.keyword", StringUtils.substring(internalId, 4));
+			queryParams.put("uid", StringUtils.substring(internalId, 4));
 			queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
 					new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 			query = queryConstructor.createBooleanMultiSearchQuery(queryData);
@@ -342,7 +344,7 @@ public class LogServiceImpl implements LogService{
 			openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 			log.info("Query execution completed in {} ms, de-anonymizing results...", System.currentTimeMillis() - performanceMillis);
 			performanceMillis = System.currentTimeMillis();
-			deanonymizedOpenSearchResponse = deanonimizationApiHandler.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL, getPublicAuthorityNameUrl);	
+			deanonymizedOpenSearchResponse = deanonimizationApiHandler.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL, getPublicAuthorityNameUrl, recipientType);	
 			log.info("Deanonymization completed in {} ms, Constructing service response...", System.currentTimeMillis() - performanceMillis);
 		} else{
 			//use case 4
@@ -353,7 +355,8 @@ public class LogServiceImpl implements LogService{
 				log.info("Service response: notificationDetails={}", new ObjectMapper().writer().writeValueAsString(notificationDetails));
 				log.info("Notification details retrieved in {} ms, constructing Opensearch query...", System.currentTimeMillis() - serviceStartTime);
 				String dateIn3Months = OffsetDateTime.parse(legalStartDate).plusMonths(3).toString();
-				queryParams.put("iun.keyword", iun);
+//				queryParams.put("iun.keyword", iun);
+				queryParams.put("iun", iun);
 				queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
 						new OpenSearchRangeQueryData("@timestamp", legalStartDate, dateIn3Months), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 				query = queryConstructor.createBooleanMultiSearchQuery(queryData);
@@ -362,7 +365,7 @@ public class LogServiceImpl implements LogService{
 				openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 				log.info("Query execution completed in {} ms, de-anonymizing results...", System.currentTimeMillis() - performanceMillis);
 				performanceMillis = System.currentTimeMillis();
-				deanonymizedOpenSearchResponse = deanonimizationApiHandler.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL, getPublicAuthorityNameUrl);
+				deanonymizedOpenSearchResponse = deanonimizationApiHandler.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL, getPublicAuthorityNameUrl, RecipientTypes.PF);
 				log.info("Deanonymization completed in {} ms, Constructing service response...", System.currentTimeMillis() - performanceMillis);
 			}
 		}
