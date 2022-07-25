@@ -108,7 +108,8 @@ public class LogServiceImpl implements LogService{
 		// use case 7
 		if (dateFrom != null && dateTo != null && personId != null && iun == null) {
 			log.info("Getting activities' anonymized history - START - constructing Opensearch query...");
-			queryParams.put("uid.keyword", personId);
+//			queryParams.put("uid.keyword", personId);
+			queryParams.put("uid", personId);
 			queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
 					new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 			query = queryConstructor.createBooleanMultiSearchQuery(queryData);
@@ -120,6 +121,7 @@ public class LogServiceImpl implements LogService{
 			// use case 8
 			if (iun != null && ticketNumber!=null) {
 				log.info("Notification's anonymized path recovery - START - getting notification details...");
+				log.info("NOTIFICATION URL: {}", notificationURL);
 				NotificationDetailsResponseDto notificationDetails = notificationApiHandler.getNotificationDetails(notificationURL, iun);
 				log.info("Service response: notificationDetails={}", new ObjectMapper().writer().writeValueAsString(notificationDetails));
 				log.info("Notification details retrieved in {} ms, constructing Opensearch query...", System.currentTimeMillis() - serviceStartTime);
@@ -330,7 +332,8 @@ public class LogServiceImpl implements LogService{
 			String internalId = deanonimizationApiHandler.getUniqueIdentifierForPerson(recipientType, taxid, getUniqueIdURL);
 			log.info("Service response: internalId={} " + internalId);
 			log.info("Internal id retrieved in {} ms, constructing Opensearch query...", System.currentTimeMillis() - serviceStartTime);
-			queryParams.put("uid.keyword", internalId);
+//			queryParams.put("uid.keyword", internalId);
+			queryParams.put("uid", internalId);
 			queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
 					new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 			query = queryConstructor.createBooleanMultiSearchQuery(queryData);

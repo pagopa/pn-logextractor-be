@@ -25,11 +25,13 @@ import it.gov.pagopa.logextractor.dto.response.LegalFactDownloadMetadataResponse
 import it.gov.pagopa.logextractor.dto.response.NotificationAttachmentDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationsGeneralDataResponseDto;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Uility class for integrations with Piattaforma Notifiche notifcations related services
  * */
 @Component
+@Slf4j
 public class NotificationApiHandler {
 	
 	@Autowired
@@ -89,7 +91,9 @@ public class NotificationApiHandler {
 		List<MediaType> acceptedTypes = new ArrayList<MediaType>();
 		acceptedTypes.add(MediaType.APPLICATION_JSON);
 		requestHeaders.setAccept(acceptedTypes);
-        return client.getForEntity(externalServiceUrl + "/" + iun, NotificationDetailsResponseDto.class).getBody();
+		String url = externalServiceUrl + "/" + iun;
+		log.info("URL to external service: {}", url);
+        return client.getForEntity(url, NotificationDetailsResponseDto.class).getBody();
 	}
 	
 	/**
