@@ -61,6 +61,7 @@ public class NotificationApiHandler {
 	    for (Map.Entry<String, Object> entry : params.entrySet()) {
 	    	parameters.put(entry.getKey(), entry.getValue());
 	    }
+	    //TODO: modificare invocazione per usare custom headers
 	    ResponseEntity<NotificationsGeneralDataResponseDto> response = client.getForEntity(url, NotificationsGeneralDataResponseDto.class, parameters);
 	    if(response.getBody().getNextPagesKey() == null || !response.getBody().getMoreResult()) {
 	    	return getNotificationsGeneralData(response.getBody());

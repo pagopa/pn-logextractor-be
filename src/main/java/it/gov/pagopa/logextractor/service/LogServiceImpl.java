@@ -56,9 +56,6 @@ public class LogServiceImpl implements LogService{
 	@Value("${external.denomination.ensureRecipientByExternalId.url}")
 	String getUniqueIdURL;
 	
-	@Value("${external.denomination.getRecipientDenominationByInternalId.url}")
-	String getTaxCodeURL;
-	
 	@Value("${external.opensearch.url}")
 	String openSearchURL;
 	
@@ -83,9 +80,6 @@ public class LogServiceImpl implements LogService{
 	@Value("${external.notification.getPaymentAttachmentDownloadMetadata.url}")
 	String paymentAttachmentDownloadMetadataURL;
 	
-	@Value("${external.selfcare.getPublicAuthorityName.url}")
-	String getPublicAuthorityNameUrl;
-	
 	@Autowired
 	NotificationApiHandler notificationApiHandler;
 	
@@ -108,8 +102,8 @@ public class LogServiceImpl implements LogService{
 		// use case 7
 		if (dateFrom != null && dateTo != null && personId != null && iun == null) {
 			log.info("Getting activities' anonymized history - START - constructing Opensearch query...");
-//			queryParams.put("uid.keyword", StringUtils.substring(personId, 4));
-			queryParams.put("uid", StringUtils.substring(personId, 4 ));
+//			queryParams.put("uid.keyword", StringUtils.substring(personId, 3));
+			queryParams.put("uid", StringUtils.substring(personId, 3));
 			queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
 					new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 			query = queryConstructor.createBooleanMultiSearchQuery(queryData);
@@ -334,8 +328,8 @@ public class LogServiceImpl implements LogService{
 			String internalId = deanonimizationApiHandler.getUniqueIdentifierForPerson(recipientType, taxid, getUniqueIdURL);
 			log.info("Service response: internalId={} " + internalId);
 			log.info("Internal id retrieved in {} ms, constructing Opensearch query...", System.currentTimeMillis() - serviceStartTime);
-//			queryParams.put("uid.keyword", StringUtils.substring(internalId, 4));
-			queryParams.put("uid", StringUtils.substring(internalId, 4));
+//			queryParams.put("uid.keyword", StringUtils.substring(internalId, 3));
+			queryParams.put("uid", StringUtils.substring(internalId, 3));
 			queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
 					new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
 			query = queryConstructor.createBooleanMultiSearchQuery(queryData);
@@ -344,7 +338,7 @@ public class LogServiceImpl implements LogService{
 			openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 			log.info("Query execution completed in {} ms, de-anonymizing results...", System.currentTimeMillis() - performanceMillis);
 			performanceMillis = System.currentTimeMillis();
-			deanonymizedOpenSearchResponse = deanonimizationApiHandler.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL, getPublicAuthorityNameUrl, recipientType);	
+			deanonymizedOpenSearchResponse = deanonimizationApiHandler.toDeanonymizedDocuments(openSearchResponse, recipientType);	
 			log.info("Deanonymization completed in {} ms, Constructing service response...", System.currentTimeMillis() - performanceMillis);
 		} else{
 			//use case 4
@@ -365,7 +359,7 @@ public class LogServiceImpl implements LogService{
 				openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
 				log.info("Query execution completed in {} ms, de-anonymizing results...", System.currentTimeMillis() - performanceMillis);
 				performanceMillis = System.currentTimeMillis();
-				deanonymizedOpenSearchResponse = deanonimizationApiHandler.toDeanonymizedDocuments(openSearchResponse, getTaxCodeURL, getPublicAuthorityNameUrl, RecipientTypes.PF);
+				deanonymizedOpenSearchResponse = deanonimizationApiHandler.toDeanonymizedDocuments(openSearchResponse, RecipientTypes.PF);
 				log.info("Deanonymization completed in {} ms, Constructing service response...", System.currentTimeMillis() - performanceMillis);
 			}
 		}

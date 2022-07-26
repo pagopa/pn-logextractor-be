@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -22,7 +23,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import it.gov.pagopa.logextractor.annotation.RecipientType;
-import it.gov.pagopa.logextractor.dto.request.EnsureRecipientByExternalIdRequestDto;
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInternalIdResponseDto;
 import it.gov.pagopa.logextractor.dto.response.SelfCarePaDataResponseDto;
@@ -40,6 +40,12 @@ public class DeanonimizationApiHandler {
 	@Autowired
 	@Qualifier("simpleRestTemplate")
 	RestTemplate client;
+	
+	@Value("${external.selfcare.getPublicAuthorityName.url}")
+	String getPublicAuthorityNameUrl;
+	
+	@Value("${external.denomination.getRecipientDenominationByInternalId.url}")
+	String getTaxCodeURL;
 
 	/**
 	 * Method that makes a request to Piattaforma Notifiche external service to
@@ -93,7 +99,6 @@ public class DeanonimizationApiHandler {
 		        .toUriString();
 		Map<String, String> params = new HashMap<>();
 		params.put("internalId", personId);
-		log.info("Service URL: {}, parameters: {}", urlTemplate, personId);
 		GetRecipientDenominationByInternalIdResponseDto[] response = client.exchange(
 				urlTemplate, 
 				HttpMethod.GET,
@@ -101,7 +106,6 @@ public class DeanonimizationApiHandler {
 				GetRecipientDenominationByInternalIdResponseDto[].class,
 		        params)
 				.getBody();
-		log.info("Service Response: {}" , response.toString());
 		return GetBasicDataResponseDto.builder().data(response[0].getTaxId()).build();
 	}
 	
@@ -159,8 +163,7 @@ public class DeanonimizationApiHandler {
 	 * @param getTaxCodeURL the url of de-anonymization service
 	 * @return A list representing the de-anonymized documents 
 	 */
-	public ArrayList<String> toDeanonymizedDocuments(ArrayList<String> anonymizedDocuments, String getTaxCodeURL, 
-			String getPublicAuthorityNameUrl, RecipientTypes recipientType){
+	public ArrayList<String> toDeanonymizedDocuments(ArrayList<String> anonymizedDocuments, RecipientTypes recipientType){
 		ArrayList<String> deanonymizedDocuments = new ArrayList<String>();
 		for(int index=0; index<anonymizedDocuments.size(); index++) {
 			String uuid = JsonUtilities.getValue(anonymizedDocuments.get(index), "uid");
@@ -172,7 +175,13 @@ public class DeanonimizationApiHandler {
 				keyValues.put("uid", taxCodeDto.getData());
 			}
 			if(cxId != null) {
-				String publicAuthorityName = getPublicAuthorityName(cxId, getPublicAuthorityNameUrl);
+				String publicAuthorityName = null;
+				if((StringUtils.startsWithIgnoreCase(cxId, "PF-") || StringUtils.startsWithIgnoreCase(cxId, "PG-"))) {
+					publicAuthorityName = getTaxCodeForPerson(cxId, getTaxCodeURL).getData();
+				}
+				if((StringUtils.startsWithIgnoreCase(cxId, "PA-"))) {
+					publicAuthorityName = getPublicAuthorityName(cxId, getPublicAuthorityNameUrl);
+				}
 				keyValues.put("cx_id", publicAuthorityName);
 			}
 			document = JsonUtilities.replaceValues(document, keyValues);
