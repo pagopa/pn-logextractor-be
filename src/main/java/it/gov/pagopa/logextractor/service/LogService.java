@@ -85,5 +85,5 @@ public interface LogService {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	DownloadArchiveResponseDto getNotificationInfoLogs(String ticketNumber, String iun) throws IOException, InterruptedException;
+	Object getNotificationInfoLogs(String ticketNumber, String iun) throws IOException, InterruptedException;
 }

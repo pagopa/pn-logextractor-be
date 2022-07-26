@@ -1,27 +1,33 @@
 package it.gov.pagopa.logextractor.dto;
 
+import java.util.ArrayList;
+
 import lombok.Getter;
 
 @Getter
 public class NotificationDetailsTimelineDetailsData {
 
 	private Integer recIndex;
-	private String physicalAddress;
-	private String digitalAddress;
+	private NotificationHistoryPhysicalAddressData physicalAddress;
+	private NotificationHistoryDigitalAddressData digitalAddress;
 	private String digitalAddressSource;
 	private Boolean isAvailable;
 	private String attemptDate;
 	private String deliveryMode;
 	private String contactPhase;
-	private String sentAttemptMade;
+	private Integer sentAttemptMade;
 	private String sendDate;
-	private String errors;
+	private ArrayList<String> errors;
 	private String lastAttemptDate;
-	private String retryNumber;
-	private String downstreamId;
+	private Integer retryNumber;
+	private NotificationHistoryDownstreamIdData downstreamId;
 	private String responseStatus;
 	private String notificationDate;
 	private String serviceLevel;
-	private String investigation;
-	private String newAddress;
+	private Boolean investigation;
+	private Integer numberOfPages;
+	private NotificationHistoryPhysicalAddressData newAddress;
+	private String generatedAarUrl;
+	private String reasonCode;
+	private String reason;
 }

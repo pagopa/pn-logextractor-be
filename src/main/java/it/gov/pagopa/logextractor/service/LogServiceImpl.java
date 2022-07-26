@@ -8,77 +8,37 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
-import it.gov.pagopa.logextractor.dto.LegalFactBasicData;
-import it.gov.pagopa.logextractor.dto.LegalFactData;
 import it.gov.pagopa.logextractor.dto.NotificationCsvBean;
 import it.gov.pagopa.logextractor.dto.NotificationGeneralData;
-import it.gov.pagopa.logextractor.dto.PaymentDocumentData;
 import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
-import it.gov.pagopa.logextractor.dto.response.LegalFactDownloadMetadataResponseDto;
-import it.gov.pagopa.logextractor.dto.response.NotificationAttachmentDownloadMetadataResponseDto;
+import it.gov.pagopa.logextractor.dto.response.DownloadNotPossibleYetResponseDTO;
+import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDTO;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
+import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDTO;
 import it.gov.pagopa.logextractor.util.CommonUtilities;
 import it.gov.pagopa.logextractor.util.Constants;
 import it.gov.pagopa.logextractor.util.FileUtilities;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
 import it.gov.pagopa.logextractor.util.ResponseConstructor;
-import it.gov.pagopa.logextractor.util.SortOrders;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandler;
-import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchQueryConstructor;
-import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchQuerydata;
-import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchRangeQueryData;
-import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchSortFilter;
-import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
+import it.gov.pagopa.logextractor.util.external.pnservices.DeanonymizationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Implementation class of {@link LogService}
+ */
 @Service
 @Slf4j
-public class LogServiceImpl implements LogService{
-	@Autowired
-	@Qualifier("simpleRestTemplate")
-	RestTemplate client;
-	
-	@Value("${external.denomination.ensureRecipientByExternalId.url}")
-	String getUniqueIdURL;
-	
-	@Value("${external.opensearch.url}")
-	String openSearchURL;
-	
-	@Value("${external.opensearch.basicauth.username}")
-	String openSearchUsername;
-	
-	@Value("${external.opensearch.basicauth.password}")
-	String openSearchPassword;
-	
-	@Value("${external.notification.getSentNotification.url}")
-	String notificationURL;
-	
-	@Value("${external.selfcare.getEncodedIpaCode.url}")
-	String selfCareEncodedIpaCodeURL;
-	
-	@Value("${external.notification.getLegalFactDownloadMetadata.url}")
-	String legalFactDownloadMetadataURL;
-	
-	@Value("${external.notification.getNotificationAttachmentDownloadMetadata.url}")
-	String notificationAttachmentDownloadMetadataURL;
-	
-	@Value("${external.notification.getPaymentAttachmentDownloadMetadata.url}")
-	String paymentAttachmentDownloadMetadataURL;
+public class LogServiceImpl implements LogService {
 	
 	@Autowired
 	NotificationApiHandler notificationApiHandler;
@@ -87,7 +47,7 @@ public class LogServiceImpl implements LogService{
 	OpenSearchApiHandler openSearchApiHandler;
 	
 	@Autowired
-	DeanonimizationApiHandler deanonimizationApiHandler;
+	DeanonymizationApiHandler deanonimizationApiHandler;
 
 	@Override
 	public DownloadArchiveResponseDto getAnonymizedPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId) throws IOException {
@@ -95,43 +55,24 @@ public class LogServiceImpl implements LogService{
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
 		ArrayList<String> openSearchResponse = null;
-		ArrayList<OpenSearchQuerydata> queryData = new ArrayList<OpenSearchQuerydata>();
-		HashMap<String, Object> queryParams = new HashMap<String, Object>();
-		String query = null;
-		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		// use case 7
 		if (dateFrom != null && dateTo != null && personId != null && iun == null) {
-			log.info("Getting activities' anonymized history - START - constructing Opensearch query...");
-//			queryParams.put("uid.keyword", StringUtils.substring(personId, 3));
-			queryParams.put("uid", StringUtils.substring(personId, 3));
-			queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
-					new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
-			query = queryConstructor.createBooleanMultiSearchQuery(queryData);
-			log.info("Executing query:"+ RegExUtils.removeAll(query, "\n"));
+			log.info("Getting activities' anonymized history... ");
 			performanceMillis = System.currentTimeMillis();
-			openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
-			log.info("Query execution completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
+			openSearchResponse = openSearchApiHandler.getAnonymizedLogsByUid(personId, dateFrom, dateTo);
 		} else {
 			// use case 8
 			if (iun != null && ticketNumber!=null) {
-				log.info("Notification's anonymized path recovery - START - getting notification details...");
-				log.info("NOTIFICATION URL: {}", notificationURL);
-				NotificationDetailsResponseDto notificationDetails = notificationApiHandler.getNotificationDetails(notificationURL, iun);
-				log.info("Service response: notificationDetails={}", new ObjectMapper().writer().writeValueAsString(notificationDetails));
-				log.info("Notification details retrieved in {} ms, constructing Opensearch query...", System.currentTimeMillis() - serviceStartTime);
-				String legalStartDate = notificationApiHandler.getLegalStartDate(notificationDetails);
-				String dateIn3Months = OffsetDateTime.parse(legalStartDate).plusMonths(3).toString();
-//				queryParams.put("iun.keyword", iun);
-				queryParams.put("iun", iun);
-				queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
-						new OpenSearchRangeQueryData("@timestamp", legalStartDate, dateIn3Months), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
-				query = queryConstructor.createBooleanMultiSearchQuery(queryData);
-				log.info("Executing query:" + RegExUtils.removeAll(query, "\n"));
+				log.info("Getting notification details...");
+				NotificationDetailsResponseDto notificationDetails = notificationApiHandler.getNotificationDetails(iun);
+				log.info("Service response: notificationDetails={} retrieved in {} ms", new ObjectMapper().writer().writeValueAsString(notificationDetails), System.currentTimeMillis() - serviceStartTime);
+				OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
+				String notificationEndDate = notificationStartDate.plusMonths(3).toString();
 				performanceMillis = System.currentTimeMillis();
-				openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
-				log.info("Query execution completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
+				openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(iun, notificationStartDate.toString(), notificationEndDate);
 			}
 		}
+		log.info("Query execution completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
 		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(openSearchResponse,Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
 		log.info("Anonymized logs retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
 		return response;
@@ -147,7 +88,7 @@ public class LogServiceImpl implements LogService{
 		String finaldatePart = "T00:00:00.000Z";
 		log.info("Getting public authority id...");
 		long performanceMillis = System.currentTimeMillis();
-		String encodedIpaCode = deanonimizationApiHandler.getEncodedIpaCode(selfCareEncodedIpaCodeURL, ipaCode);
+		String encodedIpaCode = deanonimizationApiHandler.getEncodedIpaCode(ipaCode);
 		log.info("Service response: publicAuthorityId={}", encodedIpaCode);
 		ArrayList<NotificationCsvBean> notifications = new ArrayList<NotificationCsvBean>();
         HashMap<String, Object> parameters = new HashMap<String, Object>();
@@ -156,14 +97,13 @@ public class LogServiceImpl implements LogService{
         parameters.put("size", 100);
         log.info("Public authority id retrieved in {} ms, getting notifications general data, publicAuthority={}, startDate={}, endDate={}", System.currentTimeMillis() - performanceMillis, encodedIpaCode, startDate, endDate);
         performanceMillis = System.currentTimeMillis();
-		ArrayList<NotificationGeneralData> notificationsGeneralData = notificationApiHandler.getNotificationsByPeriod(notificationURL,
-																		parameters, encodedIpaCode, new ArrayList<NotificationGeneralData>(), 
-																		"", new ArrayList<String>(), MDC.get("user_identifier"));
+		ArrayList<NotificationGeneralData> notificationsGeneralData = notificationApiHandler.getNotificationsByPeriod(parameters, 
+				encodedIpaCode, new ArrayList<NotificationGeneralData>(), "", new ArrayList<String>(), MDC.get("user_identifier"));
 		if(notificationsGeneralData != null) {
 			log.info("Notifications general data retrieved in {} ms, getting notifications' details", System.currentTimeMillis() - performanceMillis);
 			performanceMillis = System.currentTimeMillis();
 			for(NotificationGeneralData nTemp : notificationsGeneralData) {
-				NotificationDetailsResponseDto notificationDetails = notificationApiHandler.getNotificationDetails(notificationURL, nTemp.getIun());
+				NotificationDetailsResponseDto notificationDetails = notificationApiHandler.getNotificationDetails(nTemp.getIun());
 				NotificationCsvBean notification = new NotificationCsvBean();
 				
 				if(null != nTemp.getRecipients() && nTemp.getRecipients().size() > 0) {
@@ -177,7 +117,8 @@ public class LogServiceImpl implements LogService{
 				}
 				notification.setIUN(commonUtils.escapeForCsv(nTemp.getIun()));
 				notification.setData_invio(commonUtils.escapeForCsv(nTemp.getSentAt()));
-				notification.setData_generazione_attestazione_opponibile_a_terzi(commonUtils.escapeForCsv(notificationApiHandler.getLegalStartDate(notificationDetails)));
+//				notification.setData_generazione_attestazione_opponibile_a_terzi(commonUtils.escapeForCsv(notificationApiHandler.getLegalStartDate(notificationDetails)));
+				notification.setData_generazione_attestazione_opponibile_a_terzi(commonUtils.escapeForCsv(notificationDetails.getSentAt()));
 				notification.setOggetto(commonUtils.escapeForCsv(nTemp.getSubject()));
 				notifications.add(notification);
 			}
@@ -194,20 +135,11 @@ public class LogServiceImpl implements LogService{
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
 		ArrayList<String> openSearchResponse = null;
-		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		//use case 10
 		if (dateFrom != null && dateTo != null && traceId != null) {
-			log.info("Getting anonymized logs, constructing Opensearch query...");
-			HashMap<String, Object> queryParams = new HashMap<String, Object>();
-			queryParams.put("root_trace_id", traceId);
-			OpenSearchQuerydata queryData = queryConstructor.prepareQueryData("pn-logs", queryParams, 
-					new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC));
-			ArrayList<OpenSearchQuerydata> listOfQueryData = new ArrayList<>();
-			listOfQueryData.add(queryData);
-			String query = queryConstructor.createBooleanMultiSearchQuery(listOfQueryData);
-			log.info("Executing query:"+ RegExUtils.removeAll(query, "\n"));
+			log.info("Getting anonymized logs");
 			performanceMillis = System.currentTimeMillis();
-			openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
+			openSearchResponse = openSearchApiHandler.getAnonymizedLogsByTraceId(traceId, dateFrom, dateTo);
 		}
 		log.info("Query execution completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
 		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(openSearchResponse,Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
@@ -216,100 +148,67 @@ public class LogServiceImpl implements LogService{
 	}
 	
 	@Override
-	public DownloadArchiveResponseDto getNotificationInfoLogs(String ticketNumber, String iun) throws IOException, InterruptedException {
+	public Object getNotificationInfoLogs(String ticketNumber, String iun) throws IOException, InterruptedException {
 		log.info("Notification data retrieve process - START - user={}, ticket number={}, iun={}", MDC.get("user_identifier"), ticketNumber, iun);
+		ArrayList<String> downloadKeys = new ArrayList<>();
+		ArrayList<String> downloadUrls = new ArrayList<>();
 		long serviceStartTime = System.currentTimeMillis();
-        OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
-        ArrayList<String> openSearchResponse = null;
+		double secondsToWait = 0;
+		ObjectMapper mapper = new ObjectMapper();
 		FileUtilities utils = new FileUtilities();
 		ArrayList<File> filesToAdd = new ArrayList<>();
 		log.info("Getting notification details...");
-		NotificationDetailsResponseDto notificationDetails = notificationApiHandler.getNotificationDetails(notificationURL, iun);
-		String legalStartDate = notificationApiHandler.getLegalStartDate(notificationDetails);
-		String dateIn3Months = OffsetDateTime.parse(legalStartDate).plusMonths(3).toString();
-		log.info("Service response: notificationDetails={}", new ObjectMapper().writer().writeValueAsString(notificationDetails));
-		log.info("Notification details retrieved in {} ms, getting legal facts metadata...", System.currentTimeMillis() - serviceStartTime);
+		NotificationDetailsResponseDto notificationDetails = notificationApiHandler.getNotificationDetails(iun);
+		OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
+		String notificationEndDate = notificationStartDate.plusMonths(3).toString();
+		log.info("Service response: notificationDetails={} retrieved in {} ms, getting history data...", mapper.writer().writeValueAsString(notificationDetails), System.currentTimeMillis() - serviceStartTime);
 		long performanceMillis = System.currentTimeMillis();
-		ArrayList<LegalFactData> legalFactIds = notificationApiHandler.getLegalFactIdsAndTimestamp(notificationDetails);
-		ArrayList<LegalFactDownloadMetadataResponseDto> legalFactToDownloadList = new ArrayList<>();
-		for(LegalFactData legalFact : legalFactIds) {
-			for(LegalFactBasicData legalFactBasicData : legalFact.getBasicData()) {
-				LegalFactDownloadMetadataResponseDto legalFactToDownload = notificationApiHandler.getLegalFactMetadata(legalFactDownloadMetadataURL, iun, legalFactBasicData.getKey(), legalFactBasicData.getCategory());
-		        if(legalFactToDownload.getUrl() == null) {
-		        	log.info("No URL for {} file download provided, retrying in {} seconds", legalFactToDownload.getFilename(), legalFactToDownload.getRetryAfter());
-			    	TimeUnit.SECONDS.sleep(legalFactToDownload.getRetryAfter());
-			    	log.info("Retrying to get download URL");
-			    	legalFactToDownload = notificationApiHandler.getLegalFactMetadata(legalFactDownloadMetadataURL, iun, legalFactBasicData.getKey(), legalFactBasicData.getCategory());
-		        }
-		        legalFactToDownloadList.add(legalFactToDownload);
-			}
-		}
-		log.info("Service response: legalFact list={}", legalFactToDownloadList.toString());
-		log.info("Legal facts metadata retrieved in {} ms, getting notification documents metadata...", System.currentTimeMillis() - performanceMillis);
+		NotificationHistoryResponseDTO notificationHistory = notificationApiHandler.getNotificationHistory(iun, notificationDetails.getRecipients().size(), notificationStartDate.toString());
+		log.info("Service response: notificationHistory={} retrieved in {} ms, getting legal facts' keys...", mapper.writer().writeValueAsString(notificationHistory), System.currentTimeMillis() - serviceStartTime);
 		performanceMillis = System.currentTimeMillis();
-        ArrayList<String> docIdxs = notificationApiHandler.getDocumentIds(notificationDetails);
-        log.info("Service response: document idx list={}", docIdxs.toString());
-        log.info("Notification documents metadata retrieved in {} ms, getting payment documents metadata...", System.currentTimeMillis() - performanceMillis);
-        performanceMillis = System.currentTimeMillis();
-        ArrayList<PaymentDocumentData> paymentData = notificationApiHandler.getPaymentKeys(notificationDetails);
-        log.info("Service response: paymentDocument list={}", paymentData.toString());
-        log.info("Payment documents metadata retrieved in {} ms, getting physical files...", System.currentTimeMillis() - performanceMillis);
-        performanceMillis = System.currentTimeMillis();
-        for(LegalFactDownloadMetadataResponseDto legalFactMetadata : legalFactToDownloadList) {
-    		byte[] legalFactByteArr = notificationApiHandler.getFile(legalFactMetadata.getUrl());
-    		File legalFactFile = utils.getFile(legalFactMetadata.getFilename(), Constants.PDF_EXTENSION);
-    		FileUtils.writeByteArrayToFile(legalFactFile, legalFactByteArr);
-    		filesToAdd.add(legalFactFile);
-    	}
+		downloadKeys.addAll(notificationApiHandler.getLegalFactKeys(notificationHistory));
+		log.info("Legal facts' keys retrieved in {} ms, getting notification documents' keys...", System.currentTimeMillis() - performanceMillis);
 		performanceMillis = System.currentTimeMillis();
-		for(String currentDocId : docIdxs) {
-			NotificationAttachmentDownloadMetadataResponseDto notificationDocumentMetadata = notificationApiHandler.getNotificationDocumentsMetadata(notificationAttachmentDownloadMetadataURL, iun, currentDocId);
-			if(notificationDocumentMetadata.getUrl() == null) {
-				log.info("No URL for {} file download provided, retrying in {} seconds", notificationDocumentMetadata.getFilename(), notificationDocumentMetadata.getRetryAfter());
-				TimeUnit.SECONDS.sleep(notificationDocumentMetadata.getRetryAfter());
-				log.info("Retrying to get download URL");
-				notificationDocumentMetadata = notificationApiHandler.getNotificationDocumentsMetadata(notificationAttachmentDownloadMetadataURL, iun, currentDocId);
-			}
-			byte[] notificationDocumentByteArr = notificationApiHandler.getFile(notificationDocumentMetadata.getUrl());
-			File notificationDocumentFile = utils.getFile(notificationDocumentMetadata.getFilename(), Constants.PDF_EXTENSION);
-			FileUtils.writeByteArrayToFile(notificationDocumentFile, notificationDocumentByteArr);
-			filesToAdd.add(notificationDocumentFile);
-		}
-		for (int recipients = 0; recipients < paymentData.size(); recipients++) {
-			Map<String, String> paymentKeys = paymentData.get(recipients).getPaymentKeys();
-			for (String key : paymentKeys.keySet()) {
-				if (paymentKeys.get(key) != null) {
-					NotificationAttachmentDownloadMetadataResponseDto paymentDocumentMetadata = notificationApiHandler.getPaymentDocumentsMetadata(paymentAttachmentDownloadMetadataURL, iun, recipients, paymentKeys.get(key));
-					if(paymentDocumentMetadata.getUrl() == null) {
-						log.info("No URL for {} file download provided, retrying in {} seconds", paymentDocumentMetadata.getFilename(), paymentDocumentMetadata.getRetryAfter());
-						TimeUnit.SECONDS.sleep(paymentDocumentMetadata.getRetryAfter());
-						log.info("Retrying to get download URL");
-						paymentDocumentMetadata = notificationApiHandler.getPaymentDocumentsMetadata(paymentAttachmentDownloadMetadataURL, iun, recipients, paymentKeys.get(key));
-					}
-					byte[] paymentDocumentByteArr = notificationApiHandler.getFile(paymentDocumentMetadata.getUrl());
-					File paymentDocumentFile = utils.getFile(paymentDocumentMetadata.getFilename(), Constants.PDF_EXTENSION);
-					FileUtils.writeByteArrayToFile(paymentDocumentFile, paymentDocumentByteArr);
-					filesToAdd.add(paymentDocumentFile);
-				}
-			}
-		}
-		log.info("Physical files retrieved in {} ms, constructing Opensearch query...", System.currentTimeMillis() - performanceMillis);
-        HashMap<String, Object> queryParams = new HashMap<>();
-//      queryParams.put("iun.keyword", iun);
-        queryParams.put("iun", iun);
-		OpenSearchQuerydata queryData = queryConstructor.prepareQueryData("pn-logs", queryParams,
-				new OpenSearchRangeQueryData("@timestamp", legalStartDate, dateIn3Months),
-				new OpenSearchSortFilter("@timestamp", SortOrders.ASC));
-        ArrayList<OpenSearchQuerydata> listOfQueryData = new ArrayList<>();
-        listOfQueryData.add(queryData);
-        String query = queryConstructor.createBooleanMultiSearchQuery(listOfQueryData);
-        log.info("Executing query:"+ RegExUtils.removeAll(query, "\n"));
+		downloadKeys.addAll(notificationApiHandler.getDocumentKeys(notificationDetails));
+        log.info("Notification documents' keys retrieved in {} ms, getting payment documents' keys...", System.currentTimeMillis() - performanceMillis);
         performanceMillis = System.currentTimeMillis();
-		openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
-		log.info("Query execution completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
-		DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(openSearchResponse, filesToAdd, Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
-		log.info("Notification data retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
-		return response;
+        downloadKeys.addAll(notificationApiHandler.getPaymentKeys(notificationDetails));
+        log.info("Notification payment' keys retrieved in {} ms, getting downloads' metadata...", System.currentTimeMillis() - performanceMillis);
+        performanceMillis = System.currentTimeMillis();
+        for(String key : downloadKeys) {
+        	FileDownloadMetadataResponseDTO downloadData = notificationApiHandler.getDownloadMetadata(key);
+        	downloadUrls.add(downloadData.getDownload().getUrl());
+        	if(null != downloadData && null != downloadData.getDownload() 
+        			&& null == downloadData.getDownload().getUrl() && null != downloadData.getDownload().getRetryAfter()
+        			&& secondsToWait < downloadData.getDownload().getRetryAfter()) {
+        		secondsToWait = downloadData.getDownload().getRetryAfter();
+        	}
+        }
+        if(secondsToWait > 0) {
+        	log.info("Notification downloads' metadata retrieved in {} ms, physical files aren't ready yet. Constructing service response...", System.currentTimeMillis() - performanceMillis);
+        	DownloadNotPossibleYetResponseDTO response = DownloadNotPossibleYetResponseDTO
+        			.builder()
+        			.message(Constants.DOWNLOAD_WAIT_MESSAGE + ((int)Math.ceil(secondsToWait/60)+ Constants.MINUTES_LABEL))
+        			.build();
+        	log.info("Notification data retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
+        	return response;
+        }
+        else {
+        	log.info("Notification downloads' metadata retrieved in {} ms, getting physical files... ", System.currentTimeMillis() - performanceMillis);
+        	performanceMillis = System.currentTimeMillis();
+        	for(String url : downloadUrls) {
+        		byte[] externalFile = notificationApiHandler.getFile(url);
+        		File downloadedFile = utils.getFile(Constants.DOCUMENT_LABEL, Constants.PDF_EXTENSION);
+        		FileUtils.writeByteArrayToFile(downloadedFile, externalFile);
+        		filesToAdd.add(downloadedFile);
+        	}
+        	log.info("Physical files retrieved in {} ms", System.currentTimeMillis() - performanceMillis);
+        	ArrayList<String> openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(iun, notificationStartDate.toString(), notificationEndDate);
+    		log.info("Query execution completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
+    		DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(openSearchResponse, filesToAdd, Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
+    		log.info("Notification data retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
+    		return response;
+        }
 	}
 		
 	public DownloadArchiveResponseDto getDeanonymizedPersonLogs(RecipientTypes recipientType, String dateFrom, String dateTo, String ticketNumber, String taxid, String iun) throws IOException {
@@ -317,52 +216,33 @@ public class LogServiceImpl implements LogService{
 		long serviceStartTime = System.currentTimeMillis();
 		ArrayList<String> openSearchResponse = null;
 		long performanceMillis = 0;
-		ArrayList<OpenSearchQuerydata> queryData = new ArrayList<OpenSearchQuerydata>();
-		HashMap<String, Object> queryParams = new HashMap<String, Object>();
-		String query = null;
-		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		ArrayList<String> deanonymizedOpenSearchResponse = new ArrayList<String>();	
 		//use case 3
 		if (dateFrom != null && dateTo != null && taxid != null && recipientType!=null && ticketNumber!=null && iun==null) {
-			log.info("Getting activities' de-anonymized history - START - getting internal id...");
-			String internalId = deanonimizationApiHandler.getUniqueIdentifierForPerson(recipientType, taxid, getUniqueIdURL);
-			log.info("Service response: internalId={} " + internalId);
-			log.info("Internal id retrieved in {} ms, constructing Opensearch query...", System.currentTimeMillis() - serviceStartTime);
-//			queryParams.put("uid.keyword", StringUtils.substring(internalId, 3));
-			queryParams.put("uid", StringUtils.substring(internalId, 3));
-			queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
-					new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
-			query = queryConstructor.createBooleanMultiSearchQuery(queryData);
-			log.info("Executing query:"+ RegExUtils.removeAll(query, "\n"));
+			log.info("Getting internal id...");
+			String internalId = deanonimizationApiHandler.getUniqueIdentifierForPerson(recipientType, taxid);
+			log.info("Service response: internalId={} retrieved in {} ms", internalId, System.currentTimeMillis() - serviceStartTime);
 			performanceMillis = System.currentTimeMillis();
-			openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
+			openSearchResponse = openSearchApiHandler.getAnonymizedLogsByUid(internalId, dateFrom, dateTo);
 			log.info("Query execution completed in {} ms, de-anonymizing results...", System.currentTimeMillis() - performanceMillis);
 			performanceMillis = System.currentTimeMillis();
-			deanonymizedOpenSearchResponse = deanonimizationApiHandler.toDeanonymizedDocuments(openSearchResponse, recipientType);	
-			log.info("Deanonymization completed in {} ms, Constructing service response...", System.currentTimeMillis() - performanceMillis);
+			deanonymizedOpenSearchResponse = deanonimizationApiHandler.deanonymizeDocuments(openSearchResponse, recipientType);	
 		} else{
 			//use case 4
 			if (iun!=null && ticketNumber!=null) {
-				log.info("Getting de-anonymized path - START - getting notification details...");
-				NotificationDetailsResponseDto notificationDetails = notificationApiHandler.getNotificationDetails(notificationURL, iun);
-				String legalStartDate = notificationApiHandler.getLegalStartDate(notificationDetails);
-				log.info("Service response: notificationDetails={}", new ObjectMapper().writer().writeValueAsString(notificationDetails));
-				log.info("Notification details retrieved in {} ms, constructing Opensearch query...", System.currentTimeMillis() - serviceStartTime);
-				String dateIn3Months = OffsetDateTime.parse(legalStartDate).plusMonths(3).toString();
-//				queryParams.put("iun.keyword", iun);
-				queryParams.put("iun", iun);
-				queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
-						new OpenSearchRangeQueryData("@timestamp", legalStartDate, dateIn3Months), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
-				query = queryConstructor.createBooleanMultiSearchQuery(queryData);
-				log.info("Executing query:"+ RegExUtils.removeAll(query, "\n"));
+				log.info("Getting notification details...");
+				NotificationDetailsResponseDto notificationDetails = notificationApiHandler.getNotificationDetails(iun);
+				log.info("Service response: notificationDetails={} retrieved in {} ms", new ObjectMapper().writer().writeValueAsString(notificationDetails), System.currentTimeMillis() - serviceStartTime);
+				OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
+				String notificationEndDate = notificationStartDate.plusMonths(3).toString();
 				performanceMillis = System.currentTimeMillis();
-				openSearchResponse = openSearchApiHandler.getDocumentsByMultiSearchQuery(query, openSearchURL, openSearchUsername, openSearchPassword);
+				openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(iun, notificationStartDate.toString(), notificationEndDate);
 				log.info("Query execution completed in {} ms, de-anonymizing results...", System.currentTimeMillis() - performanceMillis);
 				performanceMillis = System.currentTimeMillis();
-				deanonymizedOpenSearchResponse = deanonimizationApiHandler.toDeanonymizedDocuments(openSearchResponse, RecipientTypes.PF);
-				log.info("Deanonymization completed in {} ms, Constructing service response...", System.currentTimeMillis() - performanceMillis);
+				deanonymizedOpenSearchResponse = deanonimizationApiHandler.deanonymizeDocuments(openSearchResponse, RecipientTypes.PF);
 			}
 		}
+		log.info("Deanonymization completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
 		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(deanonymizedOpenSearchResponse,Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
 		log.info("Deanonymized logs retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
 		return response;

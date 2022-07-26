@@ -39,7 +39,7 @@ public class LogController {
 	}
 	
 	@PostMapping(value = "/notifications/info", produces="application/json")
-	public ResponseEntity<DownloadArchiveResponseDto> getNotificationInfoLogs(@RequestBody NotificationInfoRequestDto notificationInfo) throws IOException, InterruptedException{
+	public ResponseEntity<Object> getNotificationInfoLogs(@RequestBody NotificationInfoRequestDto notificationInfo) throws IOException, InterruptedException{
 		return ResponseEntity.ok().body(logService.getNotificationInfoLogs(notificationInfo.getTicketNumber(), notificationInfo.getIun()));
 	}
 	

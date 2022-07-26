@@ -37,15 +37,15 @@ import it.gov.pagopa.logextractor.dto.request.PersonTaxIdRequestDto;
 import it.gov.pagopa.logextractor.dto.request.TraceIdLogsRequestDto;
 import it.gov.pagopa.logextractor.dto.response.EnsureRecipientByExternalIdResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInternalIdResponseDto;
-import it.gov.pagopa.logextractor.dto.response.LegalFactDownloadMetadataResponseDto;
-import it.gov.pagopa.logextractor.dto.response.NotificationAttachmentDownloadMetadataResponseDto;
+//import it.gov.pagopa.logextractor.dto.response.LegalFactDownloadMetadataResponseDto;
+//import it.gov.pagopa.logextractor.dto.response.NotificationAttachmentDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationsGeneralDataResponseDto;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
 
 public abstract class AbstractMock {	
 
-	@Autowired MockMvc mvc;
+	/*@Autowired MockMvc mvc;
 	@MockBean
 	@Qualifier("simpleRestTemplate") RestTemplate client;	
 	@MockBean
@@ -234,5 +234,5 @@ public abstract class AbstractMock {
 	
 	private static NotificationsGeneralDataResponseDto getNotificationGeneralDataFromResource(Resource resource) throws StreamReadException, DatabindException, IOException {
 		return mapper.readValue(resource.getInputStream(), NotificationsGeneralDataResponseDto.class);
-	}
+	}*/
 }

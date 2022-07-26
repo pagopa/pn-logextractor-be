@@ -1,13 +1,9 @@
 package it.gov.pagopa.logextractor.dto.response;
 
 import java.util.ArrayList;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import it.gov.pagopa.logextractor.dto.NotificationDetailsDocumentData;
-import it.gov.pagopa.logextractor.dto.NotificationDetailsNotificationStatusHistoryData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsRecipientsData;
-import it.gov.pagopa.logextractor.dto.NotificationDetailsTimelineData;
 import lombok.Getter;
 
 @Getter
@@ -33,8 +29,4 @@ public class NotificationDetailsResponseDto {
 	private String cancelledByIun;
 	private Boolean documentsAvailable;
 	private String paymentExpirationDate;
-	private String notificationStatus;
-	private ArrayList<NotificationDetailsNotificationStatusHistoryData> notificationStatusHistory;
-	private ArrayList<NotificationDetailsTimelineData> timeline;
-	
 }
