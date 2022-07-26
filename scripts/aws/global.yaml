@@ -36,7 +36,17 @@ Resources:
               VendorName: AWS
               Name: AWSManagedRulesCommonRuleSet
 
+  CloudFrontLogBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${ProjectName}-cf-logs
+
 Outputs:
-  CloudFrontWafId:
-    Value: !GetAtt CloudFrontWaf.Id
-    Description: CloudFront WAFv2 id
+
+  CloudFrontWafArn:
+    Value: !GetAtt CloudFrontWaf.Arn
+    Description: CloudFront WAFv2 arn
+
+  CloudFrontLogBucketDomainName:
+    Value: !GetAtt CloudFrontLogBucket.DomainName
+    Description: CloudFront log bucket domain name

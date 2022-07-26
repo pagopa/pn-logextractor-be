@@ -1,0 +1,147 @@
+{
+  "abstract": null,
+  "idempotenceToken": null,
+  "paProtocolNumber": "202205311325",
+  "subject": "test notifica",
+  "recipients": [
+      {
+          "recipientType": "PF",
+          "taxId": "MRSRSI89A07H501N",
+          "denomination": "Nome cognomePF-N105H70A98ISRSRM",
+          "digitalDomicile": {
+              "type": "PEC",
+              "address": "mario.rossi@pec.it"
+          },
+          "physicalAddress": {
+              "at": "presso",
+              "address": "via senza nome",
+              "addressDetails": "casa sua",
+              "zip": "00175",
+              "municipality": "roma",
+              "municipalityDetails": null,
+              "province": "lazio",
+              "foreignState": "italia"
+          },
+          "payment": {
+              "noticeCode": "codiceNotice",
+              "creditorTaxId": "enteCreditore",
+              "pagoPaForm": {
+                  "digests": {
+                      "sha256": "06e21dbe27ac8e41251a2cfa7003d697c04aea7591ca358c1218071c9ceb3875"
+                  },
+                  "contentType": "application/pdf",
+                  "ref": {
+                      "key": "multa.pdf",
+                      "versionToken": "c50d3042-14c8-4330-a03a-b4216fdfe76e"
+                  }
+              },
+              "f24flatRate": {
+                  "digests": {
+                      "sha256": "06e21dbe27ac8e41251a2cfa7003d697c04aea7591ca358c1218071c9ceb3875"
+                  },
+                  "contentType": "application/pdf",
+                  "ref": {
+                      "key": "multa.pdf",
+                      "versionToken": "c50d3042-14c8-4330-a03a-b4216fdfe76e"
+                  }
+              },
+              "f24standard": null
+          }
+      }
+  ],
+  "documents": [
+      {
+          "digests": {
+              "sha256": "06e21dbe27ac8e41251a2cfa7003d697c04aea7591ca358c1218071c9ceb3875"
+          },
+          "contentType": "application/pdf",
+          "ref": {
+              "key": "multa.pdf",
+              "versionToken": "c50d3042-14c8-4330-a03a-b4216fdfe76e"
+          },
+          "title": "multa.pdf",
+          "requiresAck": null,
+          "sendByMail": null,
+          "docIdx": "0"
+      }
+  ],
+  "notificationFeePolicy": "FLAT_RATE",
+  "cancelledIun": null,
+  "physicalCommunicationType": "SIMPLE_REGISTERED_LETTER",
+  "senderDenomination": "pubblica amministrazione",
+  "senderTaxId": "c_h501",
+  "group": "gruppo_1",
+  "senderPaId": "cx_id",
+  "iun": "HCQN-DZWN-DIGI-202205-T-1",
+  "sentAt": "2022-05-31T11:25:38.672+00:00",
+  "cancelledByIun": null,
+  "documentsAvailable": null,
+  "notificationStatus": "VIEWED",
+  "notificationStatusHistory": [
+      {
+          "status": "IN_VALIDATION",
+          "activeFrom": null,
+          "relatedTimelineElements": []
+      },
+      {
+          "status": "ACCEPTED",
+          "activeFrom": null,
+          "relatedTimelineElements": [
+              "HCQN-DZWN-DIGI-202205-T-1_request_accepted"
+          ]
+      },
+      {
+          "status": "VIEWED",
+          "activeFrom": null,
+          "relatedTimelineElements": [
+              "HCQN-DZWN-DIGI-202205-T-1_notification_viewed_0"
+          ]
+      }
+  ],
+  "timeline": [
+      {
+          "elementId": "HCQN-DZWN-DIGI-202205-T-1_request_accepted",
+          "timestamp": "2022-06-01T11:26:46.704+00:00",
+          "legalFactsIds": [
+              {
+                  "key": "HCQN-DZWN-DIGI-202205-T-1/legalfacts/sender_ack.pdf",
+                  "category": "SENDER_ACK"
+              }
+          ],
+          "category": "REQUEST_ACCEPTED",
+          "details": null
+      },
+      {
+          "elementId": "HCQN-DZWN-DIGI-202205-T-1_notification_viewed_0",
+          "timestamp": "2022-05-31T14:27:46.348+00:00",
+          "legalFactsIds": [
+              {
+                  "key": "HCQN-DZWN-DIGI-202205-T-1/legalfacts/notification_viewed_PF-N105H70A98ISRSRM.pdf",
+                  "category": "RECIPIENT_ACCESS"
+              }
+          ],
+          "category": "NOTIFICATION_VIEWED",
+          "details": {
+              "recIndex": 0,
+              "physicalAddress": null,
+              "digitalAddress": null,
+              "digitalAddressSource": null,
+              "isAvailable": null,
+              "attemptDate": null,
+              "deliveryMode": null,
+              "contactPhase": null,
+              "sentAttemptMade": null,
+              "sendDate": null,
+              "errors": null,
+              "lastAttemptDate": null,
+              "retryNumber": null,
+              "downstreamId": null,
+              "responseStatus": null,
+              "notificationDate": null,
+              "serviceLevel": null,
+              "investigation": null,
+              "newAddress": null
+          }
+      }
+  ]
+}

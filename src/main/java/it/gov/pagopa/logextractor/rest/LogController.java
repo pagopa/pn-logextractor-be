@@ -1,42 +1,59 @@
 package it.gov.pagopa.logextractor.rest;
 
+import java.io.IOException;
+import java.text.ParseException;
+import javax.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import it.gov.pagopa.logextractor.dto.response.DownloadLogResponseDto;
+import it.gov.pagopa.logextractor.dto.request.MonthlyNotificationsRequestDto;
+import it.gov.pagopa.logextractor.dto.request.NotificationInfoRequestDto;
+import it.gov.pagopa.logextractor.dto.request.PersonLogsRequestDto;
+import it.gov.pagopa.logextractor.dto.request.TraceIdLogsRequestDto;
+import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
+import com.opencsv.exceptions.CsvDataTypeMismatchException;
+import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
+import it.gov.pagopa.logextractor.service.LogService;
+import it.gov.pagopa.logextractor.service.PersonService;
 
 @RestController
-@RequestMapping("/logs")
+@RequestMapping("/logextractor/v1/logs")
 public class LogController {
 
-	@GetMapping(value = "/persons", produces="application/zip")
-	public ResponseEntity<DownloadLogResponseDto> getPersonActivityLogs(@RequestParam(required = true) String extractionType, 
-																		@RequestParam(required = true) int ticketNumber,
-																		@RequestParam(required = false) Integer iun, 
-																		@RequestParam(required = false) Integer months, 
-																		@RequestParam(required = true) boolean deanonimization,
-																		@RequestHeader(name = "fiscal-code", required = false) String taxId, 
-																		@RequestHeader(name = "person-id", required = false) String personId){
-		return ResponseEntity.ok(null);
+	@Autowired
+	LogService logService;
+	@Autowired
+	PersonService personService;
+    
+	@PostMapping(value = "/persons", produces="application/json")
+	public ResponseEntity<DownloadArchiveResponseDto> getPersonActivityLogs(@Valid @RequestBody PersonLogsRequestDto personLogsDetails) throws IOException {
+		if (personLogsDetails.isDeanonimization()) {
+			return ResponseEntity.ok().body(logService.getDeanonymizedPersonLogs(personLogsDetails.getRecipientType(), personLogsDetails.getDateFrom(), personLogsDetails.getDateTo(), 
+					personLogsDetails.getTicketNumber(), personLogsDetails.getTaxId(),personLogsDetails.getIun()));
+		}
+		return ResponseEntity.ok().body(logService.getAnonymizedPersonLogs(personLogsDetails.getDateFrom(), personLogsDetails.getDateTo(), 
+										personLogsDetails.getTicketNumber(), personLogsDetails.getIun(), personLogsDetails.getPersonId()));
 	}
 	
-	@GetMapping(value = "/operators", produces="application/zip")
-	public ResponseEntity<DownloadLogResponseDto> getOperatorsActivityLogs(@RequestParam(required = true) String extractionType, 
-																		   @RequestParam(required = true) int ticketNumber, 
-																		   @RequestParam(required = true) int months, 
-																		   @RequestHeader(name = "fiscal-code", required = false) String taxId) {
-		return ResponseEntity.ok(null);
+	@PostMapping(value = "/notifications/info", produces="application/json")
+	public ResponseEntity<DownloadArchiveResponseDto> getNotificationInfoLogs(@RequestBody NotificationInfoRequestDto notificationInfo) throws IOException, InterruptedException{
+		return ResponseEntity.ok().body(logService.getNotificationInfoLogs(notificationInfo.getTicketNumber(), notificationInfo.getIun()));
 	}
 	
-	@GetMapping(value = "/notifications", produces="application/zip")
-	public ResponseEntity<DownloadLogResponseDto> getNotificationLogs(@RequestParam(required = true) String extractionType, 
-																	  @RequestParam(required = true) int ticketNumber,
-																	  @RequestParam(required = false) Integer iun,
-																	  @RequestParam(required = false) Integer referenceMonth,
-																	  @RequestHeader(name = "person-id", required = false) String personId){
-		return ResponseEntity.ok(null);
+	@PostMapping(value = "/notifications/monthly", produces="application/json")
+	public ResponseEntity<DownloadArchiveResponseDto> getNotificationMonthlyLogs(@RequestBody MonthlyNotificationsRequestDto monthlyNotificationsData) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, ParseException{
+		return ResponseEntity.ok().body(logService.getMonthlyNotifications(monthlyNotificationsData.getTicketNumber(),
+																	monthlyNotificationsData.getReferenceMonth(),
+																	monthlyNotificationsData.getIpaCode()));
 	}
+
+	@PostMapping(value = "/processes", produces = "application/json")
+	public ResponseEntity<DownloadArchiveResponseDto> getNotificationTraceIdLogs(@RequestBody TraceIdLogsRequestDto traceIdLogsDetails) throws IOException {
+		return ResponseEntity.ok().body(logService.getTraceIdLogs(traceIdLogsDetails.getDateFrom(),
+				traceIdLogsDetails.getDateTo(), traceIdLogsDetails.getTraceId()));
+	}
+	
 }
