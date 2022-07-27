@@ -107,7 +107,7 @@ public class OpenSearchApiHandler {
 	
 	/**
 	 * Performs a multi-search HTTP GET request to the Opensearch service
-	 * @param query The mmulti-search query to the sent
+	 * @param query The multi-search query to the sent
 	 * @param basicAuthUsername The username for the basic authentication
 	 * @param basicAuthPassword The password for the basic authentication
 	 * @return The documents list contained into the Opensearch response

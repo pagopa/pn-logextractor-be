@@ -23,7 +23,8 @@ public class Constants {
 	public static final String PROBLEM_TITLE_PATTERN = "^[ -~]{0,64}$";
 	public static final String PROBLEM_DETAIL_PATTERN = "^.{0,1024}$";
 	public static final String COGNITO_CUSTOM_ATTRIBUTE_PREFIX = "custom:";
-	public static final String DOWNLOAD_WAIT_MESSAGE = "I file non sono ancora disponibili, ritentare tra ";
+	public static final String OPERATION_CANNOT_BE_COMPLETED_MESSAGE = "L'operazione non può essere ancora completata, ritentare tra ";
 	public static final String MINUTES_LABEL = " minuti";
+	public static final String MINUTE_LABEL = " minuto";
 	public static final String DOCUMENT_LABEL = "Document";
 }

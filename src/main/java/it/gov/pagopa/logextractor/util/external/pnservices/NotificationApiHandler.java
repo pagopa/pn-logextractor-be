@@ -70,7 +70,7 @@ public class NotificationApiHandler {
 	 * @return The list of notifications' general data
 	 */
 	public ArrayList<NotificationGeneralData> getNotificationsByPeriod(HashMap<String, Object> params, 
-			String encodedIpaCode, ArrayList<NotificationGeneralData> notifications, String nextUrlKey, ArrayList<String> pages/*JSONArray pages*/, String userIdentifier) {
+			String encodedIpaCode, ArrayList<NotificationGeneralData> notifications, String nextUrlKey, ArrayList<String> pages, String userIdentifier) {
 		HttpHeaders requestHeaders = new HttpHeaders();
 	    requestHeaders.setContentType(MediaType.APPLICATION_JSON);
 	    requestHeaders.set("x-pagopa-pn-cx-id", encodedIpaCode);

@@ -186,9 +186,10 @@ public class LogServiceImpl implements LogService {
         }
         if(secondsToWait > 0) {
         	log.info("Notification downloads' metadata retrieved in {} ms, physical files aren't ready yet. Constructing service response...", System.currentTimeMillis() - performanceMillis);
+        	int timeToWaitInMinutes = (int)Math.ceil(secondsToWait/60);
         	DownloadNotPossibleYetResponseDTO response = DownloadNotPossibleYetResponseDTO
         			.builder()
-        			.message(Constants.DOWNLOAD_WAIT_MESSAGE + ((int)Math.ceil(secondsToWait/60)+ Constants.MINUTES_LABEL))
+        			.message(Constants.OPERATION_CANNOT_BE_COMPLETED_MESSAGE + timeToWaitInMinutes + (timeToWaitInMinutes > 1 ? Constants.MINUTES_LABEL : Constants.MINUTE_LABEL))
         			.build();
         	log.info("Notification data retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
         	return response;
