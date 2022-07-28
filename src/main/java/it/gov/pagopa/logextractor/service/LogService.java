@@ -6,6 +6,7 @@ import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 
 import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
+import it.gov.pagopa.logextractor.exception.LogExtractorException;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
 
 public interface LogService {
@@ -24,7 +25,7 @@ public interface LogService {
 	 *         its files
 	 * @throws IOException
 	 */
-	DownloadArchiveResponseDto getAnonymizedPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId) throws IOException;
+	DownloadArchiveResponseDto getAnonymizedPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId) throws IOException, LogExtractorException;
 	
 	/**
 	 * Service method that retrieves informations about the notifications sent by a public authority in a specific month 
@@ -40,7 +41,7 @@ public interface LogService {
 	 * @throws CsvDataTypeMismatchException
 	 * @throws CsvRequiredFieldEmptyException
 	 */
-	DownloadArchiveResponseDto getMonthlyNotifications(String ticketNumber, String referenceMonth, String ipaCode) throws IOException, ParseException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException;
+	DownloadArchiveResponseDto getMonthlyNotifications(String ticketNumber, String referenceMonth, String endMonth, String ipaCode) throws IOException, ParseException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException;
 	
 	/**
 	 * Service method that retrieves the anonymized logs belonging to the same process within a period
@@ -70,7 +71,7 @@ public interface LogService {
 	 *         its files
 	 * @throws IOException
 	 */	
-	DownloadArchiveResponseDto getDeanonymizedPersonLogs(RecipientTypes recipientType, String dateFrom, String dateTo, String ticketNumber, String taxid,String iun) throws IOException;
+	DownloadArchiveResponseDto getDeanonymizedPersonLogs(RecipientTypes recipientType, String dateFrom, String dateTo, String ticketNumber, String taxid,String iun) throws IOException, LogExtractorException;
 	
 	/**
 	 * Service method that retrieves the whole information about a notification -

@@ -3,10 +3,7 @@ package it.gov.pagopa.logextractor.util.external.pnservices;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,26 +12,24 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import it.gov.pagopa.logextractor.annotation.RecipientType;
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInternalIdResponseDto;
+import it.gov.pagopa.logextractor.dto.response.PublicAuthorityMappingResponseDTO;
 import it.gov.pagopa.logextractor.dto.response.SelfCarePaDataResponseDto;
+import it.gov.pagopa.logextractor.exception.LogExtractorException;
 import it.gov.pagopa.logextractor.util.JsonUtilities;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Uility class for integrations with Piattaforma Notifiche de-anonymization service
  * */
 @Component
-@Slf4j
 public class DeanonymizationApiHandler {
 
 	@Autowired
@@ -64,16 +59,19 @@ public class DeanonymizationApiHandler {
 	 * 
 	 * @return object of type {@link GetBasicDataResponseDto}, containing the unique
 	 *         identifier of a person
+	 * @throws LogExtractorException 
 	 * @throws {@link HttpServerErrorException}
 	 * @throws {@link HttpClientErrorException}
 	 */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 //	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager1Minute")
-	public String getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId) {
+	public String getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId) throws LogExtractorException {
 		String url = String.format(getUniqueIdURL, recipientType.toString());
 		HttpEntity<String> request =  new HttpEntity<String>(taxId);
 		String response = client.postForObject(url, request, String.class);
-		log.info("Anonymized data: {}", response);
+		if(StringUtils.isBlank(response) || "null".equalsIgnoreCase(response)) {
+			throw new LogExtractorException("Anonymized tax id is null");
+		}
 		return response;
 	}
 
@@ -88,12 +86,13 @@ public class DeanonymizationApiHandler {
 	 *                           service
 	 * @return object of type {@link GetBasicDataResponseDto}, containing the tax
 	 *         code of a person
+	 * @throws LogExtractorException 
 	 * @throws {@link HttpServerErrorException}
 	 * @throws {@link HttpClientErrorException}
 	 */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 //	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager1Minute")
-	public GetBasicDataResponseDto getTaxCodeForPerson(String personId) {
+	public GetBasicDataResponseDto getTaxCodeForPerson(String personId) throws LogExtractorException {
 		HttpHeaders headers = new HttpHeaders();
 		headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 		HttpEntity<?> entity = new HttpEntity<>(headers);
@@ -110,21 +109,26 @@ public class DeanonymizationApiHandler {
 				GetRecipientDenominationByInternalIdResponseDto[].class,
 		        params)
 				.getBody();
-		return GetBasicDataResponseDto.builder().data(response[0].getTaxId()).build();
+		String taxId = response[0].getTaxId();
+		if(StringUtils.isBlank(taxId) || "null".equalsIgnoreCase(taxId)) {
+			throw new LogExtractorException("Anonymized tax id is null");
+		}
+		return GetBasicDataResponseDto.builder().data(taxId).build();
 	}
 	
 	/**
 	 * Performs a GET HTTP request to the PN external service to retrieve the general data of the notifications managed within a period
 	 * @param ipaCode The public authority code
 	 * @return The list of notifications' general data
+	 * @throws LogExtractorException 
 	 * @throws {@link HttpServerErrorException}
 	 * @throws {@link HttpClientErrorException}
 	 * */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 //	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager1Minute")
-	public String getEncodedIpaCode(String ipaCode) {
-        ResponseEntity<String> response = client.getForEntity(selfCareEncodedIpaCodeURL, String.class);
-        return getIpaCode(response.getBody(), ipaCode);
+	public String getEncodedIpaCode(String ipaCode) throws LogExtractorException {
+        PublicAuthorityMappingResponseDTO[] response = client.getForEntity(selfCareEncodedIpaCodeURL, PublicAuthorityMappingResponseDTO[].class).getBody();
+        return getIpaCode(response, ipaCode);
 	}
 	
 	/**
@@ -132,31 +136,39 @@ public class DeanonymizationApiHandler {
 	 * @param pnResponse The PN external service response
 	 * @param ipaCode The public authority code
 	 * @return The public authority id
+	 * @throws LogExtractorException 
 	 * */
-	public String getIpaCode(String pnResponse, String ipaCode) {
-		JSONArray jsonResponse = new JSONArray(pnResponse);
-		for(int index = 0; index < jsonResponse.length(); index++) {
-			JSONObject currentObj = jsonResponse.getJSONObject(index);
-			if(ipaCode.equals(currentObj.getString("name"))) {
-				return currentObj.getString("id");
+	public String getIpaCode(PublicAuthorityMappingResponseDTO[] pnResponse, String ipaCode) throws LogExtractorException {
+		String authorityId = null;
+		for(PublicAuthorityMappingResponseDTO authority : pnResponse) {
+			if(ipaCode.equals(authority.getName())) {
+				authorityId = authority.getId();
 			}
 		}
-		return null;
+		if(StringUtils.isBlank(authorityId) || "null".equalsIgnoreCase(authorityId)) {
+			throw new LogExtractorException("Encoded IPA code is null");
+		}
+		return authorityId;
 	}
 	
 	/**
 	 * Performs a GET HTTP request to the PN external service to retrieve the public authority name
 	 * @param publicAuthorityId The public authority id
 	 * @return The public authority name
+	 * @throws LogExtractorException 
 	 * @throws {@link HttpServerErrorException}
 	 * @throws {@link HttpClientErrorException}
 	 * */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 //	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager1Minute")
-	public String getPublicAuthorityName(String publicAuthorityId) {
+	public String getPublicAuthorityName(String publicAuthorityId) throws LogExtractorException {
 		String url = String.format(getPublicAuthorityNameUrl, publicAuthorityId); 
-		ResponseEntity<SelfCarePaDataResponseDto> response = client.getForEntity(url, SelfCarePaDataResponseDto.class);
-		return response.getBody().getName();
+		SelfCarePaDataResponseDto response = client.getForEntity(url, SelfCarePaDataResponseDto.class).getBody();
+		String authorityName = response.getName();
+		if(StringUtils.isBlank(authorityName) || "null".equalsIgnoreCase(authorityName)) {
+			throw new LogExtractorException("Authority name is null");
+		}
+		return authorityName;
 	}
 	
 	/** 
@@ -164,8 +176,9 @@ public class DeanonymizationApiHandler {
 	 * @param anonymizedDocument the document containing the content to write in the output file (.txt, .csv) contained in the output zip archive
 	 * @param getTaxCodeURL the url of de-anonymization service
 	 * @return A list representing the de-anonymized documents 
+	 * @throws LogExtractorException 
 	 */
-	public ArrayList<String> deanonymizeDocuments(ArrayList<String> anonymizedDocuments, RecipientTypes recipientType){
+	public ArrayList<String> deanonymizeDocuments(ArrayList<String> anonymizedDocuments, RecipientTypes recipientType) throws LogExtractorException{
 		ArrayList<String> deanonymizedDocuments = new ArrayList<String>();
 		for(int index=0; index<anonymizedDocuments.size(); index++) {
 			String uuid = JsonUtilities.getValue(anonymizedDocuments.get(index), "uid");

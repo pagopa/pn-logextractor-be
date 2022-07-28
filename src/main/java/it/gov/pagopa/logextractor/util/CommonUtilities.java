@@ -1,12 +1,10 @@
 package it.gov.pagopa.logextractor.util;
 
 import java.time.Instant;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
-import com.opencsv.bean.util.OpencsvUtils;
 
 /**
  * Utility class containing common utility methods

@@ -1,10 +1,12 @@
 package it.gov.pagopa.logextractor.util.external.pnservices;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -13,7 +15,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -78,17 +79,23 @@ public class NotificationApiHandler {
 	    List<MediaType> acceptedTypes = new ArrayList<MediaType>();
 	    acceptedTypes.add(MediaType.APPLICATION_JSON);
 	    requestHeaders.setAccept(acceptedTypes);
+	    HttpEntity<?> entity = new HttpEntity<>(requestHeaders);
 	    HashMap<String, Object> parameters = new HashMap<String, Object>();
 	    for (Map.Entry<String, Object> entry : params.entrySet()) {
 	    	parameters.put(entry.getKey(), entry.getValue());
 	    }
-	    //TODO: modificare invocazione per usare custom headers
-	    ResponseEntity<NotificationsGeneralDataResponseDto> response = client.getForEntity(notificationURL, NotificationsGeneralDataResponseDto.class, parameters);
-	    if(response.getBody().getNextPagesKey() == null || !response.getBody().getMoreResult()) {
-	    	return getNotificationsGeneralData(response.getBody());
+//	    ResponseEntity<NotificationsGeneralDataResponseDto> response = client.getForEntity(notificationURL, NotificationsGeneralDataResponseDto.class, parameters);
+	    NotificationsGeneralDataResponseDto response = client.exchange(
+	    		notificationURL, 
+				HttpMethod.GET,
+				entity,
+				NotificationsGeneralDataResponseDto.class,
+				parameters).getBody();
+	    if(response.getNextPagesKey() == null || !response.getMoreResult()) {
+	    	return getNotificationsGeneralData(response);
 	    }
-	    ArrayList<String> pageKeys = response.getBody().getNextPagesKey();
-	    notifications.addAll(getNotificationsGeneralData(response.getBody()));
+	    ArrayList<String> pageKeys = response.getNextPagesKey();
+	    notifications.addAll(getNotificationsGeneralData(response));
 	    for(int index = 0; index < pageKeys.size(); index++) {
 	    	String nextKey = pageKeys.get(index);
 	    	HashMap<String, Object> newParameters = new HashMap<String, Object>();
@@ -130,15 +137,17 @@ public class NotificationApiHandler {
 	 * Performs a GET HTTP request to obtain a physical file represented as a byte array
 	 * @param url The URL to make the request to
 	 * @return A byte array representation of a file
+	 * @throws IOException 
 	 */
-	public byte[] getFile(String url) {
-		HttpHeaders requestHeaders = new HttpHeaders();
-		requestHeaders.setContentType(MediaType.APPLICATION_PDF);
-		List<MediaType> acceptedTypes = new ArrayList<MediaType>();
-		acceptedTypes.add(MediaType.APPLICATION_PDF);
-		requestHeaders.setAccept(acceptedTypes);
-		HttpEntity<?> entity = new HttpEntity<>(requestHeaders);
-		return client.exchange(url, HttpMethod.GET, entity, byte[].class).getBody();
+	public byte[] getFile(String url) throws IOException {
+		try {
+			URL urlToFileDownload = new URL(url);
+            return IOUtils.toByteArray(urlToFileDownload);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        } finally {
+            IOUtils.closeQuietly();
+        }
 	}
 	
 	/**

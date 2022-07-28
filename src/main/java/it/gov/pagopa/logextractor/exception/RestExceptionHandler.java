@@ -15,6 +15,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import it.gov.pagopa.logextractor.dto.response.ApiError;
+import it.gov.pagopa.logextractor.util.Constants;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -26,6 +27,18 @@ import lombok.extern.slf4j.Slf4j;
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	/**
+	 * Manages the {@link LogExtractorException} creating a new {@link ResponseEntity} and sending it to the client
+	 * with error code 500 and a custom error message
+	 * @param ex The intercepted exception
+	 * @return A new {@link ResponseEntity} with {@link ApiError} body
+	 * */
+	@ExceptionHandler(LogExtractorException.class)
+    protected ResponseEntity<ApiError> handleLogExtractorException(LogExtractorException ex) {
+        log.error(ExceptionUtils.getStackTrace(ex));
+        return ResponseEntity.internalServerError().body(new ApiError(Constants.GENERIC_INTERNAL_SERVER_ERROR));
+    }
+	
+	/**
 	 * Manages the {@link IOException} creating a new {@link ResponseEntity} and sending it to the client
 	 * with error code 500 and a custom error message
 	 * @param ex The intercepted exception
@@ -34,7 +47,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(IOException.class)
     protected ResponseEntity<ApiError> handleIOException(IOException ex) {
         log.error(ExceptionUtils.getStackTrace(ex));
-        return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
+        return ResponseEntity.internalServerError().body(new ApiError(Constants.GENERIC_INTERNAL_SERVER_ERROR));
     }
 	
 	/**
@@ -46,7 +59,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(CsvDataTypeMismatchException.class)
     protected ResponseEntity<ApiError> handleCsvDataTypeMismatchException(CsvDataTypeMismatchException ex) {
         log.error(ExceptionUtils.getStackTrace(ex));
-        return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
+        return ResponseEntity.internalServerError().body(new ApiError(Constants.GENERIC_INTERNAL_SERVER_ERROR));
     }
 	
 	/**
@@ -58,7 +71,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(CsvRequiredFieldEmptyException.class)
     protected ResponseEntity<ApiError> handleCsvRequiredFieldEmptyException(CsvRequiredFieldEmptyException ex) {
         log.error(ExceptionUtils.getStackTrace(ex));
-        return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
+        return ResponseEntity.internalServerError().body(new ApiError(Constants.GENERIC_INTERNAL_SERVER_ERROR));
     }
 	
 	/**
@@ -70,7 +83,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(HttpServerErrorException.class)
     protected ResponseEntity<ApiError> handleHttpServerErrorException(HttpServerErrorException ex) {
         log.error(ExceptionUtils.getStackTrace(ex));
-        return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
+        return ResponseEntity.internalServerError().body(new ApiError(Constants.GENERIC_INTERNAL_SERVER_ERROR));
     }
 	
 	/**
@@ -82,7 +95,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(HttpClientErrorException.class)
 	protected ResponseEntity<ApiError> handleHttpServerErrorException(HttpClientErrorException ex) {
 		log.error(ExceptionUtils.getStackTrace(ex));
-		return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
+		return ResponseEntity.internalServerError().body(new ApiError(Constants.GENERIC_INTERNAL_SERVER_ERROR));
 	}
 	
 	/**
@@ -94,7 +107,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(InterruptedException.class)
     protected ResponseEntity<ApiError> handleInterruptedException(InterruptedException ex) {
         log.error(ExceptionUtils.getStackTrace(ex));
-        return ResponseEntity.internalServerError().body(new ApiError("Errore nell'elaborazione della richiesta"));
+        return ResponseEntity.internalServerError().body(new ApiError(Constants.GENERIC_INTERNAL_SERVER_ERROR));
     }
 	
 	

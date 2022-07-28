@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import it.gov.pagopa.logextractor.exception.LogExtractorException;
 import it.gov.pagopa.logextractor.util.Constants;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonymizationApiHandler;
@@ -41,8 +42,9 @@ public class CognitoApiHandler {
 	 * Performs a GET HTTP request to the Cognito user pool to get the logged in user identifier
 	 * @param accessToken The logged in user access token for Cognito
 	 * @return The user identifier
+	 * @throws LogExtractorException 
 	 * */
-	public String getUserIdentifier(String accessToken) {
+	public String getUserIdentifier(String accessToken) throws LogExtractorException {
 		String url = String.format(cognitoUserUrl, cognitoRegion);
 		JSONObject requestBody = new JSONObject();
 		requestBody.put("AccessToken", accessToken);

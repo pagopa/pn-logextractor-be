@@ -13,6 +13,11 @@ public class MonthlyNotificationsRequestDto extends BaseRequestDto {
 	@NotBlank
 	@Pattern(regexp = Constants.INPUT_MONTH_FORMAT) 
 	private String referenceMonth;
+	
+	@NotBlank
+	@Pattern(regexp = Constants.INPUT_MONTH_FORMAT)
+	private String endMonth;
+	
 	@NotBlank
 	private String ipaCode;
 

@@ -10,6 +10,8 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import it.gov.pagopa.logextractor.exception.LogExtractorException;
 import it.gov.pagopa.logextractor.util.CommonUtilities;
 import it.gov.pagopa.logextractor.util.external.cognito.CognitoApiHandler;
 
@@ -32,7 +34,9 @@ public class MDCWebFilter extends OncePerRequestFilter {
         	MDC.put("trace_id", new CommonUtilities().generateRandomTraceId());
         	MDC.put("user_identifier", cognitoApiHandler.getUserIdentifier(request.getHeader("Auth")));
             filterChain.doFilter(request, response);
-        } finally {
+        } catch (LogExtractorException e) {
+        	throw new RuntimeException("Exception retrieving user identifier");
+		} finally {
             MDC.remove("trace_id");
             MDC.remove("user_identifier");
         }

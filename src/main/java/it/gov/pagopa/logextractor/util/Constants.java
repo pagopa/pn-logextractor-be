@@ -10,7 +10,7 @@ public class Constants {
 	public static final String ALPHA_NUMERIC_WITHOUT_SPECIAL_CHAR_PATTERN = "^[a-zA-Z0-9-]+$";
 	public static final String IUN_PATTERN = "([A-Za-z]{4})-([A-Za-z]{4})-([A-Za-z]{4})-([0-9]{6})-([A-Za-z]{1})-([0-9]{1})";
 	public static final String INPUT_DATE_FORMAT = "([0-9]{4})-(?:[0-9]{2})-([0-9]{2})";
-	public static final String INPUT_MONTH_FORMAT = "([0-9]{4})-(?:[0-9]{2})";
+	public static final String INPUT_MONTH_FORMAT = "([0-9]{4})-(?:[0-9]{2})-01T00:00:00.000Z";
 	public static final String PASSWORD_SPECIAL_CHARS = "!@#$%^&()_+";
 	public static final String ZIP_ARCHIVE_NAME = "export";
 	public static final String LOG_FILE_NAME = "dati";
@@ -27,4 +27,5 @@ public class Constants {
 	public static final String MINUTES_LABEL = " minuti";
 	public static final String MINUTE_LABEL = " minuto";
 	public static final String DOCUMENT_LABEL = "Document";
+	public static final String GENERIC_INTERNAL_SERVER_ERROR = "Errore nell'elaborazione della richiesta";
 }
