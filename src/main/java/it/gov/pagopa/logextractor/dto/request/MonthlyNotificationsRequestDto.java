@@ -19,6 +19,6 @@ public class MonthlyNotificationsRequestDto extends BaseRequestDto {
 	private String endMonth;
 	
 	@NotBlank
-	private String ipaCode;
+	private String publicAuthorityName;
 
 }

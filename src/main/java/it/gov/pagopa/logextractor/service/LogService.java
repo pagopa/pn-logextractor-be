@@ -41,7 +41,7 @@ public interface LogService {
 	 * @throws CsvDataTypeMismatchException
 	 * @throws CsvRequiredFieldEmptyException
 	 */
-	DownloadArchiveResponseDto getMonthlyNotifications(String ticketNumber, String referenceMonth, String endMonth, String ipaCode) throws IOException, ParseException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException;
+	DownloadArchiveResponseDto getMonthlyNotifications(String ticketNumber, String referenceMonth, String endMonth, String publicAuthorityName) throws IOException, ParseException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException;
 	
 	/**
 	 * Service method that retrieves the anonymized logs belonging to the same process within a period

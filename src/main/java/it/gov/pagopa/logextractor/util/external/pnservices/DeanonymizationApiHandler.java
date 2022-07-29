@@ -126,9 +126,28 @@ public class DeanonymizationApiHandler {
 	 * */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 //	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager1Minute")
-	public String getEncodedIpaCode(String ipaCode) throws LogExtractorException {
-        PublicAuthorityMappingResponseDTO[] response = client.getForEntity(selfCareEncodedIpaCodeURL, PublicAuthorityMappingResponseDTO[].class).getBody();
-        return getIpaCode(response, ipaCode);
+	public String getPublicAuthorityId(String publicAuthorityName) throws LogExtractorException {
+		HttpHeaders headers = new HttpHeaders();
+		headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+		HttpEntity<?> entity = new HttpEntity<>(headers);
+		String urlTemplate = UriComponentsBuilder.fromHttpUrl(selfCareEncodedIpaCodeURL)
+		        .queryParam("paNameFilter", "{publicAuthorityName}")
+		        .encode()
+		        .toUriString();
+		Map<String, String> params = new HashMap<>();
+		params.put("publicAuthorityName", publicAuthorityName);
+		PublicAuthorityMappingResponseDTO[] response = client.exchange(
+				urlTemplate, 
+				HttpMethod.GET,
+				entity,
+				PublicAuthorityMappingResponseDTO[].class,
+		        params)
+				.getBody();
+		String authorityId = response[0].getId();
+		if(StringUtils.isBlank(authorityId) || "null".equalsIgnoreCase(authorityId)) {
+			throw new LogExtractorException("Public authority id is null");
+		}
+		return authorityId;
 	}
 	
 	/**
@@ -138,18 +157,16 @@ public class DeanonymizationApiHandler {
 	 * @return The public authority id
 	 * @throws LogExtractorException 
 	 * */
-	public String getIpaCode(PublicAuthorityMappingResponseDTO[] pnResponse, String ipaCode) throws LogExtractorException {
-		String authorityId = null;
-		for(PublicAuthorityMappingResponseDTO authority : pnResponse) {
-			if(ipaCode.equals(authority.getName())) {
-				authorityId = authority.getId();
-			}
-		}
-		if(StringUtils.isBlank(authorityId) || "null".equalsIgnoreCase(authorityId)) {
-			throw new LogExtractorException("Encoded IPA code is null");
-		}
-		return authorityId;
-	}
+//	public String getIpaCode(PublicAuthorityMappingResponseDTO[] pnResponse, String ipaCode) throws LogExtractorException {
+//		String authorityId = null;
+//		for(PublicAuthorityMappingResponseDTO authority : pnResponse) {
+//			if(ipaCode.equals(authority.getName())) {
+//				authorityId = authority.getId();
+//			}
+//		}
+//		
+//		return authorityId;
+//	}
 	
 	/**
 	 * Performs a GET HTTP request to the PN external service to retrieve the public authority name

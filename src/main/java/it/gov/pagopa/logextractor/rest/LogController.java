@@ -50,7 +50,7 @@ public class LogController {
 		return ResponseEntity.ok().body(logService.getMonthlyNotifications(monthlyNotificationsData.getTicketNumber(),
 																	monthlyNotificationsData.getReferenceMonth(),
 																	monthlyNotificationsData.getEndMonth(),
-																	monthlyNotificationsData.getIpaCode()));
+																	monthlyNotificationsData.getPublicAuthorityName()));
 	}
 
 	@PostMapping(value = "/processes", produces = "application/json")

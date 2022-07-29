@@ -28,11 +28,13 @@ import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDTO;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDTO;
 import it.gov.pagopa.logextractor.dto.response.NotificationsGeneralDataResponseDto;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Uility class for integrations with Piattaforma Notifiche notifcations related services
  * */
 @Component
+@Slf4j
 public class NotificationApiHandler {
 	
 	@Autowired
@@ -61,47 +63,79 @@ public class NotificationApiHandler {
 	String safeStorageCxid;
 	
 	/**
-	 * Performs a GET HTTP request to the PN external service to retrieve the
-	 * general data of the notifications managed within a period
-	 * 
-	 * @param url       The PN external service base URL
-	 * @param startDate The period start date
-	 * @param endDate   The period end date
-	 * @param size      The maximum number of results to be retrieved
-	 * @return The list of notifications' general data
+	 * Invokes a utility method to get the notifications managed by a public authority within a month
+	 * @param referenceMonth The month to obtain the notifications for
+	 * @param endMonth The following month of the reference month
+	 * @param encodedPublicAuthorityName   The public authority id
+	 * @param userIdentifier The user unique identifier
+	 * @return The list of {@link NotificationGeneralData} notifications' general data
 	 */
-	public ArrayList<NotificationGeneralData> getNotificationsByPeriod(HashMap<String, Object> params, 
-			String encodedIpaCode, ArrayList<NotificationGeneralData> notifications, String nextUrlKey, ArrayList<String> pages, String userIdentifier) {
+	public ArrayList<NotificationGeneralData> getNotificationsByMonthsPeriod(String referenceMonth, String endMonth, 
+			String encodedPublicAuthorityName, String userIdentifier) {
+		return getNotificationsBetweenMonths(referenceMonth, endMonth, encodedPublicAuthorityName,
+				new ArrayList<NotificationGeneralData>(), null, userIdentifier);
+	}
+	
+	/**
+	 * Recursively performs a GET HTTP request to the PN external service to retrieve the
+	 * general data of the notifications managed within a month
+	 * @param referenceMonth The month to obtain the notifications for
+	 * @param endMonth The following month of the reference month
+	 * @param encodedPublicAuthorityName   The public authority id
+	 * @param notifications The initial notifications list
+	 * @param nextUrlKey The key of the next results page
+	 * @param userIdentifier The user unique identifier
+	 * @return The list of {@link NotificationGeneralData} notifications' general data
+	 */
+	private ArrayList<NotificationGeneralData> getNotificationsBetweenMonths(String referenceMonth, String endMonth, String encodedPublicAuthorityName, 
+			ArrayList<NotificationGeneralData> notifications, String nextUrlKey, String userIdentifier) {
 		HttpHeaders requestHeaders = new HttpHeaders();
 	    requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-	    requestHeaders.set("x-pagopa-pn-cx-id", encodedIpaCode);
+	    requestHeaders.set("x-pagopa-pn-cx-id", encodedPublicAuthorityName);
 	    requestHeaders.set("x-pagopa-pn-uid", "HD-"+userIdentifier);
 	    List<MediaType> acceptedTypes = new ArrayList<MediaType>();
 	    acceptedTypes.add(MediaType.APPLICATION_JSON);
 	    requestHeaders.setAccept(acceptedTypes);
 	    HttpEntity<?> entity = new HttpEntity<>(requestHeaders);
-	    HashMap<String, Object> parameters = new HashMap<String, Object>();
-	    for (Map.Entry<String, Object> entry : params.entrySet()) {
-	    	parameters.put(entry.getKey(), entry.getValue());
+	    String urlTemplate = null == nextUrlKey ? 
+	    		UriComponentsBuilder.fromHttpUrl(notificationURL)
+		        .queryParam("startDate", "{startDate}")
+		        .queryParam("endDate", "{endDate}")
+		        .queryParam("size", "{size}")
+		        .encode()
+		        .toUriString() 
+		        :
+		        UriComponentsBuilder.fromHttpUrl(notificationURL)
+    			.queryParam("startDate", "{startDate}")
+		        .queryParam("endDate", "{endDate}")
+		        .queryParam("size", "{size}")
+		        .queryParam("nextPagesKey", "{nextPagesKey}")
+		        .encode()
+		        .toUriString();
+	    HashMap<String, Object> params = new HashMap<String, Object>();
+	    if(null != referenceMonth) {
+	    	params.put("startDate", referenceMonth);
 	    }
-//	    ResponseEntity<NotificationsGeneralDataResponseDto> response = client.getForEntity(notificationURL, NotificationsGeneralDataResponseDto.class, parameters);
+	    if(null != endMonth) {
+	    	params.put("endDate", endMonth);
+	    }
+	    if(null != nextUrlKey) {
+	    	params.put("nextPagesKey", nextUrlKey);
+	    }
+	    params.put("size", 1000);
 	    NotificationsGeneralDataResponseDto response = client.exchange(
-	    		notificationURL, 
+	    		urlTemplate, 
 				HttpMethod.GET,
 				entity,
 				NotificationsGeneralDataResponseDto.class,
-				parameters).getBody();
-	    if(response.getNextPagesKey() == null || !response.getMoreResult()) {
+				params).getBody();
+	    if((null == response.getNextPagesKey() || response.getNextPagesKey().size() == 0) && !response.getMoreResult()) {
 	    	return getNotificationsGeneralData(response);
 	    }
-	    ArrayList<String> pageKeys = response.getNextPagesKey();
 	    notifications.addAll(getNotificationsGeneralData(response));
-	    for(int index = 0; index < pageKeys.size(); index++) {
-	    	String nextKey = pageKeys.get(index);
-	    	HashMap<String, Object> newParameters = new HashMap<String, Object>();
-		    newParameters.putAll(parameters);
-			newParameters.put("nextPagesKey", nextKey);
-			notifications.addAll(getNotificationsByPeriod(newParameters, encodedIpaCode, notifications, nextKey, pageKeys, userIdentifier));
+	    for(String currentKey : response.getNextPagesKey()) {
+			notifications.addAll(getNotificationsBetweenMonths(referenceMonth, endMonth, 
+					encodedPublicAuthorityName, notifications, currentKey, userIdentifier));
 	    }
 	    return notifications;
 	}

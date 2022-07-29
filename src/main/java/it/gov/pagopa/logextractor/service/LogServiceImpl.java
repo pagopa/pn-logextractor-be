@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,23 +76,19 @@ public class LogServiceImpl implements LogService {
 	}
 
 	@Override
-	public DownloadArchiveResponseDto getMonthlyNotifications(String ticketNumber, String referenceMonth, String endMonth, String ipaCode) throws IOException, ParseException,CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException {
-		log.info("Monthly notifications retrieve process - START - user={}, ticket number={}, reference month={}, end month={}, IPA code={}", MDC.get("user_identifier"), ticketNumber, referenceMonth, endMonth, ipaCode);
+	public DownloadArchiveResponseDto getMonthlyNotifications(String ticketNumber, String referenceMonth, String endMonth, String publicAuthorityName) throws IOException, ParseException,CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException {
+		log.info("Monthly notifications retrieve process - START - user={}, ticket number={}, reference month={}, end month={}, public authority name={}", MDC.get("user_identifier"), ticketNumber, referenceMonth, endMonth, publicAuthorityName);
 		long serviceStartTime = System.currentTimeMillis();
 		CommonUtilities commonUtils = new CommonUtilities();
 		log.info("Getting public authority id...");
 		long performanceMillis = System.currentTimeMillis();
-		String encodedIpaCode = deanonimizationApiHandler.getEncodedIpaCode(ipaCode);
-		log.info("Service response: publicAuthorityId={}", encodedIpaCode);
+		String encodedPublicAuthorityName = deanonimizationApiHandler.getPublicAuthorityId(publicAuthorityName);
+		log.info("Service response: publicAuthorityId={}", encodedPublicAuthorityName);
 		ArrayList<NotificationCsvBean> notifications = new ArrayList<NotificationCsvBean>();
-        HashMap<String, Object> parameters = new HashMap<String, Object>();
-        parameters.put("startDate", referenceMonth);
-        parameters.put("endDate", endMonth);
-//      parameters.put("size", 100);
-        log.info("Public authority id retrieved in {} ms, getting notifications general data, publicAuthority={}, startDate={}, endDate={}", System.currentTimeMillis() - performanceMillis, encodedIpaCode, referenceMonth, endMonth);
+        log.info("Public authority id retrieved in {} ms, getting notifications general data, publicAuthority={}, startDate={}, endDate={}", System.currentTimeMillis() - performanceMillis, encodedPublicAuthorityName, referenceMonth, endMonth);
         performanceMillis = System.currentTimeMillis();
-		ArrayList<NotificationGeneralData> notificationsGeneralData = notificationApiHandler.getNotificationsByPeriod(parameters, 
-				encodedIpaCode, new ArrayList<NotificationGeneralData>(), "", new ArrayList<String>(), MDC.get("user_identifier"));
+		ArrayList<NotificationGeneralData> notificationsGeneralData = notificationApiHandler.getNotificationsByMonthsPeriod(referenceMonth, endMonth, 
+				encodedPublicAuthorityName,  MDC.get("user_identifier"));
 		if(notificationsGeneralData != null) {
 			log.info("Notifications general data retrieved in {} ms, getting notifications' details", System.currentTimeMillis() - performanceMillis);
 			performanceMillis = System.currentTimeMillis();
