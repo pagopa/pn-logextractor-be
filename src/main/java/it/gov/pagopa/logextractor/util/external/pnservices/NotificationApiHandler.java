@@ -71,10 +71,10 @@ public class NotificationApiHandler {
 	 * @param userIdentifier The user unique identifier
 	 * @return The list of {@link NotificationGeneralData} notifications' general data
 	 */
-	public ArrayList<NotificationData> getNotificationsByMonthsPeriod(String referenceMonth, String endMonth, 
+	public List<NotificationData> getNotificationsByMonthsPeriod(String referenceMonth, String endMonth, 
 			String encodedPublicAuthorityName, String userIdentifier) {
 		return getNotificationsBetweenMonths(referenceMonth, endMonth, encodedPublicAuthorityName,
-				new ArrayList<NotificationData>(), null, userIdentifier);
+				new ArrayList<>(), null, userIdentifier);
 	}
 	
 	/**
@@ -92,34 +92,39 @@ public class NotificationApiHandler {
 			ArrayList<NotificationData> notifications, String nextUrlKey, String userIdentifier) {
 		HttpHeaders requestHeaders = new HttpHeaders();
 	    requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-	    List<MediaType> acceptedTypes = new ArrayList<MediaType>();
+	    List<MediaType> acceptedTypes = new ArrayList<>();
 	    acceptedTypes.add(MediaType.APPLICATION_JSON);
 	    requestHeaders.setAccept(acceptedTypes);
+	    String endDateParam = "endDate";
+	    String startDateParam = "startDate";
+	    String senderIdParam = "senderId";
+	    String sizeParam = "size";
+	    String nextPageParam = "nextPagesKey";
 	    HttpEntity<?> entity = new HttpEntity<>(requestHeaders);
 	    String urlTemplate = null == nextUrlKey ? 
 	    		UriComponentsBuilder.fromHttpUrl(notificationURL)
-	    		.queryParam("senderId", "{senderId}")
-		        .queryParam("startDate", "{startDate}")
-		        .queryParam("endDate", "{endDate}")
-		        .queryParam("size", "{size}")
+	    		.queryParam(senderIdParam, "{senderId}")
+		        .queryParam(startDateParam, "{startDate}")
+		        .queryParam(endDateParam, "{endDate}")
+		        .queryParam(sizeParam, "{size}")
 		        .encode()
 		        .toUriString() 
 		        :
 		        UriComponentsBuilder.fromHttpUrl(notificationURL)
-		        .queryParam("senderId", "{senderId}")
-    			.queryParam("startDate", "{startDate}")
-		        .queryParam("endDate", "{endDate}")
-		        .queryParam("size", "{size}")
-		        .queryParam("nextPagesKey", "{nextPagesKey}")
+		        .queryParam(senderIdParam, "{senderId}")
+    			.queryParam(startDateParam, "{startDate}")
+		        .queryParam(endDateParam, "{endDate}")
+		        .queryParam(sizeParam, "{size}")
+		        .queryParam(nextPageParam, "{nextPagesKey}")
 		        .encode()
 		        .toUriString();
-	    HashMap<String, Object> params = new HashMap<String, Object>();
-	    params.put("senderId", encodedPublicAuthorityName);
-    	params.put("startDate", referenceMonth);
-    	params.put("endDate", endMonth);
-	    params.put("size", Constants.PAGE_SIZE);
+	    HashMap<String, Object> params = new HashMap<>();
+	    params.put(senderIdParam, encodedPublicAuthorityName);
+    	params.put(startDateParam, referenceMonth);
+    	params.put(endDateParam, endMonth);
+	    params.put(sizeParam, Constants.PAGE_SIZE);
 	    if(null != nextUrlKey) {
-	    	params.put("nextPagesKey", nextUrlKey);
+	    	params.put(nextPageParam, nextUrlKey);
 	    }
 	    NotificationsGeneralDataResponseDto response = client.exchange(
 	    		urlTemplate, 
@@ -127,13 +132,15 @@ public class NotificationApiHandler {
 				entity,
 				NotificationsGeneralDataResponseDto.class,
 				params).getBody();
-	    if((null == response.getNextPagesKey() || response.getNextPagesKey().size() == 0) && !response.getMoreResult()) {
+	    if(response != null && (null == response.getNextPagesKey() || response.getNextPagesKey().isEmpty()) && Boolean.FALSE.equals(response.getMoreResult())) {
 	    	return response.getResultsPage();
 	    }
-	    notifications.addAll(response.getResultsPage());
-	    for(String currentKey : response.getNextPagesKey()) {
-			notifications.addAll(getNotificationsBetweenMonths(referenceMonth, endMonth, 
-					encodedPublicAuthorityName, notifications, currentKey, userIdentifier));
+	    if(response != null) {
+	    	notifications.addAll(response.getResultsPage());
+	    	for(String currentKey : response.getNextPagesKey()) {
+				notifications.addAll(getNotificationsBetweenMonths(referenceMonth, endMonth, 
+						encodedPublicAuthorityName, notifications, currentKey, userIdentifier));
+		    }
 	    }
 	    return notifications;
 	}
@@ -158,7 +165,7 @@ public class NotificationApiHandler {
 		HttpHeaders requestHeaders = new HttpHeaders();
 		requestHeaders.setContentType(MediaType.APPLICATION_PDF);
 		requestHeaders.set("x-pagopa-safestorage-cx-id", safeStorageCxid);
-		List<MediaType> acceptedTypes = new ArrayList<MediaType>();
+		List<MediaType> acceptedTypes = new ArrayList<>();
 		acceptedTypes.add(MediaType.APPLICATION_PDF);
 		requestHeaders.setAccept(acceptedTypes);
 		HttpEntity<?> entity = new HttpEntity<>(requestHeaders);
@@ -210,8 +217,8 @@ public class NotificationApiHandler {
 	 * @param notificationInfo The notification details
 	 * @return The keys list
 	 * */
-	public ArrayList<String> getLegalFactKeys(NotificationHistoryResponseDTO notificationInfo) {
-		ArrayList<String> legalFactKeys = new ArrayList<String>();
+	public List<String> getLegalFactKeys(NotificationHistoryResponseDTO notificationInfo) {
+		ArrayList<String> legalFactKeys = new ArrayList<>();
 		if(null != notificationInfo.getTimeline()) {
 			for (NotificationDetailsTimelineData timelineObject : notificationInfo.getTimeline()) {
 				if (null != timelineObject.getLegalFactsIds()) {
@@ -229,11 +236,11 @@ public class NotificationApiHandler {
 	 * @param notificationInfo The notification details
 	 * @return The keys list
 	 * */
-	public ArrayList<String> getDocumentKeys(NotificationDetailsResponseDto notificationInfo) {
-		ArrayList<String> docIdxs = new ArrayList<String>();
+	public List<String> getDocumentKeys(NotificationDetailsResponseDto notificationInfo) {
+		ArrayList<String> docIdxs = new ArrayList<>();
 		if(null != notificationInfo.getDocuments()) {
 			for (NotificationDetailsDocumentData doc : notificationInfo.getDocuments()) {
-				docIdxs.add(StringUtils.remove(doc.getRef().getKey(), "safestorage://"));
+				docIdxs.add(StringUtils.remove(doc.getRef().getKey(), Constants.SAFESTORAGE_PREFIX));
 			}
 		}
 		return docIdxs;
@@ -244,19 +251,19 @@ public class NotificationApiHandler {
 	 * @param notificationInfo The notification details
 	 * @return The keys list
 	 * */
-	public ArrayList<String> getPaymentKeys(NotificationDetailsResponseDto notificationInfo) {
-		ArrayList<String> paymentKeys = new ArrayList<String>();
-		if(null != notificationInfo.getRecipients()) {
+	public List<String> getPaymentKeys(NotificationDetailsResponseDto notificationInfo) {
+		ArrayList<String> paymentKeys = new ArrayList<>();
+		if(null != notificationInfo && null != notificationInfo.getRecipients()) {
 			for(NotificationDetailsRecipientsData recipient : notificationInfo.getRecipients()) {
 				if(null != recipient.getPayment()) {
 					if(null != recipient.getPayment().getF24flatRate()) {
-						paymentKeys.add(StringUtils.remove(recipient.getPayment().getF24flatRate().getRef().getKey(), "safestorage://"));
+						paymentKeys.add(StringUtils.remove(recipient.getPayment().getF24flatRate().getRef().getKey(), Constants.SAFESTORAGE_PREFIX));
 					}
 					if(null != recipient.getPayment().getF24standard()) {
-						paymentKeys.add(StringUtils.remove(recipient.getPayment().getF24standard().getRef().getKey(), "safestorage://"));
+						paymentKeys.add(StringUtils.remove(recipient.getPayment().getF24standard().getRef().getKey(), Constants.SAFESTORAGE_PREFIX));
 					}
 					if(null != recipient.getPayment().getPagoPaForm()) {
-						paymentKeys.add(StringUtils.remove(recipient.getPayment().getPagoPaForm().getRef().getKey(), "safestorage://"));
+						paymentKeys.add(StringUtils.remove(recipient.getPayment().getPagoPaForm().getRef().getKey(), Constants.SAFESTORAGE_PREFIX));
 					}
 				}
 				

@@ -17,7 +17,7 @@ public class OpenSearchQueryConstructor {
 	public String createBooleanMultiSearchQuery(List<OpenSearchQuerydata> queryData) {
 		StringBuilder queryBuilder = new StringBuilder();
 		StringBuilder paramsBuilder = new StringBuilder();
-		if(null != queryData && queryData.size() > 0) {
+		if(null != queryData && queryData.isEmpty()) {
 			for(OpenSearchQuerydata qTemp : queryData) {
 				for (OpenSearchQueryFilter filterTemp : qTemp.getMatchFields()) {
 					paramsBuilder.append("{\"match\":{"+ "\""+filterTemp.getKey()+"\":"+ "\""+filterTemp.getValue()+"\"}},");
@@ -40,26 +40,6 @@ public class OpenSearchQueryConstructor {
 		}
 		return queryBuilder.toString();
 	}
-	
-	/**
-	 * Creates a simple multi-search query string with the input query data
-	 * @param queryData The query data
-	 * @return A string representing the multi-search simple query 
-	 * */
-	/*public String createSimpleMultiSearchQuery(List<OpenSearchQuerydata> queryData) {
-		StringBuilder queryBuilder = new StringBuilder();
-		if(null != queryData && queryData.size() > 0) {
-			for(OpenSearchQuerydata qTemp : queryData) {
-				StringBuilder paramsBuilder = new StringBuilder();
-				for (OpenSearchQueryFilter filterTemp : qTemp.getMatchFields()) {
-					paramsBuilder.append("{\"match\":{"+ "\""+filterTemp.getKey()+"\":"+ "\""+filterTemp.getValue()+"\"}}");
-			    }
-				queryBuilder.append("{\"index\":\""+qTemp.getIndexName()+"\"}\n"
-									+ "{\"query\":"+paramsBuilder+"}\n");
-			}
-		}
-		return queryBuilder.toString();
-	}*/
 	
 	/**
 	 * Method that prepares query data

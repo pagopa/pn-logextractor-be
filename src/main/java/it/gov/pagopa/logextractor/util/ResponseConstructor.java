@@ -2,7 +2,7 @@ package it.gov.pagopa.logextractor.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.io.FileUtils;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
@@ -30,7 +30,7 @@ public class ResponseConstructor {
 	 *         representation of the output zip archive and the password to access
 	 *         its files
 	 */
-	public static DownloadArchiveResponseDto createSimpleLogResponse(ArrayList<String> contents, String fileName, String zipName) throws IOException {
+	public static DownloadArchiveResponseDto createSimpleLogResponse(List<String> contents, String fileName, String zipName) throws IOException {
 		PasswordFactory passwordFactory = new PasswordFactory();
 		String password = passwordFactory.createPassword(1, 1, 1, Constants.PASSWORD_SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();
@@ -51,8 +51,6 @@ public class ResponseConstructor {
 	 * 
 	 * @param contents the contents to write in the output file (.csv) contained in
 	 *                 the output zip archive
-	 * @param fileName the name of the output file contained in the output zip
-	 *                 archive
 	 * @param zipName  the name of the output zip archive
 	 * @throws IOException in case IO errors
 	 * @return {@link DownloadArchiveResponseDto} A Dto containing a byte array
@@ -61,7 +59,7 @@ public class ResponseConstructor {
 	 * @throws CsvRequiredFieldEmptyException
 	 * @throws CsvDataTypeMismatchException
 	 */
-	public static DownloadArchiveResponseDto createCsvLogResponse(ArrayList<File> csvFiles, String fileName, String zipName) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
+	public static DownloadArchiveResponseDto createCsvLogResponse(List<File> csvFiles, String zipName) throws IOException {
 		PasswordFactory passwordFactory = new PasswordFactory();
 		String password = passwordFactory.createPassword(1, 1, 1, Constants.PASSWORD_SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();
@@ -90,7 +88,7 @@ public class ResponseConstructor {
 	 *         its files
 	 * @throws IOException
 	 */
-	public static DownloadArchiveResponseDto createNotificationLogResponse(ArrayList<String> openSearchLogs, ArrayList<File> filesToAdd, String fileName, String zipName) throws IOException {
+	public static DownloadArchiveResponseDto createNotificationLogResponse(List<String> openSearchLogs, List<File> filesToAdd, String fileName, String zipName) throws IOException {
 		PasswordFactory passwordFactory = new PasswordFactory();
 		String password = passwordFactory.createPassword(1, 1, 1, Constants.PASSWORD_SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();

@@ -49,7 +49,7 @@ public class JsonUtilities {
 	 * @param keyValue the map containing the keys and the new associated values
 	 * @return the {@link JSONObject} document edited with the specified value replacement
 	 */
-	public static JSONObject replaceValues(JSONObject document, HashMap<String, String> keyValue ){
+	public static JSONObject replaceValues(JSONObject document, Map<String, String> keyValue ){
 			for(Map.Entry<String, String> entry : keyValue.entrySet()) {
 				replaceValue(document, entry.getKey(), entry.getValue());
 			} 
@@ -62,7 +62,7 @@ public class JsonUtilities {
 	 * @param keyValue the map containing the keys and the new associated values
 	 * @return A string representation of the edited document with the specified value replacement
 	 */
-	public static String replaceValues(String document, HashMap<String, String> keyValue ){
+	public static String replaceValues(String document, Map<String, String> keyValue ){
 		return replaceValues(new JSONObject(document),keyValue).toString();
 	}
 }

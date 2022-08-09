@@ -16,7 +16,7 @@ public class PeriodOf3MonthsValidator implements ConstraintValidator<PeriodOf3Mo
 	@Override
 	public boolean isValid(PersonLogsRequestDto value, ConstraintValidatorContext context) {
 		
-		if (value.getDateFrom() == null && value.getDateFrom() == null) {
+		if (value.getDateFrom() == null && value.getDateTo() == null) {
 			return true;
 		}
 		

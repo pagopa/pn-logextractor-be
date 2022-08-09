@@ -17,6 +17,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+
+import it.gov.pagopa.logextractor.util.Constants;
 import it.gov.pagopa.logextractor.util.SortOrders;
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,15 +50,16 @@ public class OpenSearchApiHandler {
 	 * @param dateTo The period end date
 	 * @return The documents list contained into the Opensearch response
 	 * */
-	public ArrayList<String> getAnonymizedLogsByUid(String uid, String dateFrom, String dateTo){
-		ArrayList<OpenSearchQuerydata> queryData = new ArrayList<OpenSearchQuerydata>();
-		HashMap<String, Object> queryParams = new HashMap<String, Object>();
+	public List<String> getAnonymizedLogsByUid(String uid, String dateFrom, String dateTo){
+		ArrayList<OpenSearchQuerydata> queryData = new ArrayList<>();
+		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		log.info("Constructing Opensearch query...");
 //		queryParams.put("uid.keyword", StringUtils.substring(uid, 3));
 		queryParams.put("uid", StringUtils.substring(uid, 3));
 		queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
-				new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
+				new OpenSearchRangeQueryData(Constants.OS_TIMESTAMP_FIELD, dateFrom, dateTo),
+				new OpenSearchSortFilter(Constants.OS_TIMESTAMP_FIELD, SortOrders.ASC)));
 		String query = queryConstructor.createBooleanMultiSearchQuery(queryData);
 		log.info("Executing query:"+ RegExUtils.removeAll(query, "\n"));
 		return getDocumentsByMultiSearchQuery(query);
@@ -69,9 +72,9 @@ public class OpenSearchApiHandler {
 	 * @param dateTo The period end date
 	 * @return The documents list contained into the Opensearch response
 	 * */
-	public ArrayList<String> getAnonymizedLogsByIun(String iun, String dateFrom, String dateTo) {
-		ArrayList<OpenSearchQuerydata> queryData = new ArrayList<OpenSearchQuerydata>();
-		HashMap<String, Object> queryParams = new HashMap<String, Object>();
+	public List<String> getAnonymizedLogsByIun(String iun, String dateFrom, String dateTo) {
+		ArrayList<OpenSearchQuerydata> queryData = new ArrayList<>();
+		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		log.info("Constructing Opensearch query...");
 //		queryParams.put("iun.keyword", iun);
@@ -90,8 +93,8 @@ public class OpenSearchApiHandler {
 	 * @param dateTo The period end date
 	 * @return The documents list contained into the Opensearch response
 	 * */
-	public ArrayList<String> getAnonymizedLogsByTraceId(String traceId, String dateFrom, String dateTo){
-		HashMap<String, Object> queryParams = new HashMap<String, Object>();
+	public List<String> getAnonymizedLogsByTraceId(String traceId, String dateFrom, String dateTo){
+		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		log.info("Constructing Opensearch query...");
 //		queryParams.put("root_trace_id.keyword", traceId);
@@ -116,10 +119,10 @@ public class OpenSearchApiHandler {
 		HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.setBasicAuth(openSearchUsername, openSearchPassword);
-        List<MediaType> acceptedTypes = new ArrayList<MediaType>();
+        List<MediaType> acceptedTypes = new ArrayList<>();
         acceptedTypes.add(MediaType.APPLICATION_JSON);
         requestHeaders.setAccept(acceptedTypes);
-        HttpEntity<String> request = new HttpEntity<String>(query, requestHeaders);
+        HttpEntity<String> request = new HttpEntity<>(query, requestHeaders);
         ResponseEntity<String> response = client.exchange(openSearchHost+"/_msearch", HttpMethod.GET, request, String.class);
         return getDocuments(response.getBody());
 	}
@@ -130,7 +133,7 @@ public class OpenSearchApiHandler {
 	 * @return The decouments list
 	 * */
 	private ArrayList<String> getDocuments(String openSearchResponseBody) {
-		ArrayList<String> documents = new ArrayList<String>();
+		ArrayList<String> documents = new ArrayList<>();
 		JSONObject json = new JSONObject(openSearchResponseBody);
 		if(!json.isNull("responses")) {
 			JSONArray responsesObject = new JSONObject(openSearchResponseBody).getJSONArray("responses");

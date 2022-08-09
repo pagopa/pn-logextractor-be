@@ -29,6 +29,8 @@ public class Constants {
 	public static final String MINUTE_LABEL = " minuto";
 	public static final String DOCUMENT_LABEL = "Document";
 	public static final String GENERIC_INTERNAL_SERVER_ERROR = "Errore nell'elaborazione della richiesta";
+	public static final String SAFESTORAGE_PREFIX = "safestorage://";
+	public static final String OS_TIMESTAMP_FIELD = "@timestamp";
 	public static final int PAGE_SIZE = 1000;
 	public static final int CSV_FILE_MAX_ROWS = 200000;
 }

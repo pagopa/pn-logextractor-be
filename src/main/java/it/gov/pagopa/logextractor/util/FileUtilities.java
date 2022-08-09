@@ -48,7 +48,7 @@ public class FileUtilities {
 	 * @param content the content list to write into the file
 	 * @throws IOException in case of an I/O error
 	 * */
-	public void write(File file, ArrayList<String> contents) throws IOException {
+	public void write(File file, List<String> contents) throws IOException {
 		if(contents != null) {
 			for(String contentTemp : contents) {
 				write(file, contentTemp+"\n");
@@ -77,7 +77,7 @@ public class FileUtilities {
 	 * Delete the files of the input file list
 	 * @param files The list of files to be deleted
 	 * */
-	public void deleteFiles(ArrayList<File> files) {
+	public void deleteFiles(List<File> files) {
 		for(File fileToDelete : files) {
 			deleteFile(fileToDelete);
 		}
@@ -91,7 +91,7 @@ public class FileUtilities {
 	 * @throws CsvDataTypeMismatchException If a field of the beans is annotated improperly or an unsupported data type is supposed to be written
 	 * @throws CsvRequiredFieldEmptyException If a field is marked as required,but the source is null
 	 * */
-	public void writeCsv(File file, ArrayList<NotificationCsvBean> notifications) throws CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, IOException {
+	public void writeCsv(File file, List<NotificationCsvBean> notifications) throws CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, IOException {
 		if (!file.getParentFile().exists()) {
 			file.getParentFile().mkdirs();
 		}
@@ -109,7 +109,7 @@ public class FileUtilities {
 	public NotificationCsvBean toCsv(NotificationData notificationData) {
 		CommonUtilities commonUtils = new CommonUtilities();
 		NotificationCsvBean notification = new NotificationCsvBean();
-		if(null != notificationData.getRecipients() && notificationData.getRecipients().size() > 0) {
+		if(null != notificationData.getRecipients() && notificationData.getRecipients().isEmpty()) {
 			StringBuilder recipientsBuilder = new StringBuilder();
 			for(String tempRecipient : notificationData.getRecipients()) {
 				recipientsBuilder.append(tempRecipient + "-");
@@ -131,7 +131,7 @@ public class FileUtilities {
 	 * @param notificationData the list of {@link NotificationData} objects to convert
 	 * @return A list of {@link NotificationCsvBean} objects representing the converted input objects
 	 * */
-	public ArrayList<NotificationCsvBean> toCsv(List<NotificationData> notificationData) {
+	public List<NotificationCsvBean> toCsv(List<NotificationData> notificationData) {
 		ArrayList<NotificationCsvBean> csvNotifications = new ArrayList<>();
 		for(NotificationData notification : notificationData) {
 			csvNotifications.add(toCsv(notification));
