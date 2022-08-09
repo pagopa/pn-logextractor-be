@@ -3,13 +3,9 @@ package it.gov.pagopa.logextractor.util;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-
 import org.apache.commons.io.FileUtils;
-
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
-
-import it.gov.pagopa.logextractor.dto.NotificationCsvBean;
 import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
@@ -65,18 +61,16 @@ public class ResponseConstructor {
 	 * @throws CsvRequiredFieldEmptyException
 	 * @throws CsvDataTypeMismatchException
 	 */
-	public static DownloadArchiveResponseDto createCsvLogResponse(ArrayList<NotificationCsvBean> notifications, String fileName, String zipName) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
+	public static DownloadArchiveResponseDto createCsvLogResponse(ArrayList<File> csvFiles, String fileName, String zipName) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
 		PasswordFactory passwordFactory = new PasswordFactory();
 		String password = passwordFactory.createPassword(1, 1, 1, Constants.PASSWORD_SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();
-		File file = utils.getFile(fileName,Constants.CSV_EXTENSION);
-		utils.writeCsv(file, notifications);
 		ZipFactory zipFactory = new ZipFactory();
 		ZipFile zipArchive = zipFactory.createZipArchive(zipName, password);
 		ZipParameters params = zipFactory.createZipParameters(true, CompressionLevel.HIGHER, EncryptionMethod.AES);
-		zipArchive = zipFactory.addFile(zipArchive, params, file);
+		zipArchive = zipFactory.addFiles(zipArchive, params, csvFiles);
 		byte[] zipfile = zipFactory.toByteArray(zipArchive);
-		utils.deleteFile(file);
+		utils.deleteFiles(csvFiles);
 		utils.deleteFile(FileUtils.getFile(zipArchive.toString()));
 		return DownloadArchiveResponseDto.builder().password(password).zip(zipfile).build();
 	}

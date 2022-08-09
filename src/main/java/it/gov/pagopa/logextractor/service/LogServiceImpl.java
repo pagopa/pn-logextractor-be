@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,15 +13,13 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
-import it.gov.pagopa.logextractor.dto.NotificationCsvBean;
-import it.gov.pagopa.logextractor.dto.NotificationGeneralData;
+import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
 import it.gov.pagopa.logextractor.dto.response.DownloadNotPossibleYetResponseDTO;
 import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDTO;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDTO;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
-import it.gov.pagopa.logextractor.util.CommonUtilities;
 import it.gov.pagopa.logextractor.util.Constants;
 import it.gov.pagopa.logextractor.util.FileUtilities;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
@@ -79,41 +78,40 @@ public class LogServiceImpl implements LogService {
 	public DownloadArchiveResponseDto getMonthlyNotifications(String ticketNumber, String referenceMonth, String endMonth, String publicAuthorityName) throws IOException, ParseException,CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException {
 		log.info("Monthly notifications retrieve process - START - user={}, ticket number={}, reference month={}, end month={}, public authority name={}", MDC.get("user_identifier"), ticketNumber, referenceMonth, endMonth, publicAuthorityName);
 		long serviceStartTime = System.currentTimeMillis();
-		CommonUtilities commonUtils = new CommonUtilities();
+		FileUtilities utils = new FileUtilities();
+		ArrayList<File> csvFiles = new ArrayList<>();
 		log.info("Getting public authority id...");
 		long performanceMillis = System.currentTimeMillis();
 		String encodedPublicAuthorityName = deanonimizationApiHandler.getPublicAuthorityId(publicAuthorityName);
-		log.info("Service response: publicAuthorityId={}", encodedPublicAuthorityName);
-		ArrayList<NotificationCsvBean> notifications = new ArrayList<NotificationCsvBean>();
-        log.info("Public authority id retrieved in {} ms, getting notifications general data, publicAuthority={}, startDate={}, endDate={}", System.currentTimeMillis() - performanceMillis, encodedPublicAuthorityName, referenceMonth, endMonth);
+        log.info("Public authority id retrieved in {} ms, getting notifications, publicAuthority={}, startDate={}, endDate={}", System.currentTimeMillis() - performanceMillis, encodedPublicAuthorityName, referenceMonth, endMonth);
         performanceMillis = System.currentTimeMillis();
-		ArrayList<NotificationGeneralData> notificationsGeneralData = notificationApiHandler.getNotificationsByMonthsPeriod(referenceMonth, endMonth, 
+		ArrayList<NotificationData> notifications = notificationApiHandler.getNotificationsByMonthsPeriod(referenceMonth, endMonth, 
 				encodedPublicAuthorityName,  MDC.get("user_identifier"));
-		if(notificationsGeneralData != null) {
-			log.info("Notifications general data retrieved in {} ms, getting notifications' details", System.currentTimeMillis() - performanceMillis);
+		log.info("Notifications retrieved in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
+		if(null != notifications && notifications.size() > 0) {
+			int numberOfFiles = (int)Math.ceil(((double)notifications.size())/Constants.CSV_FILE_MAX_ROWS);
+			int notificationPlaceholder = 0;
 			performanceMillis = System.currentTimeMillis();
-			for(NotificationGeneralData nTemp : notificationsGeneralData) {
-				NotificationDetailsResponseDto notificationDetails = notificationApiHandler.getNotificationDetails(nTemp.getIun());
-				NotificationCsvBean notification = new NotificationCsvBean();
-				
-				if(null != nTemp.getRecipients() && nTemp.getRecipients().size() > 0) {
-					StringBuilder recipientsBuilder = new StringBuilder();
-					for(String tempRecipient : nTemp.getRecipients()) {
-						recipientsBuilder.append(tempRecipient + "-");
-					}
-					recipientsBuilder.deleteCharAt(recipientsBuilder.length()-1);
-					notification.setCodici_fiscali(commonUtils.escapeForCsv(recipientsBuilder.toString()));
-					recipientsBuilder.setLength(0);
+			while(numberOfFiles > 0) {
+				if(numberOfFiles == 1) {
+					List<NotificationData> notificationsPartition = notifications.subList(notificationPlaceholder, notifications.size());
+					File file = utils.getFile(Constants.NOTIFICATION_CSV_FILE_NAME,Constants.CSV_EXTENSION);
+					utils.writeCsv(file, utils.toCsv(notificationsPartition));
+					csvFiles.add(file);
+					numberOfFiles--;
 				}
-				notification.setIUN(commonUtils.escapeForCsv(nTemp.getIun()));
-				notification.setData_invio(commonUtils.escapeForCsv(nTemp.getSentAt()));
-				notification.setData_generazione_attestazione_opponibile_a_terzi(commonUtils.escapeForCsv(notificationDetails.getSentAt()));
-				notification.setOggetto(commonUtils.escapeForCsv(nTemp.getSubject()));
-				notifications.add(notification);
+				else {
+					List<NotificationData> notificationsPartition = notifications.subList(notificationPlaceholder,
+							notificationPlaceholder+Constants.CSV_FILE_MAX_ROWS);
+					File file = utils.getFile(Constants.NOTIFICATION_CSV_FILE_NAME,Constants.CSV_EXTENSION);
+					utils.writeCsv(file, utils.toCsv(notificationsPartition));
+					csvFiles.add(file);
+					notificationPlaceholder += Constants.CSV_FILE_MAX_ROWS;
+					numberOfFiles--;
+				}
 			}
 		}
-		log.info("Notification details recovered in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
-		DownloadArchiveResponseDto response = ResponseConstructor.createCsvLogResponse(notifications, Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
+		DownloadArchiveResponseDto response = ResponseConstructor.createCsvLogResponse(csvFiles, Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
 		log.info("Monthly notifications retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
 		return response;
 	}

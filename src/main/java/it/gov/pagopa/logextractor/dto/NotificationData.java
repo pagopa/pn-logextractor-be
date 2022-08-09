@@ -1,7 +1,6 @@
 package it.gov.pagopa.logextractor.dto;
 
 import java.util.ArrayList;
-
 import lombok.Getter;
 
 @Getter
@@ -12,5 +11,6 @@ public class NotificationData {
 	private String sentAt;
 	private String subject;
 	private String notificationStatus;
+	private String requestAcceptedAt;
 	private ArrayList<String> recipients;
 }

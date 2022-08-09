@@ -28,6 +28,7 @@ import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDTO;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDTO;
 import it.gov.pagopa.logextractor.dto.response.NotificationsGeneralDataResponseDto;
+import it.gov.pagopa.logextractor.util.Constants;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -70,10 +71,10 @@ public class NotificationApiHandler {
 	 * @param userIdentifier The user unique identifier
 	 * @return The list of {@link NotificationGeneralData} notifications' general data
 	 */
-	public ArrayList<NotificationGeneralData> getNotificationsByMonthsPeriod(String referenceMonth, String endMonth, 
+	public ArrayList<NotificationData> getNotificationsByMonthsPeriod(String referenceMonth, String endMonth, 
 			String encodedPublicAuthorityName, String userIdentifier) {
 		return getNotificationsBetweenMonths(referenceMonth, endMonth, encodedPublicAuthorityName,
-				new ArrayList<NotificationGeneralData>(), null, userIdentifier);
+				new ArrayList<NotificationData>(), null, userIdentifier);
 	}
 	
 	/**
@@ -87,18 +88,17 @@ public class NotificationApiHandler {
 	 * @param userIdentifier The user unique identifier
 	 * @return The list of {@link NotificationGeneralData} notifications' general data
 	 */
-	private ArrayList<NotificationGeneralData> getNotificationsBetweenMonths(String referenceMonth, String endMonth, String encodedPublicAuthorityName, 
-			ArrayList<NotificationGeneralData> notifications, String nextUrlKey, String userIdentifier) {
+	private ArrayList<NotificationData> getNotificationsBetweenMonths(String referenceMonth, String endMonth, String encodedPublicAuthorityName, 
+			ArrayList<NotificationData> notifications, String nextUrlKey, String userIdentifier) {
 		HttpHeaders requestHeaders = new HttpHeaders();
 	    requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-	    requestHeaders.set("x-pagopa-pn-cx-id", encodedPublicAuthorityName);
-	    requestHeaders.set("x-pagopa-pn-uid", "HD-"+userIdentifier);
 	    List<MediaType> acceptedTypes = new ArrayList<MediaType>();
 	    acceptedTypes.add(MediaType.APPLICATION_JSON);
 	    requestHeaders.setAccept(acceptedTypes);
 	    HttpEntity<?> entity = new HttpEntity<>(requestHeaders);
 	    String urlTemplate = null == nextUrlKey ? 
 	    		UriComponentsBuilder.fromHttpUrl(notificationURL)
+	    		.queryParam("senderId", "{senderId}")
 		        .queryParam("startDate", "{startDate}")
 		        .queryParam("endDate", "{endDate}")
 		        .queryParam("size", "{size}")
@@ -106,6 +106,7 @@ public class NotificationApiHandler {
 		        .toUriString() 
 		        :
 		        UriComponentsBuilder.fromHttpUrl(notificationURL)
+		        .queryParam("senderId", "{senderId}")
     			.queryParam("startDate", "{startDate}")
 		        .queryParam("endDate", "{endDate}")
 		        .queryParam("size", "{size}")
@@ -113,16 +114,13 @@ public class NotificationApiHandler {
 		        .encode()
 		        .toUriString();
 	    HashMap<String, Object> params = new HashMap<String, Object>();
-	    if(null != referenceMonth) {
-	    	params.put("startDate", referenceMonth);
-	    }
-	    if(null != endMonth) {
-	    	params.put("endDate", endMonth);
-	    }
+	    params.put("senderId", encodedPublicAuthorityName);
+    	params.put("startDate", referenceMonth);
+    	params.put("endDate", endMonth);
+	    params.put("size", Constants.PAGE_SIZE);
 	    if(null != nextUrlKey) {
 	    	params.put("nextPagesKey", nextUrlKey);
 	    }
-	    params.put("size", 1000);
 	    NotificationsGeneralDataResponseDto response = client.exchange(
 	    		urlTemplate, 
 				HttpMethod.GET,
@@ -130,9 +128,9 @@ public class NotificationApiHandler {
 				NotificationsGeneralDataResponseDto.class,
 				params).getBody();
 	    if((null == response.getNextPagesKey() || response.getNextPagesKey().size() == 0) && !response.getMoreResult()) {
-	    	return getNotificationsGeneralData(response);
+	    	return response.getResultsPage();
 	    }
-	    notifications.addAll(getNotificationsGeneralData(response));
+	    notifications.addAll(response.getResultsPage());
 	    for(String currentKey : response.getNextPagesKey()) {
 			notifications.addAll(getNotificationsBetweenMonths(referenceMonth, endMonth, 
 					encodedPublicAuthorityName, notifications, currentKey, userIdentifier));
@@ -182,29 +180,6 @@ public class NotificationApiHandler {
         } finally {
             IOUtils.closeQuietly();
         }
-	}
-	
-	/**
-	 * Gets the general data of a notification
-	 * 
-	 * @param notificationResponse The PN external service response containing the
-	 *                             notification general data
-	 * @return A list containing all the notifications' general data
-	 */
-	private ArrayList<NotificationGeneralData> getNotificationsGeneralData(NotificationsGeneralDataResponseDto notificationResponse) {
-		ArrayList<NotificationGeneralData> notificationsGeneralData = new ArrayList<NotificationGeneralData>();
-		ArrayList<NotificationData> notifications =  notificationResponse.getResultsPage();
-		if(null != notifications) {
-			for(int index = 0; index < notifications.size(); index++) {
-            	NotificationGeneralData currentNotificationData = new NotificationGeneralData();
-            	currentNotificationData.setIun(notifications.get(index).getIun());
-            	currentNotificationData.setSentAt(notifications.get(index).getSentAt());
-            	currentNotificationData.setSubject(notifications.get(index).getSubject());
-            	currentNotificationData.setRecipients(notifications.get(index).getRecipients());
-            	notificationsGeneralData.add(currentNotificationData);
-            }
-        }
-        return notificationsGeneralData;
 	}
 	
 	/**

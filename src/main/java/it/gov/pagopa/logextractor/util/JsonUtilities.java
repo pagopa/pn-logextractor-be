@@ -2,8 +2,6 @@ package it.gov.pagopa.logextractor.util;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -28,27 +26,6 @@ public class JsonUtilities {
 	 */
 	public static String getValue(String document, String key) {
 		return getValue(new JSONObject(document), key);
-	}
-	
-	/** 
-	 * Gets the array object associated with the specified key.
-	 * @param document the single document represented as a JSONObject containing the content to write in the output file (.txt, .csv) contained in the output zip archive
-	 * @param key the name of the key whose associated value is to be returned
-	 * @return the {@link JSONArray} array object associated with the specified key
-	 */
-	public static JSONArray getArray(JSONObject document, String key) {
-		return document.has(key) ? document.getJSONArray(key) : null;
-	}
-	
-	
-	/** 
-	 * Gets the array object associated with the specified key.
-	 * @param document the single document represented as a Json formatted string
-	 * @param key the name of the key whose associated value is to be returned
-	 * @return the {@link JSONArray} array object associated with the specified key
-	 */
-	public static JSONArray getArray(String document, String key) {
-		return getArray(new JSONObject(document), key);
 	}
 	
 	/** 

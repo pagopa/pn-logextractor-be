@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.io.FileUtils;
 
 import com.opencsv.CSVWriter;
@@ -14,6 +16,7 @@ import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import it.gov.pagopa.logextractor.dto.NotificationCsvBean;
+import it.gov.pagopa.logextractor.dto.NotificationData;
 
 /**
  * Utility class to manage the core operations for files
@@ -85,15 +88,54 @@ public class FileUtilities {
 	 * @param file the file where to write the content into
 	 * @param notifications the list of notifications
 	 * @throws IOException in case of an I/O error
-	 * @throws CsvDataTypeMismatchException If a field of the beans isannotated improperly or an unsupported data type is supposed to bewritten
+	 * @throws CsvDataTypeMismatchException If a field of the beans is annotated improperly or an unsupported data type is supposed to be written
 	 * @throws CsvRequiredFieldEmptyException If a field is marked as required,but the source is null
 	 * */
 	public void writeCsv(File file, ArrayList<NotificationCsvBean> notifications) throws CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, IOException {
+		if (!file.getParentFile().exists()) {
+			file.getParentFile().mkdirs();
+		}
 		Writer writer = new FileWriter(file);
 		StatefulBeanToCsv<NotificationCsvBean> beanToCsv = new StatefulBeanToCsvBuilder<NotificationCsvBean>(writer).withSeparator(CSVWriter.DEFAULT_SEPARATOR).build();
 		beanToCsv.write(notifications);
 		writer.close();
 	}
 	
+	/**
+	 * Converts notification data into csv data object
+	 * @param notificationData the {@link NotificationData} object to convert
+	 * @return A {@link NotificationCsvBean} object representing the converted input object
+	 * */
+	public NotificationCsvBean toCsv(NotificationData notificationData) {
+		CommonUtilities commonUtils = new CommonUtilities();
+		NotificationCsvBean notification = new NotificationCsvBean();
+		if(null != notificationData.getRecipients() && notificationData.getRecipients().size() > 0) {
+			StringBuilder recipientsBuilder = new StringBuilder();
+			for(String tempRecipient : notificationData.getRecipients()) {
+				recipientsBuilder.append(tempRecipient + "-");
+			}
+			recipientsBuilder.deleteCharAt(recipientsBuilder.length()-1);
+			notification.setCodici_fiscali(commonUtils.escapeForCsv(recipientsBuilder.toString()));
+			recipientsBuilder.setLength(0);
+		}
+		notification.setIUN(commonUtils.escapeForCsv(notificationData.getIun()));
+		notification.setData_invio(commonUtils.escapeForCsv(notificationData.getSentAt()));
+		notification.setData_generazione_attestazione_opponibile_a_terzi(
+				commonUtils.escapeForCsv(notificationData.getRequestAcceptedAt()));
+		notification.setOggetto(commonUtils.escapeForCsv(notificationData.getSubject()));
+		return notification;
+	}
 	
+	/**
+	 * Converts a list of notification data into csv data objects
+	 * @param notificationData the list of {@link NotificationData} objects to convert
+	 * @return A list of {@link NotificationCsvBean} objects representing the converted input objects
+	 * */
+	public ArrayList<NotificationCsvBean> toCsv(List<NotificationData> notificationData) {
+		ArrayList<NotificationCsvBean> csvNotifications = new ArrayList<>();
+		for(NotificationData notification : notificationData) {
+			csvNotifications.add(toCsv(notification));
+		}
+		return csvNotifications;
+	}
 }

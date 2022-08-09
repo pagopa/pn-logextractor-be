@@ -1,10 +1,7 @@
 package it.gov.pagopa.logextractor.annotation.validator;
 
-import java.time.LocalDate;
-
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-
 import it.gov.pagopa.logextractor.annotation.PersonLogsFields;
 import it.gov.pagopa.logextractor.dto.request.PersonLogsRequestDto;
 
