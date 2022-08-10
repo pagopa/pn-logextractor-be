@@ -87,8 +87,8 @@ public class LogServiceImpl implements LogService {
         performanceMillis = System.currentTimeMillis();
 		List<NotificationData> notifications = notificationApiHandler.getNotificationsByMonthsPeriod(referenceMonth, endMonth, 
 				encodedPublicAuthorityName,  MDC.get("user_identifier"));
-		log.info("Notifications retrieved in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
-		if(null != notifications && notifications.isEmpty()) {
+		log.info("{} notifications retrieved in {} ms, constructing service response...", notifications.size(), System.currentTimeMillis() - performanceMillis);
+		if(null != notifications && !notifications.isEmpty()) {
 			int numberOfFiles = (int)Math.ceil(((double)notifications.size())/Constants.CSV_FILE_MAX_ROWS);
 			int notificationPlaceholder = 0;
 			while(numberOfFiles > 0) {

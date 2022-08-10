@@ -109,7 +109,7 @@ public class FileUtilities {
 	public NotificationCsvBean toCsv(NotificationData notificationData) {
 		CommonUtilities commonUtils = new CommonUtilities();
 		NotificationCsvBean notification = new NotificationCsvBean();
-		if(null != notificationData.getRecipients() && notificationData.getRecipients().isEmpty()) {
+		if(null != notificationData.getRecipients() && !notificationData.getRecipients().isEmpty()) {
 			StringBuilder recipientsBuilder = new StringBuilder();
 			for(String tempRecipient : notificationData.getRecipients()) {
 				recipientsBuilder.append(tempRecipient + "-");

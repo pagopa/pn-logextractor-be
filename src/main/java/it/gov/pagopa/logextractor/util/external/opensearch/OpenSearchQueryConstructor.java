@@ -17,7 +17,7 @@ public class OpenSearchQueryConstructor {
 	public String createBooleanMultiSearchQuery(List<OpenSearchQuerydata> queryData) {
 		StringBuilder queryBuilder = new StringBuilder();
 		StringBuilder paramsBuilder = new StringBuilder();
-		if(null != queryData && queryData.isEmpty()) {
+		if(null != queryData && !queryData.isEmpty()) {
 			for(OpenSearchQuerydata qTemp : queryData) {
 				for (OpenSearchQueryFilter filterTemp : qTemp.getMatchFields()) {
 					paramsBuilder.append("{\"match\":{"+ "\""+filterTemp.getKey()+"\":"+ "\""+filterTemp.getValue()+"\"}},");

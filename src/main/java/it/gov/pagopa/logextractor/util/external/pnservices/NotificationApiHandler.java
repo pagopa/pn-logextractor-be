@@ -29,13 +29,11 @@ import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDTO;
 import it.gov.pagopa.logextractor.dto.response.NotificationsGeneralDataResponseDto;
 import it.gov.pagopa.logextractor.util.Constants;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Uility class for integrations with Piattaforma Notifiche notifcations related services
  * */
 @Component
-@Slf4j
 public class NotificationApiHandler {
 	
 	@Autowired

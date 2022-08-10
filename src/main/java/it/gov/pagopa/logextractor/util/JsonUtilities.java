@@ -1,6 +1,5 @@
 package it.gov.pagopa.logextractor.util;
 
-import java.util.HashMap;
 import java.util.Map;
 import org.json.JSONObject;
 
