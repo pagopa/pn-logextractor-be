@@ -55,8 +55,8 @@ public class OpenSearchApiHandler {
 		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		log.info("Constructing Opensearch query...");
-//		queryParams.put("uid.keyword", StringUtils.substring(uid, 3));
-		queryParams.put("uid", StringUtils.substring(uid, 3));
+		queryParams.put("uid.keyword", StringUtils.substring(uid, 3));
+//		queryParams.put(Constants.OS_UID_FIELD, StringUtils.substring(uid, 3));
 		queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
 				new OpenSearchRangeQueryData(Constants.OS_TIMESTAMP_FIELD, dateFrom, dateTo),
 				new OpenSearchSortFilter(Constants.OS_TIMESTAMP_FIELD, SortOrders.ASC)));
@@ -77,10 +77,11 @@ public class OpenSearchApiHandler {
 		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		log.info("Constructing Opensearch query...");
-//		queryParams.put("iun.keyword", iun);
-		queryParams.put("iun", iun);
+		queryParams.put("iun.keyword", iun);
+//		queryParams.put(Constants.OS_IUN_FIELD, iun);
 		queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
-				new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC)));
+				new OpenSearchRangeQueryData(Constants.OS_TIMESTAMP_FIELD, dateFrom, dateTo), 
+				new OpenSearchSortFilter(Constants.OS_TIMESTAMP_FIELD, SortOrders.ASC)));
 		String query = queryConstructor.createBooleanMultiSearchQuery(queryData);
 		log.info("Executing query:" + RegExUtils.removeAll(query, "\n"));
 		return getDocumentsByMultiSearchQuery(query);
@@ -97,10 +98,11 @@ public class OpenSearchApiHandler {
 		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		log.info("Constructing Opensearch query...");
-//		queryParams.put("root_trace_id.keyword", traceId);
-		queryParams.put("root_trace_id", traceId);
+		queryParams.put("root_trace_id.keyword", traceId);
+//		queryParams.put(Constants.OS_TRACE_ID_FIELD, traceId);
 		OpenSearchQuerydata queryData = queryConstructor.prepareQueryData("pn-logs", queryParams, 
-				new OpenSearchRangeQueryData("@timestamp", dateFrom, dateTo), new OpenSearchSortFilter("@timestamp", SortOrders.ASC));
+				new OpenSearchRangeQueryData(Constants.OS_TIMESTAMP_FIELD, dateFrom, dateTo), 
+				new OpenSearchSortFilter(Constants.OS_TIMESTAMP_FIELD, SortOrders.ASC));
 		ArrayList<OpenSearchQuerydata> listOfQueryData = new ArrayList<>();
 		listOfQueryData.add(queryData);
 		String query = queryConstructor.createBooleanMultiSearchQuery(listOfQueryData);
@@ -123,7 +125,7 @@ public class OpenSearchApiHandler {
         acceptedTypes.add(MediaType.APPLICATION_JSON);
         requestHeaders.setAccept(acceptedTypes);
         HttpEntity<String> request = new HttpEntity<>(query, requestHeaders);
-        ResponseEntity<String> response = client.exchange(openSearchHost+"/_msearch", HttpMethod.GET, request, String.class);
+        ResponseEntity<String> response = client.exchange(openSearchHost+Constants.OS_MULTI_SEARCH_SUFFIX, HttpMethod.GET, request, String.class);
         return getDocuments(response.getBody());
 	}
 	

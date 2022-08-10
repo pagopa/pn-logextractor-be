@@ -7,6 +7,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
+import it.gov.pagopa.logextractor.util.ResponseConstants;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonymizationApiHandler;
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,6 +41,6 @@ public class PersonServiceImpl implements PersonService {
 		String response =  handler.getUniqueIdentifierForPerson(recipientType, taxId);
 		log.info("Service response: internalId={}", response);
 		log.info("Internal id retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
-		return GetBasicDataResponseDto.builder().data(response).build();
+		return GetBasicDataResponseDto.builder().data(response).message(ResponseConstants.SUCCESS_RESPONSE_MESSAGE).build();
 	}	
 }

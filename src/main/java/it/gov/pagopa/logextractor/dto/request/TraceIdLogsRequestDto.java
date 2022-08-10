@@ -1,17 +1,22 @@
 package it.gov.pagopa.logextractor.dto.request;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
-
-import it.gov.pagopa.logextractor.util.Constants;
+import it.gov.pagopa.logextractor.util.ValidationConstants;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class TraceIdLogsRequestDto extends BaseRequestDto {
+	@NotBlank
 	private String traceId;
-	@Pattern(regexp = Constants.INPUT_DATE_FORMAT) 
+	
+	@NotBlank
+	@Pattern(regexp = ValidationConstants.INPUT_DATE_FORMAT) 
 	private String dateFrom;
-	@Pattern(regexp = Constants.INPUT_DATE_FORMAT) 
+	
+	@NotBlank
+	@Pattern(regexp = ValidationConstants.INPUT_DATE_FORMAT) 
 	private String dateTo;
 }

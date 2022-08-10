@@ -15,7 +15,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import it.gov.pagopa.logextractor.dto.response.ApiError;
-import it.gov.pagopa.logextractor.util.Constants;
+import it.gov.pagopa.logextractor.util.ResponseConstants;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -35,7 +35,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(LogExtractorException.class)
     protected ResponseEntity<ApiError> handleLogExtractorException(LogExtractorException ex) {
         log.error(ExceptionUtils.getStackTrace(ex));
-        return ResponseEntity.internalServerError().body(new ApiError(Constants.GENERIC_INTERNAL_SERVER_ERROR));
+        return ResponseEntity.internalServerError().body(new ApiError(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR));
     }
 	
 	/**
@@ -47,7 +47,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(IOException.class)
     protected ResponseEntity<ApiError> handleIOException(IOException ex) {
         log.error(ExceptionUtils.getStackTrace(ex));
-        return ResponseEntity.internalServerError().body(new ApiError(Constants.GENERIC_INTERNAL_SERVER_ERROR));
+        return ResponseEntity.internalServerError().body(new ApiError(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR));
     }
 	
 	/**
@@ -59,7 +59,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(CsvDataTypeMismatchException.class)
     protected ResponseEntity<ApiError> handleCsvDataTypeMismatchException(CsvDataTypeMismatchException ex) {
         log.error(ExceptionUtils.getStackTrace(ex));
-        return ResponseEntity.internalServerError().body(new ApiError(Constants.GENERIC_INTERNAL_SERVER_ERROR));
+        return ResponseEntity.internalServerError().body(new ApiError(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR));
     }
 	
 	/**
@@ -71,7 +71,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(CsvRequiredFieldEmptyException.class)
     protected ResponseEntity<ApiError> handleCsvRequiredFieldEmptyException(CsvRequiredFieldEmptyException ex) {
         log.error(ExceptionUtils.getStackTrace(ex));
-        return ResponseEntity.internalServerError().body(new ApiError(Constants.GENERIC_INTERNAL_SERVER_ERROR));
+        return ResponseEntity.internalServerError().body(new ApiError(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR));
     }
 	
 	/**
@@ -83,7 +83,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(HttpServerErrorException.class)
     protected ResponseEntity<ApiError> handleHttpServerErrorException(HttpServerErrorException ex) {
         log.error(ExceptionUtils.getStackTrace(ex));
-        return ResponseEntity.internalServerError().body(new ApiError(Constants.GENERIC_INTERNAL_SERVER_ERROR));
+        return ResponseEntity.internalServerError().body(new ApiError(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR));
     }
 	
 	/**
@@ -95,7 +95,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(HttpClientErrorException.class)
 	protected ResponseEntity<ApiError> handleHttpServerErrorException(HttpClientErrorException ex) {
 		log.error(ExceptionUtils.getStackTrace(ex));
-		return ResponseEntity.internalServerError().body(new ApiError(Constants.GENERIC_INTERNAL_SERVER_ERROR));
+		return ResponseEntity.internalServerError().body(new ApiError(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR));
 	}
 	
 	/**
@@ -107,17 +107,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(InterruptedException.class)
     protected ResponseEntity<ApiError> handleInterruptedException(InterruptedException ex) {
         log.error(ExceptionUtils.getStackTrace(ex));
-        return ResponseEntity.internalServerError().body(new ApiError(Constants.GENERIC_INTERNAL_SERVER_ERROR));
+        return ResponseEntity.internalServerError().body(new ApiError(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR));
     }
-	
-	
-	/*@ExceptionHandler({ ConstraintViolationException.class })
-    protected ResponseEntity<ApiError> handleConstraintViolationException(ConstraintViolationException ex, WebRequest request) {
-        StringBuilder builder = new StringBuilder("");
-        for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
-            builder.append(" " + violation.getMessage() + ",");
-        }
-        log.error("Constraint violation exception:\n" + builder);
-        return ResponseEntity.badRequest().body(new ApiError("Informazioni non valide"));
-    }*/
 }

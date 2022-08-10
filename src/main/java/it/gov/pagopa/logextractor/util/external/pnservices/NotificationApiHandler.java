@@ -93,36 +93,31 @@ public class NotificationApiHandler {
 	    List<MediaType> acceptedTypes = new ArrayList<>();
 	    acceptedTypes.add(MediaType.APPLICATION_JSON);
 	    requestHeaders.setAccept(acceptedTypes);
-	    String endDateParam = "endDate";
-	    String startDateParam = "startDate";
-	    String senderIdParam = "senderId";
-	    String sizeParam = "size";
-	    String nextPageParam = "nextPagesKey";
 	    HttpEntity<?> entity = new HttpEntity<>(requestHeaders);
 	    String urlTemplate = null == nextUrlKey ? 
 	    		UriComponentsBuilder.fromHttpUrl(notificationURL)
-	    		.queryParam(senderIdParam, "{senderId}")
-		        .queryParam(startDateParam, "{startDate}")
-		        .queryParam(endDateParam, "{endDate}")
-		        .queryParam(sizeParam, "{size}")
+	    		.queryParam(Constants.EXT_SENDER_ID_PARAM, "{senderId}")
+		        .queryParam(Constants.EXT_START_DATE_PARAM, "{startDate}")
+		        .queryParam(Constants.EXT_END_DATE_PARAM, "{endDate}")
+		        .queryParam(Constants.EXT_SIZE_PARAM, "{size}")
 		        .encode()
 		        .toUriString() 
 		        :
 		        UriComponentsBuilder.fromHttpUrl(notificationURL)
-		        .queryParam(senderIdParam, "{senderId}")
-    			.queryParam(startDateParam, "{startDate}")
-		        .queryParam(endDateParam, "{endDate}")
-		        .queryParam(sizeParam, "{size}")
-		        .queryParam(nextPageParam, "{nextPagesKey}")
+		        .queryParam(Constants.EXT_SENDER_ID_PARAM, "{senderId}")
+    			.queryParam(Constants.EXT_START_DATE_PARAM, "{startDate}")
+		        .queryParam(Constants.EXT_END_DATE_PARAM, "{endDate}")
+		        .queryParam(Constants.EXT_SIZE_PARAM, "{size}")
+		        .queryParam(Constants.EXT_NEXT_PAGE_KEY_PARAM, "{nextPagesKey}")
 		        .encode()
 		        .toUriString();
 	    HashMap<String, Object> params = new HashMap<>();
-	    params.put(senderIdParam, encodedPublicAuthorityName);
-    	params.put(startDateParam, referenceMonth);
-    	params.put(endDateParam, endMonth);
-	    params.put(sizeParam, Constants.PAGE_SIZE);
+	    params.put(Constants.EXT_SENDER_ID_PARAM, encodedPublicAuthorityName);
+    	params.put(Constants.EXT_START_DATE_PARAM, referenceMonth);
+    	params.put(Constants.EXT_END_DATE_PARAM, endMonth);
+	    params.put(Constants.EXT_SIZE_PARAM, Constants.PAGE_SIZE);
 	    if(null != nextUrlKey) {
-	    	params.put(nextPageParam, nextUrlKey);
+	    	params.put(Constants.EXT_NEXT_PAGE_KEY_PARAM, nextUrlKey);
 	    }
 	    NotificationsGeneralDataResponseDto response = client.exchange(
 	    		urlTemplate, 
@@ -200,13 +195,13 @@ public class NotificationApiHandler {
 		headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 		HttpEntity<?> entity = new HttpEntity<>(headers);
 		String urlTemplate = UriComponentsBuilder.fromHttpUrl(url)
-		        .queryParam("numberOfRecipients", "{numberOfRecipients}")
-		        .queryParam("createdAt", "{createdAt}")
+		        .queryParam(Constants.EXT_NUM_RECIPIENTS_PARAM, "{numberOfRecipients}")
+		        .queryParam(Constants.EXT_CREATED_AT_PARAM, "{createdAt}")
 		        .encode()
 		        .toUriString();
 		Map<String, Object> params = new HashMap<>();
-		params.put("numberOfRecipients", numberOfRecipients);
-		params.put("createdAt", createdAt);
+		params.put(Constants.EXT_NUM_RECIPIENTS_PARAM, numberOfRecipients);
+		params.put(Constants.EXT_CREATED_AT_PARAM, createdAt);
 		return client.exchange(urlTemplate, HttpMethod.GET, entity, NotificationHistoryResponseDTO.class, params).getBody();
 	}
 	
@@ -221,7 +216,7 @@ public class NotificationApiHandler {
 			for (NotificationDetailsTimelineData timelineObject : notificationInfo.getTimeline()) {
 				if (null != timelineObject.getLegalFactsIds()) {
 					for(NotificationDetailsTimelineLegalFactsData legalFactsObject : timelineObject.getLegalFactsIds()) {
-						legalFactKeys.add(StringUtils.remove(legalFactsObject.getKey(), "safestorage://"));
+						legalFactKeys.add(StringUtils.remove(legalFactsObject.getKey(), Constants.SAFESTORAGE_PREFIX));
 					}
 				}
 			}

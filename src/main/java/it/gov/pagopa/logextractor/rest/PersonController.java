@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpServerErrorException;
-
 import it.gov.pagopa.logextractor.dto.request.PersonPersonIdRequestDto;
 import it.gov.pagopa.logextractor.dto.request.PersonTaxIdRequestDto;
 import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;

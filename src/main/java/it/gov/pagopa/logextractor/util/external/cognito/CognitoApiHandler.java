@@ -47,7 +47,7 @@ public class CognitoApiHandler {
 	public String getUserIdentifier(String accessToken) throws LogExtractorException {
 		String url = String.format(cognitoUserUrl, cognitoRegion);
 		JSONObject requestBody = new JSONObject();
-		requestBody.put("AccessToken", accessToken);
+		requestBody.put(Constants.COG_ACTOKEN, accessToken);
 		HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.set("Content-Type", "application/x-amz-json-1.1");
         requestHeaders.set("X-Amz-Target", "AWSCognitoIdentityProviderService.GetUser");

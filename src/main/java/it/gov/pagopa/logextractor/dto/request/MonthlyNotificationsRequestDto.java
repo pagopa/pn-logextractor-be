@@ -2,7 +2,7 @@ package it.gov.pagopa.logextractor.dto.request;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
-import it.gov.pagopa.logextractor.util.Constants;
+import it.gov.pagopa.logextractor.util.ValidationConstants;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,11 +11,11 @@ import lombok.Setter;
 public class MonthlyNotificationsRequestDto extends BaseRequestDto {
 	
 	@NotBlank
-	@Pattern(regexp = Constants.INPUT_MONTH_FORMAT) 
+	@Pattern(regexp = ValidationConstants.INPUT_MONTH_FORMAT) 
 	private String referenceMonth;
 	
 	@NotBlank
-	@Pattern(regexp = Constants.INPUT_MONTH_FORMAT)
+	@Pattern(regexp = ValidationConstants.INPUT_MONTH_FORMAT)
 	private String endMonth;
 	
 	@NotBlank

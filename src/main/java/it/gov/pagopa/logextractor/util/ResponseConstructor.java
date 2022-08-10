@@ -32,7 +32,7 @@ public class ResponseConstructor {
 	 */
 	public static DownloadArchiveResponseDto createSimpleLogResponse(List<String> contents, String fileName, String zipName) throws IOException {
 		PasswordFactory passwordFactory = new PasswordFactory();
-		String password = passwordFactory.createPassword(1, 1, 1, Constants.PASSWORD_SPECIAL_CHARS, 1, 16);
+		String password = passwordFactory.createPassword(1, 1, 1, ValidationConstants.PASSWORD_SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();
 		File file = utils.getFile(fileName,Constants.TXT_EXTENSION);
 		utils.write(file, contents);
@@ -43,7 +43,7 @@ public class ResponseConstructor {
 		byte[] zipfile = zipFactory.toByteArray(zipArchive);
 		utils.deleteFile(file);
 		utils.deleteFile(FileUtils.getFile(zipArchive.toString()));
-		return DownloadArchiveResponseDto.builder().password(password).zip(zipfile).build();
+		return DownloadArchiveResponseDto.builder().password(password).zip(zipfile).message(ResponseConstants.SUCCESS_RESPONSE_MESSAGE).build();
 	}
 	
 	/**
@@ -61,7 +61,7 @@ public class ResponseConstructor {
 	 */
 	public static DownloadArchiveResponseDto createCsvLogResponse(List<File> csvFiles, String zipName) throws IOException {
 		PasswordFactory passwordFactory = new PasswordFactory();
-		String password = passwordFactory.createPassword(1, 1, 1, Constants.PASSWORD_SPECIAL_CHARS, 1, 16);
+		String password = passwordFactory.createPassword(1, 1, 1, ValidationConstants.PASSWORD_SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();
 		ZipFactory zipFactory = new ZipFactory();
 		ZipFile zipArchive = zipFactory.createZipArchive(zipName, password);
@@ -70,7 +70,7 @@ public class ResponseConstructor {
 		byte[] zipfile = zipFactory.toByteArray(zipArchive);
 		utils.deleteFiles(csvFiles);
 		utils.deleteFile(FileUtils.getFile(zipArchive.toString()));
-		return DownloadArchiveResponseDto.builder().password(password).zip(zipfile).build();
+		return DownloadArchiveResponseDto.builder().password(password).zip(zipfile).message(ResponseConstants.SUCCESS_RESPONSE_MESSAGE).build();
 	}
 	
 	/**
@@ -90,7 +90,7 @@ public class ResponseConstructor {
 	 */
 	public static DownloadArchiveResponseDto createNotificationLogResponse(List<String> openSearchLogs, List<File> filesToAdd, String fileName, String zipName) throws IOException {
 		PasswordFactory passwordFactory = new PasswordFactory();
-		String password = passwordFactory.createPassword(1, 1, 1, Constants.PASSWORD_SPECIAL_CHARS, 1, 16);
+		String password = passwordFactory.createPassword(1, 1, 1, ValidationConstants.PASSWORD_SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();
 		File file = utils.getFile(fileName, Constants.TXT_EXTENSION);
 		utils.write(file, openSearchLogs);
@@ -103,6 +103,6 @@ public class ResponseConstructor {
 		utils.deleteFiles(filesToAdd);
 		utils.deleteFile(file);
 		utils.deleteFile(FileUtils.getFile(zipArchive.toString()));
-		return DownloadArchiveResponseDto.builder().password(password).zip(zipfile).build();
+		return DownloadArchiveResponseDto.builder().password(password).zip(zipfile).message(ResponseConstants.SUCCESS_RESPONSE_MESSAGE).build();
 	}
 }

@@ -1,11 +1,10 @@
 package it.gov.pagopa.logextractor.service;
+
 import java.io.IOException;
 import java.text.ParseException;
-
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
-
-import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
+import it.gov.pagopa.logextractor.dto.response.BaseResponseDTO;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
 
@@ -20,12 +19,12 @@ public interface LogService {
 	 * @param ticketNumber the ticket number the user is working on
 	 * @param iun the notification identifier
 	 * @param personId the person anonymized identifier
-	 * @return {@link DownloadArchiveResponseDto} containing a byte array
+	 * @return {@link BaseResponseDTO} containing a byte array
 	 *         representation of the output zip archive and the password to access
 	 *         its files
 	 * @throws IOException
 	 */
-	DownloadArchiveResponseDto getAnonymizedPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId) throws IOException, LogExtractorException;
+	BaseResponseDTO getAnonymizedPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId) throws IOException, LogExtractorException;
 	
 	/**
 	 * Service method that retrieves informations about the notifications sent by a public authority in a specific month 
@@ -33,7 +32,7 @@ public interface LogService {
 	 * @param ticketNumber the ticket number the user is working on
 	 * @param referenceMonth the reference month for the notifications' extraction
 	 * @param ipaCode the public authority identifier
-	 * @return {@link DownloadArchiveResponseDto} containing a byte array
+	 * @return {@link BaseResponseDTO} containing a byte array
 	 *         representation of the output zip archive and the password to access
 	 *         its files
 	 * @throws IOException
@@ -41,7 +40,7 @@ public interface LogService {
 	 * @throws CsvDataTypeMismatchException
 	 * @throws CsvRequiredFieldEmptyException
 	 */
-	DownloadArchiveResponseDto getMonthlyNotifications(String ticketNumber, String referenceMonth, String endMonth, String publicAuthorityName) throws IOException, ParseException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException;
+	BaseResponseDTO getMonthlyNotifications(String ticketNumber, String referenceMonth, String endMonth, String publicAuthorityName) throws IOException, ParseException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException;
 	
 	/**
 	 * Service method that retrieves the anonymized logs belonging to the same process within a period
@@ -49,12 +48,12 @@ public interface LogService {
 	 * @param dateFrom the period start date
 	 * @param dateTo the period end date
 	 * @param traceId the process identifier
-	 * @return {@link DownloadArchiveResponseDto} containing a byte array
+	 * @return {@link BaseResponseDTO} containing a byte array
 	 *         representation of the output zip archive and the password to access
 	 *         its files
 	 * @throws IOException
 	 */
-	DownloadArchiveResponseDto getTraceIdLogs(String dateFrom, String dateTo, String traceId) throws IOException;
+	BaseResponseDTO getTraceIdLogs(String dateFrom, String dateTo, String traceId) throws IOException;
 	
 	/**
 	 * Service method that retrieves the de-anonymized logs related to a person's activities history in a period
@@ -66,12 +65,12 @@ public interface LogService {
 	 * @param ticketNumber the ticket number the user is working on
 	 * @param taxid the person identifier
 	 * @param iun the notification identifier
-	 * @return {@link DownloadArchiveResponseDto} containing a byte array
+	 * @return {@link BaseResponseDTO} containing a byte array
 	 *         representation of the output zip archive and the password to access
 	 *         its files
 	 * @throws IOException
 	 */	
-	DownloadArchiveResponseDto getDeanonymizedPersonLogs(RecipientTypes recipientType, String dateFrom, String dateTo, String ticketNumber, String taxid,String iun) throws IOException, LogExtractorException;
+	BaseResponseDTO getDeanonymizedPersonLogs(RecipientTypes recipientType, String dateFrom, String dateTo, String ticketNumber, String taxid,String iun) throws IOException, LogExtractorException;
 	
 	/**
 	 * Service method that retrieves the whole information about a notification -
@@ -80,11 +79,11 @@ public interface LogService {
 	 * 
 	 * @param ticketNumber the ticket number the user is working on
 	 * @param iun the notification IUN
-	 * @return {@link DownloadArchiveResponseDto} containing a byte array
+	 * @return {@link BaseResponseDTO} containing a byte array
 	 *         representation of the output zip archive and the password to access
 	 *         its files
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	Object getNotificationInfoLogs(String ticketNumber, String iun) throws IOException, InterruptedException;
+	BaseResponseDTO getNotificationInfoLogs(String ticketNumber, String iun) throws IOException, InterruptedException;
 }
