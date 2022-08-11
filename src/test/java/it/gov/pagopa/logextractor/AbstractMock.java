@@ -5,13 +5,21 @@ import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.util.HashMap;
 
+import org.junit.Before;
 import org.mockito.ArgumentMatchers;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.Resource;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -45,7 +53,7 @@ import it.gov.pagopa.logextractor.util.RecipientTypes;
 
 public abstract class AbstractMock {	
 
-	/*@Autowired MockMvc mvc;
+	@Autowired MockMvc mvc;
 	@MockBean
 	@Qualifier("simpleRestTemplate") RestTemplate client;	
 	@MockBean
@@ -55,6 +63,8 @@ public abstract class AbstractMock {
 	@Value("classpath:data/notification_general_data2.json") private Resource mockNotificationGeneralData2;
 	@Value("classpath:data/authresponse.json") private Resource authResponse;
 	@Value("classpath:data/pasummarieslist.json") private Resource paSummariesList;
+	
+
 	
 	public static final MediaType APPLICATION_JSON_UTF8 = new MediaType(MediaType.APPLICATION_JSON.getType(), MediaType.APPLICATION_JSON.getSubtype(), Charset.forName("utf8"));	
 	protected final String identifierUrl = "/logextractor/v1/persons/person-id";
@@ -71,7 +81,7 @@ public abstract class AbstractMock {
 	protected void mockUniqueIdentifierForPerson() throws RestClientException, IOException {
 		//The first return is used to simulate authentication
 		Mockito.when(client.postForObject(Mockito.anyString(),Mockito.any(), Mockito.any(Class.class)))
-				.thenReturn(getStringFromResourse(authResponse), EnsureRecipientByExternalIdResponseDto.builder().internalId("123").build());
+				.thenReturn(getStringFromResourse(authResponse), mapper.writeValueAsString(EnsureRecipientByExternalIdResponseDto.builder().internalId("123").build()));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -104,15 +114,15 @@ public abstract class AbstractMock {
 				ArgumentMatchers.any(HttpEntity.class), ArgumentMatchers.<Class<String>>any()))
 				.thenReturn(responseSearch);
 		//every argument of thenReturn is a different type of rest call
-		Mockito.when(client.getForObject(Mockito.anyString(), Mockito.any(Class.class))).thenReturn(
-				mockLegalFactDownloadMetadataResponseDto(), 
-				"test".getBytes(),
-				mockNotificationAttachmentDownloadMetadataResponseDto(),
-				"test".getBytes(),
-				mockNotificationAttachmentDownloadMetadataResponseDto(),
-				"test".getBytes(),
-				mockNotificationAttachmentDownloadMetadataResponseDto(),
-				"test".getBytes());
+//		Mockito.when(client.getForObject(Mockito.anyString(), Mockito.any(Class.class))).thenReturn(
+//				mockLegalFactDownloadMetadataResponseDto(), 
+//				"test".getBytes(),
+//				mockNotificationAttachmentDownloadMetadataResponseDto(),
+//				"test".getBytes(),
+//				mockNotificationAttachmentDownloadMetadataResponseDto(),
+//				"test".getBytes(),
+//				mockNotificationAttachmentDownloadMetadataResponseDto(),
+//				"test".getBytes());
 		mockUniqueIdentifierForPerson();
 
 	}
@@ -142,25 +152,25 @@ public abstract class AbstractMock {
 		Mockito.when(client.getForEntity(Mockito.anyString(), Mockito.any(), Mockito.any(HashMap.class))).thenReturn(response2);	
 	}
 	
-	protected LegalFactDownloadMetadataResponseDto mockLegalFactDownloadMetadataResponseDto() {
-	    LegalFactDownloadMetadataResponseDto dto = new LegalFactDownloadMetadataResponseDto();
-        dto.setContentLength(0);
-        dto.setFilename("mockito.test");
-        dto.setRetryAfter(1);
-        dto.setUrl("http://test.it");
-        return dto;	
-	}
+//	protected LegalFactDownloadMetadataResponseDto mockLegalFactDownloadMetadataResponseDto() {
+//	    LegalFactDownloadMetadataResponseDto dto = new LegalFactDownloadMetadataResponseDto();
+//        dto.setContentLength(0);
+//        dto.setFilename("mockito.test");
+//        dto.setRetryAfter(1);
+//        dto.setUrl("http://test.it");
+//        return dto;	
+//	}
 	
-	protected NotificationAttachmentDownloadMetadataResponseDto mockNotificationAttachmentDownloadMetadataResponseDto() {
-		NotificationAttachmentDownloadMetadataResponseDto dto = new NotificationAttachmentDownloadMetadataResponseDto();
-		dto.setContentLength(0);
-		dto.setContentType("json");
-        dto.setFilename("mockito.test");
-        dto.setRetryAfter(1);
-        dto.setUrl("http://test.it");
-        dto.setSha256("");
-        return dto;
-	}
+//	protected NotificationAttachmentDownloadMetadataResponseDto mockNotificationAttachmentDownloadMetadataResponseDto() {
+//		NotificationAttachmentDownloadMetadataResponseDto dto = new NotificationAttachmentDownloadMetadataResponseDto();
+//		dto.setContentLength(0);
+//		dto.setContentType("json");
+//        dto.setFilename("mockito.test");
+//        dto.setRetryAfter(1);
+//        dto.setUrl("http://test.it");
+//        dto.setSha256("");
+//        return dto;
+//	}
 
 	protected static String getMockPersonLogsRequestDto(int useCase, boolean isDeanonimization) throws JsonProcessingException {
 		PersonLogsRequestDto dto = new PersonLogsRequestDto();
@@ -211,7 +221,7 @@ public abstract class AbstractMock {
 	
 	protected static String getMockMonthlyNotificationsRequestDto() throws JsonProcessingException {
 		MonthlyNotificationsRequestDto dto = new MonthlyNotificationsRequestDto();
-		dto.setIpaCode("123");
+		//dto.setIpaCode("123");
 		dto.setReferenceMonth("2022-06");
 		dto.setTicketNumber("345");
 		return mapper.writeValueAsString(dto);
@@ -234,5 +244,5 @@ public abstract class AbstractMock {
 	
 	private static NotificationsGeneralDataResponseDto getNotificationGeneralDataFromResource(Resource resource) throws StreamReadException, DatabindException, IOException {
 		return mapper.readValue(resource.getInputStream(), NotificationsGeneralDataResponseDto.class);
-	}*/
+	}
 }
