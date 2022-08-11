@@ -55,8 +55,8 @@ public class OpenSearchApiHandler {
 		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		log.info("Constructing Opensearch query...");
-		queryParams.put("uid.keyword", StringUtils.substring(uid, 3));
-//		queryParams.put(Constants.OS_UID_FIELD, StringUtils.substring(uid, 3));
+//		queryParams.put("uid.keyword", StringUtils.substring(uid, 3));
+		queryParams.put(Constants.OS_UID_FIELD, StringUtils.substring(uid, 3));
 		queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
 				new OpenSearchRangeQueryData(Constants.OS_TIMESTAMP_FIELD, dateFrom, dateTo),
 				new OpenSearchSortFilter(Constants.OS_TIMESTAMP_FIELD, SortOrders.ASC)));
@@ -77,8 +77,8 @@ public class OpenSearchApiHandler {
 		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		log.info("Constructing Opensearch query...");
-		queryParams.put("iun.keyword", iun);
-//		queryParams.put(Constants.OS_IUN_FIELD, iun);
+//		queryParams.put("iun.keyword", iun);
+		queryParams.put(Constants.OS_IUN_FIELD, iun);
 		queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
 				new OpenSearchRangeQueryData(Constants.OS_TIMESTAMP_FIELD, dateFrom, dateTo), 
 				new OpenSearchSortFilter(Constants.OS_TIMESTAMP_FIELD, SortOrders.ASC)));
@@ -98,8 +98,8 @@ public class OpenSearchApiHandler {
 		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		log.info("Constructing Opensearch query...");
-		queryParams.put("root_trace_id.keyword", traceId);
-//		queryParams.put(Constants.OS_TRACE_ID_FIELD, traceId);
+//		queryParams.put("root_trace_id.keyword", traceId);
+		queryParams.put(Constants.OS_TRACE_ID_FIELD, traceId);
 		OpenSearchQuerydata queryData = queryConstructor.prepareQueryData("pn-logs", queryParams, 
 				new OpenSearchRangeQueryData(Constants.OS_TIMESTAMP_FIELD, dateFrom, dateTo), 
 				new OpenSearchSortFilter(Constants.OS_TIMESTAMP_FIELD, SortOrders.ASC));
