@@ -112,7 +112,7 @@ public class DeanonymizationApiHandler {
 				GetRecipientDenominationByInternalIdResponseDto[].class,
 		        params)
 				.getBody();
-		if(response == null || response[0] == null || StringUtils.isBlank(response[0].getTaxId()) 
+		if(response == null || response.length == 0 || response[0] == null || StringUtils.isBlank(response[0].getTaxId()) 
 				|| "null".equalsIgnoreCase(response[0].getTaxId())) {
 			throw new LogExtractorException("Anonymized tax id is null");
 		}
@@ -146,7 +146,7 @@ public class DeanonymizationApiHandler {
 				PublicAuthorityMappingResponseDTO[].class,
 		        params)
 				.getBody();
-		if(response == null || response[0] == null || StringUtils.isBlank(response[0].getId()) 
+		if(response == null || response.length == 0 || response[0] == null || StringUtils.isBlank(response[0].getId()) 
 				|| "null".equalsIgnoreCase(response[0].getId())) {
 			throw new LogExtractorException("Public authority id is null");
 		}
