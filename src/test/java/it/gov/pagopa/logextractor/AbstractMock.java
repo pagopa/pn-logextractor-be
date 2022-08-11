@@ -37,6 +37,7 @@ import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.dto.request.MonthlyNotificationsRequestDto;
 import it.gov.pagopa.logextractor.dto.request.NotificationInfoRequestDto;
 import it.gov.pagopa.logextractor.dto.request.PersonLogsRequestDto;
@@ -49,6 +50,7 @@ import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInterna
 //import it.gov.pagopa.logextractor.dto.response.NotificationAttachmentDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationsGeneralDataResponseDto;
+import it.gov.pagopa.logextractor.dto.response.PublicAuthorityMappingResponseDTO;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
 
 public abstract class AbstractMock {	
@@ -63,6 +65,7 @@ public abstract class AbstractMock {
 	@Value("classpath:data/notification_general_data2.json") private Resource mockNotificationGeneralData2;
 	@Value("classpath:data/authresponse.json") private Resource authResponse;
 	@Value("classpath:data/pasummarieslist.json") private Resource paSummariesList;
+	@Value("classpath:data/recipient_internal.json") private Resource mockRecipentInternal;
 	
 
 	
@@ -124,7 +127,6 @@ public abstract class AbstractMock {
 //				mockNotificationAttachmentDownloadMetadataResponseDto(),
 //				"test".getBytes());
 		mockUniqueIdentifierForPerson();
-
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -141,8 +143,24 @@ public abstract class AbstractMock {
 				ArgumentMatchers.any(HttpEntity.class), ArgumentMatchers.<Class<String>>any()))
 				.thenReturn(responseSearch);
 		mockUniqueIdentifierForPerson();
-
 	}
+	
+	
+	@SuppressWarnings("unchecked")
+	protected void mockPublicAuthorityIdAndNotificationsBetweenMonths(RestTemplate client) throws StreamReadException, DatabindException, IOException {
+		PublicAuthorityMappingResponseDTO getPublicAuthorityMappingResponseDTO = new PublicAuthorityMappingResponseDTO();
+		PublicAuthorityMappingResponseDTO[] array = new PublicAuthorityMappingResponseDTO[1];
+		getPublicAuthorityMappingResponseDTO.setId("123");
+		getPublicAuthorityMappingResponseDTO.setName("");
+		array[0] = getPublicAuthorityMappingResponseDTO;
+		NotificationsGeneralDataResponseDto jsonResponse = getNotificationGeneralDataFromResource(mockNotificationGeneralData);
+        ResponseEntity<NotificationsGeneralDataResponseDto> responseRecipient1 = new ResponseEntity<>(jsonResponse, HttpStatus.OK);
+        ResponseEntity<PublicAuthorityMappingResponseDTO[]> responseRecipient = new ResponseEntity<>(array, HttpStatus.OK);
+        Mockito.when(client.exchange(ArgumentMatchers.anyString(), ArgumentMatchers.any(HttpMethod.class),
+                ArgumentMatchers.any(HttpEntity.class), ArgumentMatchers.any(Class.class), ArgumentMatchers.anyMap()))
+                .thenReturn(responseRecipient, responseRecipient1);
+    }
+	
 	
 	@SuppressWarnings("unchecked")
 	protected void mockNotificationResponse() throws IOException {
@@ -151,6 +169,17 @@ public abstract class AbstractMock {
 		ResponseEntity<Object> response2 = new ResponseEntity<Object>(mock2, HttpStatus.OK);
 		Mockito.when(client.getForEntity(Mockito.anyString(), Mockito.any(), Mockito.any(HashMap.class))).thenReturn(response2);	
 	}
+	
+	@SuppressWarnings("unchecked")
+	protected void mockTaxCodeForPerson(RestTemplate client) throws StreamReadException, DatabindException, IOException {
+		GetRecipientDenominationByInternalIdResponseDto[] array = new GetRecipientDenominationByInternalIdResponseDto[1];
+		GetRecipientDenominationByInternalIdResponseDto jsonResponse = getInternalFromResource(mockRecipentInternal);
+		array[0] = jsonResponse;
+        ResponseEntity<GetRecipientDenominationByInternalIdResponseDto[]> responseRecipient = new ResponseEntity<>(array, HttpStatus.OK);
+        Mockito.when(client.exchange(ArgumentMatchers.anyString(), ArgumentMatchers.any(HttpMethod.class),
+                ArgumentMatchers.any(HttpEntity.class), ArgumentMatchers.any(Class.class), ArgumentMatchers.anyMap()))
+                .thenReturn(responseRecipient);
+    }
 	
 //	protected LegalFactDownloadMetadataResponseDto mockLegalFactDownloadMetadataResponseDto() {
 //	    LegalFactDownloadMetadataResponseDto dto = new LegalFactDownloadMetadataResponseDto();
@@ -224,6 +253,8 @@ public abstract class AbstractMock {
 		//dto.setIpaCode("123");
 		dto.setReferenceMonth("2022-06");
 		dto.setTicketNumber("345");
+		dto.setPublicAuthorityName("abc");
+		dto.setEndMonth("2022-07");
 		return mapper.writeValueAsString(dto);
 	}
 	
@@ -244,5 +275,9 @@ public abstract class AbstractMock {
 	
 	private static NotificationsGeneralDataResponseDto getNotificationGeneralDataFromResource(Resource resource) throws StreamReadException, DatabindException, IOException {
 		return mapper.readValue(resource.getInputStream(), NotificationsGeneralDataResponseDto.class);
+	}
+	
+	private static GetRecipientDenominationByInternalIdResponseDto getInternalFromResource(Resource resource) throws StreamReadException, DatabindException, IOException {
+		return mapper.readValue(resource.getInputStream(), GetRecipientDenominationByInternalIdResponseDto.class);
 	}
 }
