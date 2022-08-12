@@ -259,7 +259,6 @@ public class NotificationApiHandler {
 						paymentKeys.add(StringUtils.remove(recipient.getPayment().getPagoPaForm().getRef().getKey(), Constants.SAFESTORAGE_PREFIX));
 					}
 				}
-				
 			}
 		}
 		return paymentKeys;

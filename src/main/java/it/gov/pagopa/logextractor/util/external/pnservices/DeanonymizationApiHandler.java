@@ -181,7 +181,7 @@ public class DeanonymizationApiHandler {
 	 */
 	public List<String> deanonymizeDocuments(List<String> anonymizedDocuments, RecipientTypes recipientType) throws LogExtractorException{
 		ArrayList<String> deanonymizedDocuments = new ArrayList<>();
-		for(int index=0; index<anonymizedDocuments.size(); index++) {
+		for(int index=0; index < anonymizedDocuments.size(); index++) {
 			String uuid = JsonUtilities.getValue(anonymizedDocuments.get(index), Constants.OS_UID_FIELD);
 			String cxId = JsonUtilities.getValue(anonymizedDocuments.get(index), Constants.OS_CX_ID_FIELD);
 			String document = anonymizedDocuments.get(index);

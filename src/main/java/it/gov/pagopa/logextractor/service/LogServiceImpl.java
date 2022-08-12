@@ -52,7 +52,7 @@ public class LogServiceImpl implements LogService {
 		log.info("Anonymized logs retrieve process - START - user={}, ticket number={}, internalId={}, startDate={}, endDate={}, iun={}", MDC.get("user_identifier"), ticketNumber, personId, dateFrom, dateTo, iun);
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
-		List<String> openSearchResponse = null;
+		List<String> openSearchResponse = new ArrayList<>();
 		// use case 7
 		if (dateFrom != null && dateTo != null && personId != null && iun == null) {
 			log.info("Getting activities' anonymized history... ");
@@ -206,7 +206,7 @@ public class LogServiceImpl implements LogService {
 	public BaseResponseDTO getDeanonymizedPersonLogs(RecipientTypes recipientType, String dateFrom, String dateTo, String ticketNumber, String taxid, String iun) throws IOException, LogExtractorException {
 		log.info("Deanonymized logs retrieve process - START - user={}, ticket number={}, taxId={}, startDate={}, endDate={}, iun={}", MDC.get("user_identifier"), ticketNumber, taxid, dateFrom, dateTo, iun);
 		long serviceStartTime = System.currentTimeMillis();
-		List<String> openSearchResponse = null;
+		List<String> openSearchResponse = new ArrayList<>();
 		long performanceMillis = 0;
 		List<String> deanonymizedOpenSearchResponse = new ArrayList<>();	
 		//use case 3
