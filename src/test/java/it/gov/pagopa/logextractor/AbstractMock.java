@@ -40,8 +40,6 @@ import it.gov.pagopa.logextractor.dto.request.TraceIdLogsRequestDto;
 import it.gov.pagopa.logextractor.dto.response.EnsureRecipientByExternalIdResponseDto;
 import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDTO;
 import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInternalIdResponseDto;
-//import it.gov.pagopa.logextractor.dto.response.LegalFactDownloadMetadataResponseDto;
-//import it.gov.pagopa.logextractor.dto.response.NotificationAttachmentDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDTO;
 import it.gov.pagopa.logextractor.dto.response.NotificationsGeneralDataResponseDto;
