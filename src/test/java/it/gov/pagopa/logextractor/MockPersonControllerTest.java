@@ -37,15 +37,15 @@ public class MockPersonControllerTest extends AbstractMock {
 
 	@Test
 	public void test_getPersonsBasicDataWithTaxCode_ok() throws Exception {
-		mockTaxCodeForPerson(client);
+		mockTaxCodeForPerson();
 		mockUniqueIdentifierForPerson();
 		mockTaxCodeForPerson200();
-		mvcPostPerform(taxCodeUrl, getMockPersonTaxIdRequestDto(), "data", "123", HttpStatus.OK);
+		mvcPostPerform(taxCodeUrl, getMockPersonTaxIdRequestDto(), "data", "LSANLN99B28A684F", HttpStatus.OK);
 	}
 	
 	@Test
 	public void test_getPersonsBasicDataWithTaxCode_5xx() throws Exception {
-		mockTaxCodeForPerson_TaxIdNull(client);
+		mockTaxCodeForPerson_TaxIdNull();
 		mockUniqueIdentifierForPerson();
 		mockTaxCodeForPersonServerError(HttpStatus.INTERNAL_SERVER_ERROR);
 		String errorResponse = "Errore nell'elaborazione della richiesta";
@@ -54,7 +54,7 @@ public class MockPersonControllerTest extends AbstractMock {
 	
 	@Test
 	public void test_getPersonsBasicDataWithTaxCode_4xx() throws Exception {
-	mockTaxCodeForPerson_TaxIdNull(client);
+	mockTaxCodeForPerson_TaxIdNull();
 		mockUniqueIdentifierForPerson();
 		mockTaxCodeForPersonClientError(HttpStatus.METHOD_NOT_ALLOWED);
 		String errorResponse = "Errore nell'elaborazione della richiesta";
