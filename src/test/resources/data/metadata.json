@@ -8,7 +8,7 @@
 	"checksum":"test",
 	"retentionUntil":"test",
 	"download":{
-	  "url":"https://d1.awsstatic.com/whitepapers/it_IT/aws-overview.pdf",
-	  "retryAfter": null
+	  "url": null,
+	  "retryAfter": 15
 	}
 } 

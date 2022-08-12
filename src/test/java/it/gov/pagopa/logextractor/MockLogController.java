@@ -84,7 +84,7 @@ public class MockLogController extends AbstractMock {
 						.content(getMockNotificationsRequestDto()).contentType(APPLICATION_JSON_UTF8))
 				.andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-		assertThat(response.getContentAsString()).contains("password");
+		assertThat(response.getContentAsString()).contains("message");
 	}
 
 	public void test_getProcesses(String dateFrom, String dateTo, String ticketNumber, String traceId)
