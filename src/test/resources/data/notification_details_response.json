@@ -5,30 +5,30 @@
     "recipients": [
         {
             "recipientType": "PF",
-            "taxId": "FRMTTR76M06B715E",
-            "internalId": "PF-4fc75df3-0913-407e-bdaa-e50329708b7d",
+            "taxId": "TEST",
+            "internalId": "TEST",
             "denomination": "Fiera denomination",
             "digitalDomicile": {
                 "type": "PEC",
-                "address": "FRMTTR76M06B715E@pnpagopa.postecert.local"
+                "address": "TEST"
             },
             "physicalAddress": {
                 "address": "Via senza nome",
                 "zip": "40100",
-                "municipality": "Milano",
-                "province": "MI",
+                "municipality": "TEST",
+                "province": "TEST",
                 "foreignState": "ITALIA"
             },
             "payment": {
-                "noticeCode": "302011657736570647",
-                "creditorTaxId": "77777777777",
+                "noticeCode": "TEST",
+                "creditorTaxId": "TEST",
                 "pagoPaForm": {
                     "digests": {
-                        "sha256": "jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE="
+                        "sha256": "TEST"
                     },
                     "contentType": "application/pdf",
                     "ref": {
-                        "key": "PN_NOTIFICATION_ATTACHMENTS-0001-UUHQ-0HTE-4TVB-N0XG",
+                        "key": "TEST",
                         "versionToken": "v1"
                     }
                 }
@@ -38,23 +38,23 @@
     "documents": [
         {
             "digests": {
-                "sha256": "jezIVxlG1M1woCSUngM6KipUN3/p8cG5RMIPnuEanlE="
+                "sha256": "TEST"
             },
             "contentType": "application/pdf",
             "ref": {
-                "key": "PN_NOTIFICATION_ATTACHMENTS-0001-BAW4-1K8D-TOOX-1QDH",
+                "key": "TEST",
                 "versionToken": "v1"
             },
             "docIdx": "0"
         }
     ],
-    "notificationFeePolicy": "FLAT_RATE",
+    "notificationFeePolicy": "TEST",
     "cancelledIun": "",
-    "physicalCommunicationType": "REGISTERED_LETTER_890",
-    "senderDenomination": "Il comune di Milano",
-    "senderTaxId": "CFComuneMilano",
+    "physicalCommunicationType": "TEST",
+    "senderDenomination": "TEST",
+    "senderTaxId": "TEST",
     "group": "",
-    "senderPaId": "d0d28367-1695-4c50-a260-6fda526e9aab",
-    "iun": "HPGX-HXWA-WHJH-202207-J-1",
+    "senderPaId": "TEST",
+    "iun": "TEST",
     "sentAt": "2022-05-13T18:22:55.577+00:00"
 }

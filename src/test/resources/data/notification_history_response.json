@@ -4,24 +4,17 @@
         {
             "status": "ACCEPTED",
             "activeFrom": "2022-07-13T18:22:55.577Z",
-            "relatedTimelineElements": [
-                "HPGX-HXWA-WHJH-202207-J-1_request_accepted",
-                "HPGX-HXWA-WHJH-202207-J-1_aar_gen_0",
-                "HPGX-HXWA-WHJH-202207-J-1_get_address0_source_DigitalAddressSourceInt.PLATFORM(value=PLATFORM)_attempt_0"
-            ]
+            "relatedTimelineElements": []
         },
         {
             "status": "DELIVERING",
             "activeFrom": "2022-07-13T18:23:10.961327Z",
-            "relatedTimelineElements": [
-                "HPGX-HXWA-WHJH-202207-J-1_send_digital_domicile0_source_DigitalAddressSourceInt.SPECIAL(value=SPECIAL)_attempt_1",
-                "HPGX-HXWA-WHJH-202207-J-1_get_address0_source_DigitalAddressSourceInt.SPECIAL(value=SPECIAL)_attempt_0"
-            ]
+          "relatedTimelineElements": []
         }
     ],
     "timeline": [
         {
-            "elementId": "HPGX-HXWA-WHJH-202207-J-1_get_address0_source_DigitalAddressSourceInt.PLATFORM(value=PLATFORM)_attempt_0",
+            "elementId": "TEST",
             "timestamp": "2022-07-13T18:23:08.705709Z",
             "legalFactsIds": [],
             "category": "GET_ADDRESS",
@@ -53,11 +46,11 @@
             }
         },
         {
-            "elementId": "HPGX-HXWA-WHJH-202207-J-1_request_accepted",
+            "elementId": "TEST",
             "timestamp": "2022-07-13T18:22:55.577Z",
             "legalFactsIds": [
                 {
-                    "key": "safestorage://PN_LEGAL_FACTS-0002-OBOK-3LQV-J4X5-FKYX",
+                    "key": "TEST",
                     "category": "SENDER_ACK"
                 }
             ],
@@ -65,7 +58,7 @@
             "details": null
         },
         {
-            "elementId": "HPGX-HXWA-WHJH-202207-J-1_get_address0_source_DigitalAddressSourceInt.SPECIAL(value=SPECIAL)_attempt_0",
+            "elementId": "TEST",
             "timestamp": "2022-07-13T18:23:11.037964Z",
             "legalFactsIds": [],
             "category": "GET_ADDRESS",
@@ -97,7 +90,7 @@
             }
         },
         {
-            "elementId": "HPGX-HXWA-WHJH-202207-J-1_send_digital_domicile0_source_DigitalAddressSourceInt.SPECIAL(value=SPECIAL)_attempt_1",
+            "elementId": "TEST", 
             "timestamp": "2022-07-13T18:23:10.961327Z",
             "legalFactsIds": [],
             "category": "SEND_DIGITAL_DOMICILE",
@@ -132,7 +125,7 @@
             }
         },
         {
-            "elementId": "HPGX-HXWA-WHJH-202207-J-1_aar_gen_0",
+            "elementId": "TEST",
             "timestamp": "2022-07-13T18:23:08.613584Z",
             "legalFactsIds": [],
             "category": "AAR_GENERATION",
@@ -158,7 +151,7 @@
                 "investigation": null,
                 "numberOfPages": 1,
                 "newAddress": null,
-                "generatedAarUrl": "safestorage://PN_AAR-0002-9QER-Y0W3-5INR-AN57",
+                "generatedAarUrl": null,
                 "reasonCode": null,
                 "reason": null
             }
