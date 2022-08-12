@@ -24,7 +24,7 @@ public class PersonController {
 	
 	@PostMapping("/person-id")
 	public ResponseEntity<GetBasicDataResponseDto> getPersonalPersonId(@Valid @RequestBody PersonPersonIdRequestDto personData) throws HttpServerErrorException, LogExtractorException {
-		return ResponseEntity.ok(personService.getPersonId(RecipientTypes.valueOf(personData.getRecipientType()), personData.getTicketNumber(), personData.getTaxId()));
+		return ResponseEntity.ok(personService.getPersonId(RecipientTypes.valueOf(personData.getRecipientType()), personData.getTicketNumber(), personData.getTaxId().toUpperCase()));
 	}
 	
 	@PostMapping("/tax-id")
