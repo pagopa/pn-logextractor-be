@@ -1,0 +1,14 @@
+{
+  "key":"test",
+  "versionId":"test",
+  "documentType":"test",
+  "documentStatus":"test",
+	"contentType":"test",
+	"contentLength":0,
+	"checksum":"test",
+	"retentionUntil":"test",
+	"download":{
+	  "url":"http://localhost:3001/getFile",
+	  "retryAfter": null
+	}
+} 

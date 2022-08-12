@@ -58,7 +58,11 @@ public class MockLogController extends AbstractMock {
 	
 //	@Test
 //	public void test_getNotificationInfoLogs() throws JsonProcessingException, Exception {
-//		mockNotificationResponse();
+//		mockNotificationDetailsResponse();
+//		mockNotificationHistoryResponse(client);
+//		mockFileDownloadMetadataResponseDTO(client);
+//		mockDocumentsByMultiSearchQuery(openClient);
+//		mockNotificationApiHandler();
 //		mockPersonsLogResponse();
 //		MockHttpServletResponse response = mvc.perform(post(notificationInfoUrl).accept(APPLICATION_JSON_UTF8).header("Auth", fakeHeader)
 //				.content(getMockNotificationsRequestDto()).contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();

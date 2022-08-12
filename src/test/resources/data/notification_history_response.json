@@ -1,0 +1,167 @@
+{
+    "notificationStatus": "DELIVERING",
+    "notificationStatusHistory": [
+        {
+            "status": "ACCEPTED",
+            "activeFrom": "2022-07-13T18:22:55.577Z",
+            "relatedTimelineElements": [
+                "HPGX-HXWA-WHJH-202207-J-1_request_accepted",
+                "HPGX-HXWA-WHJH-202207-J-1_aar_gen_0",
+                "HPGX-HXWA-WHJH-202207-J-1_get_address0_source_DigitalAddressSourceInt.PLATFORM(value=PLATFORM)_attempt_0"
+            ]
+        },
+        {
+            "status": "DELIVERING",
+            "activeFrom": "2022-07-13T18:23:10.961327Z",
+            "relatedTimelineElements": [
+                "HPGX-HXWA-WHJH-202207-J-1_send_digital_domicile0_source_DigitalAddressSourceInt.SPECIAL(value=SPECIAL)_attempt_1",
+                "HPGX-HXWA-WHJH-202207-J-1_get_address0_source_DigitalAddressSourceInt.SPECIAL(value=SPECIAL)_attempt_0"
+            ]
+        }
+    ],
+    "timeline": [
+        {
+            "elementId": "HPGX-HXWA-WHJH-202207-J-1_get_address0_source_DigitalAddressSourceInt.PLATFORM(value=PLATFORM)_attempt_0",
+            "timestamp": "2022-07-13T18:23:08.705709Z",
+            "legalFactsIds": [],
+            "category": "GET_ADDRESS",
+            "details": {
+                "recIndex": 0,
+                "physicalAddress": null,
+                "digitalAddress": null,
+                "digitalAddressSource": "PLATFORM",
+                "isAvailable": null,
+                "attemptDate": "2022-07-13T18:23:08.705704Z",
+                "notificationCost": null,
+                "deliveryMode": null,
+                "contactPhase": null,
+                "sentAttemptMade": null,
+                "sendDate": null,
+                "errors": null,
+                "lastAttemptDate": null,
+                "retryNumber": null,
+                "downstreamId": null,
+                "responseStatus": null,
+                "notificationDate": null,
+                "serviceLevel": null,
+                "investigation": null,
+                "numberOfPages": null,
+                "newAddress": null,
+                "generatedAarUrl": null,
+                "reasonCode": null,
+                "reason": null
+            }
+        },
+        {
+            "elementId": "HPGX-HXWA-WHJH-202207-J-1_request_accepted",
+            "timestamp": "2022-07-13T18:22:55.577Z",
+            "legalFactsIds": [
+                {
+                    "key": "safestorage://PN_LEGAL_FACTS-0002-OBOK-3LQV-J4X5-FKYX",
+                    "category": "SENDER_ACK"
+                }
+            ],
+            "category": "REQUEST_ACCEPTED",
+            "details": null
+        },
+        {
+            "elementId": "HPGX-HXWA-WHJH-202207-J-1_get_address0_source_DigitalAddressSourceInt.SPECIAL(value=SPECIAL)_attempt_0",
+            "timestamp": "2022-07-13T18:23:11.037964Z",
+            "legalFactsIds": [],
+            "category": "GET_ADDRESS",
+            "details": {
+                "recIndex": 0,
+                "physicalAddress": null,
+                "digitalAddress": null,
+                "digitalAddressSource": "SPECIAL",
+                "isAvailable": null,
+                "attemptDate": "2022-07-13T18:23:11.037938Z",
+                "notificationCost": null,
+                "deliveryMode": null,
+                "contactPhase": null,
+                "sentAttemptMade": null,
+                "sendDate": null,
+                "errors": null,
+                "lastAttemptDate": null,
+                "retryNumber": null,
+                "downstreamId": null,
+                "responseStatus": null,
+                "notificationDate": null,
+                "serviceLevel": null,
+                "investigation": null,
+                "numberOfPages": null,
+                "newAddress": null,
+                "generatedAarUrl": null,
+                "reasonCode": null,
+                "reason": null
+            }
+        },
+        {
+            "elementId": "HPGX-HXWA-WHJH-202207-J-1_send_digital_domicile0_source_DigitalAddressSourceInt.SPECIAL(value=SPECIAL)_attempt_1",
+            "timestamp": "2022-07-13T18:23:10.961327Z",
+            "legalFactsIds": [],
+            "category": "SEND_DIGITAL_DOMICILE",
+            "details": {
+                "recIndex": 0,
+                "physicalAddress": null,
+                "digitalAddress": {
+                    "type": "PEC",
+                    "address": "FRMTTR76M06B715E@pnpagopa.postecert.local"
+                },
+                "digitalAddressSource": "SPECIAL",
+                "isAvailable": null,
+                "attemptDate": null,
+                "notificationCost": null,
+                "deliveryMode": null,
+                "contactPhase": null,
+                "sentAttemptMade": null,
+                "sendDate": null,
+                "errors": null,
+                "lastAttemptDate": null,
+                "retryNumber": 0,
+                "downstreamId": null,
+                "responseStatus": null,
+                "notificationDate": null,
+                "serviceLevel": null,
+                "investigation": null,
+                "numberOfPages": null,
+                "newAddress": null,
+                "generatedAarUrl": null,
+                "reasonCode": null,
+                "reason": null
+            }
+        },
+        {
+            "elementId": "HPGX-HXWA-WHJH-202207-J-1_aar_gen_0",
+            "timestamp": "2022-07-13T18:23:08.613584Z",
+            "legalFactsIds": [],
+            "category": "AAR_GENERATION",
+            "details": {
+                "recIndex": 0,
+                "physicalAddress": null,
+                "digitalAddress": null,
+                "digitalAddressSource": null,
+                "isAvailable": null,
+                "attemptDate": null,
+                "notificationCost": null,
+                "deliveryMode": null,
+                "contactPhase": null,
+                "sentAttemptMade": null,
+                "sendDate": null,
+                "errors": null,
+                "lastAttemptDate": null,
+                "retryNumber": null,
+                "downstreamId": null,
+                "responseStatus": null,
+                "notificationDate": null,
+                "serviceLevel": null,
+                "investigation": null,
+                "numberOfPages": 1,
+                "newAddress": null,
+                "generatedAarUrl": "safestorage://PN_AAR-0002-9QER-Y0W3-5INR-AN57",
+                "reasonCode": null,
+                "reason": null
+            }
+        }
+    ]
+}

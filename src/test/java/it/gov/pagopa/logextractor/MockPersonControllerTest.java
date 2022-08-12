@@ -40,23 +40,25 @@ public class MockPersonControllerTest extends AbstractMock {
 		mockTaxCodeForPerson(client);
 		mockUniqueIdentifierForPerson();
 		mockTaxCodeForPerson200();
-		mvcPostPerform(taxCodeUrl, getMockPersonTaxIdRequestDto(), "data", "BRMRSS63A02A001D", HttpStatus.OK);
+		mvcPostPerform(taxCodeUrl, getMockPersonTaxIdRequestDto(), "data", "123", HttpStatus.OK);
 	}
-//	
-//	@Test
-//	public void test_getPersonsBasicDataWithTaxCode_5xx() throws Exception {
-//		mockUniqueIdentifierForPerson();
-//		mockTaxCodeForPersonServerError(HttpStatus.INTERNAL_SERVER_ERROR);
-//		String errorResponse = "Errore nell'elaborazione della richiesta";
-//		mvcPostPerform(taxCodeUrl, getMockPersonTaxIdRequestDto(), errorResponse, errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-//	}
-//	
-//	@Test
-//	public void test_getPersonsBasicDataWithTaxCode_4xx() throws Exception {
-//		mockUniqueIdentifierForPerson();
-//		mockTaxCodeForPersonClientError(HttpStatus.METHOD_NOT_ALLOWED);
-//		String errorResponse = "Errore nell'elaborazione della richiesta";
-//		mvcPostPerform(taxCodeUrl, getMockPersonTaxIdRequestDto(), errorResponse, errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-//	}
+	
+	@Test
+	public void test_getPersonsBasicDataWithTaxCode_5xx() throws Exception {
+		mockTaxCodeForPerson_TaxIdNull(client);
+		mockUniqueIdentifierForPerson();
+		mockTaxCodeForPersonServerError(HttpStatus.INTERNAL_SERVER_ERROR);
+		String errorResponse = "Errore nell'elaborazione della richiesta";
+		mvcPostPerform(taxCodeUrl, getMockPersonTaxIdRequestDto(), errorResponse, errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
+	@Test
+	public void test_getPersonsBasicDataWithTaxCode_4xx() throws Exception {
+	mockTaxCodeForPerson_TaxIdNull(client);
+		mockUniqueIdentifierForPerson();
+		mockTaxCodeForPersonClientError(HttpStatus.METHOD_NOT_ALLOWED);
+		String errorResponse = "Errore nell'elaborazione della richiesta";
+		mvcPostPerform(taxCodeUrl, getMockPersonTaxIdRequestDto(), errorResponse, errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
 
 }
