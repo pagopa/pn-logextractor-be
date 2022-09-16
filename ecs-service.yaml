@@ -11,11 +11,16 @@ Parameters:
   ECSClusterName:
     Type: String
     Description: ECS Cluster Name where the service is going to be deployed
-  
+
   AlarmSNSTopicArn:
     Type: String
     Default: '-'
     Description: 'An ARN of an SNS topic where to send alarm when DLQ contain messages'
+
+  AdditionalMicroserviceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup::Id
+    Default: ""
+    Description: Additional security group to assign to the microservice
 
   MappedPaths:
     Type: List<String>
@@ -290,6 +295,7 @@ Resources:
           Subnets: !Ref Subnets
           SecurityGroups:
             - !Ref EcsServiceSecurityGroup
+            - !Ref AdditionalMicroserviceSecurityGroup
       LoadBalancers:
         - ContainerName: !Sub '${MicroServiceUniqueName}'
           ContainerPort: 8080
@@ -550,7 +556,7 @@ Resources:
     Properties:
       LogGroupName: !Sub '/ecs/${MicroServiceUniqueName}'
       RetentionInDays: 3
-  
+
   # A role needed by ECS
   ExecutionRole:
     Type: AWS::IAM::Role
@@ -576,7 +582,7 @@ Resources:
             Principal:
               Service: ecs-tasks.amazonaws.com
             Action: 'sts:AssumeRole'
-            
+
   # Role policy needed to access the ECR registry of the CiCd account
   EcrAccessTaskPolicy:
     Type: AWS::IAM::Policy
@@ -595,7 +601,7 @@ Resources:
               - ecr:BatchGetImage
             Resource:
               - '*'
-              
+
   CloudFormationTaskPolicy:
     Type: AWS::IAM::Policy
     Properties:
@@ -610,7 +616,7 @@ Resources:
               - cloudformation:ListStackResources
             Resource:
               - '*'
-              
+
   # Load balancer target group
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -646,17 +652,17 @@ Resources:
 
 
   # CloudWatch metric to filer ERROR - FATAL lines, in Log group
-  ErrorFatalLogsMetricFilter: 
+  ErrorFatalLogsMetricFilter:
     Condition: HasAlarmTopic
     Type: AWS::Logs::MetricFilter
-    Properties: 
+    Properties:
       LogGroupName: !Ref LogGroup
       FilterPattern: '?ERROR ?FATAL ?CRITICAL'
-      MetricTransformations: 
+      MetricTransformations:
         - MetricValue: 1
           MetricNamespace: "ErrorFatalLogs"
           MetricName: !Sub "${MicroServiceUniqueName}-ErrorFatalMetric"
-  
+
   # Create alarm
   ErrorFatalLogsMetricAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -665,7 +671,7 @@ Resources:
     Properties:
       AlarmName: !Sub "${MicroServiceUniqueName}-ErrorFatalLogs-Alarm"
       AlarmDescription: "CloudWatch alarm for when ECS LogGroup has ERROR or FATAL line."
-      AlarmActions: 
+      AlarmActions:
         - !Ref AlarmSNSTopicArn
       InsufficientDataActions:
         - !Ref AlarmSNSTopicArn
