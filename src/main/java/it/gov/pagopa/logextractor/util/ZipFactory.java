@@ -23,7 +23,7 @@ public class ZipFactory {
 	 * */
 	public ZipFile createZipArchive(String name, String password) {
 		return new ZipFile(Constants.EXPORT_FOLDER + name + "-" + 
-							new CommonUtilities().generateRandomToken() + Constants.ZIP_EXTENSION, password.toCharArray());
+							new RandomUtils().generateRandomToken() + Constants.ZIP_EXTENSION, password.toCharArray());
 	}
 	
 	/**
@@ -40,7 +40,22 @@ public class ZipFactory {
 		zipParameters.setEncryptionMethod(encryptionMethod);
 		return zipParameters;
 	}
-	
+
+	/**
+	 * Add a list of files with zip parameters to a zip archive
+	 * @param archive the zip archive where to add the file
+	 * @param parameters the parameters for the file
+	 * @param files the file list to add
+	 * @return the {@link ZipFile} input zip with the addition of the file
+	 * @throws {@link IOException}
+	 * */
+	public ZipFile addFiles(ZipFile archive, ZipParameters parameters, List<File> files) throws IOException {
+		for (File fileToAdd : files) {
+			archive = addFile(archive, parameters, fileToAdd);
+		}
+		return archive;
+	}
+
 	/**
 	 * Add a file with zip parameters to a zip archive 
 	 * @param archive the zip archive where to add the file
@@ -60,22 +75,7 @@ public class ZipFactory {
 		archive.close();
 		return archive;
 	}
-	
-	/**
-	 * Add a list of files with zip parameters to a zip archive 
-	 * @param archive the zip archive where to add the file
-	 * @param parameters the parameters for the file
-	 * @param file the file add
-	 * @return the {@link ZipFile} input zip with the addition of the file
-	 * @throws {@link IOException}
-	 * */
-	public ZipFile addFiles(ZipFile archive, ZipParameters parameters, List<File> files) throws IOException {
-		for (File fileToAdd : files) {
-			archive = addFile(archive, parameters, fileToAdd);
-		}
-		return archive;
-	}
-	
+
 	/**
 	 * Convert zip archive to byte array
 	 * @param archive The zip archive to convert

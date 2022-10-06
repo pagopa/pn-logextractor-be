@@ -16,7 +16,6 @@ import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.dto.response.BaseResponseDTO;
 import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
-//import it.gov.pagopa.logextractor.dto.response.DownloadNotPossibleYetResponseDTO;
 import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDTO;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDTO;
@@ -103,24 +102,21 @@ public class LogServiceImpl implements LogService {
 		int numberOfFiles = (int)Math.ceil(((double)notifications.size())/Constants.CSV_FILE_MAX_ROWS);
 		int notificationPlaceholder = 0;
 		while(numberOfFiles > 0) {
+			List<NotificationData> notificationsPartition;
 			if(numberOfFiles == 1) {
-				List<NotificationData> notificationsPartition = notifications.subList(notificationPlaceholder, notifications.size());
-				File file = utils.getFile(Constants.NOTIFICATION_CSV_FILE_NAME,Constants.CSV_EXTENSION);
-				utils.writeCsv(file, utils.toCsv(notificationsPartition));
-				csvFiles.add(file);
-				numberOfFiles--;
+				notificationsPartition = notifications.subList(notificationPlaceholder, notifications.size());
 			}
 			else {
-				List<NotificationData> notificationsPartition = notifications.subList(notificationPlaceholder,
+				notificationsPartition = notifications.subList(notificationPlaceholder,
 						notificationPlaceholder+Constants.CSV_FILE_MAX_ROWS);
-				File file = utils.getFile(Constants.NOTIFICATION_CSV_FILE_NAME,Constants.CSV_EXTENSION);
-				utils.writeCsv(file, utils.toCsv(notificationsPartition));
-				csvFiles.add(file);
 				notificationPlaceholder += Constants.CSV_FILE_MAX_ROWS;
-				numberOfFiles--;
 			}
+			File file = utils.getFile(Constants.NOTIFICATION_CSV_FILE_NAME,Constants.CSV_EXTENSION);
+			utils.writeCsv(file, utils.toCsv(notificationsPartition));
+			csvFiles.add(file);
+			numberOfFiles--;
 		}
-		DownloadArchiveResponseDto response = ResponseConstructor.createCsvLogResponse(csvFiles, Constants.ZIP_ARCHIVE_NAME);
+		DownloadArchiveResponseDto response = ResponseConstructor.createCsvFileResponse(csvFiles, Constants.ZIP_ARCHIVE_NAME);
 		log.info("Monthly notifications retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
 		return response;
 	}
@@ -206,7 +202,7 @@ public class LogServiceImpl implements LogService {
 	public BaseResponseDTO getDeanonymizedPersonLogs(RecipientTypes recipientType, String dateFrom, String dateTo, String ticketNumber, String taxid, String iun) throws IOException, LogExtractorException {
 		log.info("Deanonymized logs retrieve process - START - user={}, ticket number={}, taxId={}, startDate={}, endDate={}, iun={}", MDC.get("user_identifier"), ticketNumber, taxid, dateFrom, dateTo, iun);
 		long serviceStartTime = System.currentTimeMillis();
-		List<String> openSearchResponse = new ArrayList<>();
+		List<String> openSearchResponse;
 		long performanceMillis = 0;
 		List<String> deanonymizedOpenSearchResponse = new ArrayList<>();	
 		//use case 3

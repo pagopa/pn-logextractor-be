@@ -22,7 +22,6 @@ public interface PersonService {
 	 * Method that retrieves a person's internal code corresponding to the input tax code
 	 * @param recipientType The person's type, can be one of the {@link RecipientTypes} object values
 	 * @param ticketNumber The ticket number associated to the operation
-	 * @param personId The tax code to obtain the internal code from
 	 * @return object of type {@link GetBasicDataResponseDto}, containing the internal code of a person
 	 * @throws HttpServerErrorException in case of an error during the integration process with external services
 	 * */

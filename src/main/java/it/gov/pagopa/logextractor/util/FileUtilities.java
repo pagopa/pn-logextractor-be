@@ -7,10 +7,8 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.opencsv.ICSVWriter;
 import org.apache.commons.io.FileUtils;
-
-import com.opencsv.CSVWriter;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
@@ -29,7 +27,7 @@ public class FileUtilities {
 	 * @return a new {@link File} instance of a file with the given name
 	 * */
 	public File getFile(String name, String extension) {
-		return FileUtils.getFile(Constants.EXPORT_FOLDER + name + "-" +  new CommonUtilities().generateRandomToken() + extension);
+		return FileUtils.getFile(Constants.EXPORT_FOLDER + name + "-" +  new RandomUtils().generateRandomToken() + extension);
 	}
 	
 	/**
@@ -45,7 +43,7 @@ public class FileUtilities {
 	/**
 	 * Write the input content list into the input file
 	 * @param file the file where to write the content into
-	 * @param content the content list to write into the file
+	 * @param contents the content list to write into the file
 	 * @throws IOException in case of an I/O error
 	 * */
 	public void write(File file, List<String> contents) throws IOException {
@@ -96,7 +94,7 @@ public class FileUtilities {
 			file.getParentFile().mkdirs();
 		}
 		Writer writer = new FileWriter(file);
-		StatefulBeanToCsv<NotificationCsvBean> beanToCsv = new StatefulBeanToCsvBuilder<NotificationCsvBean>(writer).withSeparator(CSVWriter.DEFAULT_SEPARATOR).build();
+		StatefulBeanToCsv<NotificationCsvBean> beanToCsv = new StatefulBeanToCsvBuilder<NotificationCsvBean>(writer).withSeparator(ICSVWriter.DEFAULT_SEPARATOR).build();
 		beanToCsv.write(notifications);
 		writer.close();
 	}
@@ -107,7 +105,7 @@ public class FileUtilities {
 	 * @return A {@link NotificationCsvBean} object representing the converted input object
 	 * */
 	public NotificationCsvBean toCsv(NotificationData notificationData) {
-		CommonUtilities commonUtils = new CommonUtilities();
+		EscapeUtils escapeUtils = new EscapeUtils();
 		NotificationCsvBean notification = new NotificationCsvBean();
 		if(null != notificationData.getRecipients() && !notificationData.getRecipients().isEmpty()) {
 			StringBuilder recipientsBuilder = new StringBuilder();
@@ -115,14 +113,14 @@ public class FileUtilities {
 				recipientsBuilder.append(tempRecipient + "-");
 			}
 			recipientsBuilder.deleteCharAt(recipientsBuilder.length()-1);
-			notification.setCodici_fiscali(commonUtils.escapeForCsv(recipientsBuilder.toString()));
+			notification.setCodici_fiscali(escapeUtils.escapeForCsv(recipientsBuilder.toString()));
 			recipientsBuilder.setLength(0);
 		}
-		notification.setIUN(commonUtils.escapeForCsv(notificationData.getIun()));
-		notification.setData_invio(commonUtils.escapeForCsv(notificationData.getSentAt()));
+		notification.setIUN(escapeUtils.escapeForCsv(notificationData.getIun()));
+		notification.setData_invio(escapeUtils.escapeForCsv(notificationData.getSentAt()));
 		notification.setData_generazione_attestazione_opponibile_a_terzi(
-				commonUtils.escapeForCsv(notificationData.getRequestAcceptedAt()));
-		notification.setOggetto(commonUtils.escapeForCsv(notificationData.getSubject()));
+				escapeUtils.escapeForCsv(notificationData.getRequestAcceptedAt()));
+		notification.setOggetto(escapeUtils.escapeForCsv(notificationData.getSubject()));
 		return notification;
 	}
 	

@@ -19,7 +19,7 @@ public class ResponseConstructor {
 
 	/**
 	 * Manages the response creation phase.
-	 * 
+	 *
 	 * @param contents the contents to write in the output file (.txt) contained in
 	 *                 the output zip archive
 	 * @param fileName the name of the output file contained in the output zip
@@ -48,9 +48,7 @@ public class ResponseConstructor {
 	
 	/**
 	 * Manages the response creation phase.
-	 * 
-	 * @param contents the contents to write in the output file (.csv) contained in
-	 *                 the output zip archive
+	 *
 	 * @param zipName  the name of the output zip archive
 	 * @throws IOException in case IO errors
 	 * @return {@link DownloadArchiveResponseDto} A Dto containing a byte array
@@ -59,7 +57,7 @@ public class ResponseConstructor {
 	 * @throws CsvRequiredFieldEmptyException
 	 * @throws CsvDataTypeMismatchException
 	 */
-	public static DownloadArchiveResponseDto createCsvLogResponse(List<File> csvFiles, String zipName) throws IOException {
+	public static DownloadArchiveResponseDto createCsvFileResponse(List<File> csvFiles, String zipName) throws IOException {
 		PasswordFactory passwordFactory = new PasswordFactory();
 		String password = passwordFactory.createPassword(1, 1, 1, ValidationConstants.PASSWORD_SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();

@@ -1,4 +1,4 @@
-package it.gov.pagopa.logextractor.config.filter;
+package it.gov.pagopa.logextractor.filter;
 
 import java.io.IOException;
 import javax.servlet.FilterChain;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
-import it.gov.pagopa.logextractor.util.CommonUtilities;
+import it.gov.pagopa.logextractor.util.RandomUtils;
 import it.gov.pagopa.logextractor.util.external.cognito.CognitoApiHandler;
 
 /**
@@ -31,13 +31,12 @@ public class MDCWebFilter extends OncePerRequestFilter {
     		throw new RuntimeException("No Auth header found for current request: " + request.getRequestURI());
     	}
         try {
-        	MDC.put("trace_id", new CommonUtilities().generateRandomTraceId());
+        	MDC.put("trace_id", new RandomUtils().generateRandomTraceId());
         	MDC.put("user_identifier", cognitoApiHandler.getUserIdentifier(request.getHeader("Auth")));
             filterChain.doFilter(request, response);
         } catch (LogExtractorException e) {
         	throw new RuntimeException("Exception retrieving user identifier");
 		} finally {
-            MDC.remove("trace_id");
             MDC.remove("user_identifier");
         }
     }

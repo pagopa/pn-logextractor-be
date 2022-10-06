@@ -55,9 +55,6 @@ public class CognitoApiHandler {
         HttpEntity<String> request = new HttpEntity<>(requestBody.toString(), requestHeaders);
         String response = client.postForObject(url, request, String.class);
         String identifier = getUserUniqueIdentifier(response);
-        if(StringUtils.isBlank(identifier)) {
-    		throw new LogExtractorException("Exception in " + MDC.get("trace_id") + " process, no identifier for logged in user");
-    	}
         log.info("Getting user identifier...");
         long serviceStartTime = System.currentTimeMillis();
         String userIdentifier = deanonimizationHandler.getUniqueIdentifierForPerson(RecipientTypes.PF, identifier);
@@ -70,7 +67,7 @@ public class CognitoApiHandler {
 	 * @param userAttributes The user attributes list
 	 * @return The user identifier
 	 * */
-	private String getUserUniqueIdentifier(String userAttributes) {
+	private String getUserUniqueIdentifier(String userAttributes) throws LogExtractorException {
 		JSONArray attributes = new JSONObject(userAttributes).getJSONArray("UserAttributes");
 		for(int objIndex = 0; objIndex <attributes.length(); objIndex++) {
 			JSONObject currentAttribute = attributes.getJSONObject(objIndex);
@@ -79,6 +76,6 @@ public class CognitoApiHandler {
 				return currentAttribute.getString("Value");
 			}
 		}
-		return null;
+		throw new LogExtractorException("Exception in " + MDC.get("trace_id") + " process, no identifier for logged in user");
 	}
 }
