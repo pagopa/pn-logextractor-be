@@ -33,7 +33,7 @@ import it.gov.pagopa.logextractor.util.ResponseConstants;
  * Uility class for integrations with Piattaforma Notifiche de-anonymization service
  * */
 @Component
-public class DeanonymizationApiHandler {
+public class DeanonimizationApiHandler {
 
 	@Autowired
 	@Qualifier("simpleRestTemplate")
@@ -67,7 +67,7 @@ public class DeanonymizationApiHandler {
 	 * @throws {@link HttpClientErrorException}
 	 */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
-//	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager1Minute")
+	//@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager1Minute")
 	public String getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId) throws LogExtractorException {
 		String url = String.format(getUniqueIdURL, recipientType.toString());
 		HttpEntity<String> request =  new HttpEntity<>(taxId);
@@ -179,7 +179,7 @@ public class DeanonymizationApiHandler {
 	 * @return A list representing the de-anonymized documents 
 	 * @throws LogExtractorException 
 	 */
-	public List<String> deanonymizeDocuments(List<String> anonymizedDocuments, RecipientTypes recipientType) throws LogExtractorException{
+	public List<String> deanonimizeDocuments(List<String> anonymizedDocuments, RecipientTypes recipientType) throws LogExtractorException{
 		ArrayList<String> deanonymizedDocuments = new ArrayList<>();
 		for(int index=0; index < anonymizedDocuments.size(); index++) {
 			String uuid = JsonUtilities.getValue(anonymizedDocuments.get(index), Constants.OS_UID_FIELD);

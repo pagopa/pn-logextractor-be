@@ -33,7 +33,7 @@ public class LogController {
 	@PostMapping(value = "/persons", produces="application/json")
 	public ResponseEntity<BaseResponseDTO> getPersonActivityLogs(@Valid @RequestBody PersonLogsRequestDto personLogsDetails) throws IOException, LogExtractorException {
 		if (personLogsDetails.isDeanonimization()) {
-			return ResponseEntity.ok().body(logService.getDeanonymizedPersonLogs(personLogsDetails.getRecipientType(), personLogsDetails.getDateFrom(), personLogsDetails.getDateTo(), 
+			return ResponseEntity.ok().body(logService.getDeanonimizedPersonLogs(personLogsDetails.getRecipientType(), personLogsDetails.getDateFrom(), personLogsDetails.getDateTo(),
 					personLogsDetails.getTicketNumber(), personLogsDetails.getTaxId(),personLogsDetails.getIun()));
 		}
 		return ResponseEntity.ok().body(logService.getAnonymizedPersonLogs(personLogsDetails.getDateFrom(), personLogsDetails.getDateTo(), 

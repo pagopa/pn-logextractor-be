@@ -26,7 +26,7 @@ import it.gov.pagopa.logextractor.util.RecipientTypes;
 import it.gov.pagopa.logextractor.util.ResponseConstants;
 import it.gov.pagopa.logextractor.util.ResponseConstructor;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandler;
-import it.gov.pagopa.logextractor.util.external.pnservices.DeanonymizationApiHandler;
+import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,7 +44,7 @@ public class LogServiceImpl implements LogService {
 	OpenSearchApiHandler openSearchApiHandler;
 	
 	@Autowired
-	DeanonymizationApiHandler deanonimizationApiHandler;
+	DeanonimizationApiHandler deanonimizationApiHandler;
 
 	@Override
 	public BaseResponseDTO getAnonymizedPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId) throws IOException {
@@ -69,14 +69,20 @@ public class LogServiceImpl implements LogService {
 				openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(iun, notificationStartDate.toString(), notificationEndDate);
 			}
 		}
+		log.info("Query execution completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
 		if(openSearchResponse.isEmpty()) {
+			performanceMillis = System.currentTimeMillis();
 			BaseResponseDTO response = new BaseResponseDTO(ResponseConstants.NO_DOCUMENT_FOUND);
-        	log.info("Anonymized logs retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
+			log.info("Service response constructed in {} ms", System.currentTimeMillis() - performanceMillis);
+        	log.info("Anonymized logs retrieve process - END in {} ms",
+					(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get("validationTime")));
         	return response;
 		}
-		log.info("Query execution completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
+		performanceMillis = System.currentTimeMillis();
 		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(openSearchResponse,Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
-		log.info("Anonymized logs retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
+		log.info("Service response constructed in {} ms", System.currentTimeMillis() - performanceMillis);
+		log.info("Anonymized logs retrieve process - END in {} ms",
+				(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get("validationTime")));
 		return response;
 	}
 
@@ -95,10 +101,14 @@ public class LogServiceImpl implements LogService {
 				encodedPublicAuthorityName,  MDC.get("user_identifier"));
 		log.info("{} notifications retrieved in {} ms, constructing service response...", notifications.size(), System.currentTimeMillis() - performanceMillis);
 		if(notifications.isEmpty()) {
+			performanceMillis = System.currentTimeMillis();
 			BaseResponseDTO response = new BaseResponseDTO(ResponseConstants.NO_NOTIFICATION_FOUND);
-        	log.info("Monthly notifications retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
+			log.info("Service response constructed in {} ms", System.currentTimeMillis() - performanceMillis);
+        	log.info("Monthly notifications retrieve process - END in {} ms",
+					(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get("validationTime")));
         	return response;
 		}
+		performanceMillis = System.currentTimeMillis();
 		int numberOfFiles = (int)Math.ceil(((double)notifications.size())/Constants.CSV_FILE_MAX_ROWS);
 		int notificationPlaceholder = 0;
 		while(numberOfFiles > 0) {
@@ -117,24 +127,35 @@ public class LogServiceImpl implements LogService {
 			numberOfFiles--;
 		}
 		DownloadArchiveResponseDto response = ResponseConstructor.createCsvFileResponse(csvFiles, Constants.ZIP_ARCHIVE_NAME);
-		log.info("Monthly notifications retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
+		log.info("Service response constructed in {} ms", System.currentTimeMillis() - performanceMillis);
+		log.info("Monthly notifications retrieve process - END in {} ms",
+				(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get("validationTime")));
 		return response;
 	}
 	
 	@Override
 	public BaseResponseDTO getTraceIdLogs(String dateFrom, String dateTo, String traceId) throws IOException {
-		log.info("Anonymized logs retrieve process - START - user={}, traceId={}, startDate={}, endDate={}", MDC.get("user_identifier"), traceId, dateFrom, dateTo);
+		log.info("Anonymized logs retrieve process - START - user={}, traceId={}, startDate={}, endDate={}",
+				MDC.get("user_identifier"), traceId, dateFrom, dateTo);
 		long serviceStartTime = System.currentTimeMillis();
 		log.info("Getting anonymized logs...");
 		List<String> openSearchResponse = openSearchApiHandler.getAnonymizedLogsByTraceId(traceId, dateFrom, dateTo);
+		long performanceMillis = System.currentTimeMillis() - serviceStartTime;
+		log.info("Query execution completed in {} ms, constructing service response...", performanceMillis);
 		if(openSearchResponse.isEmpty()) {
+			performanceMillis = System.currentTimeMillis();
 			BaseResponseDTO response = new BaseResponseDTO(ResponseConstants.NO_DOCUMENT_FOUND);
-        	log.info("Anonymized logs retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
+			log.info("Service response constructed in {} ms", System.currentTimeMillis() - performanceMillis);
+        	log.info("Anonymized logs retrieve process - END in {} ms", performanceMillis +
+					Long.parseLong(MDC.get("validationTime")));
         	return response;
 		}
-		log.info("Query execution completed in {} ms, constructing service response...", System.currentTimeMillis() - serviceStartTime);
-		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(openSearchResponse,Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
-		log.info("Anonymized logs retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
+		performanceMillis = System.currentTimeMillis();
+		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(openSearchResponse,
+				Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
+		log.info("Service response constructed in {} ms", System.currentTimeMillis() - performanceMillis);
+		log.info("Anonymized logs retrieve process - END in {} ms", performanceMillis +
+				Long.parseLong(MDC.get("validationTime")));
 		return response;
 	}
 	
@@ -176,9 +197,12 @@ public class LogServiceImpl implements LogService {
         }
         if(secondsToWait > 0) {
         	log.info("Notification downloads' metadata retrieved in {} ms, physical files aren't ready yet. Constructing service response...", System.currentTimeMillis() - performanceMillis);
-        	int timeToWaitInMinutes = (int)Math.ceil(secondsToWait/60);
+			performanceMillis = System.currentTimeMillis();
+			int timeToWaitInMinutes = (int)Math.ceil(secondsToWait/60);
         	BaseResponseDTO response = new BaseResponseDTO(ResponseConstants.OPERATION_CANNOT_BE_COMPLETED_MESSAGE + timeToWaitInMinutes + (timeToWaitInMinutes > 1 ? Constants.MINUTES_LABEL : Constants.MINUTE_LABEL));
-        	log.info("Notification data retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
+			log.info("Service response constructed in {} ms", System.currentTimeMillis() - performanceMillis);
+			log.info("Notification data retrieve process - END in {} ms",
+					(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get("validationTime")));
         	return response;
         }
         else {
@@ -193,18 +217,21 @@ public class LogServiceImpl implements LogService {
         	log.info("Physical files retrieved in {} ms", System.currentTimeMillis() - performanceMillis);
         	List<String> openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(iun, notificationStartDate.toString(), notificationEndDate);
     		log.info("Query execution completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
-    		DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(openSearchResponse, filesToAdd, Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
-    		log.info("Notification data retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
+			performanceMillis = System.currentTimeMillis();
+			DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(openSearchResponse, filesToAdd, Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
+			log.info("Service response constructed in {} ms", System.currentTimeMillis() - performanceMillis);
+			log.info("Notification data retrieve process - END in {} ms",
+					(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get("validationTime")));
     		return response;
         }
 	}
 		
-	public BaseResponseDTO getDeanonymizedPersonLogs(RecipientTypes recipientType, String dateFrom, String dateTo, String ticketNumber, String taxid, String iun) throws IOException, LogExtractorException {
-		log.info("Deanonymized logs retrieve process - START - user={}, ticket number={}, taxId={}, startDate={}, endDate={}, iun={}", MDC.get("user_identifier"), ticketNumber, taxid, dateFrom, dateTo, iun);
+	public BaseResponseDTO getDeanonimizedPersonLogs(RecipientTypes recipientType, String dateFrom, String dateTo, String ticketNumber, String taxid, String iun) throws IOException, LogExtractorException {
+		log.info("Deanonimized logs retrieve process - START - user={}, ticket number={}, taxId={}, startDate={}, endDate={}, iun={}", MDC.get("user_identifier"), ticketNumber, taxid, dateFrom, dateTo, iun);
 		long serviceStartTime = System.currentTimeMillis();
 		List<String> openSearchResponse;
 		long performanceMillis = 0;
-		List<String> deanonymizedOpenSearchResponse = new ArrayList<>();	
+		List<String> deanonimizedOpenSearchResponse = new ArrayList<>();
 		//use case 3
 		if (dateFrom != null && dateTo != null && taxid != null && recipientType!=null && ticketNumber!=null && iun==null) {
 			log.info("Getting internal id...");
@@ -212,9 +239,9 @@ public class LogServiceImpl implements LogService {
 			log.info("Service response: internalId={} retrieved in {} ms", internalId, System.currentTimeMillis() - serviceStartTime);
 			performanceMillis = System.currentTimeMillis();
 			openSearchResponse = openSearchApiHandler.getAnonymizedLogsByUid(internalId, dateFrom, dateTo);
-			log.info("Query execution completed in {} ms, de-anonymizing results...", System.currentTimeMillis() - performanceMillis);
+			log.info("Query execution completed in {} ms, deanonimizing results...", System.currentTimeMillis() - performanceMillis);
 			performanceMillis = System.currentTimeMillis();
-			deanonymizedOpenSearchResponse = deanonimizationApiHandler.deanonymizeDocuments(openSearchResponse, recipientType);	
+			deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, recipientType);
 		} else{
 			//use case 4
 			if (iun!=null && ticketNumber!=null) {
@@ -225,19 +252,26 @@ public class LogServiceImpl implements LogService {
 				String notificationEndDate = notificationStartDate.plusMonths(3).toString();
 				performanceMillis = System.currentTimeMillis();
 				openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(iun, notificationStartDate.toString(), notificationEndDate);
-				log.info("Query execution completed in {} ms, de-anonymizing results...", System.currentTimeMillis() - performanceMillis);
+				log.info("Query execution completed in {} ms, deanonimizing results...",
+						System.currentTimeMillis() - performanceMillis);
 				performanceMillis = System.currentTimeMillis();
-				deanonymizedOpenSearchResponse = deanonimizationApiHandler.deanonymizeDocuments(openSearchResponse, RecipientTypes.PF);
+				deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, RecipientTypes.PF);
 			}
 		}
-		if(deanonymizedOpenSearchResponse.isEmpty()) {
+		log.info("Deanonimization completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
+		if(deanonimizedOpenSearchResponse.isEmpty()) {
+			performanceMillis = System.currentTimeMillis();
 			BaseResponseDTO response = new BaseResponseDTO(ResponseConstants.NO_DOCUMENT_FOUND);
-        	log.info("Deanonymized logs retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
-        	return response;
+			log.info("Service response constructed in {} ms", System.currentTimeMillis() - performanceMillis);
+			log.info("Deanonimized logs retrieve process - END in {} ms",
+					(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get("validationTime")));
+			return response;
 		}
-		log.info("Deanonymization completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
-		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(deanonymizedOpenSearchResponse,Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
-		log.info("Deanonymized logs retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
+		performanceMillis = System.currentTimeMillis();
+		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(deanonimizedOpenSearchResponse,Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
+		log.info("Service response constructed in {} ms", System.currentTimeMillis() - performanceMillis);
+		log.info("deanonimized logs retrieve process - END in {} ms",
+				(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get("validationTime")));
 		return response;
 	}
 }

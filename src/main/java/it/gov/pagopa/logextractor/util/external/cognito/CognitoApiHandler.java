@@ -1,6 +1,5 @@
 package it.gov.pagopa.logextractor.util.external.cognito;
 
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.MDC;
@@ -15,11 +14,10 @@ import org.springframework.web.client.RestTemplate;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
 import it.gov.pagopa.logextractor.util.Constants;
 import it.gov.pagopa.logextractor.util.RecipientTypes;
-import it.gov.pagopa.logextractor.util.external.pnservices.DeanonymizationApiHandler;
-import lombok.extern.slf4j.Slf4j;
+import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
 
 @Component
-@Slf4j
+
 /**
  * Uility class for integrations with Cognito service
  * */
@@ -36,7 +34,7 @@ public class CognitoApiHandler {
 	String cognitoUserUrl;
 	
 	@Autowired
-	DeanonymizationApiHandler deanonimizationHandler;
+	DeanonimizationApiHandler deanonimizationHandler;
 	
 	/**
 	 * Performs a GET HTTP request to the Cognito user pool to get the logged in user identifier
@@ -55,10 +53,7 @@ public class CognitoApiHandler {
         HttpEntity<String> request = new HttpEntity<>(requestBody.toString(), requestHeaders);
         String response = client.postForObject(url, request, String.class);
         String identifier = getUserUniqueIdentifier(response);
-        log.info("Getting user identifier...");
-        long serviceStartTime = System.currentTimeMillis();
         String userIdentifier = deanonimizationHandler.getUniqueIdentifierForPerson(RecipientTypes.PF, identifier);
-        log.info("User identifier retrieved in {} ms", System.currentTimeMillis() - serviceStartTime);
         return userIdentifier;
 	}
 	

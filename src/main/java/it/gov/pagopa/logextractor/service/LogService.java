@@ -31,7 +31,6 @@ public interface LogService {
 	 * 
 	 * @param ticketNumber the ticket number the user is working on
 	 * @param referenceMonth the reference month for the notifications' extraction
-	 * @param ipaCode the public authority identifier
 	 * @return {@link BaseResponseDTO} containing a byte array
 	 *         representation of the output zip archive and the password to access
 	 *         its files
@@ -70,7 +69,7 @@ public interface LogService {
 	 *         its files
 	 * @throws IOException
 	 */	
-	BaseResponseDTO getDeanonymizedPersonLogs(RecipientTypes recipientType, String dateFrom, String dateTo, String ticketNumber, String taxid,String iun) throws IOException, LogExtractorException;
+	BaseResponseDTO getDeanonimizedPersonLogs(RecipientTypes recipientType, String dateFrom, String dateTo, String ticketNumber, String taxid,String iun) throws IOException, LogExtractorException;
 	
 	/**
 	 * Service method that retrieves the whole information about a notification -
