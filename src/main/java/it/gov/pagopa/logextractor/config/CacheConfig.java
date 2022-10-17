@@ -1,6 +1,8 @@
 package it.gov.pagopa.logextractor.config;
 
 import java.time.Duration;
+
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -32,8 +34,11 @@ public class CacheConfig {
     JedisConnectionFactory jedisConnectionFactory() {
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(redisHostName, redisPort);
         JedisConnectionFactory conf = new JedisConnectionFactory(redisStandaloneConfiguration);
-        conf.getPoolConfig().setMaxIdle(30);
-        conf.getPoolConfig().setMinIdle(10);
+        GenericObjectPoolConfig poolConfig = conf.getPoolConfig();
+        if(poolConfig != null) {
+            poolConfig.setMaxIdle(30);
+            poolConfig.setMinIdle(10);
+        }
         return conf;
     }
  

@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import com.opencsv.ICSVWriter;
+import it.gov.pagopa.logextractor.exception.LogExtractorException;
 import org.apache.commons.io.FileUtils;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
@@ -52,30 +53,25 @@ public class FileUtilities {
 				write(file, contentTemp+"\n");
 			}
 		}
-	}	
-	
-	/**
-	 * Clean up the input file
-	 * @param file The file to clean
-	 * @throws IOException in case of an I/O error
-	 * */
-	public void cleanFile(File file) throws IOException {
-		FileUtils.writeStringToFile(file, "", StandardCharsets.UTF_8);
 	}
 	
 	/**
 	 * Delete an existing file
 	 * @param file The file to be deleted
 	 * */
-	public void deleteFile(File file) {
-		file.delete();
+	public void deleteFile(File file) throws LogExtractorException {
+
+		boolean fileHasBeenDeleted = file.delete();
+		if(!fileHasBeenDeleted){
+			throw new LogExtractorException("Exception in file elimination, could not delete file: " + file.getName());
+		}
 	}
 	
 	/**
 	 * Delete the files of the input file list
 	 * @param files The list of files to be deleted
 	 * */
-	public void deleteFiles(List<File> files) {
+	public void deleteFiles(List<File> files) throws LogExtractorException {
 		for(File fileToDelete : files) {
 			deleteFile(fileToDelete);
 		}

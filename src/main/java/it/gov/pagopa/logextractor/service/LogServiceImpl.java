@@ -47,7 +47,7 @@ public class LogServiceImpl implements LogService {
 	DeanonimizationApiHandler deanonimizationApiHandler;
 
 	@Override
-	public BaseResponseDTO getAnonymizedPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId) throws IOException {
+	public BaseResponseDTO getAnonymizedPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId) throws IOException, LogExtractorException {
 		log.info("Anonymized logs retrieve process - START - user={}, ticket number={}, internalId={}, startDate={}, endDate={}, iun={}", MDC.get("user_identifier"), ticketNumber, personId, dateFrom, dateTo, iun);
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
@@ -136,7 +136,7 @@ public class LogServiceImpl implements LogService {
 	}
 	
 	@Override
-	public BaseResponseDTO getTraceIdLogs(String dateFrom, String dateTo, String traceId) throws IOException {
+	public BaseResponseDTO getTraceIdLogs(String dateFrom, String dateTo, String traceId) throws IOException, LogExtractorException {
 		log.info("Anonymized logs retrieve process - START - user={}, traceId={}, startDate={}, endDate={}",
 				MDC.get("user_identifier"), traceId, dateFrom, dateTo);
 		long serviceStartTime = System.currentTimeMillis();
@@ -163,7 +163,7 @@ public class LogServiceImpl implements LogService {
 	}
 	
 	@Override
-	public BaseResponseDTO getNotificationInfoLogs(String ticketNumber, String iun) throws IOException, InterruptedException {
+	public BaseResponseDTO getNotificationInfoLogs(String ticketNumber, String iun) throws IOException, InterruptedException, LogExtractorException {
 		log.info("Notification data retrieve process - START - user={}, ticket number={}, iun={}", MDC.get("user_identifier"), ticketNumber, iun);
 		ArrayList<String> downloadKeys = new ArrayList<>();
 		ArrayList<String> downloadUrls = new ArrayList<>();

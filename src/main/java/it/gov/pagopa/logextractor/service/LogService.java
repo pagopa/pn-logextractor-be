@@ -50,7 +50,7 @@ public interface LogService {
 	 *         its files
 	 * @throws IOException
 	 */
-	BaseResponseDTO getTraceIdLogs(String dateFrom, String dateTo, String traceId) throws IOException;
+	BaseResponseDTO getTraceIdLogs(String dateFrom, String dateTo, String traceId) throws IOException, LogExtractorException;
 	
 	/**
 	 * Service method that retrieves the de-anonymized logs related to a person's activities history in a period
@@ -82,5 +82,5 @@ public interface LogService {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	BaseResponseDTO getNotificationInfoLogs(String ticketNumber, String iun) throws IOException, InterruptedException;
+	BaseResponseDTO getNotificationInfoLogs(String ticketNumber, String iun) throws IOException, InterruptedException, LogExtractorException;
 }
