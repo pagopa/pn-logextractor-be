@@ -1,12 +1,12 @@
 package it.gov.pagopa.logextractor.service;
 
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.GetBasicDataResponseDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpServerErrorException;
-import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
-import it.gov.pagopa.logextractor.util.RecipientTypes;
 import it.gov.pagopa.logextractor.util.ResponseConstants;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +44,9 @@ public class PersonServiceImpl implements PersonService {
 		long performanceMillis = System.currentTimeMillis() - serviceStartTime;
 		log.info("Internal id retrieved in {} ms", performanceMillis);
 		log.info("Internal id retrieve process - END in {} ms", performanceMillis + Long.parseLong(MDC.get("validationTime")));
-		return GetBasicDataResponseDto.builder().data(response).message(ResponseConstants.SUCCESS_RESPONSE_MESSAGE).build();
+		GetBasicDataResponseDto serviceResponse = new GetBasicDataResponseDto();
+		serviceResponse.setData(response);
+		serviceResponse.setMessage(ResponseConstants.SUCCESS_RESPONSE_MESSAGE);
+		return serviceResponse;
 	}	
 }

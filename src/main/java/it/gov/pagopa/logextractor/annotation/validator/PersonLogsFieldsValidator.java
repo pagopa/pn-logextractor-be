@@ -3,7 +3,7 @@ package it.gov.pagopa.logextractor.annotation.validator;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import it.gov.pagopa.logextractor.annotation.PersonLogsFields;
-import it.gov.pagopa.logextractor.dto.request.PersonLogsRequestDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.PersonLogsRequestDto;
 
 /**
  * Validation class for {@link PersonLogsFields} custom annotation

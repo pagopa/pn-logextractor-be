@@ -33,7 +33,7 @@ public class MockLogController extends AbstractMock {
 
 	@Test
 	public void test_useCase10() throws Exception {
-		test_getProcesses("dateFrom", "dateTo", "ticketNumber", "traceId");
+		test_getProcesses("2022-06-01", "2022-07-01", "ticketNumber", "traceId");
 	}
 	public void test_getPersonsLogsPA(int useCase, boolean isDeanonimization, String json) throws Exception {
 		// use case 3 PA

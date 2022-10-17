@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class PublicAuthorityMappingResponseDTO {
+public class PublicAuthorityMappingResponseDto {
 
 	private String id;
 	private String name;

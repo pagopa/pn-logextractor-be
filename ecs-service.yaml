@@ -540,7 +540,7 @@ Resources:
           HealthCheck:
             Command:
               - CMD-SHELL
-              - "curl -f http://localhost:8080/logextractor/v1/health-check/status || exit 1"
+              - "curl -f http://localhost:8080/health-check/status || exit 1"
           PortMappings:
             - ContainerPort: 8080
           # Send logs to CloudWatch Logs
@@ -626,7 +626,7 @@ Resources:
       Port: 8080
       HealthCheckEnabled: true
       HealthCheckIntervalSeconds: 300
-      HealthCheckPath: /logextractor/v1/health-check/status
+      HealthCheckPath: /health-check/status
       HealthCheckPort: 8080
       HealthCheckProtocol: HTTP
       Matcher:

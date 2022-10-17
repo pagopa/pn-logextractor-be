@@ -3,6 +3,8 @@ package it.gov.pagopa.logextractor.util.external.opensearch;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import it.gov.pagopa.logextractor.util.Constants;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
@@ -18,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import it.gov.pagopa.logextractor.util.Constants;
 import it.gov.pagopa.logextractor.util.SortOrders;
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,8 +57,10 @@ public class OpenSearchApiHandler {
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		log.info("Constructing Opensearch query...");
 //		queryParams.put("uid.keyword", StringUtils.substring(uid, 3));
-		queryParams.put(Constants.OS_UID_FIELD, StringUtils.substring(uid, 3));
-		queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
+		String queryUid = StringUtils.startsWithIgnoreCase(uid, Constants.UID_APIKEY_PREFIX) ?
+				StringUtils.substring(uid, 7) : StringUtils.substring(uid, 3);
+		queryParams.put(Constants.OS_UID_FIELD, queryUid);
+		queryData.add(queryConstructor.prepareQueryData(Constants.QUERY_INDEX_ALIAS, queryParams,
 				new OpenSearchRangeQueryData(Constants.OS_TIMESTAMP_FIELD, dateFrom, dateTo),
 				new OpenSearchSortFilter(Constants.OS_TIMESTAMP_FIELD, SortOrders.ASC)));
 		String query = queryConstructor.createBooleanMultiSearchQuery(queryData);
@@ -79,7 +82,7 @@ public class OpenSearchApiHandler {
 		log.info("Constructing Opensearch query...");
 //		queryParams.put("iun.keyword", iun);
 		queryParams.put(Constants.OS_IUN_FIELD, iun);
-		queryData.add(queryConstructor.prepareQueryData("pn-logs", queryParams, 
+		queryData.add(queryConstructor.prepareQueryData(Constants.QUERY_INDEX_ALIAS, queryParams,
 				new OpenSearchRangeQueryData(Constants.OS_TIMESTAMP_FIELD, dateFrom, dateTo), 
 				new OpenSearchSortFilter(Constants.OS_TIMESTAMP_FIELD, SortOrders.ASC)));
 		String query = queryConstructor.createBooleanMultiSearchQuery(queryData);
@@ -100,7 +103,7 @@ public class OpenSearchApiHandler {
 		log.info("Constructing Opensearch query...");
 //		queryParams.put("root_trace_id.keyword", traceId);
 		queryParams.put(Constants.OS_TRACE_ID_FIELD, traceId);
-		OpenSearchQuerydata queryData = queryConstructor.prepareQueryData("pn-logs", queryParams, 
+		OpenSearchQuerydata queryData = queryConstructor.prepareQueryData(Constants.QUERY_INDEX_ALIAS, queryParams,
 				new OpenSearchRangeQueryData(Constants.OS_TIMESTAMP_FIELD, dateFrom, dateTo), 
 				new OpenSearchSortFilter(Constants.OS_TIMESTAMP_FIELD, SortOrders.ASC));
 		ArrayList<OpenSearchQuerydata> listOfQueryData = new ArrayList<>();
@@ -113,8 +116,6 @@ public class OpenSearchApiHandler {
 	/**
 	 * Performs a multi-search HTTP GET request to the Opensearch service
 	 * @param query The multi-search query to the sent
-	 * @param basicAuthUsername The username for the basic authentication
-	 * @param basicAuthPassword The password for the basic authentication
 	 * @return The documents list contained into the Opensearch response
 	 * */
 	private ArrayList<String> getDocumentsByMultiSearchQuery(String query) {

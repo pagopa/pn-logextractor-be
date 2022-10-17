@@ -6,7 +6,8 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 import it.gov.pagopa.logextractor.annotation.PeriodOf3Months;
-import it.gov.pagopa.logextractor.dto.request.PersonLogsRequestDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.PersonLogsRequestDto;
+
 
 /**
  * Validation class for {@link PeriodOf3Months} custom annotation

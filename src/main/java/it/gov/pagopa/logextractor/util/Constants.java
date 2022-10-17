@@ -20,6 +20,8 @@ public class Constants {
 	public static final String DOCUMENT_LABEL = "Document";
 	public static final String SAFESTORAGE_PREFIX = "safestorage://";
 	public static final int PAGE_SIZE = 1000;
+
+	public static final String ERROR_MESSAGE_KEY = "message";
 	public static final int CSV_FILE_MAX_ROWS = 200000;
 	
 	//Opensearch
@@ -29,6 +31,8 @@ public class Constants {
 	public static final String OS_CX_ID_FIELD = "cx_id";
 	public static final String OS_TRACE_ID_FIELD = "root_trace_id";
 	public static final String OS_MULTI_SEARCH_SUFFIX = "/_msearch";
+	public static final String UID_APIKEY_PREFIX = "APIKEY-";
+	public static final String QUERY_INDEX_ALIAS = "pn-logs";
 	
 	//External PN services
 	public static final String EXT_END_DATE_PARAM = "endDate";

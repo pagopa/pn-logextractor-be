@@ -4,7 +4,7 @@ WORKDIR /pn-logextractor-build/
 
 COPY . .
 
-RUN  mvn package -Dmaven.test.skip=true
+RUN  mvn clean package -Dmaven.test.skip=true
 
 FROM eclipse-temurin:11-jre-alpine
 

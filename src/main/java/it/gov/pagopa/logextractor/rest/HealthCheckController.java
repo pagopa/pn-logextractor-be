@@ -1,16 +1,14 @@
 package it.gov.pagopa.logextractor.rest;
 
+import it.gov.pagopa.logextractor.pn_logextractor_be.api.HealthCheckApi;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/logextractor/v1/health-check")
-public class HealthCheckController {
+public class HealthCheckController implements HealthCheckApi {
 
-	@GetMapping("/status")
-	public ResponseEntity getHealthStatus() {
+	@Override
+	public ResponseEntity<Void> getHealthStatus() {
 		return ResponseEntity.ok().build();
 	}
 }

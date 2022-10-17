@@ -4,7 +4,7 @@ import it.gov.pagopa.logextractor.dto.FileDownloadInfo;
 import lombok.Getter;
 
 @Getter
-public class FileDownloadMetadataResponseDTO {
+public class FileDownloadMetadataResponseDto {
 
 	private String key;
 	private String versionId;

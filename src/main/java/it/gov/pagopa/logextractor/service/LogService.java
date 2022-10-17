@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.text.ParseException;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
-import it.gov.pagopa.logextractor.dto.response.BaseResponseDTO;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
-import it.gov.pagopa.logextractor.util.RecipientTypes;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.BaseResponseDTO;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 
 public interface LogService {
 	
@@ -31,9 +31,7 @@ public interface LogService {
 	 * 
 	 * @param ticketNumber the ticket number the user is working on
 	 * @param referenceMonth the reference month for the notifications' extraction
-	 * @return {@link BaseResponseDTO} containing a byte array
-	 *         representation of the output zip archive and the password to access
-	 *         its files
+	 * @return A byte array representation of the output zip archive and the password to access its files
 	 * @throws IOException
 	 * @throws ParseException
 	 * @throws CsvDataTypeMismatchException
@@ -69,7 +67,7 @@ public interface LogService {
 	 *         its files
 	 * @throws IOException
 	 */	
-	BaseResponseDTO getDeanonimizedPersonLogs(RecipientTypes recipientType, String dateFrom, String dateTo, String ticketNumber, String taxid,String iun) throws IOException, LogExtractorException;
+	BaseResponseDTO getDeanonimizedPersonLogs(RecipientTypes recipientType, String dateFrom, String dateTo, String ticketNumber, String taxid, String iun) throws IOException, LogExtractorException;
 	
 	/**
 	 * Service method that retrieves the whole information about a notification -

@@ -1,5 +1,8 @@
 package it.gov.pagopa.logextractor.util.external.cognito;
 
+import it.gov.pagopa.logextractor.util.Constants;
+import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.MDC;
@@ -10,11 +13,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
-import it.gov.pagopa.logextractor.util.Constants;
-import it.gov.pagopa.logextractor.util.RecipientTypes;
-import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
 
 @Component
 
@@ -34,7 +33,7 @@ public class CognitoApiHandler {
 	String cognitoUserUrl;
 	
 	@Autowired
-	DeanonimizationApiHandler deanonimizationHandler;
+    DeanonimizationApiHandler deanonimizationHandler;
 	
 	/**
 	 * Performs a GET HTTP request to the Cognito user pool to get the logged in user identifier

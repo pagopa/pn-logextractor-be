@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import it.gov.pagopa.logextractor.util.Constants;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +26,10 @@ import it.gov.pagopa.logextractor.dto.NotificationDetailsTimelineData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsTimelineLegalFactsData;
 import it.gov.pagopa.logextractor.dto.NotificationGeneralData;
 import it.gov.pagopa.logextractor.dto.NotificationData;
-import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDTO;
+import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
-import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDTO;
+import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationsGeneralDataResponseDto;
-import it.gov.pagopa.logextractor.util.Constants;
 
 /**
  * Uility class for integrations with Piattaforma Notifiche notifcations related services
@@ -151,9 +152,9 @@ public class NotificationApiHandler {
 	/**
 	 * Performs a GET HTTP request to obtain the download metadata associated with the input document key
 	 * @param key The document key
-	 * @return A {@link FileDownloadMetadataResponseDTO} representing the download metadata
+	 * @return A {@link FileDownloadMetadataResponseDto} representing the download metadata
 	 */
-	public FileDownloadMetadataResponseDTO getDownloadMetadata(String key) {
+	public FileDownloadMetadataResponseDto getDownloadMetadata(String key) {
 		String url = String.format(downloadFileURL, safeStorageEndpoint, safeStorageStage, key);
 		HttpHeaders requestHeaders = new HttpHeaders();
 		requestHeaders.setContentType(MediaType.APPLICATION_PDF);
@@ -162,7 +163,7 @@ public class NotificationApiHandler {
 		acceptedTypes.add(MediaType.APPLICATION_PDF);
 		requestHeaders.setAccept(acceptedTypes);
 		HttpEntity<?> entity = new HttpEntity<>(requestHeaders);
-		return client.exchange(url, HttpMethod.GET, entity, FileDownloadMetadataResponseDTO.class).getBody();
+		return client.exchange(url, HttpMethod.GET, entity, FileDownloadMetadataResponseDto.class).getBody();
 	}
 	
 	/**
@@ -187,9 +188,9 @@ public class NotificationApiHandler {
 	 * @param iun The notification IUN
 	 * @param numberOfRecipients The nnumber of recipients associated to the notification
 	 * @param createdAt The notification creation date
-	 * @return A {@link NotificationHistoryResponseDTO} representing the notification history
+	 * @return A {@link NotificationHistoryResponseDto} representing the notification history
 	 * */
-	public NotificationHistoryResponseDTO getNotificationHistory(String iun, int numberOfRecipients, String createdAt) {
+	public NotificationHistoryResponseDto getNotificationHistory(String iun, int numberOfRecipients, String createdAt) {
 		String url = String.format(notificationHistoryURL, iun);
 		HttpHeaders headers = new HttpHeaders();
 		headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
@@ -202,7 +203,7 @@ public class NotificationApiHandler {
 		Map<String, Object> params = new HashMap<>();
 		params.put(Constants.EXT_NUM_RECIPIENTS_PARAM, numberOfRecipients);
 		params.put(Constants.EXT_CREATED_AT_PARAM, createdAt);
-		return client.exchange(urlTemplate, HttpMethod.GET, entity, NotificationHistoryResponseDTO.class, params).getBody();
+		return client.exchange(urlTemplate, HttpMethod.GET, entity, NotificationHistoryResponseDto.class, params).getBody();
 	}
 	
 	/**
@@ -210,7 +211,7 @@ public class NotificationApiHandler {
 	 * @param notificationInfo The notification details
 	 * @return The keys list
 	 * */
-	public List<String> getLegalFactKeys(NotificationHistoryResponseDTO notificationInfo) {
+	public List<String> getLegalFactKeys(NotificationHistoryResponseDto notificationInfo) {
 		ArrayList<String> legalFactKeys = new ArrayList<>();
 		if(null != notificationInfo.getTimeline()) {
 			for (NotificationDetailsTimelineData timelineObject : notificationInfo.getTimeline()) {

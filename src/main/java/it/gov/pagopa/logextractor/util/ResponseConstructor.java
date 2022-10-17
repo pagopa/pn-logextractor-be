@@ -43,7 +43,11 @@ public class ResponseConstructor {
 		byte[] zipfile = zipFactory.toByteArray(zipArchive);
 		utils.deleteFile(file);
 		utils.deleteFile(FileUtils.getFile(zipArchive.toString()));
-		return DownloadArchiveResponseDto.builder().password(password).zip(zipfile).message(ResponseConstants.SUCCESS_RESPONSE_MESSAGE).build();
+		DownloadArchiveResponseDto serviceResponse = new DownloadArchiveResponseDto();
+		serviceResponse.setPassword(password);
+		serviceResponse.setZip(zipfile);
+		serviceResponse.setMessage(ResponseConstants.SUCCESS_RESPONSE_MESSAGE);
+		return serviceResponse;
 	}
 	
 	/**
@@ -68,7 +72,11 @@ public class ResponseConstructor {
 		byte[] zipfile = zipFactory.toByteArray(zipArchive);
 		utils.deleteFiles(csvFiles);
 		utils.deleteFile(FileUtils.getFile(zipArchive.toString()));
-		return DownloadArchiveResponseDto.builder().password(password).zip(zipfile).message(ResponseConstants.SUCCESS_RESPONSE_MESSAGE).build();
+		DownloadArchiveResponseDto serviceResponse = new DownloadArchiveResponseDto();
+		serviceResponse.setPassword(password);
+		serviceResponse.setZip(zipfile);
+		serviceResponse.setMessage(ResponseConstants.SUCCESS_RESPONSE_MESSAGE);
+		return serviceResponse;
 	}
 	
 	/**
@@ -101,6 +109,10 @@ public class ResponseConstructor {
 		utils.deleteFiles(filesToAdd);
 		utils.deleteFile(file);
 		utils.deleteFile(FileUtils.getFile(zipArchive.toString()));
-		return DownloadArchiveResponseDto.builder().password(password).zip(zipfile).message(ResponseConstants.SUCCESS_RESPONSE_MESSAGE).build();
+		DownloadArchiveResponseDto serviceResponse = new DownloadArchiveResponseDto();
+		serviceResponse.setPassword(password);
+		serviceResponse.setZip(zipfile);
+		serviceResponse.setMessage(ResponseConstants.SUCCESS_RESPONSE_MESSAGE);
+		return serviceResponse;
 	}
 }

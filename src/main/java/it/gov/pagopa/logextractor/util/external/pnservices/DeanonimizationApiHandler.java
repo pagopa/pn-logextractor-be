@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import it.gov.pagopa.logextractor.util.Constants;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.GetBasicDataResponseDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,15 +22,11 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import it.gov.pagopa.logextractor.annotation.RecipientType;
-import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInternalIdResponseDto;
-import it.gov.pagopa.logextractor.dto.response.PublicAuthorityMappingResponseDTO;
+import it.gov.pagopa.logextractor.dto.response.PublicAuthorityMappingResponseDto;
 import it.gov.pagopa.logextractor.dto.response.SelfCarePaDataResponseDto;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
-import it.gov.pagopa.logextractor.util.Constants;
 import it.gov.pagopa.logextractor.util.JsonUtilities;
-import it.gov.pagopa.logextractor.util.RecipientTypes;
 import it.gov.pagopa.logextractor.util.ResponseConstants;
 
 /**
@@ -57,7 +57,7 @@ public class DeanonimizationApiHandler {
 	 * id of a person
 	 * 
 	 * @param recipientType      represents the two values of the enum
-	 *                           {@link RecipientType}.
+	 *                           {@link RecipientTypes}.
 	 * @param taxId              the tax id of a person
 	 * 
 	 * @return object of type {@link GetBasicDataResponseDto}, containing the unique
@@ -69,7 +69,7 @@ public class DeanonimizationApiHandler {
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 	//@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager1Minute")
 	public String getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId) throws LogExtractorException {
-		String url = String.format(getUniqueIdURL, recipientType.toString());
+		String url = String.format(getUniqueIdURL, recipientType.getValue());
 		HttpEntity<String> request =  new HttpEntity<>(taxId);
 		String response = client.postForObject(url, request, String.class);
 		if(StringUtils.isBlank(response) || "null".equalsIgnoreCase(response)) {
@@ -84,7 +84,6 @@ public class DeanonimizationApiHandler {
 	 * retrieve the tax code of a person, given the person's unique identifier
 	 * 
 	 * @param personId           the unique identifier of a person
-	 * @param externalServiceUrl he url of the external endpoint that the method
 	 *                           needs to make a request to Piattaforma Notifiche
 	 *                           service
 	 * @return object of type {@link GetBasicDataResponseDto}, containing the tax
@@ -116,12 +115,14 @@ public class DeanonimizationApiHandler {
 				|| "null".equalsIgnoreCase(response[0].getTaxId())) {
 			throw new LogExtractorException("Anonymized tax id is null");
 		}
-		return GetBasicDataResponseDto.builder().data(response[0].getTaxId()).message(ResponseConstants.SUCCESS_RESPONSE_MESSAGE).build();
+		GetBasicDataResponseDto serviceResponse = new GetBasicDataResponseDto();
+		serviceResponse.setData(response[0].getTaxId());
+		serviceResponse.setMessage(ResponseConstants.SUCCESS_RESPONSE_MESSAGE);
+		return serviceResponse;
 	}
 	
 	/**
 	 * Performs a GET HTTP request to the PN external service to retrieve the general data of the notifications managed within a period
-	 * @param ipaCode The public authority code
 	 * @return The list of notifications' general data
 	 * @throws LogExtractorException 
 	 * @throws {@link HttpServerErrorException}
@@ -139,11 +140,11 @@ public class DeanonimizationApiHandler {
 		        .toUriString();
 		Map<String, String> params = new HashMap<>();
 		params.put("publicAuthorityName", publicAuthorityName);
-		PublicAuthorityMappingResponseDTO[] response = client.exchange(
+		PublicAuthorityMappingResponseDto[] response = client.exchange(
 				urlTemplate, 
 				HttpMethod.GET,
 				entity,
-				PublicAuthorityMappingResponseDTO[].class,
+				PublicAuthorityMappingResponseDto[].class,
 		        params)
 				.getBody();
 		if(response == null || response.length == 0 || response[0] == null || StringUtils.isBlank(response[0].getId()) 
@@ -174,20 +175,19 @@ public class DeanonimizationApiHandler {
 	
 	/** 
 	 * Returns the value associated with the specified key.
-	 * @param anonymizedDocument the document containing the content to write in the output file (.txt, .csv) contained in the output zip archive
-	 * @param getTaxCodeURL the url of de-anonymization service
+	 * @param anonymizedDocuments the document list containing the content to write in the output file (.txt, .csv) contained in the output zip archive
 	 * @return A list representing the de-anonymized documents 
 	 * @throws LogExtractorException 
 	 */
 	public List<String> deanonimizeDocuments(List<String> anonymizedDocuments, RecipientTypes recipientType) throws LogExtractorException{
 		ArrayList<String> deanonymizedDocuments = new ArrayList<>();
 		for(int index=0; index < anonymizedDocuments.size(); index++) {
-			String uuid = JsonUtilities.getValue(anonymizedDocuments.get(index), Constants.OS_UID_FIELD);
+			String uid = JsonUtilities.getValue(anonymizedDocuments.get(index), Constants.OS_UID_FIELD);
 			String cxId = JsonUtilities.getValue(anonymizedDocuments.get(index), Constants.OS_CX_ID_FIELD);
 			String document = anonymizedDocuments.get(index);
 			HashMap<String,String> keyValues = new HashMap<>();
-			if(uuid != null && !StringUtils.startsWith(uuid, "APIKEY-")) {
-				GetBasicDataResponseDto taxCodeDto = getTaxCodeForPerson(recipientType.toString() + "-" + uuid);
+			if(uid != null && !StringUtils.startsWith(uid, "APIKEY-")) {
+				GetBasicDataResponseDto taxCodeDto = getTaxCodeForPerson(recipientType.toString() + "-" + uid);
 				keyValues.put(Constants.OS_UID_FIELD, taxCodeDto.getData());
 			}
 			if(cxId != null) {

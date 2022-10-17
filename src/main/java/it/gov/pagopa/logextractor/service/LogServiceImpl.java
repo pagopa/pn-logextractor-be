@@ -6,6 +6,8 @@ import java.text.ParseException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.BaseResponseDTO;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,15 +16,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import it.gov.pagopa.logextractor.dto.NotificationData;
-import it.gov.pagopa.logextractor.dto.response.BaseResponseDTO;
 import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
-import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDTO;
+import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
-import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDTO;
+import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDto;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
 import it.gov.pagopa.logextractor.util.Constants;
 import it.gov.pagopa.logextractor.util.FileUtilities;
-import it.gov.pagopa.logextractor.util.RecipientTypes;
 import it.gov.pagopa.logextractor.util.ResponseConstants;
 import it.gov.pagopa.logextractor.util.ResponseConstructor;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandler;
@@ -72,7 +72,8 @@ public class LogServiceImpl implements LogService {
 		log.info("Query execution completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
 		if(openSearchResponse.isEmpty()) {
 			performanceMillis = System.currentTimeMillis();
-			BaseResponseDTO response = new BaseResponseDTO(ResponseConstants.NO_DOCUMENT_FOUND);
+			BaseResponseDTO response = new BaseResponseDTO();
+			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND);
 			log.info("Service response constructed in {} ms", System.currentTimeMillis() - performanceMillis);
         	log.info("Anonymized logs retrieve process - END in {} ms",
 					(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get("validationTime")));
@@ -102,7 +103,8 @@ public class LogServiceImpl implements LogService {
 		log.info("{} notifications retrieved in {} ms, constructing service response...", notifications.size(), System.currentTimeMillis() - performanceMillis);
 		if(notifications.isEmpty()) {
 			performanceMillis = System.currentTimeMillis();
-			BaseResponseDTO response = new BaseResponseDTO(ResponseConstants.NO_NOTIFICATION_FOUND);
+			BaseResponseDTO response = new BaseResponseDTO();
+			response.setMessage(ResponseConstants.NO_NOTIFICATION_FOUND);
 			log.info("Service response constructed in {} ms", System.currentTimeMillis() - performanceMillis);
         	log.info("Monthly notifications retrieve process - END in {} ms",
 					(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get("validationTime")));
@@ -144,7 +146,8 @@ public class LogServiceImpl implements LogService {
 		log.info("Query execution completed in {} ms, constructing service response...", performanceMillis);
 		if(openSearchResponse.isEmpty()) {
 			performanceMillis = System.currentTimeMillis();
-			BaseResponseDTO response = new BaseResponseDTO(ResponseConstants.NO_DOCUMENT_FOUND);
+			BaseResponseDTO response = new BaseResponseDTO();
+			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND);
 			log.info("Service response constructed in {} ms", System.currentTimeMillis() - performanceMillis);
         	log.info("Anonymized logs retrieve process - END in {} ms", performanceMillis +
 					Long.parseLong(MDC.get("validationTime")));
@@ -174,7 +177,7 @@ public class LogServiceImpl implements LogService {
 		OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
 		String notificationEndDate = notificationStartDate.plusMonths(3).toString();
 		log.info("Service response: notificationDetails={} retrieved in {} ms, getting history data...", mapper.writer().writeValueAsString(notificationDetails), System.currentTimeMillis() - serviceStartTime);
-		NotificationHistoryResponseDTO notificationHistory = notificationApiHandler.getNotificationHistory(iun, notificationDetails.getRecipients().size(), notificationStartDate.toString());
+		NotificationHistoryResponseDto notificationHistory = notificationApiHandler.getNotificationHistory(iun, notificationDetails.getRecipients().size(), notificationStartDate.toString());
 		log.info("Service response: notificationHistory={} retrieved in {} ms, getting legal facts' keys...", mapper.writer().writeValueAsString(notificationHistory), System.currentTimeMillis() - serviceStartTime);
 		long performanceMillis = System.currentTimeMillis();
 		downloadKeys.addAll(notificationApiHandler.getLegalFactKeys(notificationHistory));
@@ -187,7 +190,7 @@ public class LogServiceImpl implements LogService {
         log.info("Notification payment' keys retrieved in {} ms, getting downloads' metadata...", System.currentTimeMillis() - performanceMillis);
         performanceMillis = System.currentTimeMillis();
         for(String key : downloadKeys) {
-        	FileDownloadMetadataResponseDTO downloadData = notificationApiHandler.getDownloadMetadata(key);
+        	FileDownloadMetadataResponseDto downloadData = notificationApiHandler.getDownloadMetadata(key);
         	downloadUrls.add(downloadData.getDownload().getUrl());
         	if(null != downloadData && null != downloadData.getDownload() 
         			&& null == downloadData.getDownload().getUrl() && null != downloadData.getDownload().getRetryAfter()
@@ -199,7 +202,9 @@ public class LogServiceImpl implements LogService {
         	log.info("Notification downloads' metadata retrieved in {} ms, physical files aren't ready yet. Constructing service response...", System.currentTimeMillis() - performanceMillis);
 			performanceMillis = System.currentTimeMillis();
 			int timeToWaitInMinutes = (int)Math.ceil(secondsToWait/60);
-        	BaseResponseDTO response = new BaseResponseDTO(ResponseConstants.OPERATION_CANNOT_BE_COMPLETED_MESSAGE + timeToWaitInMinutes + (timeToWaitInMinutes > 1 ? Constants.MINUTES_LABEL : Constants.MINUTE_LABEL));
+        	BaseResponseDTO response = new BaseResponseDTO();
+			response.setMessage(ResponseConstants.OPERATION_CANNOT_BE_COMPLETED_MESSAGE + timeToWaitInMinutes +
+					(timeToWaitInMinutes > 1 ? Constants.MINUTES_LABEL : Constants.MINUTE_LABEL));
 			log.info("Service response constructed in {} ms", System.currentTimeMillis() - performanceMillis);
 			log.info("Notification data retrieve process - END in {} ms",
 					(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get("validationTime")));
@@ -261,7 +266,8 @@ public class LogServiceImpl implements LogService {
 		log.info("Deanonimization completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
 		if(deanonimizedOpenSearchResponse.isEmpty()) {
 			performanceMillis = System.currentTimeMillis();
-			BaseResponseDTO response = new BaseResponseDTO(ResponseConstants.NO_DOCUMENT_FOUND);
+			BaseResponseDTO response = new BaseResponseDTO();
+			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND);
 			log.info("Service response constructed in {} ms", System.currentTimeMillis() - performanceMillis);
 			log.info("Deanonimized logs retrieve process - END in {} ms",
 					(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get("validationTime")));

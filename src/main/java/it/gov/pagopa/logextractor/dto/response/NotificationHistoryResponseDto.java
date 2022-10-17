@@ -7,7 +7,7 @@ import it.gov.pagopa.logextractor.dto.NotificationDetailsTimelineData;
 import lombok.Getter;
 
 @Getter
-public class NotificationHistoryResponseDTO {
+public class NotificationHistoryResponseDto {
 
 	private String notificationStatus;
 	private ArrayList<NotificationDetailsNotificationStatusHistoryData> notificationStatusHistory;

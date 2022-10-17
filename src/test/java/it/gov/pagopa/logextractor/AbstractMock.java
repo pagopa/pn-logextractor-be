@@ -5,6 +5,7 @@ import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.util.HashMap;
 
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.*;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -31,21 +32,14 @@ import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import it.gov.pagopa.logextractor.dto.request.MonthlyNotificationsRequestDto;
-import it.gov.pagopa.logextractor.dto.request.NotificationInfoRequestDto;
-import it.gov.pagopa.logextractor.dto.request.PersonLogsRequestDto;
-import it.gov.pagopa.logextractor.dto.request.PersonPersonIdRequestDto;
-import it.gov.pagopa.logextractor.dto.request.PersonTaxIdRequestDto;
-import it.gov.pagopa.logextractor.dto.request.TraceIdLogsRequestDto;
 import it.gov.pagopa.logextractor.dto.response.EnsureRecipientByExternalIdResponseDto;
-import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDTO;
+import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInternalIdResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
-import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDTO;
+import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationsGeneralDataResponseDto;
-import it.gov.pagopa.logextractor.dto.response.PublicAuthorityMappingResponseDTO;
+import it.gov.pagopa.logextractor.dto.response.PublicAuthorityMappingResponseDto;
 import it.gov.pagopa.logextractor.dto.response.SelfCarePaDataResponseDto;
-import it.gov.pagopa.logextractor.util.RecipientTypes;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 
 
@@ -74,12 +68,12 @@ public abstract class AbstractMock {
 	@Value("classpath:data/activated_id.json") private Resource mockSelfCarePaData;
 	
 	public static final MediaType APPLICATION_JSON_UTF8 = new MediaType(MediaType.APPLICATION_JSON.getType(), MediaType.APPLICATION_JSON.getSubtype(), Charset.forName("utf8"));	
-	protected final String identifierUrl = "/logextractor/v1/persons/person-id";
-	protected final String taxCodeUrl = "/logextractor/v1/persons/tax-id";
-	protected final String personUrl ="/logextractor/v1/logs/persons";
-	protected final String notificationUrl = "/logextractor/v1/logs/notifications/monthly";
-	protected final String notificationInfoUrl = "/logextractor/v1/logs/notifications/info";
-	protected final String processesUrl = "/logextractor/v1/logs/processes";
+	protected final String identifierUrl = "/persons/v1/person-id";
+	protected final String taxCodeUrl = "/persons/v1/tax-id";
+	protected final String personUrl ="/logs/v1/persons";
+	protected final String notificationUrl = "/logs/v1/notifications/monthly";
+	protected final String notificationInfoUrl = "/logs/v1/notifications/info";
+	protected final String processesUrl = "/logs/v1/processes";
 	protected final String fakeHeader = "Basic YWxhZGRpbjpvcGVuc2VzYW1l";
 	private static ObjectMapper mapper = new ObjectMapper();
 	protected static String jsonDocSearchPF = "{\"responses\":[{\"hits\":{\"hits\":[{\"_source\":{\"_source\":\"3242342323\", \"cx_id\":\"PF-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}]}";
@@ -138,14 +132,14 @@ public abstract class AbstractMock {
 	
 	@SuppressWarnings("unchecked")
 	protected void mockPublicAuthorityIdAndNotificationsBetweenMonths() throws StreamReadException, DatabindException, IOException {
-		PublicAuthorityMappingResponseDTO getPublicAuthorityMappingResponseDTO = new PublicAuthorityMappingResponseDTO();
-		PublicAuthorityMappingResponseDTO[] array = new PublicAuthorityMappingResponseDTO[1];
+		PublicAuthorityMappingResponseDto getPublicAuthorityMappingResponseDTO = new PublicAuthorityMappingResponseDto();
+		PublicAuthorityMappingResponseDto[] array = new PublicAuthorityMappingResponseDto[1];
 		getPublicAuthorityMappingResponseDTO.setId("123");
 		getPublicAuthorityMappingResponseDTO.setName("");
 		array[0] = getPublicAuthorityMappingResponseDTO;
 		NotificationsGeneralDataResponseDto jsonResponse = getNotificationGeneralDataFromResource(mockNotificationGeneralData);
         ResponseEntity<NotificationsGeneralDataResponseDto> responseRecipient1 = new ResponseEntity<>(jsonResponse, HttpStatus.OK);
-        ResponseEntity<PublicAuthorityMappingResponseDTO[]> responseRecipient = new ResponseEntity<>(array, HttpStatus.OK);
+        ResponseEntity<PublicAuthorityMappingResponseDto[]> responseRecipient = new ResponseEntity<>(array, HttpStatus.OK);
         Mockito.when(client.exchange(ArgumentMatchers.anyString(), ArgumentMatchers.any(HttpMethod.class),
                 ArgumentMatchers.any(HttpEntity.class), ArgumentMatchers.any(Class.class), ArgumentMatchers.anyMap()))
                 .thenReturn(responseRecipient, responseRecipient1);
@@ -181,10 +175,10 @@ public abstract class AbstractMock {
 	}
 	
 	protected void mockNotificationHistoryResponse() throws StreamReadException, DatabindException, IOException {
-		NotificationHistoryResponseDTO jsonResponse = getNotificationHistoryFromResource(mockNotificationHistory);
-        ResponseEntity<NotificationHistoryResponseDTO> responseRecipientHistory = new ResponseEntity<>(jsonResponse, HttpStatus.OK);
+		NotificationHistoryResponseDto jsonResponse = getNotificationHistoryFromResource(mockNotificationHistory);
+        ResponseEntity<NotificationHistoryResponseDto> responseRecipientHistory = new ResponseEntity<>(jsonResponse, HttpStatus.OK);
         Mockito.when(client.exchange(ArgumentMatchers.anyString(), ArgumentMatchers.any(HttpMethod.class),
-                ArgumentMatchers.any(HttpEntity.class), ArgumentMatchers.<Class<NotificationHistoryResponseDTO>>any(), ArgumentMatchers.anyMap()))
+                ArgumentMatchers.any(HttpEntity.class), ArgumentMatchers.<Class<NotificationHistoryResponseDto>>any(), ArgumentMatchers.anyMap()))
                 .thenReturn(responseRecipientHistory);
     }
 	
@@ -198,11 +192,11 @@ public abstract class AbstractMock {
     }
 
 	protected void mockFileDownloadMetadataResponseDTO() throws StreamReadException, DatabindException, IOException {
-		FileDownloadMetadataResponseDTO jsonResponse = getFileDownloadMetadataFromResource(mockFileKey);
+		FileDownloadMetadataResponseDto jsonResponse = getFileDownloadMetadataFromResource(mockFileKey);
 		
-        ResponseEntity<FileDownloadMetadataResponseDTO> responseRecipient = new ResponseEntity<>(jsonResponse, HttpStatus.OK);
+        ResponseEntity<FileDownloadMetadataResponseDto> responseRecipient = new ResponseEntity<>(jsonResponse, HttpStatus.OK);
         Mockito.when(client.exchange(ArgumentMatchers.anyString(), ArgumentMatchers.any(HttpMethod.class),
-        		ArgumentMatchers.any(HttpEntity.class),  ArgumentMatchers.<Class<FileDownloadMetadataResponseDTO>>any()))
+        		ArgumentMatchers.any(HttpEntity.class),  ArgumentMatchers.<Class<FileDownloadMetadataResponseDto>>any()))
                 .thenReturn(responseRecipient);
     }
 	
@@ -243,14 +237,13 @@ public abstract class AbstractMock {
 		TraceIdLogsRequestDto dto = new TraceIdLogsRequestDto();
 		dto.setDateFrom(dateFrom);
 		dto.setDateTo(dateTo);
-		dto.setTicketNumber(ticketNumber);
 		dto.setTraceId(traceId);
 		return mapper.writeValueAsString(dto);
 	}
 	
 	protected static String getMockPersonPersonIdRequestDto() throws JsonProcessingException {
 		PersonPersonIdRequestDto dto = new PersonPersonIdRequestDto();
-		dto.setRecipientType("PF");
+		dto.setRecipientType(RecipientTypes.PF);
 		dto.setTicketNumber("123");
 		dto.setTaxId("BRMRSS63A02A001D");
 		return mapper.writeValueAsString(dto);
@@ -264,10 +257,10 @@ public abstract class AbstractMock {
 	
 	protected static String getMockMonthlyNotificationsRequestDto() throws JsonProcessingException {
 		MonthlyNotificationsRequestDto dto = new MonthlyNotificationsRequestDto();
-		dto.setReferenceMonth("2022-06");
+		dto.setReferenceMonth("2022-06-01T00:00:00.000Z");
 		dto.setTicketNumber("345");
 		dto.setPublicAuthorityName("abc");
-		dto.setEndMonth("2022-07");
+		dto.setEndMonth("2022-07-01T00:00:00.000Z");
 		return mapper.writeValueAsString(dto);
 	}
 	
@@ -294,13 +287,13 @@ public abstract class AbstractMock {
 		return mapper.readValue(resource.getInputStream(), GetRecipientDenominationByInternalIdResponseDto[].class);
 	}
 	
-	private static NotificationHistoryResponseDTO getNotificationHistoryFromResource(Resource resource) throws StreamReadException, DatabindException, IOException {
+	private static NotificationHistoryResponseDto getNotificationHistoryFromResource(Resource resource) throws StreamReadException, DatabindException, IOException {
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		return mapper.readValue(resource.getInputStream(), NotificationHistoryResponseDTO.class);
+		return mapper.readValue(resource.getInputStream(), NotificationHistoryResponseDto.class);
 	}
 	
-	private static FileDownloadMetadataResponseDTO getFileDownloadMetadataFromResource(Resource resource) throws StreamReadException, DatabindException, IOException {
-		return mapper.readValue(resource.getInputStream(), FileDownloadMetadataResponseDTO.class);
+	private static FileDownloadMetadataResponseDto getFileDownloadMetadataFromResource(Resource resource) throws StreamReadException, DatabindException, IOException {
+		return mapper.readValue(resource.getInputStream(), FileDownloadMetadataResponseDto.class);
 	}
 	
 	private static SelfCarePaDataResponseDto getSelfCarePaDataResponseFromResource(Resource resource) throws StreamReadException, DatabindException, IOException {

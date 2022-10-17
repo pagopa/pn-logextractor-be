@@ -1,9 +1,9 @@
 package it.gov.pagopa.logextractor.service;
 
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.GetBasicDataResponseDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import org.springframework.web.client.HttpServerErrorException;
-import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
-import it.gov.pagopa.logextractor.util.RecipientTypes;
 
 /**
  * An interface containing all methods for persons
