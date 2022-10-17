@@ -34,7 +34,7 @@ public class ResponseConstructor {
 	 */
 	public static DownloadArchiveResponseDto createSimpleLogResponse(List<String> contents, String fileName, String zipName) throws IOException, LogExtractorException {
 		PasswordFactory passwordFactory = new PasswordFactory();
-		String password = passwordFactory.createPassword(1, 1, 1, ValidationConstants.PASSWORD_SPECIAL_CHARS, 1, 16);
+		String password = passwordFactory.createPassword(1, 1, 1, Constants.SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();
 		File file = utils.getFile(fileName,Constants.TXT_EXTENSION);
 		utils.write(file, contents);
@@ -65,7 +65,7 @@ public class ResponseConstructor {
 	 */
 	public static DownloadArchiveResponseDto createCsvFileResponse(List<File> csvFiles, String zipName) throws IOException, LogExtractorException {
 		PasswordFactory passwordFactory = new PasswordFactory();
-		String password = passwordFactory.createPassword(1, 1, 1, ValidationConstants.PASSWORD_SPECIAL_CHARS, 1, 16);
+		String password = passwordFactory.createPassword(1, 1, 1, Constants.SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();
 		ZipFactory zipFactory = new ZipFactory();
 		ZipFile zipArchive = zipFactory.createZipArchive(zipName, password);
@@ -98,7 +98,7 @@ public class ResponseConstructor {
 	 */
 	public static DownloadArchiveResponseDto createNotificationLogResponse(List<String> openSearchLogs, List<File> filesToAdd, String fileName, String zipName) throws IOException, LogExtractorException {
 		PasswordFactory passwordFactory = new PasswordFactory();
-		String password = passwordFactory.createPassword(1, 1, 1, ValidationConstants.PASSWORD_SPECIAL_CHARS, 1, 16);
+		String password = passwordFactory.createPassword(1, 1, 1, Constants.SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();
 		File file = utils.getFile(fileName, Constants.TXT_EXTENSION);
 		utils.write(file, openSearchLogs);
