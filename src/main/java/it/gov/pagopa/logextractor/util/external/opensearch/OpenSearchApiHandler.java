@@ -57,8 +57,9 @@ public class OpenSearchApiHandler {
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		log.info("Constructing Opensearch query...");
 //		queryParams.put("uid.keyword", StringUtils.substring(uid, 3));
-		String queryUid = StringUtils.startsWithIgnoreCase(uid, Constants.UID_APIKEY_PREFIX) ?
-				StringUtils.substring(uid, 7) : StringUtils.substring(uid, 3);
+		String queryUid = (StringUtils.startsWithIgnoreCase(uid, Constants.UID_PF_PREFIX) ||
+				StringUtils.startsWithIgnoreCase(uid, Constants.UID_PG_PREFIX)) ?
+				StringUtils.substring(uid, 3) : uid;
 		queryParams.put(Constants.OS_UID_FIELD, queryUid);
 		queryData.add(queryConstructor.prepareQueryData(Constants.QUERY_INDEX_ALIAS, queryParams,
 				new OpenSearchRangeQueryData(Constants.OS_TIMESTAMP_FIELD, dateFrom, dateTo),

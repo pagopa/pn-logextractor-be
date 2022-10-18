@@ -31,7 +31,8 @@ public class Constants {
 	public static final String OS_CX_ID_FIELD = "cx_id";
 	public static final String OS_TRACE_ID_FIELD = "root_trace_id";
 	public static final String OS_MULTI_SEARCH_SUFFIX = "/_msearch";
-	public static final String UID_APIKEY_PREFIX = "APIKEY-";
+	public static final String UID_PF_PREFIX = "PF-";
+	public static final String UID_PG_PREFIX = "PG-";
 	public static final String QUERY_INDEX_ALIAS = "pn-logs";
 	
 	//External PN services
