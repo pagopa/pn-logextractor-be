@@ -1,8 +1,21 @@
-AWSTemplateFormatVersion: 2010-09-09
-Description: >
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: |
   CloudFormation definition of Log Extractor Frontend subsystem
 
+
 Parameters:
+  ApiId:
+    Type: String
+    Description: Rest API id
+
+  ApiStageName:
+    Type: String
+    Description: Rest API stage name
+
+  LogBucketDomainName:
+    Type: String
+    Description: Bucket (domain name) to store CloudFront logs
 
   ProjectName:
     Type: String
@@ -12,62 +25,100 @@ Parameters:
     Type: String
     Description: CloudFront WAFv2 arn
 
-  LogBucketDomainName:
-    Type: String
-    Description: Bucket (domain name) to store CloudFront logs
-
 Resources:
-
   Hosting:
-    Type: AWS::S3::Bucket
+    Type: "AWS::S3::Bucket"
     Properties:
-      BucketName: !Sub ${ProjectName}-hosting
       AccessControl: Private
+      BucketName: !Sub ${ProjectName}-hosting
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
 
-  HostingPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref Hosting
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Action:
-              - s3:GetObject
-            Resource:
-              - !Sub ${Hosting.Arn}/*
-            Principal:
-              AWS:
-                - !Sub arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${OAI}
-
   OAI:
-    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Type: "AWS::CloudFront::CloudFrontOriginAccessIdentity"
     Properties:
       CloudFrontOriginAccessIdentityConfig:
         Comment: !Sub ${ProjectName}
 
+  HostingPolicy:
+    Type: "AWS::S3::BucketPolicy"
+    Properties:
+      Bucket: !Ref Hosting
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS:
+                - "Fn::Sub": "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${OAI}"
+            Action:
+              - "s3:GetObject"
+            Resource:
+              - "Fn::Sub": ${Hosting.Arn}/*
+
+  ApiOriginRequest:
+    Type: "AWS::CloudFront::OriginRequestPolicy"
+    Properties:
+      OriginRequestPolicyConfig:
+        Name: AllowOnlyAuthHeader
+        Comment: Allows only Auth header
+        CookiesConfig:
+          CookieBehavior: none
+        HeadersConfig:
+          HeaderBehavior: whitelist
+          Headers:
+            - Auth
+        QueryStringsConfig:
+          QueryStringBehavior: none
+
+  ApiCache:
+    Type: "AWS::CloudFront::CachePolicy"
+    Properties:
+      CachePolicyConfig:
+        Comment: Disable caching and forward Authorization header
+        DefaultTTL: 0
+        MaxTTL: 1
+        MinTTL: 0
+        Name: DisabledAndForwardAuthorization
+        ParametersInCacheKeyAndForwardedToOrigin:
+          EnableAcceptEncodingGzip: true
+          CookiesConfig:
+            CookieBehavior: none
+          HeadersConfig:
+            HeaderBehavior: whitelist
+            Headers:
+              - Authorization
+          QueryStringsConfig:
+            QueryStringBehavior: none
+
   Distribution:
-    Type: AWS::CloudFront::Distribution
+    Type: "AWS::CloudFront::Distribution"
     Properties:
       DistributionConfig:
+        CacheBehaviors:
+          - AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+              - PUT
+              - PATCH
+              - POST
+              - DELETE
+            CachePolicyId: !Ref ApiCache
+            Compress: true
+            OriginRequestPolicyId: !Ref ApiOriginRequest
+            PathPattern: "/logextractor/*"
+            TargetOriginId: api
+            ViewerProtocolPolicy: "https-only"
         Comment: !Sub ${ProjectName}
-        CustomErrorResponses:
-          - ErrorCode: 403
-            ResponseCode: 200
-            ResponsePagePath: /index.html
-          - ErrorCode: 404
-            ResponseCode: 200
-            ResponsePagePath: /index.html
         DefaultCacheBehavior:
           AllowedMethods:
             - GET
             - HEAD
-          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # CachingOptimized
+          CachePolicyId: "658327ea-f89d-4fab-a63d-7e88639e58f6" # CachingOptimized
           TargetOriginId: s3_hosting
           ViewerProtocolPolicy: redirect-to-https
         DefaultRootObject: index.html
@@ -75,9 +126,15 @@ Resources:
         Logging:
           Bucket: !Ref LogBucketDomainName
         Origins:
-          - DomainName: !GetAtt Hosting.DomainName
+          - DomainName: !GetAtt Hosting.RegionalDomainName
             Id: s3_hosting
             S3OriginConfig:
               OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${OAI}
+          - DomainName: !Sub ${ApiId}.execute-api.${AWS::Region}.amazonaws.com
+            Id: api
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols:
+                - TLSv1.2
         PriceClass: PriceClass_100
         WebACLId: !Ref WafArn

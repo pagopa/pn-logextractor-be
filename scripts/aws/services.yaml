@@ -1,89 +1,84 @@
-AWSTemplateFormatVersion: 2010-09-09
-Description: >
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: |
   CloudFormation definition of Log Extractor additional services
 
-Parameters:
 
-  ProjectName:
+Parameters:
+  EbsIops:
+    Type: Number
+    Description: The number of I/O operations per second (IOPS) that the volume supports
+
+  EbsVolumeSize:
+    Type: Number
+    Description: The size (in GiB) of the EBS volume for each data node
+
+  EbsVolumeType:
     Type: String
-    Description: Name of the project
+    Description: The EBS volume type to use with the OpenSearch Service domain, such as standard, gp2, or io1
 
   EngineVersion:
     Type: String
     Description: User-defined OpenSearch version
 
-  InstanceType:
-    Type: String
-    Description: https://docs.aws.amazon.com/opensearch-service/latest/developerguide/supported-instance-types.html
   InstanceReplicas:
     Type: Number
-    Description: Number of instances
     Default: 3
+    Description: Number of instances
 
-  VpcId:
-    Type: AWS::EC2::VPC::Id
-    Description: VPC id of the subnets
+  InstanceType:
+    Type: String
+    Description: "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/supported-instance-types.html"
+
+  ProjectName:
+    Type: String
+    Description: Name of the project
 
   SubnetIds:
-    Type: List<AWS::EC2::Subnet::Id>
+    Type: "List<AWS::EC2::Subnet::Id>"
     Description: Private subnets to deploy resources into
 
-  EbsVolumeSize:
-    Type: Number
-    Description: The size (in GiB) of the EBS volume for each data node
-    Default: 10
-
-  EbsVolumeType:
-    Type: String
-    Description: The EBS volume type to use with the OpenSearch Service domain, such as standard, gp2, or io1
-    Default: gp2
-
-  EbsIops:
-    Type: Number
-    Description: The number of I/O operations per second (IOPS) that the volume supports
-    Default: 0
+  VpcId:
+    Type: "AWS::EC2::VPC::Id"
+    Description: VPC id of the subnets
 
 Resources:
+  SecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: Open HTTPS port
+      GroupName: !Sub ${ProjectName}-opensearch
+      SecurityGroupIngress:
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      VpcId: !Ref VpcId
 
   OpenSearchServiceDomain:
-    Type: AWS::OpenSearchService::Domain
+    Type: "AWS::OpenSearchService::Domain"
     Properties:
-      EngineVersion: !Ref EngineVersion
-      ClusterConfig:
-        InstanceCount: !Ref InstanceReplicas
-        InstanceType: !Ref InstanceType
-        ZoneAwarenessEnabled: true
-        ZoneAwarenessConfig:
-          AvailabilityZoneCount: 3
-      EBSOptions:
-        EBSEnabled: true
-        Iops: !Ref EbsIops
-        VolumeSize: !Ref EbsVolumeSize
-        VolumeType: !Ref EbsVolumeType
       AccessPolicies:
-        Version: 2012-10-17
         Statement:
           - Effect: Deny
             Principal:
               AWS: "*"
             Action: "es:*"
             Resource: "*"
-      AdvancedOptions:
-        rest.action.multi.allow_explicit_index: true
-        override_main_response_version: true
+        Version: "2012-10-17"
+      ClusterConfig:
+        InstanceCount: !Ref InstanceReplicas
+        InstanceType: !Ref InstanceType
+        ZoneAwarenessConfig:
+          AvailabilityZoneCount: 3
+        ZoneAwarenessEnabled: true
+      EBSOptions:
+        EBSEnabled: true
+        Iops: !Ref EbsIops
+        VolumeSize: !Ref EbsVolumeSize
+        VolumeType: !Ref EbsVolumeType
+      EngineVersion: !Ref EngineVersion
       VPCOptions:
-        SubnetIds: !Ref SubnetIds
         SecurityGroupIds:
-          - !Ref SecurityGroup
-
-  SecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: !Sub ${ProjectName}-opensearch-sg
-      GroupDescription: ingress tcp 443, egress all
-      VpcId: !Ref VpcId
-      SecurityGroupIngress:
-        - FromPort: 443
-          IpProtocol: tcp
-          ToPort: 443
-          CidrIp: 0.0.0.0/0
+          - Ref: SecurityGroup
+        SubnetIds: !Ref SubnetIds

@@ -1,52 +1,44 @@
-AWSTemplateFormatVersion: 2010-09-09
-Description: >
-  CloudFormation definition of Log Extractor system (global resrouces)
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: |
+  CloudFormation definition of Log Extractor system (global)
+
 
 Parameters:
-
   ProjectName:
     Type: String
     Description: Name of the project
 
 Resources:
-
   CloudFrontWaf:
-    Type: AWS::WAFv2::WebACL
+    Type: "AWS::WAFv2::WebACL"
     Properties:
-      Name: !Sub ${ProjectName}WebACL
-      Scope: CLOUDFRONT
-      Description: CloudFront WebACL
       DefaultAction:
-        Allow: {}
-      VisibilityConfig:
-        SampledRequestsEnabled: true
-        CloudWatchMetricsEnabled: true
-        MetricName: !Sub ${ProjectName}WebACLMetric
+        Allow:
+          {}
+      Description: CloudFront WebACL
+      Name: !Sub ${ProjectName}WebACL
       Rules:
         - Name: AWS-AWSManagedRulesCommonRuleSet
-          Priority: 0
           OverrideAction:
-            None: {}
-          VisibilityConfig:
-            SampledRequestsEnabled: true
-            CloudWatchMetricsEnabled: true
-            MetricName: MetricForAMRCRS
+            None:
+              {}
+          Priority: 0
           Statement:
             ManagedRuleGroupStatement:
-              VendorName: AWS
               Name: AWSManagedRulesCommonRuleSet
-
-  CloudFrontLogBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub ${ProjectName}-cf-logs
+              VendorName: AWS
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: true
+            MetricName: MetricForAMRCRS
+            SampledRequestsEnabled: true
+      Scope: CLOUDFRONT
+      VisibilityConfig:
+        CloudWatchMetricsEnabled: true
+        MetricName: !Sub ${ProjectName}WebACLMetric
+        SampledRequestsEnabled: true
 
 Outputs:
-
   CloudFrontWafArn:
-    Value: !GetAtt CloudFrontWaf.Arn
     Description: CloudFront WAFv2 arn
-
-  CloudFrontLogBucketDomainName:
-    Value: !GetAtt CloudFrontLogBucket.DomainName
-    Description: CloudFront log bucket domain name
+    Value: !GetAtt CloudFrontWaf.Arn
