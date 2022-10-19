@@ -69,7 +69,7 @@ public class LogServiceImpl implements LogService {
 				openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(iun, notificationStartDate.toString(), notificationEndDate);
 			}
 		}
-		log.info("Query execution completed in {} ms, retrieved {} results, constructing service response...",
+		log.info("Query execution completed in {} ms, retrieved {} documents, constructing service response...",
 				System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
 		if(openSearchResponse.isEmpty()) {
 			performanceMillis = System.currentTimeMillis();
@@ -144,7 +144,7 @@ public class LogServiceImpl implements LogService {
 		log.info("Getting anonymized logs...");
 		List<String> openSearchResponse = openSearchApiHandler.getAnonymizedLogsByTraceId(traceId, dateFrom, dateTo);
 		long performanceMillis = System.currentTimeMillis() - serviceStartTime;
-		log.info("Query execution completed in {} ms, retrieved {} results, constructing service response...",
+		log.info("Query execution completed in {} ms, retrieved {} documents, constructing service response...",
 				performanceMillis, openSearchResponse.size());
 		if(openSearchResponse.isEmpty()) {
 			performanceMillis = System.currentTimeMillis();
@@ -223,7 +223,7 @@ public class LogServiceImpl implements LogService {
         	}
         	log.info("Physical files retrieved in {} ms", System.currentTimeMillis() - performanceMillis);
         	List<String> openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(iun, notificationStartDate.toString(), notificationEndDate);
-    		log.info("Query execution completed in {} ms, retrieved {} results, constructing service response...",
+    		log.info("Query execution completed in {} ms, retrieved {} documents, constructing service response...",
 					System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
 			performanceMillis = System.currentTimeMillis();
 			DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(openSearchResponse, filesToAdd, Constants.LOG_FILE_NAME, Constants.ZIP_ARCHIVE_NAME);
@@ -247,7 +247,7 @@ public class LogServiceImpl implements LogService {
 			log.info("Service response: internalId={} retrieved in {} ms", internalId, System.currentTimeMillis() - serviceStartTime);
 			performanceMillis = System.currentTimeMillis();
 			openSearchResponse = openSearchApiHandler.getAnonymizedLogsByUid(internalId, dateFrom, dateTo);
-			log.info("Query execution completed in {} ms, retrieved {} results, deanonimizing results...",
+			log.info("Query execution completed in {} ms, retrieved {} documents, deanonimizing results...",
 					System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
 			performanceMillis = System.currentTimeMillis();
 			deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, recipientType);
@@ -261,8 +261,8 @@ public class LogServiceImpl implements LogService {
 				String notificationEndDate = notificationStartDate.plusMonths(3).toString();
 				performanceMillis = System.currentTimeMillis();
 				openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(iun, notificationStartDate.toString(), notificationEndDate);
-				log.info("Query execution completed in {} ms, deanonimizing results...",
-						System.currentTimeMillis() - performanceMillis);
+				log.info("Query execution completed in {} ms, retrieved {} documents, deanonimizing results...",
+						System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
 				performanceMillis = System.currentTimeMillis();
 				deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, RecipientTypes.PF);
 			}

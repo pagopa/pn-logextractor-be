@@ -3,7 +3,7 @@ package it.gov.pagopa.logextractor.util.external.opensearch;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
+import it.gov.pagopa.logextractor.dto.OpensearchScrollQueryDto;
 import it.gov.pagopa.logextractor.util.Constants;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -19,9 +19,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-
 import it.gov.pagopa.logextractor.util.SortOrders;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Uility class for integrations with OpenSearch service
@@ -61,12 +61,12 @@ public class OpenSearchApiHandler {
 				StringUtils.startsWithIgnoreCase(uid, Constants.UID_PG_PREFIX)) ?
 				StringUtils.substring(uid, 3) : uid;
 		queryParams.put(Constants.OS_UID_FIELD, queryUid);
-		queryData.add(queryConstructor.prepareQueryData(Constants.QUERY_INDEX_ALIAS, queryParams,
+		queryData.add(queryConstructor.prepareQueryData(queryParams,
 				new OpenSearchRangeQueryData(Constants.OS_TIMESTAMP_FIELD, dateFrom, dateTo),
 				new OpenSearchSortFilter(Constants.OS_TIMESTAMP_FIELD, SortOrders.ASC)));
 		String query = queryConstructor.createBooleanMultiSearchQuery(queryData);
 		log.info("Executing query:"+ RegExUtils.removeAll(query, "\n"));
-		return getDocumentsByMultiSearchQuery(query);
+		return extractDocumentsFromOpensearch(query);
 	}
 	
 	/**
@@ -83,12 +83,12 @@ public class OpenSearchApiHandler {
 		log.info("Constructing Opensearch query...");
 //		queryParams.put("iun.keyword", iun);
 		queryParams.put(Constants.OS_IUN_FIELD, iun);
-		queryData.add(queryConstructor.prepareQueryData(Constants.QUERY_INDEX_ALIAS, queryParams,
+		queryData.add(queryConstructor.prepareQueryData(queryParams,
 				new OpenSearchRangeQueryData(Constants.OS_TIMESTAMP_FIELD, dateFrom, dateTo), 
 				new OpenSearchSortFilter(Constants.OS_TIMESTAMP_FIELD, SortOrders.ASC)));
 		String query = queryConstructor.createBooleanMultiSearchQuery(queryData);
 		log.info("Executing query:" + RegExUtils.removeAll(query, "\n"));
-		return getDocumentsByMultiSearchQuery(query);
+		return extractDocumentsFromOpensearch(query);
 	}
 	
 	/**
@@ -104,22 +104,23 @@ public class OpenSearchApiHandler {
 		log.info("Constructing Opensearch query...");
 //		queryParams.put("root_trace_id.keyword", traceId);
 		queryParams.put(Constants.OS_TRACE_ID_FIELD, traceId);
-		OpenSearchQuerydata queryData = queryConstructor.prepareQueryData(Constants.QUERY_INDEX_ALIAS, queryParams,
+		OpenSearchQuerydata queryData = queryConstructor.prepareQueryData(queryParams,
 				new OpenSearchRangeQueryData(Constants.OS_TIMESTAMP_FIELD, dateFrom, dateTo), 
 				new OpenSearchSortFilter(Constants.OS_TIMESTAMP_FIELD, SortOrders.ASC));
 		ArrayList<OpenSearchQuerydata> listOfQueryData = new ArrayList<>();
 		listOfQueryData.add(queryData);
 		String query = queryConstructor.createBooleanMultiSearchQuery(listOfQueryData);
 		log.info("Executing query:"+ RegExUtils.removeAll(query, "\n"));
-		return getDocumentsByMultiSearchQuery(query);
+		return extractDocumentsFromOpensearch(query);
 	}
 	
 	/**
-	 * Performs a multi-search HTTP GET request to the Opensearch service
-	 * @param query The multi-search query to the sent
+	 * Performs a search HTTP GET request to the Opensearch service and extract the documents
+	 * that satisfy the input query
+	 * @param query The search query to be sent
 	 * @return The documents list contained into the Opensearch response
 	 * */
-	private ArrayList<String> getDocumentsByMultiSearchQuery(String query) {
+	private ArrayList<String> extractDocumentsFromOpensearch(String query) {
 		HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.setBasicAuth(openSearchUsername, openSearchPassword);
@@ -127,33 +128,67 @@ public class OpenSearchApiHandler {
         acceptedTypes.add(MediaType.APPLICATION_JSON);
         requestHeaders.setAccept(acceptedTypes);
         HttpEntity<String> request = new HttpEntity<>(query, requestHeaders);
-        ResponseEntity<String> response = client.exchange(openSearchHost+Constants.OS_MULTI_SEARCH_SUFFIX, HttpMethod.GET, request, String.class);
-        return getDocuments(response.getBody());
+		String urlTemplate = UriComponentsBuilder.fromHttpUrl(openSearchHost+Constants.OS_SEARCH_QUERY_SUFFIX)
+						.queryParam(Constants.OS_SCROLL_PARAMETER, "{scroll}")
+						.encode()
+						.toUriString();
+		HashMap<String, Object> params = new HashMap<>();
+		params.put(Constants.OS_SCROLL_PARAMETER, Constants.OS_SCROLL_ID_VALIDITY_DURATION);
+        String response = client.exchange(
+				urlTemplate,
+				HttpMethod.GET,
+				request,
+				String.class,
+				params).getBody();
+		return getDocumentsFromOpensearchResponse(response, new ArrayList<String>());
 	}
-	
+
 	/**
-	 * Gets the document list from the Opensearch response
-	 * @param openSearchResponseBody The Opensearch response
+	 * Recursively performs scroll HTTP GET requests to Opensearch service to get the document list page util
+	 * all the documents have been retrieved
+	 * @param openSearchResponse The opensearch response to get the documents from
+	 * @param documents The document list to be returned
+	 * @return The documents list after all the scroll iterations into the Opensearch response
+	 * */
+	private ArrayList<String> getDocumentsFromOpensearchResponse(String openSearchResponse, ArrayList<String> documents){
+		ArrayList<String> currentDocs = getDocumentsFromCurrentResponse(openSearchResponse);
+		if(currentDocs.isEmpty()){
+			return documents;
+		}
+		documents.addAll(currentDocs);
+		HttpHeaders requestHeaders = new HttpHeaders();
+		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+		requestHeaders.setBasicAuth(openSearchUsername, openSearchPassword);
+		List<MediaType> acceptedTypes = new ArrayList<>();
+		acceptedTypes.add(MediaType.APPLICATION_JSON);
+		requestHeaders.setAccept(acceptedTypes);
+		OpensearchScrollQueryDto scrollQueryDto = new OpensearchScrollQueryDto(
+				Constants.OS_SCROLL_ID_VALIDITY_DURATION,
+				new JSONObject(openSearchResponse).getString(Constants.OS_SCROLL_ID_SUFFIX));
+		HttpEntity<OpensearchScrollQueryDto> request = new HttpEntity<>(scrollQueryDto, requestHeaders);
+		ResponseEntity<String> response = client.exchange(openSearchHost+Constants.OS_SCROLL_SUFFIX,
+				HttpMethod.GET,request,String.class);
+		return getDocumentsFromOpensearchResponse(response.getBody(), documents);
+	}
+
+	/**
+	 * Gets the document list from an Opensearch response page
+	 * @param openSearchResponseBody The current Opensearch response
 	 * @return The decouments list
 	 * */
-	private ArrayList<String> getDocuments(String openSearchResponseBody) {
+	private ArrayList<String> getDocumentsFromCurrentResponse(String openSearchResponseBody) {
 		ArrayList<String> documents = new ArrayList<>();
-		JSONObject json = new JSONObject(openSearchResponseBody);
-		if(!json.isNull("responses")) {
-			JSONArray responsesObject = new JSONObject(openSearchResponseBody).getJSONArray("responses");
-	        for(int index = 0; index < responsesObject.length(); index++) {
-	        	if(!responsesObject.getJSONObject(index).isNull("hits")) {
-		        	JSONObject obj = responsesObject.getJSONObject(index).getJSONObject("hits");
-		        	if(!obj.isNull("hits")) {
-			        	JSONArray opensearchEnrichedDoc = obj.getJSONArray("hits");
-			        	for(int hitIndex = 0; hitIndex < opensearchEnrichedDoc.length(); hitIndex++) {
-			        		if(!opensearchEnrichedDoc.getJSONObject(hitIndex).isNull("_source")) {
-			        			documents.add(opensearchEnrichedDoc.getJSONObject(hitIndex).getJSONObject("_source").toString());
-			        		}
-			        	}
-		        	}
-	        	}
-	        }
+		JSONObject documentListObject = new JSONObject(openSearchResponseBody);
+		if(!documentListObject.isNull("hits")) {
+			JSONObject documentData = documentListObject.getJSONObject("hits");
+			if(!documentData.isNull("hits")) {
+				JSONArray opensearchEnrichedDoc = documentData.getJSONArray("hits");
+				for(int hitIndex = 0; hitIndex < opensearchEnrichedDoc.length(); hitIndex++) {
+					if(!opensearchEnrichedDoc.getJSONObject(hitIndex).isNull("_source")) {
+						documents.add(opensearchEnrichedDoc.getJSONObject(hitIndex).getJSONObject("_source").toString());
+					}
+				}
+			}
 		}
         return documents;
 	}

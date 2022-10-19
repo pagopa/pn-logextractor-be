@@ -33,7 +33,7 @@ public class MockLogController extends AbstractMock {
 
 	@Test
 	public void test_useCase10() throws Exception {
-		test_getProcesses("2022-06-01", "2022-07-01", "ticketNumber", "traceId");
+		test_getProcesses("2022-06-01", "2022-07-01", "traceId");
 	}
 	public void test_getPersonsLogsPA(int useCase, boolean isDeanonimization, String json) throws Exception {
 		// use case 3 PA
@@ -59,7 +59,7 @@ public class MockLogController extends AbstractMock {
 	}
 
 	@Test
-	public void test_getNotificationLogs() throws JsonProcessingException, Exception {
+	public void test_getNotificationLogs() throws Exception {
 		// use case 6
 		mockPublicAuthorityIdAndNotificationsBetweenMonths();
 		mockNotificationResponse();
@@ -73,7 +73,7 @@ public class MockLogController extends AbstractMock {
 	}
 
 	@Test
-	public void test_getNotificationInfoLogs() throws JsonProcessingException, Exception {
+	public void test_getNotificationInfoLogs() throws Exception {
 		mockNotificationDetailsResponse();
 		mockNotificationHistoryResponse();
 		mockFileDownloadMetadataResponseDTO();
@@ -87,12 +87,12 @@ public class MockLogController extends AbstractMock {
 		assertThat(response.getContentAsString()).contains("message");
 	}
 
-	public void test_getProcesses(String dateFrom, String dateTo, String ticketNumber, String traceId)
-			throws JsonProcessingException, Exception {
+	public void test_getProcesses(String dateFrom, String dateTo, String traceId)
+			throws Exception {
 		mockPersonsLogResponse(jsonDocSearchPF);
 		MockHttpServletResponse response = mvc
 				.perform(post(processesUrl).accept(APPLICATION_JSON_UTF8).header("Auth", fakeHeader)
-						.content(getMockTraceIdLogsRequestDto(dateFrom, dateTo, ticketNumber, traceId))
+						.content(getMockTraceIdLogsRequestDto(dateFrom, dateTo, traceId))
 						.contentType(APPLICATION_JSON_UTF8))
 				.andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());

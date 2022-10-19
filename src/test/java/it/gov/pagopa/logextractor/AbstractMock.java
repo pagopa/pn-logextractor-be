@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.util.HashMap;
-
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.*;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
@@ -25,13 +24,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import it.gov.pagopa.logextractor.dto.response.EnsureRecipientByExternalIdResponseDto;
 import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInternalIdResponseDto;
@@ -76,8 +71,13 @@ public abstract class AbstractMock {
 	protected final String processesUrl = "/logs/v1/processes";
 	protected final String fakeHeader = "Basic YWxhZGRpbjpvcGVuc2VzYW1l";
 	private static ObjectMapper mapper = new ObjectMapper();
-	protected static String jsonDocSearchPF = "{\"responses\":[{\"hits\":{\"hits\":[{\"_source\":{\"_source\":\"3242342323\", \"cx_id\":\"PF-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}]}";
-	protected static String jsonDocSearchPA = "{\"responses\":[{\"hits\":{\"hits\":[{\"_source\":{\"_source\":\"3242342323\", \"cx_id\":\"PA-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}]}";
+	//protected static String jsonDocSearchPF = "{\"responses\":[{\"hits\":{\"hits\":[{\"_source\":{\"_source\":\"3242342323\", \"cx_id\":\"PF-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}]}";
+	//protected static String jsonDocSearchPA = "{\"responses\":[{\"hits\":{\"hits\":[{\"_source\":{\"_source\":\"3242342323\", \"cx_id\":\"PA-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}]}";
+
+	protected final String jsonDocSearchPF = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [{\"_source\":{\"_source\":\"3242342323\",\"cx_id\":\"PF-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}";
+	protected final String jsonDocSearchPA = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [{\"_source\":{\"_source\":\"3242342323\",\"cx_id\":\"PA-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}";
+
+	protected  final String scrollMockSearch = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : []}}";
 
 	@SuppressWarnings("unchecked")
 	protected void mockUniqueIdentifierForPerson() throws RestClientException, IOException {
@@ -109,9 +109,13 @@ public abstract class AbstractMock {
 		ResponseEntity<Object> response = new ResponseEntity<Object>(jsonResponse, HttpStatus.OK);
 		Mockito.when(client.getForEntity(Mockito.anyString(), Mockito.any())).thenReturn(response);
 		ResponseEntity<String> responseSearch = new ResponseEntity<String>(jsonDocSearch, HttpStatus.OK);
-		Mockito.when(openClient.exchange(ArgumentMatchers.anyString(), ArgumentMatchers.any(HttpMethod.class),
-				ArgumentMatchers.any(HttpEntity.class), ArgumentMatchers.<Class<String>>any()))
+		Mockito.when(openClient.exchange(ArgumentMatchers.anyString(),ArgumentMatchers.any(HttpMethod.class),
+						ArgumentMatchers.any(HttpEntity.class),ArgumentMatchers.any(Class.class),ArgumentMatchers.anyMap()))
 				.thenReturn(responseSearch);
+		ResponseEntity<String> scrollResponseSearch = new ResponseEntity<String>(scrollMockSearch, HttpStatus.OK);
+		Mockito.when(openClient.exchange(ArgumentMatchers.anyString(), ArgumentMatchers.any(HttpMethod.class),
+						ArgumentMatchers.any(HttpEntity.class), ArgumentMatchers.<Class<String>>any()))
+				.thenReturn(scrollResponseSearch);
 		mockUniqueIdentifierForPerson();
 	}
 	
@@ -122,16 +126,19 @@ public abstract class AbstractMock {
 		ResponseEntity<Object> response2 = new ResponseEntity<Object>(mock, HttpStatus.OK);
 		ResponseEntity<Object> response = new ResponseEntity<Object>(jsonResponse, HttpStatus.OK);
 		Mockito.when(client.getForEntity(Mockito.anyString(), Mockito.any())).thenReturn(response2, response);
-		String jsonDocSearch = "{\"responses\":[{\"hits\":{\"hits\":[{\"_source\":{\"_source\":\"3242342323\"}}]}}]}";
+		String jsonDocSearch = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [ ]}}";
+		//String jsonDocSearch = "{\"responses\":[{\"hits\":{\"hits\":[{\"_source\":{\"_source\":\"3242342323\"}}]}}]}";
 		ResponseEntity<String> responseSearch = new ResponseEntity<String>(jsonDocSearch, HttpStatus.OK);
-		Mockito.when(openClient.exchange(ArgumentMatchers.anyString(), ArgumentMatchers.any(HttpMethod.class),
-				ArgumentMatchers.any(HttpEntity.class), ArgumentMatchers.<Class<String>>any()))
+		Mockito.when(openClient.exchange(ArgumentMatchers.anyString(),
+						ArgumentMatchers.any(HttpMethod.class),
+						ArgumentMatchers.any(HttpEntity.class),
+						ArgumentMatchers.<Class<String>>any()))
 				.thenReturn(responseSearch);
 		mockUniqueIdentifierForPerson();
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected void mockPublicAuthorityIdAndNotificationsBetweenMonths() throws StreamReadException, DatabindException, IOException {
+	protected void mockPublicAuthorityIdAndNotificationsBetweenMonths() throws IOException {
 		PublicAuthorityMappingResponseDto getPublicAuthorityMappingResponseDTO = new PublicAuthorityMappingResponseDto();
 		PublicAuthorityMappingResponseDto[] array = new PublicAuthorityMappingResponseDto[1];
 		getPublicAuthorityMappingResponseDTO.setId("123");
@@ -146,7 +153,7 @@ public abstract class AbstractMock {
     }
 	
 	@SuppressWarnings("unchecked")
-	protected void mockDocumentsByMultiSearchQuery() throws StreamReadException, DatabindException, IOException {
+	protected void mockDocumentsByMultiSearchQuery() throws IOException {
 		String jsonResponse = "";
         ResponseEntity<String> responseRecipient = new ResponseEntity<>(jsonResponse, HttpStatus.OK);
         Mockito.when(openClient.exchange(ArgumentMatchers.anyString(), ArgumentMatchers.any(HttpMethod.class),
@@ -174,7 +181,7 @@ public abstract class AbstractMock {
 		Mockito.when(client.getForEntity(Mockito.anyString(), Mockito.any())).thenReturn(response2);	
 	}
 	
-	protected void mockNotificationHistoryResponse() throws StreamReadException, DatabindException, IOException {
+	protected void mockNotificationHistoryResponse() throws IOException {
 		NotificationHistoryResponseDto jsonResponse = getNotificationHistoryFromResource(mockNotificationHistory);
         ResponseEntity<NotificationHistoryResponseDto> responseRecipientHistory = new ResponseEntity<>(jsonResponse, HttpStatus.OK);
         Mockito.when(client.exchange(ArgumentMatchers.anyString(), ArgumentMatchers.any(HttpMethod.class),
@@ -183,7 +190,7 @@ public abstract class AbstractMock {
     }
 	
 	@SuppressWarnings("unchecked")
-	protected void mockTaxCodeForPerson() throws StreamReadException, DatabindException, IOException {
+	protected void mockTaxCodeForPerson() throws IOException {
 		GetRecipientDenominationByInternalIdResponseDto[] arrayJsonResponse = getRecipientInternalFromResource(mockRecipentInternal);
         ResponseEntity<GetRecipientDenominationByInternalIdResponseDto[]> responseRecipient = new ResponseEntity<>(arrayJsonResponse, HttpStatus.OK);
         Mockito.when(client.exchange(ArgumentMatchers.anyString(), ArgumentMatchers.any(HttpMethod.class),
@@ -191,7 +198,7 @@ public abstract class AbstractMock {
                 .thenReturn(responseRecipient);
     }
 
-	protected void mockFileDownloadMetadataResponseDTO() throws StreamReadException, DatabindException, IOException {
+	protected void mockFileDownloadMetadataResponseDTO() throws IOException {
 		FileDownloadMetadataResponseDto jsonResponse = getFileDownloadMetadataFromResource(mockFileKey);
 		
         ResponseEntity<FileDownloadMetadataResponseDto> responseRecipient = new ResponseEntity<>(jsonResponse, HttpStatus.OK);
@@ -201,7 +208,7 @@ public abstract class AbstractMock {
     }
 	
 	@SuppressWarnings("unchecked")
-	protected void mockTaxCodeForPerson_TaxIdNull() throws StreamReadException, DatabindException, IOException {
+	protected void mockTaxCodeForPerson_TaxIdNull() throws IOException {
 		GetRecipientDenominationByInternalIdResponseDto[] arrayJsonResponse = getRecipientInternalFromResource(mockRecipentInternalTaxIdNull);
         ResponseEntity<GetRecipientDenominationByInternalIdResponseDto[]> responseRecipient = new ResponseEntity<>(arrayJsonResponse, HttpStatus.OK);
         Mockito.when(client.exchange(ArgumentMatchers.anyString(), ArgumentMatchers.any(HttpMethod.class),
@@ -233,7 +240,7 @@ public abstract class AbstractMock {
 		return mapper.writeValueAsString(dto);
 	}
 	
-	protected static String getMockTraceIdLogsRequestDto(String dateFrom, String dateTo, String ticketNumber, String traceId) throws JsonProcessingException {
+	protected static String getMockTraceIdLogsRequestDto(String dateFrom, String dateTo, String traceId) throws JsonProcessingException {
 		TraceIdLogsRequestDto dto = new TraceIdLogsRequestDto();
 		dto.setDateFrom(dateFrom);
 		dto.setDateTo(dateTo);
@@ -275,28 +282,28 @@ public abstract class AbstractMock {
 		return StreamUtils.copyToString(resource.getInputStream(), Charset.defaultCharset());
 	}
 	
-	private static NotificationDetailsResponseDto getNotificationFromResource(Resource resource) throws StreamReadException, DatabindException, IOException {
+	private static NotificationDetailsResponseDto getNotificationFromResource(Resource resource) throws IOException {
 		return mapper.readValue(resource.getInputStream(), NotificationDetailsResponseDto.class);
 	}
 	
-	private static NotificationsGeneralDataResponseDto getNotificationGeneralDataFromResource(Resource resource) throws StreamReadException, DatabindException, IOException {
+	private static NotificationsGeneralDataResponseDto getNotificationGeneralDataFromResource(Resource resource) throws IOException {
 		return mapper.readValue(resource.getInputStream(), NotificationsGeneralDataResponseDto.class);
 	}
 	
-	private static GetRecipientDenominationByInternalIdResponseDto[] getRecipientInternalFromResource(Resource resource) throws StreamReadException, DatabindException, IOException {
+	private static GetRecipientDenominationByInternalIdResponseDto[] getRecipientInternalFromResource(Resource resource) throws IOException {
 		return mapper.readValue(resource.getInputStream(), GetRecipientDenominationByInternalIdResponseDto[].class);
 	}
 	
-	private static NotificationHistoryResponseDto getNotificationHistoryFromResource(Resource resource) throws StreamReadException, DatabindException, IOException {
+	private static NotificationHistoryResponseDto getNotificationHistoryFromResource(Resource resource) throws IOException {
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		return mapper.readValue(resource.getInputStream(), NotificationHistoryResponseDto.class);
 	}
 	
-	private static FileDownloadMetadataResponseDto getFileDownloadMetadataFromResource(Resource resource) throws StreamReadException, DatabindException, IOException {
+	private static FileDownloadMetadataResponseDto getFileDownloadMetadataFromResource(Resource resource) throws IOException {
 		return mapper.readValue(resource.getInputStream(), FileDownloadMetadataResponseDto.class);
 	}
 	
-	private static SelfCarePaDataResponseDto getSelfCarePaDataResponseFromResource(Resource resource) throws StreamReadException, DatabindException, IOException {
+	private static SelfCarePaDataResponseDto getSelfCarePaDataResponseFromResource(Resource resource) throws IOException {
 		return mapper.readValue(resource.getInputStream(), SelfCarePaDataResponseDto.class);
 	}
 	
