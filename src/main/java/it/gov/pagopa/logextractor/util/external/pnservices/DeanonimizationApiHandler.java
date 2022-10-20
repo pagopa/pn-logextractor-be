@@ -69,7 +69,6 @@ public class DeanonimizationApiHandler {
 	 * @throws {@link HttpClientErrorException}
 	 */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
-	//@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager1Minute")
 	public String getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId) throws LogExtractorException {
 		String url = String.format(getUniqueIdURL, recipientType.getValue());
 		HttpEntity<String> request =  new HttpEntity<>(taxId);
@@ -95,7 +94,6 @@ public class DeanonimizationApiHandler {
 	 * @throws {@link HttpClientErrorException}
 	 */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
-//	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager1Minute")
 	public GetBasicDataResponseDto getTaxCodeForPerson(String personId) throws LogExtractorException {
 		HttpHeaders headers = new HttpHeaders();
 		headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
@@ -131,7 +129,6 @@ public class DeanonimizationApiHandler {
 	 * @throws {@link HttpClientErrorException}
 	 * */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
-//	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager1Minute")
 	public String getPublicAuthorityId(String publicAuthorityName) throws LogExtractorException {
 		HttpHeaders headers = new HttpHeaders();
 		headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
@@ -165,7 +162,6 @@ public class DeanonimizationApiHandler {
 	 * @throws {@link HttpClientErrorException}
 	 * */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
-//	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager1Minute")
 	public String getPublicAuthorityName(String publicAuthorityId) throws LogExtractorException {
 		String url = String.format(getPublicAuthorityNameUrl, publicAuthorityId); 
 		SelfCarePaDataResponseDto response = client.getForEntity(url, SelfCarePaDataResponseDto.class).getBody();		

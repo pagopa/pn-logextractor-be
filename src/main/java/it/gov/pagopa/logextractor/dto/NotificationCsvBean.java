@@ -8,8 +8,8 @@ import lombok.Setter;
 public class NotificationCsvBean {
 
 	private String iun;
-	private String data_Invio;
-	private String data_Generazione_Attestazione_OpponibileATerzi;
+	private String data_invio;
+	private String data_generazione_attestazione_opponibile_a_terzi;
 	private String oggetto;
-	private String codici_Fiscali;
+	private String codici_fiscali;
 }

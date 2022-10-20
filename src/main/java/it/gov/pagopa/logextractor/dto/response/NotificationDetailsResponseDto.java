@@ -10,7 +10,7 @@ import lombok.Getter;
 public class NotificationDetailsResponseDto {
 
 	@JsonProperty("abstract")
-	private String _abstract;
+	private String abstractDetail;
 	private String idempotenceToken;
 	private String paProtocolNumber;
 	private String subject;

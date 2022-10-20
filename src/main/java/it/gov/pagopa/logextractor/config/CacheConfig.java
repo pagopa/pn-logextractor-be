@@ -57,12 +57,5 @@ public class CacheConfig {
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(RedisCacheConfiguration.defaultCacheConfig().entryTtl(expiration)).build();
     }
-    
-    @Bean(name = "cacheManager1Minute")
-    public CacheManager cacheManager1Minute(RedisConnectionFactory redisConnectionFactory) {
-        Duration expiration = Duration.ofMinutes(1);
-        return RedisCacheManager.builder(redisConnectionFactory)
-                .cacheDefaults(RedisCacheConfiguration.defaultCacheConfig().entryTtl(expiration)).build();
-    }
 }
 
