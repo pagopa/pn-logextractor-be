@@ -28,7 +28,7 @@ public class FileUtilities {
 	 * @return a new {@link File} instance of a file with the given name
 	 * */
 	public File getFile(String name, String extension) {
-		return FileUtils.getFile(Constants.EXPORT_FOLDER + name + "-" +  new RandomUtils().generateRandomToken() + extension);
+		return FileUtils.getFile(Constants.EXPORT_FOLDER + name + "-" +  new RandomUtils().generateRandomAlphaNumericString() + extension);
 	}
 	
 	/**

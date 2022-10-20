@@ -1,24 +1,23 @@
 package it.gov.pagopa.logextractor.util;
 
-import org.apache.commons.lang3.RandomStringUtils;
-
 import java.time.Instant;
+import java.util.UUID;
 
 public class RandomUtils {
 
     /**
-     * Generate a random string with format - <local_date_time> - <random_alpha_numeric_string>
+     * Generate a random string with <local_date_time> - <random_UUID_string> format
      * @return The randomly generated string
      * */
-    public String generateRandomToken() {
-        return Instant.now().toEpochMilli() + "-" + RandomStringUtils.random(10, true, true);
+    public String generateRandomAlphaNumericString() {
+        return Instant.now().toEpochMilli() + "-" + UUID.randomUUID();
     }
 
     /**
-     * Generate a random string with format - Root=<random_alpha_numeric_string>
-     * @return The randomly generated string
+     * Generate a random string with Root=<random_UUID_string> format
+     * @return The randomly generated string representing a trace id
      * */
     public String generateRandomTraceId() {
-        return "Root=" + RandomStringUtils.random(16, true, true).toLowerCase();
+        return "Root=" + UUID.randomUUID().toString().toLowerCase();
     }
 }
