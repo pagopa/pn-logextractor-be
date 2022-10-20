@@ -4,6 +4,7 @@ package it.gov.pagopa.logextractor.util.constant;
  * Utility class to list the Opensearch service constants
  */
 public class OpensearchConstants {
+    private OpensearchConstants(){}
     public static final String OS_TIMESTAMP_FIELD = "@timestamp";
     public static final String OS_IUN_FIELD = "iun";
     public static final String OS_UID_FIELD = "uid";

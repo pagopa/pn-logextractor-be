@@ -3,7 +3,7 @@ package it.gov.pagopa.logextractor.util.constant;
  * Utility class to list the backend response constants
  */
 public class ResponseConstants {
-
+	private ResponseConstants(){}
 	public static final String GENERIC_INTERNAL_SERVER_ERROR = "Errore nell'elaborazione della richiesta";
 	public static final String OPERATION_CANNOT_BE_COMPLETED_MESSAGE = "L'operazione non può essere ancora completata, ritentare tra ";
 	public static final String SUCCESS_RESPONSE_MESSAGE = "Operazione completata con successo";

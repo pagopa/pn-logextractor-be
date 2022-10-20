@@ -5,6 +5,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import com.opencsv.ICSVWriter;
@@ -60,19 +62,15 @@ public class FileUtilities {
 	 * Delete an existing file
 	 * @param file The file to be deleted
 	 * */
-	public void deleteFile(File file) throws LogExtractorException {
-
-		boolean fileHasBeenDeleted = file.delete();
-		if(!fileHasBeenDeleted){
-			throw new LogExtractorException("Exception in file elimination, could not delete file: " + file.getName());
-		}
+	public void deleteFile(File file) throws IOException {
+		Files.delete(file.toPath());
 	}
 	
 	/**
 	 * Delete the files of the input file list
 	 * @param files The list of files to be deleted
 	 * */
-	public void deleteFiles(List<File> files) throws LogExtractorException {
+	public void deleteFiles(List<File> files) throws IOException {
 		for(File fileToDelete : files) {
 			deleteFile(fileToDelete);
 		}
@@ -110,12 +108,12 @@ public class FileUtilities {
 				recipientsBuilder.append(tempRecipient + "-");
 			}
 			recipientsBuilder.deleteCharAt(recipientsBuilder.length()-1);
-			notification.setCodici_fiscali(escapeUtils.escapeForCsv(recipientsBuilder.toString()));
+			notification.setCodici_Fiscali(escapeUtils.escapeForCsv(recipientsBuilder.toString()));
 			recipientsBuilder.setLength(0);
 		}
-		notification.setIUN(escapeUtils.escapeForCsv(notificationData.getIun()));
-		notification.setData_invio(escapeUtils.escapeForCsv(notificationData.getSentAt()));
-		notification.setData_generazione_attestazione_opponibile_a_terzi(
+		notification.setIun(escapeUtils.escapeForCsv(notificationData.getIun()));
+		notification.setData_Invio(escapeUtils.escapeForCsv(notificationData.getSentAt()));
+		notification.setData_Generazione_Attestazione_OpponibileATerzi(
 				escapeUtils.escapeForCsv(notificationData.getRequestAcceptedAt()));
 		notification.setOggetto(escapeUtils.escapeForCsv(notificationData.getSubject()));
 		return notification;

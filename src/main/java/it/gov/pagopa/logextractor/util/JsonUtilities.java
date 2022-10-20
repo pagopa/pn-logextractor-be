@@ -14,7 +14,7 @@ public class JsonUtilities {
 	 * @param key the name of the key whose associated value is to be returned
 	 * @return the value associated with the specified key
 	 */
-	public static String getValue(String document, String key) {
+	public String getValue(String document, String key) {
 		return getValue(new JSONObject(document), key);
 	}
 
@@ -24,7 +24,7 @@ public class JsonUtilities {
 	 * @param key the name of the key whose associated value is to be returned
 	 * @return the value associated with the specified key
 	 */
-	public static String getValue(JSONObject document, String key) {
+	public String getValue(JSONObject document, String key) {
 		return document.has(key) ? document.getString(key) : null;
 	}
 
@@ -34,7 +34,7 @@ public class JsonUtilities {
 	 * @param keyValue the map containing the keys and the new associated values
 	 * @return A string representation of the edited document with the specified value replacement
 	 */
-	public static String replaceValues(String document, Map<String, String> keyValue ){
+	public String replaceValues(String document, Map<String, String> keyValue ){
 		return replaceValues(new JSONObject(document),keyValue).toString();
 	}
 
@@ -44,7 +44,7 @@ public class JsonUtilities {
 	 * @param keyValue the map containing the keys and the new associated values
 	 * @return the {@link JSONObject} document edited with the specified value replacement
 	 */
-	public static JSONObject replaceValues(JSONObject document, Map<String, String> keyValue ){
+	public JSONObject replaceValues(JSONObject document, Map<String, String> keyValue ){
 		for(Map.Entry<String, String> entry : keyValue.entrySet()) {
 			replaceValue(document, entry.getKey(), entry.getValue());
 		}

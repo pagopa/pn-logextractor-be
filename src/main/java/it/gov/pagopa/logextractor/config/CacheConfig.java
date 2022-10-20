@@ -16,6 +16,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import redis.clients.jedis.Jedis;
 
 /**
  * Configuration class to manage the cache logics*/
@@ -34,7 +35,7 @@ public class CacheConfig {
     JedisConnectionFactory jedisConnectionFactory() {
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(redisHostName, redisPort);
         JedisConnectionFactory conf = new JedisConnectionFactory(redisStandaloneConfiguration);
-        GenericObjectPoolConfig poolConfig = conf.getPoolConfig();
+        GenericObjectPoolConfig<Jedis> poolConfig = conf.getPoolConfig();
         if(poolConfig != null) {
             poolConfig.setMaxIdle(30);
             poolConfig.setMinIdle(10);

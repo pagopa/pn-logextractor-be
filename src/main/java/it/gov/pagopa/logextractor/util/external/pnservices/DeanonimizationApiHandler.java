@@ -183,9 +183,10 @@ public class DeanonimizationApiHandler {
 	 */
 	public List<String> deanonimizeDocuments(List<String> anonymizedDocuments, RecipientTypes recipientType) throws LogExtractorException{
 		ArrayList<String> deanonymizedDocuments = new ArrayList<>();
+		JsonUtilities jsonUtils = new JsonUtilities();
 		for(int index=0; index < anonymizedDocuments.size(); index++) {
-			String uid = JsonUtilities.getValue(anonymizedDocuments.get(index), OpensearchConstants.OS_UID_FIELD);
-			String cxId = JsonUtilities.getValue(anonymizedDocuments.get(index), OpensearchConstants.OS_CX_ID_FIELD);
+			String uid = jsonUtils.getValue(anonymizedDocuments.get(index), OpensearchConstants.OS_UID_FIELD);
+			String cxId = jsonUtils.getValue(anonymizedDocuments.get(index), OpensearchConstants.OS_CX_ID_FIELD);
 			String document = anonymizedDocuments.get(index);
 			HashMap<String,String> keyValues = new HashMap<>();
 			if(uid != null && !StringUtils.startsWith(uid, "APIKEY-")) {
@@ -202,7 +203,7 @@ public class DeanonimizationApiHandler {
 				}
 				keyValues.put(OpensearchConstants.OS_CX_ID_FIELD, publicAuthorityName);
 			}
-			document = JsonUtilities.replaceValues(document, keyValues);
+			document = jsonUtils.replaceValues(document, keyValues);
 			deanonymizedDocuments.add(document);
 		}
 		return deanonymizedDocuments;

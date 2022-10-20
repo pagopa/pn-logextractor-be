@@ -1,5 +1,7 @@
 package it.gov.pagopa.logextractor.dto;
 
+import com.opencsv.bean.CsvBindByName;
+import com.opencsv.bean.CsvBindByPosition;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,9 +9,9 @@ import lombok.Setter;
 @Setter
 public class NotificationCsvBean {
 
-	private String IUN;
-	private String Data_invio;
-	private String Data_generazione_attestazione_opponibile_a_terzi;
-	private String Oggetto;
-	private String Codici_fiscali;
+	private String iun;
+	private String data_Invio;
+	private String data_Generazione_Attestazione_OpponibileATerzi;
+	private String oggetto;
+	private String codici_Fiscali;
 }

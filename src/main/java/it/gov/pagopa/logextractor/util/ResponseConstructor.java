@@ -8,8 +8,6 @@ import it.gov.pagopa.logextractor.exception.LogExtractorException;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
 import org.apache.commons.io.FileUtils;
-import com.opencsv.exceptions.CsvDataTypeMismatchException;
-import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
@@ -21,6 +19,8 @@ import net.lingala.zip4j.model.enums.EncryptionMethod;
  */
 public class ResponseConstructor {
 
+	private ResponseConstructor(){}
+	
 	/**
 	 * Manages the response creation phase.
 	 *
@@ -62,8 +62,8 @@ public class ResponseConstructor {
 	 * @return {@link DownloadArchiveResponseDto} A Dto containing a byte array
 	 *         representation of the output zip archive and the password to access
 	 *         its files
-	 * @throws CsvRequiredFieldEmptyException
-	 * @throws CsvDataTypeMismatchException
+	 * @throws {@link IOException} in case an exception related with files occurs
+	 * @throws {@link LogExtractorException} in case of business exception
 	 */
 	public static DownloadArchiveResponseDto createCsvFileResponse(List<File> csvFiles, String zipName) throws IOException, LogExtractorException {
 		PasswordFactory passwordFactory = new PasswordFactory();

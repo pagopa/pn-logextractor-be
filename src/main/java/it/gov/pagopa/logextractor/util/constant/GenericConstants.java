@@ -4,7 +4,7 @@ package it.gov.pagopa.logextractor.util.constant;
  * Utility class to list the generic application constants
  */
 public class GenericConstants {
-
+	private GenericConstants(){}
 	public static final String ZIP_ARCHIVE_NAME = "export";
 	public static final String LOG_FILE_NAME = "dati";
 	public static final String NOTIFICATION_CSV_FILE_NAME = "notifiche";
