@@ -57,7 +57,6 @@ public class OpenSearchApiHandler {
 		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		log.info(LoggingConstants.QUERY_CONSTRUCTION);
-//		queryParams.put("uid.keyword", StringUtils.substring(uid, 3));
 		String queryUid = (StringUtils.startsWithIgnoreCase(uid, OpensearchConstants.UID_PF_PREFIX) ||
 				StringUtils.startsWithIgnoreCase(uid, OpensearchConstants.UID_PG_PREFIX)) ?
 				StringUtils.substring(uid, 3) : uid;
@@ -82,7 +81,6 @@ public class OpenSearchApiHandler {
 		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		log.info(LoggingConstants.QUERY_CONSTRUCTION);
-//		queryParams.put("iun.keyword", iun);
 		queryParams.put(OpensearchConstants.OS_IUN_FIELD, iun);
 		queryData.add(queryConstructor.prepareQueryData(queryParams,
 				new OpenSearchRangeQueryData(OpensearchConstants.OS_TIMESTAMP_FIELD, dateFrom, dateTo),
@@ -103,7 +101,6 @@ public class OpenSearchApiHandler {
 		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		log.info(LoggingConstants.QUERY_CONSTRUCTION);
-//		queryParams.put("root_trace_id.keyword", traceId);
 		queryParams.put(OpensearchConstants.OS_TRACE_ID_FIELD, traceId);
 		OpenSearchQuerydata queryData = queryConstructor.prepareQueryData(queryParams,
 				new OpenSearchRangeQueryData(OpensearchConstants.OS_TIMESTAMP_FIELD, dateFrom, dateTo),
@@ -141,7 +138,7 @@ public class OpenSearchApiHandler {
 				request,
 				String.class,
 				params).getBody();
-		return getDocumentsFromOpensearchResponse(response, new ArrayList<String>());
+		return getDocumentsFromOpensearchResponse(response, new ArrayList<>());
 	}
 
 	/**

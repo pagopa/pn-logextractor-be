@@ -13,14 +13,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 @SpringBootTest(classes = PnLogextractorBeApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @AutoConfigureMockMvc
 @EnableWebMvc
-public class MockLogController extends AbstractMock {
+public class MockLogControllerTest extends AbstractMock {
 
 	@Test
 	public void test_useCase3_4_7_8() throws Exception {

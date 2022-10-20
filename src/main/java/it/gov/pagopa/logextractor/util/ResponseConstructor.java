@@ -34,7 +34,7 @@ public class ResponseConstructor {
 	 *         representation of the output zip archive and the password to access
 	 *         its files
 	 */
-	public static DownloadArchiveResponseDto createSimpleLogResponse(List<String> contents, String fileName, String zipName) throws IOException, LogExtractorException {
+	public static DownloadArchiveResponseDto createSimpleLogResponse(List<String> contents, String fileName, String zipName) throws IOException {
 		PasswordFactory passwordFactory = new PasswordFactory();
 		String password = passwordFactory.createPassword(1, 1, 1, GenericConstants.SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();
@@ -65,7 +65,7 @@ public class ResponseConstructor {
 	 * @throws {@link IOException} in case an exception related with files occurs
 	 * @throws {@link LogExtractorException} in case of business exception
 	 */
-	public static DownloadArchiveResponseDto createCsvFileResponse(List<File> csvFiles, String zipName) throws IOException, LogExtractorException {
+	public static DownloadArchiveResponseDto createCsvFileResponse(List<File> csvFiles, String zipName) throws IOException {
 		PasswordFactory passwordFactory = new PasswordFactory();
 		String password = passwordFactory.createPassword(1, 1, 1, GenericConstants.SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();
@@ -98,7 +98,7 @@ public class ResponseConstructor {
 	 *         its files
 	 * @throws IOException
 	 */
-	public static DownloadArchiveResponseDto createNotificationLogResponse(List<String> openSearchLogs, List<File> filesToAdd, String fileName, String zipName) throws IOException, LogExtractorException {
+	public static DownloadArchiveResponseDto createNotificationLogResponse(List<String> openSearchLogs, List<File> filesToAdd, String fileName, String zipName) throws IOException {
 		PasswordFactory passwordFactory = new PasswordFactory();
 		String password = passwordFactory.createPassword(1, 1, 1, GenericConstants.SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();

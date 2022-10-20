@@ -52,9 +52,7 @@ public class CognitoApiHandler {
         requestHeaders.set("Content-Length",String.valueOf(accessToken.getBytes().length));
         HttpEntity<String> request = new HttpEntity<>(requestBody.toString(), requestHeaders);
         String response = client.postForObject(url, request, String.class);
-        String identifier = getUserUniqueIdentifier(response);
-        String userIdentifier = deanonimizationHandler.getUniqueIdentifierForPerson(RecipientTypes.PF, identifier);
-        return userIdentifier;
+        return deanonimizationHandler.getUniqueIdentifierForPerson(RecipientTypes.PF, getUserUniqueIdentifier(response));
 	}
 	
 	/**

@@ -10,4 +10,14 @@ public class DownloadArchiveResponseDto extends BaseResponseDTO {
 
 	private String password;
 	private byte[] zip;
+
+	@Override
+	public boolean equals(Object o) {
+		return super.equals(o);
+	}
+
+	@Override
+	public int hashCode() {
+		return super.hashCode();
+	}
 }
