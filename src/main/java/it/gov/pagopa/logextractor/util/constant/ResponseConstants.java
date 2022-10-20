@@ -1,5 +1,7 @@
-package it.gov.pagopa.logextractor.util;
-
+package it.gov.pagopa.logextractor.util.constant;
+/**
+ * Utility class to list the backend response constants
+ */
 public class ResponseConstants {
 
 	public static final String GENERIC_INTERNAL_SERVER_ERROR = "Errore nell'elaborazione della richiesta";

@@ -5,9 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import it.gov.pagopa.logextractor.util.Constants;
+import it.gov.pagopa.logextractor.util.constant.ExternalServiceConstants;
+import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
+import it.gov.pagopa.logextractor.util.constant.OpensearchConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -27,7 +29,7 @@ import it.gov.pagopa.logextractor.dto.response.PublicAuthorityMappingResponseDto
 import it.gov.pagopa.logextractor.dto.response.SelfCarePaDataResponseDto;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
 import it.gov.pagopa.logextractor.util.JsonUtilities;
-import it.gov.pagopa.logextractor.util.ResponseConstants;
+import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
 
 /**
  * Uility class for integrations with Piattaforma Notifiche de-anonymization service
@@ -99,7 +101,7 @@ public class DeanonimizationApiHandler {
 		headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 		HttpEntity<?> entity = new HttpEntity<>(headers);
 		String urlTemplate = UriComponentsBuilder.fromHttpUrl(getTaxCodeURL)
-		        .queryParam(Constants.EXT_INTERNAL_ID_PARAM, "{internalId}")
+		        .queryParam(ExternalServiceConstants.EXT_INTERNAL_ID_PARAM, "{internalId}")
 		        .encode()
 		        .toUriString();
 		Map<String, String> params = new HashMap<>();
@@ -122,7 +124,7 @@ public class DeanonimizationApiHandler {
 	}
 	
 	/**
-	 * Performs a GET HTTP request to the PN external service to retrieve the general data of the notifications managed within a period
+	 * Performs a GET HTTP request to the Piattaforma Notifiche external service to retrieve the general data of the notifications managed within a period
 	 * @return The list of notifications' general data
 	 * @throws LogExtractorException 
 	 * @throws {@link HttpServerErrorException}
@@ -135,7 +137,7 @@ public class DeanonimizationApiHandler {
 		headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 		HttpEntity<?> entity = new HttpEntity<>(headers);
 		String urlTemplate = UriComponentsBuilder.fromHttpUrl(selfCareEncodedIpaCodeURL)
-		        .queryParam(Constants.EXT_PA_NAME_PARAM, "{publicAuthorityName}")
+		        .queryParam(ExternalServiceConstants.EXT_PA_NAME_PARAM, "{publicAuthorityName}")
 		        .encode()
 		        .toUriString();
 		Map<String, String> params = new HashMap<>();
@@ -155,7 +157,7 @@ public class DeanonimizationApiHandler {
 	}
 	
 	/**
-	 * Performs a GET HTTP request to the PN external service to retrieve the public authority name
+	 * Performs a GET HTTP request to the Piattaforma Notifiche external service to retrieve the public authority name
 	 * @param publicAuthorityId The public authority id
 	 * @return The public authority name
 	 * @throws LogExtractorException 
@@ -182,13 +184,13 @@ public class DeanonimizationApiHandler {
 	public List<String> deanonimizeDocuments(List<String> anonymizedDocuments, RecipientTypes recipientType) throws LogExtractorException{
 		ArrayList<String> deanonymizedDocuments = new ArrayList<>();
 		for(int index=0; index < anonymizedDocuments.size(); index++) {
-			String uid = JsonUtilities.getValue(anonymizedDocuments.get(index), Constants.OS_UID_FIELD);
-			String cxId = JsonUtilities.getValue(anonymizedDocuments.get(index), Constants.OS_CX_ID_FIELD);
+			String uid = JsonUtilities.getValue(anonymizedDocuments.get(index), OpensearchConstants.OS_UID_FIELD);
+			String cxId = JsonUtilities.getValue(anonymizedDocuments.get(index), OpensearchConstants.OS_CX_ID_FIELD);
 			String document = anonymizedDocuments.get(index);
 			HashMap<String,String> keyValues = new HashMap<>();
 			if(uid != null && !StringUtils.startsWith(uid, "APIKEY-")) {
 				GetBasicDataResponseDto taxCodeDto = getTaxCodeForPerson(recipientType.toString() + "-" + uid);
-				keyValues.put(Constants.OS_UID_FIELD, taxCodeDto.getData());
+				keyValues.put(OpensearchConstants.OS_UID_FIELD, taxCodeDto.getData());
 			}
 			if(cxId != null) {
 				String publicAuthorityName = null;
@@ -198,7 +200,7 @@ public class DeanonimizationApiHandler {
 				if((StringUtils.startsWithIgnoreCase(cxId, "PA-"))) {
 					publicAuthorityName = getPublicAuthorityName(cxId);
 				}
-				keyValues.put(Constants.OS_CX_ID_FIELD, publicAuthorityName);
+				keyValues.put(OpensearchConstants.OS_CX_ID_FIELD, publicAuthorityName);
 			}
 			document = JsonUtilities.replaceValues(document, keyValues);
 			deanonymizedDocuments.add(document);

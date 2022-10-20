@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import it.gov.pagopa.logextractor.dto.OpensearchScrollQueryDto;
-import it.gov.pagopa.logextractor.util.Constants;
+import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
+import it.gov.pagopa.logextractor.util.constant.OpensearchConstants;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
@@ -55,17 +56,17 @@ public class OpenSearchApiHandler {
 		ArrayList<OpenSearchQuerydata> queryData = new ArrayList<>();
 		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
-		log.info("Constructing Opensearch query...");
+		log.info(LoggingConstants.QUERY_CONSTRUCTION);
 //		queryParams.put("uid.keyword", StringUtils.substring(uid, 3));
-		String queryUid = (StringUtils.startsWithIgnoreCase(uid, Constants.UID_PF_PREFIX) ||
-				StringUtils.startsWithIgnoreCase(uid, Constants.UID_PG_PREFIX)) ?
+		String queryUid = (StringUtils.startsWithIgnoreCase(uid, OpensearchConstants.UID_PF_PREFIX) ||
+				StringUtils.startsWithIgnoreCase(uid, OpensearchConstants.UID_PG_PREFIX)) ?
 				StringUtils.substring(uid, 3) : uid;
-		queryParams.put(Constants.OS_UID_FIELD, queryUid);
+		queryParams.put(OpensearchConstants.OS_UID_FIELD, queryUid);
 		queryData.add(queryConstructor.prepareQueryData(queryParams,
-				new OpenSearchRangeQueryData(Constants.OS_TIMESTAMP_FIELD, dateFrom, dateTo),
-				new OpenSearchSortFilter(Constants.OS_TIMESTAMP_FIELD, SortOrders.ASC)));
+				new OpenSearchRangeQueryData(OpensearchConstants.OS_TIMESTAMP_FIELD, dateFrom, dateTo),
+				new OpenSearchSortFilter(OpensearchConstants.OS_TIMESTAMP_FIELD, SortOrders.ASC)));
 		String query = queryConstructor.createBooleanMultiSearchQuery(queryData);
-		log.info("Executing query:"+ RegExUtils.removeAll(query, "\n"));
+		log.info(LoggingConstants.QUERY_EXECUTION + RegExUtils.removeAll(query, "\n"));
 		return extractDocumentsFromOpensearch(query);
 	}
 	
@@ -80,14 +81,14 @@ public class OpenSearchApiHandler {
 		ArrayList<OpenSearchQuerydata> queryData = new ArrayList<>();
 		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
-		log.info("Constructing Opensearch query...");
+		log.info(LoggingConstants.QUERY_CONSTRUCTION);
 //		queryParams.put("iun.keyword", iun);
-		queryParams.put(Constants.OS_IUN_FIELD, iun);
+		queryParams.put(OpensearchConstants.OS_IUN_FIELD, iun);
 		queryData.add(queryConstructor.prepareQueryData(queryParams,
-				new OpenSearchRangeQueryData(Constants.OS_TIMESTAMP_FIELD, dateFrom, dateTo), 
-				new OpenSearchSortFilter(Constants.OS_TIMESTAMP_FIELD, SortOrders.ASC)));
+				new OpenSearchRangeQueryData(OpensearchConstants.OS_TIMESTAMP_FIELD, dateFrom, dateTo),
+				new OpenSearchSortFilter(OpensearchConstants.OS_TIMESTAMP_FIELD, SortOrders.ASC)));
 		String query = queryConstructor.createBooleanMultiSearchQuery(queryData);
-		log.info("Executing query:" + RegExUtils.removeAll(query, "\n"));
+		log.info(LoggingConstants.QUERY_EXECUTION + RegExUtils.removeAll(query, "\n"));
 		return extractDocumentsFromOpensearch(query);
 	}
 	
@@ -101,16 +102,16 @@ public class OpenSearchApiHandler {
 	public List<String> getAnonymizedLogsByTraceId(String traceId, String dateFrom, String dateTo){
 		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
-		log.info("Constructing Opensearch query...");
+		log.info(LoggingConstants.QUERY_CONSTRUCTION);
 //		queryParams.put("root_trace_id.keyword", traceId);
-		queryParams.put(Constants.OS_TRACE_ID_FIELD, traceId);
+		queryParams.put(OpensearchConstants.OS_TRACE_ID_FIELD, traceId);
 		OpenSearchQuerydata queryData = queryConstructor.prepareQueryData(queryParams,
-				new OpenSearchRangeQueryData(Constants.OS_TIMESTAMP_FIELD, dateFrom, dateTo), 
-				new OpenSearchSortFilter(Constants.OS_TIMESTAMP_FIELD, SortOrders.ASC));
+				new OpenSearchRangeQueryData(OpensearchConstants.OS_TIMESTAMP_FIELD, dateFrom, dateTo),
+				new OpenSearchSortFilter(OpensearchConstants.OS_TIMESTAMP_FIELD, SortOrders.ASC));
 		ArrayList<OpenSearchQuerydata> listOfQueryData = new ArrayList<>();
 		listOfQueryData.add(queryData);
 		String query = queryConstructor.createBooleanMultiSearchQuery(listOfQueryData);
-		log.info("Executing query:"+ RegExUtils.removeAll(query, "\n"));
+		log.info(LoggingConstants.QUERY_EXECUTION + RegExUtils.removeAll(query, "\n"));
 		return extractDocumentsFromOpensearch(query);
 	}
 	
@@ -128,12 +129,12 @@ public class OpenSearchApiHandler {
         acceptedTypes.add(MediaType.APPLICATION_JSON);
         requestHeaders.setAccept(acceptedTypes);
         HttpEntity<String> request = new HttpEntity<>(query, requestHeaders);
-		String urlTemplate = UriComponentsBuilder.fromHttpUrl(openSearchHost+Constants.OS_SEARCH_QUERY_SUFFIX)
-						.queryParam(Constants.OS_SCROLL_PARAMETER, "{scroll}")
+		String urlTemplate = UriComponentsBuilder.fromHttpUrl(openSearchHost+OpensearchConstants.OS_SEARCH_QUERY_SUFFIX)
+						.queryParam(OpensearchConstants.OS_SCROLL_PARAMETER, "{scroll}")
 						.encode()
 						.toUriString();
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(Constants.OS_SCROLL_PARAMETER, Constants.OS_SCROLL_ID_VALIDITY_DURATION);
+		params.put(OpensearchConstants.OS_SCROLL_PARAMETER, OpensearchConstants.OS_SCROLL_ID_VALIDITY_DURATION);
         String response = client.exchange(
 				urlTemplate,
 				HttpMethod.GET,
@@ -163,10 +164,10 @@ public class OpenSearchApiHandler {
 		acceptedTypes.add(MediaType.APPLICATION_JSON);
 		requestHeaders.setAccept(acceptedTypes);
 		OpensearchScrollQueryDto scrollQueryDto = new OpensearchScrollQueryDto(
-				Constants.OS_SCROLL_ID_VALIDITY_DURATION,
-				new JSONObject(openSearchResponse).getString(Constants.OS_SCROLL_ID_SUFFIX));
+				OpensearchConstants.OS_SCROLL_ID_VALIDITY_DURATION,
+				new JSONObject(openSearchResponse).getString(OpensearchConstants.OS_SCROLL_ID_SUFFIX));
 		HttpEntity<OpensearchScrollQueryDto> request = new HttpEntity<>(scrollQueryDto, requestHeaders);
-		ResponseEntity<String> response = client.exchange(openSearchHost+Constants.OS_SCROLL_SUFFIX,
+		ResponseEntity<String> response = client.exchange(openSearchHost+OpensearchConstants.OS_SCROLL_SUFFIX,
 				HttpMethod.GET,request,String.class);
 		return getDocumentsFromOpensearchResponse(response.getBody(), documents);
 	}

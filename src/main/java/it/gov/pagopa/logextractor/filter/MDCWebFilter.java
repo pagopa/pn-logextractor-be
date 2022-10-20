@@ -9,8 +9,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.gov.pagopa.logextractor.util.Constants;
-import it.gov.pagopa.logextractor.util.ResponseConstants;
+import it.gov.pagopa.logextractor.util.constant.CognitoConstants;
+import it.gov.pagopa.logextractor.util.constant.GenericConstants;
+import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
+import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -50,18 +52,18 @@ public class MDCWebFilter extends OncePerRequestFilter {
 			}
 			log.info("Getting user identifier...");
 			long serviceStartTime = System.currentTimeMillis();
-        	MDC.put("user_identifier", cognitoApiHandler.getUserIdentifier(request.getHeader("Auth")));
+        	MDC.put(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER, cognitoApiHandler.getUserIdentifier(request.getHeader("Auth")));
 			long performanceMillis = System.currentTimeMillis() - serviceStartTime;
 			log.info("User identifier retrieved in {} ms", performanceMillis);
-			MDC.put("validationTime", String.valueOf(performanceMillis));
+			MDC.put(LoggingConstants.VALIDATION_TIME, String.valueOf(performanceMillis));
             filterChain.doFilter(request, response);
         } catch (LogExtractorException e) {
 			log.error(ExceptionUtils.getStackTrace(e));
 			sendErrorResponse(response, ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR);
 		} finally {
-            MDC.remove("user_identifier");
+            MDC.remove(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER);
 			MDC.remove("trace_id");
-			MDC.remove("validationTime");
+			MDC.remove(LoggingConstants.VALIDATION_TIME);
         }
     }
     
@@ -72,7 +74,7 @@ public class MDCWebFilter extends OncePerRequestFilter {
 
 	private void sendErrorResponse(HttpServletResponse response, String errorMessage) throws IOException {
 		Map<String, Object> errorDetails = new HashMap<>();
-		errorDetails.put(Constants.ERROR_MESSAGE_KEY, errorMessage);
+		errorDetails.put(GenericConstants.ERROR_MESSAGE_KEY, errorMessage);
 		response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 		mapper.writeValue(response.getWriter(), errorDetails);

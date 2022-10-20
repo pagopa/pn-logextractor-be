@@ -4,7 +4,7 @@ import java.io.Serializable;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import it.gov.pagopa.logextractor.annotation.RecipientType;
-import it.gov.pagopa.logextractor.util.ValidationConstants;
+import it.gov.pagopa.logextractor.util.constant.ValidationConstants;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

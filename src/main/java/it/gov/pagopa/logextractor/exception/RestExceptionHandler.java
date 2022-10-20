@@ -13,7 +13,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
-import it.gov.pagopa.logextractor.util.ResponseConstants;
+import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
 import lombok.extern.slf4j.Slf4j;
 
 /**

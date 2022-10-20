@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import com.opencsv.ICSVWriter;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
+import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 import org.apache.commons.io.FileUtils;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
@@ -28,7 +29,7 @@ public class FileUtilities {
 	 * @return a new {@link File} instance of a file with the given name
 	 * */
 	public File getFile(String name, String extension) {
-		return FileUtils.getFile(Constants.EXPORT_FOLDER + name + "-" +  new RandomUtils().generateRandomAlphaNumericString() + extension);
+		return FileUtils.getFile(GenericConstants.EXPORT_FOLDER + name + "-" +  new RandomUtils().generateRandomAlphaNumericString() + extension);
 	}
 	
 	/**

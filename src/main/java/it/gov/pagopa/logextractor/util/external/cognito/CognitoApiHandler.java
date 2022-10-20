@@ -1,6 +1,7 @@
 package it.gov.pagopa.logextractor.util.external.cognito;
 
-import it.gov.pagopa.logextractor.util.Constants;
+import it.gov.pagopa.logextractor.util.constant.CognitoConstants;
+import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import org.json.JSONArray;
@@ -44,7 +45,7 @@ public class CognitoApiHandler {
 	public String getUserIdentifier(String accessToken) throws LogExtractorException {
 		String url = String.format(cognitoUserUrl, cognitoRegion);
 		JSONObject requestBody = new JSONObject();
-		requestBody.put(Constants.COG_ACTOKEN, accessToken);
+		requestBody.put(CognitoConstants.COG_ACTOKEN, accessToken);
 		HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.set("Content-Type", "application/x-amz-json-1.1");
         requestHeaders.set("X-Amz-Target", "AWSCognitoIdentityProviderService.GetUser");
@@ -66,7 +67,7 @@ public class CognitoApiHandler {
 		for(int objIndex = 0; objIndex <attributes.length(); objIndex++) {
 			JSONObject currentAttribute = attributes.getJSONObject(objIndex);
 			String currentKey = currentAttribute.getString("Name");
-			if((Constants.COGNITO_CUSTOM_ATTRIBUTE_PREFIX + "log_identifier").equalsIgnoreCase(currentKey)) {
+			if((GenericConstants.COGNITO_CUSTOM_ATTRIBUTE_PREFIX + "log_identifier").equalsIgnoreCase(currentKey)) {
 				return currentAttribute.getString("Value");
 			}
 		}

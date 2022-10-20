@@ -1,6 +1,6 @@
 package it.gov.pagopa.logextractor.util.external.opensearch;
 
-import it.gov.pagopa.logextractor.util.Constants;
+import it.gov.pagopa.logextractor.util.constant.OpensearchConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +38,7 @@ public class OpenSearchQueryConstructor {
 					queryBuilder.append(",\"sort\":[{\""+currentQueryData.getSortFilter().getSortField()+"\": "
 							+ "{\"order\":\""+currentQueryData.getSortFilter().getSortOrder().toString()+"\"}}]\n");
 				}
-				queryBuilder.append(",\"size\":" + Constants.OS_QUERY_RESULT_PAGE_SIZE + "}\n");
+				queryBuilder.append(",\"size\":" + OpensearchConstants.OS_QUERY_RESULT_PAGE_SIZE + "}\n");
 				paramsBuilder.setLength(0);
 			}
 		}

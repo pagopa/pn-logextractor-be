@@ -7,7 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import it.gov.pagopa.logextractor.util.Constants;
+import it.gov.pagopa.logextractor.util.constant.ExternalServiceConstants;
+import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,13 +68,12 @@ public class NotificationApiHandler {
 	 * @param referenceMonth The month to obtain the notifications for
 	 * @param endMonth The following month of the reference month
 	 * @param encodedPublicAuthorityName   The public authority id
-	 * @param userIdentifier The user unique identifier
 	 * @return The list of {@link NotificationGeneralData} notifications' general data
 	 */
 	public List<NotificationData> getNotificationsByMonthsPeriod(String referenceMonth, String endMonth, 
-			String encodedPublicAuthorityName, String userIdentifier) {
+			String encodedPublicAuthorityName) {
 		return getNotificationsBetweenMonths(referenceMonth, endMonth, encodedPublicAuthorityName,
-				new ArrayList<>(), null, userIdentifier);
+				new ArrayList<>(), null);
 	}
 	
 	/**
@@ -84,11 +84,10 @@ public class NotificationApiHandler {
 	 * @param encodedPublicAuthorityName   The public authority id
 	 * @param notifications The initial notifications list
 	 * @param nextUrlKey The key of the next results page
-	 * @param userIdentifier The user unique identifier
 	 * @return The list of {@link NotificationGeneralData} notifications' general data
 	 */
 	private ArrayList<NotificationData> getNotificationsBetweenMonths(String referenceMonth, String endMonth, String encodedPublicAuthorityName, 
-			ArrayList<NotificationData> notifications, String nextUrlKey, String userIdentifier) {
+			ArrayList<NotificationData> notifications, String nextUrlKey) {
 		HttpHeaders requestHeaders = new HttpHeaders();
 	    requestHeaders.setContentType(MediaType.APPLICATION_JSON);
 	    List<MediaType> acceptedTypes = new ArrayList<>();
@@ -97,28 +96,28 @@ public class NotificationApiHandler {
 	    HttpEntity<?> entity = new HttpEntity<>(requestHeaders);
 	    String urlTemplate = null == nextUrlKey ? 
 	    		UriComponentsBuilder.fromHttpUrl(notificationURL)
-	    		.queryParam(Constants.EXT_SENDER_ID_PARAM, "{senderId}")
-		        .queryParam(Constants.EXT_START_DATE_PARAM, "{startDate}")
-		        .queryParam(Constants.EXT_END_DATE_PARAM, "{endDate}")
-		        .queryParam(Constants.EXT_SIZE_PARAM, "{size}")
+	    		.queryParam(ExternalServiceConstants.EXT_SENDER_ID_PARAM, "{senderId}")
+		        .queryParam(ExternalServiceConstants.EXT_START_DATE_PARAM, "{startDate}")
+		        .queryParam(ExternalServiceConstants.EXT_END_DATE_PARAM, "{endDate}")
+		        .queryParam(ExternalServiceConstants.EXT_SIZE_PARAM, "{size}")
 		        .encode()
 		        .toUriString() 
 		        :
 		        UriComponentsBuilder.fromHttpUrl(notificationURL)
-		        .queryParam(Constants.EXT_SENDER_ID_PARAM, "{senderId}")
-    			.queryParam(Constants.EXT_START_DATE_PARAM, "{startDate}")
-		        .queryParam(Constants.EXT_END_DATE_PARAM, "{endDate}")
-		        .queryParam(Constants.EXT_SIZE_PARAM, "{size}")
-		        .queryParam(Constants.EXT_NEXT_PAGE_KEY_PARAM, "{nextPagesKey}")
+		        .queryParam(ExternalServiceConstants.EXT_SENDER_ID_PARAM, "{senderId}")
+    			.queryParam(ExternalServiceConstants.EXT_START_DATE_PARAM, "{startDate}")
+		        .queryParam(ExternalServiceConstants.EXT_END_DATE_PARAM, "{endDate}")
+		        .queryParam(ExternalServiceConstants.EXT_SIZE_PARAM, "{size}")
+		        .queryParam(ExternalServiceConstants.EXT_NEXT_PAGE_KEY_PARAM, "{nextPagesKey}")
 		        .encode()
 		        .toUriString();
 	    HashMap<String, Object> params = new HashMap<>();
-	    params.put(Constants.EXT_SENDER_ID_PARAM, encodedPublicAuthorityName);
-    	params.put(Constants.EXT_START_DATE_PARAM, referenceMonth);
-    	params.put(Constants.EXT_END_DATE_PARAM, endMonth);
-	    params.put(Constants.EXT_SIZE_PARAM, Constants.PAGE_SIZE);
+	    params.put(ExternalServiceConstants.EXT_SENDER_ID_PARAM, encodedPublicAuthorityName);
+    	params.put(ExternalServiceConstants.EXT_START_DATE_PARAM, referenceMonth);
+    	params.put(ExternalServiceConstants.EXT_END_DATE_PARAM, endMonth);
+	    params.put(ExternalServiceConstants.EXT_SIZE_PARAM, GenericConstants.PAGE_SIZE);
 	    if(null != nextUrlKey) {
-	    	params.put(Constants.EXT_NEXT_PAGE_KEY_PARAM, nextUrlKey);
+	    	params.put(ExternalServiceConstants.EXT_NEXT_PAGE_KEY_PARAM, nextUrlKey);
 	    }
 	    NotificationsGeneralDataResponseDto response = client.exchange(
 	    		urlTemplate, 
@@ -133,7 +132,7 @@ public class NotificationApiHandler {
 	    	notifications.addAll(response.getResultsPage());
 	    	for(String currentKey : response.getNextPagesKey()) {
 				notifications.addAll(getNotificationsBetweenMonths(referenceMonth, endMonth, 
-						encodedPublicAuthorityName, notifications, currentKey, userIdentifier));
+						encodedPublicAuthorityName, notifications, currentKey));
 		    }
 	    }
 	    return notifications;
@@ -196,13 +195,13 @@ public class NotificationApiHandler {
 		headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 		HttpEntity<?> entity = new HttpEntity<>(headers);
 		String urlTemplate = UriComponentsBuilder.fromHttpUrl(url)
-		        .queryParam(Constants.EXT_NUM_RECIPIENTS_PARAM, "{numberOfRecipients}")
-		        .queryParam(Constants.EXT_CREATED_AT_PARAM, "{createdAt}")
+		        .queryParam(ExternalServiceConstants.EXT_NUM_RECIPIENTS_PARAM, "{numberOfRecipients}")
+		        .queryParam(ExternalServiceConstants.EXT_CREATED_AT_PARAM, "{createdAt}")
 		        .encode()
 		        .toUriString();
 		Map<String, Object> params = new HashMap<>();
-		params.put(Constants.EXT_NUM_RECIPIENTS_PARAM, numberOfRecipients);
-		params.put(Constants.EXT_CREATED_AT_PARAM, createdAt);
+		params.put(ExternalServiceConstants.EXT_NUM_RECIPIENTS_PARAM, numberOfRecipients);
+		params.put(ExternalServiceConstants.EXT_CREATED_AT_PARAM, createdAt);
 		return client.exchange(urlTemplate, HttpMethod.GET, entity, NotificationHistoryResponseDto.class, params).getBody();
 	}
 	
@@ -217,7 +216,7 @@ public class NotificationApiHandler {
 			for (NotificationDetailsTimelineData timelineObject : notificationInfo.getTimeline()) {
 				if (null != timelineObject.getLegalFactsIds()) {
 					for(NotificationDetailsTimelineLegalFactsData legalFactsObject : timelineObject.getLegalFactsIds()) {
-						legalFactKeys.add(StringUtils.remove(legalFactsObject.getKey(), Constants.SAFESTORAGE_PREFIX));
+						legalFactKeys.add(StringUtils.remove(legalFactsObject.getKey(), GenericConstants.SAFESTORAGE_PREFIX));
 					}
 				}
 			}
@@ -234,7 +233,7 @@ public class NotificationApiHandler {
 		ArrayList<String> docIdxs = new ArrayList<>();
 		if(null != notificationInfo.getDocuments()) {
 			for (NotificationDetailsDocumentData doc : notificationInfo.getDocuments()) {
-				docIdxs.add(StringUtils.remove(doc.getRef().getKey(), Constants.SAFESTORAGE_PREFIX));
+				docIdxs.add(StringUtils.remove(doc.getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX));
 			}
 		}
 		return docIdxs;
@@ -249,19 +248,25 @@ public class NotificationApiHandler {
 		ArrayList<String> paymentKeys = new ArrayList<>();
 		if(null != notificationInfo && null != notificationInfo.getRecipients()) {
 			for(NotificationDetailsRecipientsData recipient : notificationInfo.getRecipients()) {
-				if(null != recipient.getPayment()) {
-					if(null != recipient.getPayment().getF24flatRate()) {
-						paymentKeys.add(StringUtils.remove(recipient.getPayment().getF24flatRate().getRef().getKey(), Constants.SAFESTORAGE_PREFIX));
-					}
-					if(null != recipient.getPayment().getF24standard()) {
-						paymentKeys.add(StringUtils.remove(recipient.getPayment().getF24standard().getRef().getKey(), Constants.SAFESTORAGE_PREFIX));
-					}
-					if(null != recipient.getPayment().getPagoPaForm()) {
-						paymentKeys.add(StringUtils.remove(recipient.getPayment().getPagoPaForm().getRef().getKey(), Constants.SAFESTORAGE_PREFIX));
-					}
-				}
+				paymentKeys.addAll(getCurrentRecipientPaymentKeys(recipient));
 			}
 		}
 		return paymentKeys;
+	}
+
+	private List<String> getCurrentRecipientPaymentKeys(NotificationDetailsRecipientsData recipient) {
+		ArrayList<String> currentRecipientPaymentKeys = new ArrayList<>();
+		if(null != recipient.getPayment()) {
+			if(null != recipient.getPayment().getF24flatRate()) {
+				currentRecipientPaymentKeys.add(StringUtils.remove(recipient.getPayment().getF24flatRate().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX));
+			}
+			if(null != recipient.getPayment().getF24standard()) {
+				currentRecipientPaymentKeys.add(StringUtils.remove(recipient.getPayment().getF24standard().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX));
+			}
+			if(null != recipient.getPayment().getPagoPaForm()) {
+				currentRecipientPaymentKeys.add(StringUtils.remove(recipient.getPayment().getPagoPaForm().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX));
+			}
+		}
+		return currentRecipientPaymentKeys;
 	}
 }

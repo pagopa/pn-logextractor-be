@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+
+import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.CompressionLevel;
@@ -22,8 +24,8 @@ public class ZipFactory {
 	 * @return a new {@link ZipFile} instance of a zip archive with the given name protected by the given password
 	 * */
 	public ZipFile createZipArchive(String name, String password) {
-		return new ZipFile(Constants.EXPORT_FOLDER + name + "-" + 
-							new RandomUtils().generateRandomAlphaNumericString() + Constants.ZIP_EXTENSION, password.toCharArray());
+		return new ZipFile(GenericConstants.EXPORT_FOLDER + name + "-" +
+							new RandomUtils().generateRandomAlphaNumericString() + GenericConstants.ZIP_EXTENSION, password.toCharArray());
 	}
 	
 	/**

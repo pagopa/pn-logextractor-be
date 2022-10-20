@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.List;
 
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
+import it.gov.pagopa.logextractor.util.constant.GenericConstants;
+import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
 import org.apache.commons.io.FileUtils;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
@@ -34,9 +36,9 @@ public class ResponseConstructor {
 	 */
 	public static DownloadArchiveResponseDto createSimpleLogResponse(List<String> contents, String fileName, String zipName) throws IOException, LogExtractorException {
 		PasswordFactory passwordFactory = new PasswordFactory();
-		String password = passwordFactory.createPassword(1, 1, 1, Constants.SPECIAL_CHARS, 1, 16);
+		String password = passwordFactory.createPassword(1, 1, 1, GenericConstants.SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();
-		File file = utils.getFile(fileName,Constants.TXT_EXTENSION);
+		File file = utils.getFile(fileName, GenericConstants.TXT_EXTENSION);
 		utils.write(file, contents);
 		ZipFactory zipFactory = new ZipFactory();
 		ZipFile zipArchive = zipFactory.createZipArchive(zipName, password);
@@ -65,7 +67,7 @@ public class ResponseConstructor {
 	 */
 	public static DownloadArchiveResponseDto createCsvFileResponse(List<File> csvFiles, String zipName) throws IOException, LogExtractorException {
 		PasswordFactory passwordFactory = new PasswordFactory();
-		String password = passwordFactory.createPassword(1, 1, 1, Constants.SPECIAL_CHARS, 1, 16);
+		String password = passwordFactory.createPassword(1, 1, 1, GenericConstants.SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();
 		ZipFactory zipFactory = new ZipFactory();
 		ZipFile zipArchive = zipFactory.createZipArchive(zipName, password);
@@ -98,9 +100,9 @@ public class ResponseConstructor {
 	 */
 	public static DownloadArchiveResponseDto createNotificationLogResponse(List<String> openSearchLogs, List<File> filesToAdd, String fileName, String zipName) throws IOException, LogExtractorException {
 		PasswordFactory passwordFactory = new PasswordFactory();
-		String password = passwordFactory.createPassword(1, 1, 1, Constants.SPECIAL_CHARS, 1, 16);
+		String password = passwordFactory.createPassword(1, 1, 1, GenericConstants.SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();
-		File file = utils.getFile(fileName, Constants.TXT_EXTENSION);
+		File file = utils.getFile(fileName, GenericConstants.TXT_EXTENSION);
 		utils.write(file, openSearchLogs);
 		ZipFactory zipFactory = new ZipFactory();
 		ZipFile zipArchive = zipFactory.createZipArchive(zipName, password);
