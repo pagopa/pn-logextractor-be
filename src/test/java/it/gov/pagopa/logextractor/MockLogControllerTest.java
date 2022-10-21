@@ -33,6 +33,7 @@ public class MockLogControllerTest extends AbstractMock {
 	public void test_useCase10() throws Exception {
 		test_getProcesses("2022-06-01", "2022-07-01", "traceId");
 	}
+
 	public void test_getPersonsLogsPA(int useCase, boolean isDeanonimization, String json) throws Exception {
 		// use case 3 PA
 		mockPersonsLogResponse(json);
@@ -44,7 +45,7 @@ public class MockLogControllerTest extends AbstractMock {
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("password");
 	}
-	
+
 	public void test_getPersonsLogs(int useCase, boolean isDeanonimization, String json) throws Exception {
 		// use case 3,4,7,8
 		mockPersonsLogResponse(json);
@@ -59,7 +60,7 @@ public class MockLogControllerTest extends AbstractMock {
 	@Test
 	public void test_getNotificationLogs() throws Exception {
 		// use case 6
-		mockPublicAuthorityIdAndNotificationsBetweenMonths();
+		mockPublicAuthorityIdAndNotificationsBetweenMonths(false);
 		mockNotificationResponse();
 		mockPersonsLogUseCase6Response();
 		MockHttpServletResponse response = mvc
@@ -69,12 +70,36 @@ public class MockLogControllerTest extends AbstractMock {
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("password");
 	}
+	
+	@Test
+	public void test_getNotificationLogsNotificationsIsEmpty() throws Exception {
+		mockPublicAuthorityIdAndNotificationsBetweenMonths(true);
+		mockPersonsLogUseCase6Response();
+		MockHttpServletResponse response = mvc
+				.perform(post(notificationUrl).accept(APPLICATION_JSON_UTF8).header("Auth", fakeHeader)
+						.content(getMockMonthlyNotificationsRequestDto()).contentType(APPLICATION_JSON_UTF8))
+				.andReturn().getResponse();
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+		assertThat(response.getContentAsString()).contains("message");
+	}
+	
+	@Test
+	public void test_getPersonsLogsOpenSearchResponseIsEmpty() throws Exception {
+		mockPersonsLogResponse(jsonDocSearchPF);
+		mockTaxCodeForPerson();
+		MockHttpServletResponse response = mvc
+				.perform(post(personUrl).accept(APPLICATION_JSON_UTF8).header("Auth", fakeHeader)
+						.content(getMockPersonLogsRequestDtoPersonIdNull()).contentType(APPLICATION_JSON_UTF8))
+				.andReturn().getResponse();
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+		assertThat(response.getContentAsString()).contains("message");
+	}
 
 	@Test
 	public void test_getNotificationInfoLogs() throws Exception {
 		mockNotificationDetailsResponse();
 		mockNotificationHistoryResponse();
-		mockFileDownloadMetadataResponseDTO();
+		mockFileDownloadMetadataResponseDTO(mockFileKey);
 		mockDocumentsByMultiSearchQuery();
 		mockPersonsLogResponse(jsonDocSearchPF);
 		MockHttpServletResponse response = mvc
@@ -85,14 +110,31 @@ public class MockLogControllerTest extends AbstractMock {
 		assertThat(response.getContentAsString()).contains("message");
 	}
 
-	public void test_getProcesses(String dateFrom, String dateTo, String traceId)
-			throws Exception {
-		mockPersonsLogResponse(jsonDocSearchPF);
+	@Test
+	public void test_CheckMissingUIAttributes() throws Exception {
+		mockMissingUniqueIdentifierForPerson();
 		MockHttpServletResponse response = mvc
-				.perform(post(processesUrl).accept(APPLICATION_JSON_UTF8).header("Auth", fakeHeader)
-						.content(getMockTraceIdLogsRequestDto(dateFrom, dateTo, traceId))
-						.contentType(APPLICATION_JSON_UTF8))
+				.perform(post(notificationUrl).accept(APPLICATION_JSON_UTF8).header("Auth", fakeHeader)
+						.content(getMockMonthlyNotificationsRequestDto()).contentType(APPLICATION_JSON_UTF8))
 				.andReturn().getResponse();
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
+	}
+
+	@Test
+	public void test_CheckAuthError() throws Exception {
+		mockUniqueIdentifierForPerson();
+		MockHttpServletResponse response = mvc
+				.perform(post(notificationUrl).accept(APPLICATION_JSON_UTF8)
+						.content(getMockMonthlyNotificationsRequestDto()).contentType(APPLICATION_JSON_UTF8))
+				.andReturn().getResponse();
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
+	}
+
+	public void test_getProcesses(String dateFrom, String dateTo, String traceId) throws Exception {
+		mockPersonsLogResponse(jsonDocSearchPF);
+		MockHttpServletResponse response = mvc.perform(post(processesUrl).accept(APPLICATION_JSON_UTF8)
+				.header("Auth", fakeHeader).content(getMockTraceIdLogsRequestDto(dateFrom, dateTo, traceId))
+				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("password");
 	}

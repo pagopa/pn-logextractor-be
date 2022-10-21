@@ -5,11 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import it.gov.pagopa.logextractor.util.constant.ExternalServiceConstants;
-import it.gov.pagopa.logextractor.util.constant.GenericConstants;
-import it.gov.pagopa.logextractor.pn_logextractor_be.model.GetBasicDataResponseDto;
-import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
-import it.gov.pagopa.logextractor.util.constant.OpensearchConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -24,11 +19,16 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
 import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInternalIdResponseDto;
 import it.gov.pagopa.logextractor.dto.response.PublicAuthorityMappingResponseDto;
 import it.gov.pagopa.logextractor.dto.response.SelfCarePaDataResponseDto;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.GetBasicDataResponseDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import it.gov.pagopa.logextractor.util.JsonUtilities;
+import it.gov.pagopa.logextractor.util.constant.ExternalServiceConstants;
+import it.gov.pagopa.logextractor.util.constant.OpensearchConstants;
 import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
 
 /**

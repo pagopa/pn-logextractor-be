@@ -54,7 +54,7 @@ public class MockPersonControllerTest extends AbstractMock {
 	
 	@Test
 	public void test_getPersonsBasicDataWithTaxCode_4xx() throws Exception {
-	mockTaxCodeForPerson_TaxIdNull();
+		mockTaxCodeForPerson_TaxIdNull();
 		mockUniqueIdentifierForPerson();
 		mockTaxCodeForPersonClientError(HttpStatus.METHOD_NOT_ALLOWED);
 		String errorResponse = "Errore nell'elaborazione della richiesta";
