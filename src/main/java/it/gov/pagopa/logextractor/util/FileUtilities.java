@@ -108,12 +108,12 @@ public class FileUtilities {
 				recipientsBuilder.append(tempRecipient + "-");
 			}
 			recipientsBuilder.deleteCharAt(recipientsBuilder.length()-1);
-			notification.setCodici_Fiscali(escapeUtils.escapeForCsv(recipientsBuilder.toString()));
+			notification.setCodici_fiscali(escapeUtils.escapeForCsv(recipientsBuilder.toString()));
 			recipientsBuilder.setLength(0);
 		}
 		notification.setIun(escapeUtils.escapeForCsv(notificationData.getIun()));
-		notification.setData_Invio(escapeUtils.escapeForCsv(notificationData.getSentAt()));
-		notification.setData_Generazione_Attestazione_OpponibileATerzi(
+		notification.setData_invio(escapeUtils.escapeForCsv(notificationData.getSentAt()));
+		notification.setData_generazione_attestazione_opponibile_a_terzi(
 				escapeUtils.escapeForCsv(notificationData.getRequestAcceptedAt()));
 		notification.setOggetto(escapeUtils.escapeForCsv(notificationData.getSubject()));
 		return notification;
