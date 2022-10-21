@@ -25,7 +25,6 @@ import it.gov.pagopa.logextractor.dto.NotificationDetailsDocumentData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsRecipientsData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsTimelineData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsTimelineLegalFactsData;
-import it.gov.pagopa.logextractor.dto.NotificationGeneralData;
 import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
@@ -68,7 +67,7 @@ public class NotificationApiHandler {
 	 * @param referenceMonth The month to obtain the notifications for
 	 * @param endMonth The following month of the reference month
 	 * @param encodedPublicAuthorityName   The public authority id
-	 * @return The list of {@link NotificationGeneralData} notifications' general data
+	 * @return The list of {@link NotificationData} notifications' general data
 	 */
 	public List<NotificationData> getNotificationsByMonthsPeriod(String referenceMonth, String endMonth, 
 			String encodedPublicAuthorityName) {
@@ -84,7 +83,7 @@ public class NotificationApiHandler {
 	 * @param encodedPublicAuthorityName   The public authority id
 	 * @param notifications The initial notifications list
 	 * @param nextUrlKey The key of the next results page
-	 * @return The list of {@link NotificationGeneralData} notifications' general data
+	 * @return The list of {@link NotificationData} notifications' general data
 	 */
 	private ArrayList<NotificationData> getNotificationsBetweenMonths(String referenceMonth, String endMonth, String encodedPublicAuthorityName, 
 			ArrayList<NotificationData> notifications, String nextUrlKey) {
