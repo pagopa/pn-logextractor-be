@@ -184,7 +184,7 @@ public class NotificationApiHandler {
 	/**
 	 * Performs a GET HTTP request to get the notification history
 	 * @param iun The notification IUN
-	 * @param numberOfRecipients The nnumber of recipients associated to the notification
+	 * @param numberOfRecipients The number of recipients associated to the notification
 	 * @param createdAt The notification creation date
 	 * @return A {@link NotificationHistoryResponseDto} representing the notification history
 	 * */

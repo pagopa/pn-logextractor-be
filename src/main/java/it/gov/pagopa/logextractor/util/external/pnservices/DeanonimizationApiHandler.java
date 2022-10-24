@@ -190,14 +190,14 @@ public class DeanonimizationApiHandler {
 				keyValues.put(OpensearchConstants.OS_UID_FIELD, taxCodeDto.getData());
 			}
 			if(cxId != null) {
-				String publicAuthorityName = null;
+				String deanonimizedIdentifier = null;
 				if((StringUtils.startsWithIgnoreCase(cxId, "PF-") || StringUtils.startsWithIgnoreCase(cxId, "PG-"))) {
-					publicAuthorityName = getTaxCodeForPerson(cxId).getData();
+					deanonimizedIdentifier = getTaxCodeForPerson(cxId).getData();
 				}
 				if((StringUtils.startsWithIgnoreCase(cxId, "PA-"))) {
-					publicAuthorityName = getPublicAuthorityName(cxId);
+					deanonimizedIdentifier = getPublicAuthorityName(cxId);
 				}
-				keyValues.put(OpensearchConstants.OS_CX_ID_FIELD, publicAuthorityName);
+				keyValues.put(OpensearchConstants.OS_CX_ID_FIELD, deanonimizedIdentifier);
 			}
 			document = jsonUtils.replaceValues(document, keyValues);
 			deanonymizedDocuments.add(document);

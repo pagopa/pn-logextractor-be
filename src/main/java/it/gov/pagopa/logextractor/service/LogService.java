@@ -80,7 +80,6 @@ public interface LogService {
 	 *         representation of the output zip archive and the password to access
 	 *         its files
 	 * @throws IOException
-	 * @throws InterruptedException
 	 */
-	BaseResponseDTO getNotificationInfoLogs(String ticketNumber, String iun) throws IOException, InterruptedException, LogExtractorException;
+	BaseResponseDTO getNotificationInfoLogs(String ticketNumber, String iun) throws IOException;
 }

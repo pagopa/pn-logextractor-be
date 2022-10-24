@@ -27,9 +27,6 @@ public class CognitoApiHandler {
 	@Qualifier("simpleRestTemplate")
 	RestTemplate client;
 	
-	@Value("${external.aws.cognito.region}")
-	String cognitoRegion;
-	
 	@Value("${external.aws.cognito.user.url}")
 	String cognitoUserUrl;
 	
@@ -37,13 +34,12 @@ public class CognitoApiHandler {
     DeanonimizationApiHandler deanonimizationHandler;
 	
 	/**
-	 * Performs a GET HTTP request to the Cognito user pool to get the logged in user identifier
-	 * @param accessToken The logged in user access token for Cognito
+	 * Performs a GET HTTP request to the Cognito user pool to get the logged-in user identifier
+	 * @param accessToken The logged-in user access token for Cognito
 	 * @return The user identifier
 	 * @throws LogExtractorException 
 	 * */
 	public String getUserIdentifier(String accessToken) throws LogExtractorException {
-		String url = String.format(cognitoUserUrl, cognitoRegion);
 		JSONObject requestBody = new JSONObject();
 		requestBody.put(CognitoConstants.COG_ACTOKEN, accessToken);
 		HttpHeaders requestHeaders = new HttpHeaders();
@@ -51,7 +47,7 @@ public class CognitoApiHandler {
         requestHeaders.set("X-Amz-Target", "AWSCognitoIdentityProviderService.GetUser");
         requestHeaders.set("Content-Length",String.valueOf(accessToken.getBytes().length));
         HttpEntity<String> request = new HttpEntity<>(requestBody.toString(), requestHeaders);
-        String response = client.postForObject(url, request, String.class);
+        String response = client.postForObject(cognitoUserUrl, request, String.class);
         return deanonimizationHandler.getUniqueIdentifierForPerson(RecipientTypes.PF, getUserUniqueIdentifier(response));
 	}
 	

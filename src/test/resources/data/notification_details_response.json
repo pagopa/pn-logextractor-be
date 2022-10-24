@@ -1,35 +1,10 @@
 {
-    "abstract": "Abstract della notifica",
-    "paProtocolNumber": "1657736570641",
-    "subject": "Test inserimento 13-07-2022 18:22:50",
     "recipients": [
         {
-            "recipientType": "PF",
-            "taxId": "TEST",
-            "internalId": "TEST",
-            "denomination": "Fiera denomination",
-            "digitalDomicile": {
-                "type": "PEC",
-                "address": "TEST"
-            },
-            "physicalAddress": {
-                "address": "Via senza nome",
-                "zip": "40100",
-                "municipality": "TEST",
-                "province": "TEST",
-                "foreignState": "ITALIA"
-            },
             "payment": {
-                "noticeCode": "TEST",
-                "creditorTaxId": "TEST",
                 "pagoPaForm": {
-                    "digests": {
-                        "sha256": "TEST"
-                    },
-                    "contentType": "application/pdf",
                     "ref": {
-                        "key": "TEST",
-                        "versionToken": "v1"
+                        "key": "TEST"
                     }
                 }
             }
@@ -37,24 +12,11 @@
     ],
     "documents": [
         {
-            "digests": {
-                "sha256": "TEST"
-            },
-            "contentType": "application/pdf",
             "ref": {
-                "key": "TEST",
-                "versionToken": "v1"
+                "key": "TEST"
             },
             "docIdx": "0"
         }
     ],
-    "notificationFeePolicy": "TEST",
-    "cancelledIun": "",
-    "physicalCommunicationType": "TEST",
-    "senderDenomination": "TEST",
-    "senderTaxId": "TEST",
-    "group": "",
-    "senderPaId": "TEST",
-    "iun": "TEST",
     "sentAt": "2022-05-13T18:22:55.577+00:00"
 }

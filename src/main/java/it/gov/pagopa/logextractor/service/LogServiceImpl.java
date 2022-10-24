@@ -2,7 +2,6 @@ package it.gov.pagopa.logextractor.service;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.ParseException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +48,7 @@ public class LogServiceImpl implements LogService {
 	DeanonimizationApiHandler deanonimizationApiHandler;
 
 	@Override
-	public BaseResponseDTO getAnonymizedPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId) throws IOException, LogExtractorException {
+	public BaseResponseDTO getAnonymizedPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId) throws IOException {
 		log.info("Anonymized logs retrieve process - START - user={}, ticket number={}, internalId={}, startDate={}, endDate={}, iun={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), ticketNumber, personId, dateFrom, dateTo, iun);
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
@@ -90,7 +89,7 @@ public class LogServiceImpl implements LogService {
 	}
 
 	@Override
-	public BaseResponseDTO getMonthlyNotifications(String ticketNumber, String referenceMonth, String endMonth, String publicAuthorityName) throws IOException, ParseException,CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException {
+	public BaseResponseDTO getMonthlyNotifications(String ticketNumber, String referenceMonth, String endMonth, String publicAuthorityName) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException {
 		log.info("Monthly notifications retrieve process - START - user={}, ticket number={}, reference month={}, end month={}, public authority name={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), ticketNumber, referenceMonth, endMonth, publicAuthorityName);
 		long serviceStartTime = System.currentTimeMillis();
 		FileUtilities utils = new FileUtilities();
@@ -100,8 +99,7 @@ public class LogServiceImpl implements LogService {
 		String encodedPublicAuthorityName = deanonimizationApiHandler.getPublicAuthorityId(publicAuthorityName);
         log.info("Public authority id retrieved in {} ms, getting notifications, publicAuthority={}, startDate={}, endDate={}", System.currentTimeMillis() - performanceMillis, encodedPublicAuthorityName, referenceMonth, endMonth);
         performanceMillis = System.currentTimeMillis();
-		List<NotificationData> notifications = notificationApiHandler.getNotificationsByMonthsPeriod(referenceMonth, endMonth, 
-				encodedPublicAuthorityName);
+		List<NotificationData> notifications = notificationApiHandler.getNotificationsByMonthsPeriod(referenceMonth, endMonth, encodedPublicAuthorityName);
 		log.info("{} notifications retrieved in {} ms, constructing service response...", notifications.size(), System.currentTimeMillis() - performanceMillis);
 		if(notifications.isEmpty()) {
 			performanceMillis = System.currentTimeMillis();
@@ -138,7 +136,7 @@ public class LogServiceImpl implements LogService {
 	}
 	
 	@Override
-	public BaseResponseDTO getTraceIdLogs(String dateFrom, String dateTo, String traceId) throws IOException, LogExtractorException {
+	public BaseResponseDTO getTraceIdLogs(String dateFrom, String dateTo, String traceId) throws IOException {
 		log.info("Anonymized logs retrieve process - START - user={}, traceId={}, startDate={}, endDate={}",
 				MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), traceId, dateFrom, dateTo);
 		long serviceStartTime = System.currentTimeMillis();
@@ -165,9 +163,8 @@ public class LogServiceImpl implements LogService {
 	}
 	
 	@Override
-	public BaseResponseDTO getNotificationInfoLogs(String ticketNumber, String iun) throws IOException, InterruptedException, LogExtractorException {
+	public BaseResponseDTO getNotificationInfoLogs(String ticketNumber, String iun) throws IOException {
 		log.info("Notification data retrieve process - START - user={}, ticket number={}, iun={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), ticketNumber, iun);
-		ArrayList<String> downloadKeys = new ArrayList<>();
 		ArrayList<String> downloadUrls = new ArrayList<>();
 		long serviceStartTime = System.currentTimeMillis();
 		double secondsToWait = 0;
@@ -182,7 +179,7 @@ public class LogServiceImpl implements LogService {
 		NotificationHistoryResponseDto notificationHistory = notificationApiHandler.getNotificationHistory(iun, notificationDetails.getRecipients().size(), notificationStartDate.toString());
 		log.info("Service response: notificationHistory={} retrieved in {} ms, getting legal facts' keys...", mapper.writer().writeValueAsString(notificationHistory), System.currentTimeMillis() - serviceStartTime);
 		long performanceMillis = System.currentTimeMillis();
-		downloadKeys.addAll(notificationApiHandler.getLegalFactKeys(notificationHistory));
+		ArrayList<String> downloadKeys = new ArrayList<>(notificationApiHandler.getLegalFactKeys(notificationHistory));
 		log.info("Legal facts' keys retrieved in {} ms, getting notification documents' keys...", System.currentTimeMillis() - performanceMillis);
 		performanceMillis = System.currentTimeMillis();
 		downloadKeys.addAll(notificationApiHandler.getDocumentKeys(notificationDetails));
@@ -194,7 +191,7 @@ public class LogServiceImpl implements LogService {
         for(String key : downloadKeys) {
         	FileDownloadMetadataResponseDto downloadData = notificationApiHandler.getDownloadMetadata(key);
         	downloadUrls.add(downloadData.getDownload().getUrl());
-        	if(null != downloadData && null != downloadData.getDownload() 
+        	if(null != downloadData.getDownload()
         			&& null == downloadData.getDownload().getUrl() && null != downloadData.getDownload().getRetryAfter()
         			&& secondsToWait < downloadData.getDownload().getRetryAfter()) {
         		secondsToWait = downloadData.getDownload().getRetryAfter();

@@ -6,5 +6,4 @@ import lombok.Getter;
 public class NotificationDetailsRefData {
 
 	private String key;
-	private String versionToken;
 }

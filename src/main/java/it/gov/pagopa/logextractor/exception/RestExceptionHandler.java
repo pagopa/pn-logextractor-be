@@ -107,18 +107,4 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		errorResponse.setMessage(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR);
 		return ResponseEntity.internalServerError().body(errorResponse);
 	}
-	
-	/**
-	 * Manages the {@link InterruptedException} creating a new {@link ResponseEntity} and sending it to the client
-	 * with error code 500 and a custom error message
-	 * @param ex The intercepted exception
-	 * @return A new {@link ResponseEntity} with {@link ApiError} body
-	 * */
-	@ExceptionHandler(InterruptedException.class)
-    protected ResponseEntity<ApiError> handleInterruptedException(InterruptedException ex) {
-        log.error(ExceptionUtils.getStackTrace(ex));
-		ApiError errorResponse = new ApiError();
-		errorResponse.setMessage(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR);
-		return ResponseEntity.internalServerError().body(errorResponse);
-    }
 }

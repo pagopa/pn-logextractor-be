@@ -181,7 +181,7 @@ paths:
     post:
       tags:
         - logs
-      operationId: getNotificationTraceIdLogs
+      operationId: getProcessLogs
       description: Download the logs archive related to a process
       requestBody:
         required: true

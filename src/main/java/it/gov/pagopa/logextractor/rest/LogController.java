@@ -40,7 +40,7 @@ public class LogController implements LogsApi {
 	}
 
 	@Override
-	public ResponseEntity<BaseResponseDTO> getNotificationTraceIdLogs(TraceIdLogsRequestDto traceIdLogsRequestDto) throws Exception {
+	public ResponseEntity<BaseResponseDTO> getProcessLogs(TraceIdLogsRequestDto traceIdLogsRequestDto) throws Exception {
 		return ResponseEntity.ok().body(logService.getTraceIdLogs(traceIdLogsRequestDto.getDateFrom(),
 				traceIdLogsRequestDto.getDateTo(), traceIdLogsRequestDto.getTraceId()));
 	}

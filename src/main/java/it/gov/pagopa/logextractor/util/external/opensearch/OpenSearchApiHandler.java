@@ -30,23 +30,21 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 @Slf4j
 public class OpenSearchApiHandler {
-	
 	@Autowired
 	@Qualifier("openSearchRestTemplate")
 	RestTemplate client;
-	
-	@Value("${external.opensearch.host}")
-	String openSearchHost;
-	
+	@Value("${external.opensearch.search.url}")
+	String opensearchSearchUrl;
+	@Value("${external.opensearch.search.followup.url}")
+	String opensearchSearchFollowupUrl;
 	@Value("${external.opensearch.basicauth.username}")
-	String openSearchUsername;
-	
+	String opensearchUsername;
 	@Value("${external.opensearch.basicauth.password}")
-	String openSearchPassword;
-
+	String opensearchPassword;
 	
 	/**
-	 * Construct and executes a multi-search query searching for document with the given uid value within the input date range
+	 * Construct and executes a multi-search query searching for document
+	 * with the given uid value within the input date range
 	 * @param uid The uid to use for the multi-search query
 	 * @param dateFrom The period start date
 	 * @param dateTo The period end date
@@ -70,7 +68,8 @@ public class OpenSearchApiHandler {
 	}
 	
 	/**
-	 * Construct and executes a multi-search query searching for document with the given iun value within the input date range
+	 * Construct and executes a multi-search query searching for document
+	 * with the given iun value within the input date range
 	 * @param iun The iun to use for the multi-search query
 	 * @param dateFrom The period start date
 	 * @param dateTo The period end date
@@ -91,7 +90,8 @@ public class OpenSearchApiHandler {
 	}
 	
 	/**
-	 * Construct and executes a multi-search query searching for document with the given trace id value within the input date range
+	 * Construct and executes a multi-search query searching for document with
+	 * the given trace id value within the input date range
 	 * @param traceId The trace id to use for the multi-search query
 	 * @param dateFrom The period start date
 	 * @param dateTo The period end date
@@ -121,12 +121,12 @@ public class OpenSearchApiHandler {
 	private ArrayList<String> extractDocumentsFromOpensearch(String query) {
 		HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-        requestHeaders.setBasicAuth(openSearchUsername, openSearchPassword);
+        requestHeaders.setBasicAuth(opensearchUsername, opensearchPassword);
         List<MediaType> acceptedTypes = new ArrayList<>();
         acceptedTypes.add(MediaType.APPLICATION_JSON);
         requestHeaders.setAccept(acceptedTypes);
         HttpEntity<String> request = new HttpEntity<>(query, requestHeaders);
-		String urlTemplate = UriComponentsBuilder.fromHttpUrl(openSearchHost+OpensearchConstants.OS_SEARCH_QUERY_SUFFIX)
+		String urlTemplate = UriComponentsBuilder.fromHttpUrl(opensearchSearchUrl)
 						.queryParam(OpensearchConstants.OS_SCROLL_PARAMETER, "{scroll}")
 						.encode()
 						.toUriString();
@@ -156,15 +156,15 @@ public class OpenSearchApiHandler {
 		documents.addAll(currentDocs);
 		HttpHeaders requestHeaders = new HttpHeaders();
 		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-		requestHeaders.setBasicAuth(openSearchUsername, openSearchPassword);
+		requestHeaders.setBasicAuth(opensearchUsername, opensearchPassword);
 		List<MediaType> acceptedTypes = new ArrayList<>();
 		acceptedTypes.add(MediaType.APPLICATION_JSON);
 		requestHeaders.setAccept(acceptedTypes);
 		OpensearchScrollQueryDto scrollQueryDto = new OpensearchScrollQueryDto(
 				OpensearchConstants.OS_SCROLL_ID_VALIDITY_DURATION,
-				new JSONObject(openSearchResponse).getString(OpensearchConstants.OS_SCROLL_ID_SUFFIX));
+				new JSONObject(openSearchResponse).getString(OpensearchConstants.OS_RESPONSE_SCROLL_ID_FIELD));
 		HttpEntity<OpensearchScrollQueryDto> request = new HttpEntity<>(scrollQueryDto, requestHeaders);
-		ResponseEntity<String> response = client.exchange(openSearchHost+OpensearchConstants.OS_SCROLL_SUFFIX,
+		ResponseEntity<String> response = client.exchange(opensearchSearchFollowupUrl,
 				HttpMethod.GET,request,String.class);
 		return getDocumentsFromOpensearchResponse(response.getBody(), documents);
 	}
