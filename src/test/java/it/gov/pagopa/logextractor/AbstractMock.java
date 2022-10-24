@@ -110,6 +110,7 @@ public abstract class AbstractMock {
 	// \"cx_id\":\"PA-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}]}";
 
 	protected final String jsonDocSearchPF = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [{\"_source\":{\"_source\":\"3242342323\",\"cx_id\":\"PF-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}";
+	protected final String jsonEmptyDocSearchPF = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : []}}";
 	protected final String jsonDocSearchPA = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [{\"_source\":{\"_source\":\"3242342323\",\"cx_id\":\"PA-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}";
 
 	protected final String scrollMockSearch = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : []}}";
@@ -165,6 +166,7 @@ public abstract class AbstractMock {
 				.thenReturn(scrollResponseSearch);
 		mockUniqueIdentifierForPerson();
 	}
+	
 
 	@SuppressWarnings("unchecked")
 	protected void mockPersonsLogUseCase6Response() throws IOException {

@@ -69,6 +69,18 @@ public class MockLogControllerTest extends AbstractMock {
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("password");
 	}
+	
+	@Test
+	public void test_case4EmptyOpenSearchResponse() throws Exception {
+		// use case 4 
+		mockPersonsLogResponse(jsonEmptyDocSearchPF);
+		mockTaxCodeForPerson();
+		MockHttpServletResponse response = mvc.perform(post(personUrl).accept(APPLICATION_JSON_UTF8)
+				.header("Auth", fakeHeader).content(getMockPersonLogsRequestDto(4, true))
+				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+		assertThat(response.getContentAsString()).contains("Nessun documento trovato");
+	}
 
 	@Test
 	public void test_getNotificationLogs() throws Exception {
