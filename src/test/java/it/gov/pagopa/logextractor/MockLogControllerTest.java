@@ -1,6 +1,7 @@
 package it.gov.pagopa.logextractor;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import org.junit.Test;
@@ -19,6 +20,18 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @AutoConfigureMockMvc
 @EnableWebMvc
 public class MockLogControllerTest extends AbstractMock {
+	
+	
+	@Test
+	public void test_healthcheck() throws Exception {
+		mockMissingUniqueIdentifierForPerson();
+		MockHttpServletResponse response = mvc
+				.perform(get(healthcheckUrl).accept(APPLICATION_JSON_UTF8).header("Auth", fakeHeader)
+						.contentType(APPLICATION_JSON_UTF8))
+				.andReturn().getResponse();
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());	
+	}
+	
 
 	@Test
 	public void test_useCase3_4_7_8() throws Exception {

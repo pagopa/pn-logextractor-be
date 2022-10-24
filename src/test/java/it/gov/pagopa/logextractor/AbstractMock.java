@@ -99,6 +99,7 @@ public abstract class AbstractMock {
 	protected final String notificationUrl = "/logs/v1/notifications/monthly";
 	protected final String notificationInfoUrl = "/logs/v1/notifications/info";
 	protected final String processesUrl = "/logs/v1/processes";
+	protected final String healthcheckUrl = "/health-check/status";
 	protected final String fakeHeader = "Basic YWxhZGRpbjpvcGVuc2VzYW1l";
 	private static ObjectMapper mapper = new ObjectMapper();
 	// protected static String jsonDocSearchPF =
