@@ -1,5 +1,6 @@
 package it.gov.pagopa.logextractor.util.external.opensearch;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +51,7 @@ public class OpenSearchApiHandler {
 	 * @param dateTo The period end date
 	 * @return The documents list contained into the Opensearch response
 	 * */
-	public List<String> getAnonymizedLogsByUid(String uid, String dateFrom, String dateTo){
+	public List<String> getAnonymizedLogsByUid(String uid, LocalDate dateFrom, LocalDate dateTo){
 		ArrayList<OpenSearchQuerydata> queryData = new ArrayList<>();
 		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
@@ -60,7 +61,7 @@ public class OpenSearchApiHandler {
 				StringUtils.substring(uid, 3) : uid;
 		queryParams.put(OpensearchConstants.OS_UID_FIELD, queryUid);
 		queryData.add(queryConstructor.prepareQueryData(queryParams,
-				new OpenSearchRangeQueryData(OpensearchConstants.OS_TIMESTAMP_FIELD, dateFrom, dateTo),
+				new OpenSearchRangeQueryData(OpensearchConstants.OS_TIMESTAMP_FIELD, dateFrom.toString(), dateTo.toString()),
 				new OpenSearchSortFilter(OpensearchConstants.OS_TIMESTAMP_FIELD, SortOrders.ASC)));
 		String query = queryConstructor.createBooleanMultiSearchQuery(queryData);
 		log.info(LoggingConstants.QUERY_EXECUTION + RegExUtils.removeAll(query, "\n"));
@@ -97,13 +98,13 @@ public class OpenSearchApiHandler {
 	 * @param dateTo The period end date
 	 * @return The documents list contained into the Opensearch response
 	 * */
-	public List<String> getAnonymizedLogsByTraceId(String traceId, String dateFrom, String dateTo){
+	public List<String> getAnonymizedLogsByTraceId(String traceId, LocalDate dateFrom, LocalDate dateTo){
 		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		log.info(LoggingConstants.QUERY_CONSTRUCTION);
 		queryParams.put(OpensearchConstants.OS_TRACE_ID_FIELD, traceId);
 		OpenSearchQuerydata queryData = queryConstructor.prepareQueryData(queryParams,
-				new OpenSearchRangeQueryData(OpensearchConstants.OS_TIMESTAMP_FIELD, dateFrom, dateTo),
+				new OpenSearchRangeQueryData(OpensearchConstants.OS_TIMESTAMP_FIELD, dateFrom.toString(), dateTo.toString()),
 				new OpenSearchSortFilter(OpensearchConstants.OS_TIMESTAMP_FIELD, SortOrders.ASC));
 		ArrayList<OpenSearchQuerydata> listOfQueryData = new ArrayList<>();
 		listOfQueryData.add(queryData);

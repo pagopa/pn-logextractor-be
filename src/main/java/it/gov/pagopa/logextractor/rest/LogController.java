@@ -14,7 +14,7 @@ public class LogController implements LogsApi {
 	LogService logService;
 
 	@Override
-	public ResponseEntity<BaseResponseDTO> getPersonActivityLogs(PersonLogsRequestDto personLogsRequestDto) throws Exception {
+	public ResponseEntity<BaseResponseDto> getPersonActivityLogs(PersonLogsRequestDto personLogsRequestDto) throws Exception {
 		if (Boolean.TRUE.equals(personLogsRequestDto.getDeanonimization())) {
 			return ResponseEntity.ok().body(logService.getDeanonimizedPersonLogs(personLogsRequestDto.getRecipientType(),
 					personLogsRequestDto.getDateFrom(), personLogsRequestDto.getDateTo(),
@@ -27,20 +27,20 @@ public class LogController implements LogsApi {
 	}
 
 	@Override
-	public ResponseEntity<BaseResponseDTO> getNotificationInfoLogs(NotificationInfoRequestDto notificationInfoRequestDto) throws Exception {
+	public ResponseEntity<BaseResponseDto> getNotificationInfoLogs(NotificationInfoRequestDto notificationInfoRequestDto) throws Exception {
 		return ResponseEntity.ok().body(logService.getNotificationInfoLogs(notificationInfoRequestDto.getTicketNumber(),
 				notificationInfoRequestDto.getIun()));
 	}
 
 	@Override
-	public ResponseEntity<BaseResponseDTO> getNotificationsInMonth(MonthlyNotificationsRequestDto monthlyNotificationsRequestDto) throws Exception {
+	public ResponseEntity<BaseResponseDto> getNotificationsInMonth(MonthlyNotificationsRequestDto monthlyNotificationsRequestDto) throws Exception {
 		return ResponseEntity.ok().body(logService.getMonthlyNotifications(monthlyNotificationsRequestDto.getTicketNumber(),
 				monthlyNotificationsRequestDto.getReferenceMonth(), monthlyNotificationsRequestDto.getEndMonth(),
 				monthlyNotificationsRequestDto.getPublicAuthorityName()));
 	}
 
 	@Override
-	public ResponseEntity<BaseResponseDTO> getProcessLogs(TraceIdLogsRequestDto traceIdLogsRequestDto) throws Exception {
+	public ResponseEntity<BaseResponseDto> getProcessLogs(TraceIdLogsRequestDto traceIdLogsRequestDto) throws Exception {
 		return ResponseEntity.ok().body(logService.getTraceIdLogs(traceIdLogsRequestDto.getDateFrom(),
 				traceIdLogsRequestDto.getDateTo(), traceIdLogsRequestDto.getTraceId()));
 	}

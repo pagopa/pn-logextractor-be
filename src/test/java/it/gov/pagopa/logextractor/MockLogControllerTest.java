@@ -14,6 +14,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import java.time.LocalDate;
+
 @SpringBootTest(classes = PnLogextractorBeApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -44,7 +46,7 @@ public class MockLogControllerTest extends AbstractMock {
 
 	@Test
 	public void test_useCase10() throws Exception {
-		test_getProcesses("2022-06-01", "2022-07-01", "traceId");
+		test_getProcesses(LocalDate.now(), LocalDate.now(), "traceId");
 	}
 
 	public void test_getPersonsLogsPA(int useCase, boolean isDeanonimization, String json) throws Exception {
@@ -155,7 +157,7 @@ public class MockLogControllerTest extends AbstractMock {
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
 	}
 
-	public void test_getProcesses(String dateFrom, String dateTo, String traceId) throws Exception {
+	public void test_getProcesses(LocalDate dateFrom, LocalDate dateTo, String traceId) throws Exception {
 		mockPersonsLogResponse(jsonDocSearchPF);
 		MockHttpServletResponse response = mvc.perform(post(processesUrl).accept(APPLICATION_JSON_UTF8)
 				.header("Auth", fakeHeader).content(getMockTraceIdLogsRequestDto(dateFrom, dateTo, traceId))

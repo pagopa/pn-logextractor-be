@@ -3,10 +3,12 @@ package it.gov.pagopa.logextractor;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -102,6 +104,7 @@ public abstract class AbstractMock {
 	protected final String healthcheckUrl = "/health-check/status";
 	protected final String fakeHeader = "Basic YWxhZGRpbjpvcGVuc2VzYW1l";
 	private static ObjectMapper mapper = new ObjectMapper();
+
 	// protected static String jsonDocSearchPF =
 	// "{\"responses\":[{\"hits\":{\"hits\":[{\"_source\":{\"_source\":\"3242342323\",
 	// \"cx_id\":\"PF-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}]}";
@@ -120,7 +123,7 @@ public abstract class AbstractMock {
 		// The first return is used to simulate authentication
 		Mockito.when(client.postForObject(Mockito.anyString(), Mockito.any(), Mockito.any(Class.class))).thenReturn(
 				getStringFromResourse(authResponse),
-				mapper.writeValueAsString(EnsureRecipientByExternalIdResponseDto.builder().internalId("123").build()));
+				mapper.registerModule(new JavaTimeModule()).writeValueAsString(EnsureRecipientByExternalIdResponseDto.builder().internalId("123").build()));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -233,7 +236,7 @@ public abstract class AbstractMock {
 
 	protected void mockNotificationsIsEmpty() throws IOException {
 		List<NotificationData> notifications = new ArrayList<>();
-		Mockito.when(notificationApiHandler.getNotificationsByMonthsPeriod(Mockito.anyString(), Mockito.anyString(),
+		Mockito.when(notificationApiHandler.getNotificationsByMonthsPeriod(Mockito.any(), Mockito.any(),
 				Mockito.anyString())).thenReturn(notifications);
 	}
 
@@ -295,8 +298,8 @@ public abstract class AbstractMock {
 	protected static String getMockPersonLogsRequestDto(int useCase, boolean isDeanonimization)
 			throws JsonProcessingException {
 		PersonLogsRequestDto dto = new PersonLogsRequestDto();
-		dto.setDateFrom(LocalDate.now().toString());
-		dto.setDateTo(LocalDate.now().toString());
+		dto.setDateFrom(LocalDate.now());
+		dto.setDateTo(LocalDate.now());
 		dto.setDeanonimization(isDeanonimization);
 		dto.setPersonId("123");
 		dto.setTaxId("BRMRSS63A02A001D");
@@ -314,27 +317,27 @@ public abstract class AbstractMock {
 		default:
 			break;
 		}
-		return mapper.writeValueAsString(dto);
+		return mapper.registerModule(new JavaTimeModule()).writeValueAsString(dto);
 	}
 
 	protected static String getMockPersonLogsRequestDtoPersonIdNull() throws JsonProcessingException {
 		PersonLogsRequestDto dto = new PersonLogsRequestDto();
-		dto.setDateFrom(LocalDate.now().toString());
-		dto.setDateTo(LocalDate.now().toString());
+		dto.setDateFrom(LocalDate.now());
+		dto.setDateTo(LocalDate.now());
 		dto.setDeanonimization(false);
 		dto.setTaxId("BRMRSS63A02A001D");
 		dto.setTicketNumber("123");
 		dto.setIun(null);
-		return mapper.writeValueAsString(dto);
+		return mapper.registerModule(new JavaTimeModule()).writeValueAsString(dto);
 	}
 
-	protected static String getMockTraceIdLogsRequestDto(String dateFrom, String dateTo, String traceId)
+	protected static String getMockTraceIdLogsRequestDto(LocalDate dateFrom, LocalDate dateTo, String traceId)
 			throws JsonProcessingException {
 		TraceIdLogsRequestDto dto = new TraceIdLogsRequestDto();
 		dto.setDateFrom(dateFrom);
 		dto.setDateTo(dateTo);
 		dto.setTraceId(traceId);
-		return mapper.writeValueAsString(dto);
+		return mapper.registerModule(new JavaTimeModule()).writeValueAsString(dto);
 	}
 
 	protected static String getMockPersonPersonIdRequestDto() throws JsonProcessingException {
@@ -342,29 +345,29 @@ public abstract class AbstractMock {
 		dto.setRecipientType(RecipientTypes.PF);
 		dto.setTicketNumber("123");
 		dto.setTaxId("BRMRSS63A02A001D");
-		return mapper.writeValueAsString(dto);
+		return mapper.registerModule(new JavaTimeModule()).writeValueAsString(dto);
 	}
 
 	protected static String getMockPersonTaxIdRequestDto() throws JsonProcessingException {
 		PersonTaxIdRequestDto dto = new PersonTaxIdRequestDto();
 		dto.setPersonId("123");
-		return mapper.writeValueAsString(dto);
+		return mapper.registerModule(new JavaTimeModule()).writeValueAsString(dto);
 	}
 
 	protected static String getMockMonthlyNotificationsRequestDto() throws JsonProcessingException {
 		MonthlyNotificationsRequestDto dto = new MonthlyNotificationsRequestDto();
-		dto.setReferenceMonth("2022-06-01T00:00:00.000Z");
+		dto.setReferenceMonth(OffsetDateTime.now());
 		dto.setTicketNumber("345");
 		dto.setPublicAuthorityName("abc");
-		dto.setEndMonth("2022-07-01T00:00:00.000Z");
-		return mapper.writeValueAsString(dto);
+		dto.setEndMonth(OffsetDateTime.now());
+		return mapper.registerModule(new JavaTimeModule()).writeValueAsString(dto);
 	}
 
 	protected static String getMockNotificationsRequestDto() throws JsonProcessingException {
 		NotificationInfoRequestDto dto = new NotificationInfoRequestDto();
 		dto.setTicketNumber("345");
 		dto.setIun("ABCHFGJRENDLAPEORIFKDNSME");
-		return mapper.writeValueAsString(dto);
+		return mapper.registerModule(new JavaTimeModule()).writeValueAsString(dto);
 	}
 
 	private static String getStringFromResourse(Resource resource) throws IOException {
@@ -372,33 +375,33 @@ public abstract class AbstractMock {
 	}
 
 	private static NotificationDetailsResponseDto getNotificationFromResource(Resource resource) throws IOException {
-		return mapper.readValue(resource.getInputStream(), NotificationDetailsResponseDto.class);
+		return mapper.registerModule(new JavaTimeModule()).readValue(resource.getInputStream(), NotificationDetailsResponseDto.class);
 	}
 
 	private static NotificationsGeneralDataResponseDto getNotificationGeneralDataFromResource(Resource resource)
 			throws IOException {
-		return mapper.readValue(resource.getInputStream(), NotificationsGeneralDataResponseDto.class);
+		return mapper.registerModule(new JavaTimeModule()).readValue(resource.getInputStream(), NotificationsGeneralDataResponseDto.class);
 	}
 
 	private static GetRecipientDenominationByInternalIdResponseDto[] getRecipientInternalFromResource(Resource resource)
 			throws IOException {
-		return mapper.readValue(resource.getInputStream(), GetRecipientDenominationByInternalIdResponseDto[].class);
+		return mapper.registerModule(new JavaTimeModule()).readValue(resource.getInputStream(), GetRecipientDenominationByInternalIdResponseDto[].class);
 	}
 
 	private static NotificationHistoryResponseDto getNotificationHistoryFromResource(Resource resource)
 			throws IOException {
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		return mapper.readValue(resource.getInputStream(), NotificationHistoryResponseDto.class);
+		return mapper.registerModule(new JavaTimeModule()).readValue(resource.getInputStream(), NotificationHistoryResponseDto.class);
 	}
 
 	private static FileDownloadMetadataResponseDto getFileDownloadMetadataFromResource(Resource resource)
 			throws IOException {
-		return mapper.readValue(resource.getInputStream(), FileDownloadMetadataResponseDto.class);
+		return mapper.registerModule(new JavaTimeModule()).readValue(resource.getInputStream(), FileDownloadMetadataResponseDto.class);
 	}
 
 	private static SelfCarePaDataResponseDto getSelfCarePaDataResponseFromResource(Resource resource)
 			throws IOException {
-		return mapper.readValue(resource.getInputStream(), SelfCarePaDataResponseDto.class);
+		return mapper.registerModule(new JavaTimeModule()).readValue(resource.getInputStream(), SelfCarePaDataResponseDto.class);
 	}
 
 }

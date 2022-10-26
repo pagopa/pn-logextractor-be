@@ -1,12 +1,12 @@
 package it.gov.pagopa.logextractor.dto.response;
 
-import it.gov.pagopa.logextractor.pn_logextractor_be.model.BaseResponseDTO;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.BaseResponseDto;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class DownloadArchiveResponseDto extends BaseResponseDTO {
+public class DownloadArchiveResponseDto extends BaseResponseDto {
 
 	private String password;
 	private byte[] zip;

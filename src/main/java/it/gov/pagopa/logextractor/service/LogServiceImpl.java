@@ -2,10 +2,11 @@ package it.gov.pagopa.logextractor.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import it.gov.pagopa.logextractor.pn_logextractor_be.model.BaseResponseDTO;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.BaseResponseDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import it.gov.pagopa.logextractor.util.constant.CognitoConstants;
 import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
@@ -48,7 +49,7 @@ public class LogServiceImpl implements LogService {
 	DeanonimizationApiHandler deanonimizationApiHandler;
 
 	@Override
-	public BaseResponseDTO getAnonymizedPersonLogs(String dateFrom, String dateTo, String ticketNumber, String iun, String personId) throws IOException {
+	public BaseResponseDto getAnonymizedPersonLogs(LocalDate dateFrom, LocalDate dateTo, String ticketNumber, String iun, String personId) throws IOException {
 		log.info("Anonymized logs retrieve process - START - user={}, ticket number={}, internalId={}, startDate={}, endDate={}, iun={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), ticketNumber, personId, dateFrom, dateTo, iun);
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
@@ -73,7 +74,7 @@ public class LogServiceImpl implements LogService {
 		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
 		if(openSearchResponse.isEmpty()) {
 			performanceMillis = System.currentTimeMillis();
-			BaseResponseDTO response = new BaseResponseDTO();
+			BaseResponseDto response = new BaseResponseDto();
 			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND);
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
         	log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END,
@@ -89,7 +90,7 @@ public class LogServiceImpl implements LogService {
 	}
 
 	@Override
-	public BaseResponseDTO getMonthlyNotifications(String ticketNumber, String referenceMonth, String endMonth, String publicAuthorityName) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException {
+	public BaseResponseDto getMonthlyNotifications(String ticketNumber, OffsetDateTime referenceMonth, OffsetDateTime endMonth, String publicAuthorityName) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException {
 		log.info("Monthly notifications retrieve process - START - user={}, ticket number={}, reference month={}, end month={}, public authority name={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), ticketNumber, referenceMonth, endMonth, publicAuthorityName);
 		long serviceStartTime = System.currentTimeMillis();
 		FileUtilities utils = new FileUtilities();
@@ -103,7 +104,7 @@ public class LogServiceImpl implements LogService {
 		log.info("{} notifications retrieved in {} ms, constructing service response...", notifications.size(), System.currentTimeMillis() - performanceMillis);
 		if(notifications.isEmpty()) {
 			performanceMillis = System.currentTimeMillis();
-			BaseResponseDTO response = new BaseResponseDTO();
+			BaseResponseDto response = new BaseResponseDto();
 			response.setMessage(ResponseConstants.NO_NOTIFICATION_FOUND);
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
         	log.info("Monthly notifications retrieve process - END in {} ms",
@@ -136,7 +137,7 @@ public class LogServiceImpl implements LogService {
 	}
 	
 	@Override
-	public BaseResponseDTO getTraceIdLogs(String dateFrom, String dateTo, String traceId) throws IOException {
+	public BaseResponseDto getTraceIdLogs(LocalDate dateFrom, LocalDate dateTo, String traceId) throws IOException {
 		log.info("Anonymized logs retrieve process - START - user={}, traceId={}, startDate={}, endDate={}",
 				MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), traceId, dateFrom, dateTo);
 		long serviceStartTime = System.currentTimeMillis();
@@ -146,7 +147,7 @@ public class LogServiceImpl implements LogService {
 		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, performanceMillis, openSearchResponse.size());
 		if(openSearchResponse.isEmpty()) {
 			performanceMillis = System.currentTimeMillis();
-			BaseResponseDTO response = new BaseResponseDTO();
+			BaseResponseDto response = new BaseResponseDto();
 			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND);
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
         	log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END, performanceMillis +
@@ -163,7 +164,7 @@ public class LogServiceImpl implements LogService {
 	}
 	
 	@Override
-	public BaseResponseDTO getNotificationInfoLogs(String ticketNumber, String iun) throws IOException {
+	public BaseResponseDto getNotificationInfoLogs(String ticketNumber, String iun) throws IOException {
 		log.info("Notification data retrieve process - START - user={}, ticket number={}, iun={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), ticketNumber, iun);
 		ArrayList<String> downloadUrls = new ArrayList<>();
 		long serviceStartTime = System.currentTimeMillis();
@@ -201,7 +202,7 @@ public class LogServiceImpl implements LogService {
         	log.info("Notification downloads' metadata retrieved in {} ms, physical files aren't ready yet. Constructing service response...", System.currentTimeMillis() - performanceMillis);
 			performanceMillis = System.currentTimeMillis();
 			int timeToWaitInMinutes = (int)Math.ceil(secondsToWait/60);
-        	BaseResponseDTO response = new BaseResponseDTO();
+			BaseResponseDto response = new BaseResponseDto();
 			response.setMessage(ResponseConstants.OPERATION_CANNOT_BE_COMPLETED_MESSAGE + timeToWaitInMinutes +
 					(timeToWaitInMinutes > 1 ? GenericConstants.MINUTES_LABEL : GenericConstants.MINUTE_LABEL));
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
@@ -230,7 +231,7 @@ public class LogServiceImpl implements LogService {
         }
 	}
 		
-	public BaseResponseDTO getDeanonimizedPersonLogs(RecipientTypes recipientType, String dateFrom, String dateTo, String ticketNumber, String taxid, String iun) throws IOException, LogExtractorException {
+	public BaseResponseDto getDeanonimizedPersonLogs(RecipientTypes recipientType, LocalDate dateFrom, LocalDate dateTo, String ticketNumber, String taxid, String iun) throws IOException, LogExtractorException {
 		log.info("Deanonimized logs retrieve process - START - user={}, ticket number={}, taxId={}, startDate={}, endDate={}, iun={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), ticketNumber, taxid, dateFrom, dateTo, iun);
 		long serviceStartTime = System.currentTimeMillis();
 		List<String> openSearchResponse;
@@ -266,7 +267,7 @@ public class LogServiceImpl implements LogService {
 		log.info("Deanonimization completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
 		if(deanonimizedOpenSearchResponse.isEmpty()) {
 			performanceMillis = System.currentTimeMillis();
-			BaseResponseDTO response = new BaseResponseDTO();
+			BaseResponseDto response = new BaseResponseDto();
 			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND);
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 			log.info("Deanonimized logs retrieve process - END in {} ms",

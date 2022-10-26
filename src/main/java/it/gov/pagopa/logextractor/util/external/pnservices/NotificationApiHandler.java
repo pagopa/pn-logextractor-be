@@ -2,6 +2,7 @@ package it.gov.pagopa.logextractor.util.external.pnservices;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -69,7 +70,7 @@ public class NotificationApiHandler {
 	 * @param encodedPublicAuthorityName   The public authority id
 	 * @return The list of {@link NotificationData} notifications' general data
 	 */
-	public List<NotificationData> getNotificationsByMonthsPeriod(String referenceMonth, String endMonth, 
+	public List<NotificationData> getNotificationsByMonthsPeriod(OffsetDateTime referenceMonth, OffsetDateTime endMonth,
 			String encodedPublicAuthorityName) {
 		return getNotificationsBetweenMonths(referenceMonth, endMonth, encodedPublicAuthorityName,
 				new ArrayList<>(), null);
@@ -85,7 +86,7 @@ public class NotificationApiHandler {
 	 * @param nextUrlKey The key of the next results page
 	 * @return The list of {@link NotificationData} notifications' general data
 	 */
-	private ArrayList<NotificationData> getNotificationsBetweenMonths(String referenceMonth, String endMonth, String encodedPublicAuthorityName, 
+	private ArrayList<NotificationData> getNotificationsBetweenMonths(OffsetDateTime referenceMonth, OffsetDateTime endMonth, String encodedPublicAuthorityName,
 			ArrayList<NotificationData> notifications, String nextUrlKey) {
 		HttpHeaders requestHeaders = new HttpHeaders();
 	    requestHeaders.setContentType(MediaType.APPLICATION_JSON);

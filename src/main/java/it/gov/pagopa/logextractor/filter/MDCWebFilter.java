@@ -39,7 +39,7 @@ public class MDCWebFilter extends OncePerRequestFilter {
 	private CognitoApiHandler cognitoApiHandler;
 
 	@Autowired
-	@Qualifier("getObjectMapper")
+	@Qualifier("simpleObjectMapper")
 	private ObjectMapper mapper;
 	
     @Override
