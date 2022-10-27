@@ -6,11 +6,8 @@ import lombok.Getter;
 @Getter
 public class NotificationData {
 	private String iun;
-	private String paProtocolNumber;
-	private String sender;
 	private String sentAt;
 	private String subject;
-	private String notificationStatus;
 	private String requestAcceptedAt;
 	private ArrayList<String> recipients;
 }

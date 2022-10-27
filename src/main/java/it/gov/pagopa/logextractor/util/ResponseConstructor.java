@@ -102,16 +102,18 @@ public class ResponseConstructor {
 		PasswordFactory passwordFactory = new PasswordFactory();
 		String password = passwordFactory.createPassword(1, 1, 1, GenericConstants.SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();
-		File file = utils.getFile(fileName, GenericConstants.TXT_EXTENSION);
-		utils.write(file, openSearchLogs);
 		ZipFactory zipFactory = new ZipFactory();
 		ZipFile zipArchive = zipFactory.createZipArchive(zipName, password);
 		ZipParameters params = zipFactory.createZipParameters(true, CompressionLevel.HIGHER, EncryptionMethod.AES);
-		zipArchive = zipFactory.addFile(zipArchive, params, file);
 		zipFactory.addFiles(zipArchive, params, filesToAdd);
+		if(!openSearchLogs.isEmpty()){
+			File logFile = utils.getFile(fileName, GenericConstants.TXT_EXTENSION);
+			utils.write(logFile, openSearchLogs);
+			zipArchive = zipFactory.addFile(zipArchive, params, logFile);
+			utils.deleteFile(logFile);
+		}
 		byte[] zipfile = zipFactory.toByteArray(zipArchive);
 		utils.deleteFiles(filesToAdd);
-		utils.deleteFile(file);
 		utils.deleteFile(FileUtils.getFile(zipArchive.toString()));
 		DownloadArchiveResponseDto serviceResponse = new DownloadArchiveResponseDto();
 		serviceResponse.setPassword(password);

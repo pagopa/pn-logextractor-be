@@ -380,7 +380,7 @@ public abstract class AbstractMock {
 
 	private static NotificationsGeneralDataResponseDto getNotificationGeneralDataFromResource(Resource resource)
 			throws IOException {
-		return mapper.registerModule(new JavaTimeModule()).readValue(resource.getInputStream(), NotificationsGeneralDataResponseDto.class);
+		return mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).registerModule(new JavaTimeModule()).readValue(resource.getInputStream(), NotificationsGeneralDataResponseDto.class);
 	}
 
 	private static GetRecipientDenominationByInternalIdResponseDto[] getRecipientInternalFromResource(Resource resource)
