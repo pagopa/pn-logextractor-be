@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class OpensearchScrollQueryDto {
+public class OpensearchScrollQueryData {
     private String scroll;
     @JsonProperty("scroll_id")
     private String scrollId;

@@ -42,7 +42,7 @@ public class DeanonimizationApiHandler {
 	RestTemplate client;
 	
 	@Value("${external.selfcare.getPublicAuthorityName.url}")
-	String getPublicAuthorityNameUrl;
+	String getPublicAuthorityNameURL;
 	
 	@Value("${external.denomination.getRecipientDenominationByInternalId.url}")
 	String getTaxCodeURL;
@@ -163,7 +163,7 @@ public class DeanonimizationApiHandler {
 	 * */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 	public String getPublicAuthorityName(String publicAuthorityId) throws LogExtractorException {
-		String url = String.format(getPublicAuthorityNameUrl, publicAuthorityId); 
+		String url = String.format(getPublicAuthorityNameURL, publicAuthorityId);
 		SelfCarePaDataResponseDto response = client.getForEntity(url, SelfCarePaDataResponseDto.class).getBody();		
 		if(response == null || StringUtils.isBlank(response.getName()) || "null".equalsIgnoreCase(response.getName())) {
 			throw new LogExtractorException("Authority name is null");

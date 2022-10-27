@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import it.gov.pagopa.logextractor.dto.OpensearchScrollQueryDto;
+import it.gov.pagopa.logextractor.dto.OpensearchScrollQueryData;
 import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
 import it.gov.pagopa.logextractor.util.constant.OpensearchConstants;
 import org.apache.commons.lang3.RegExUtils;
@@ -161,10 +161,10 @@ public class OpenSearchApiHandler {
 		List<MediaType> acceptedTypes = new ArrayList<>();
 		acceptedTypes.add(MediaType.APPLICATION_JSON);
 		requestHeaders.setAccept(acceptedTypes);
-		OpensearchScrollQueryDto scrollQueryDto = new OpensearchScrollQueryDto(
+		OpensearchScrollQueryData scrollQueryDto = new OpensearchScrollQueryData(
 				OpensearchConstants.OS_SCROLL_ID_VALIDITY_DURATION,
 				new JSONObject(openSearchResponse).getString(OpensearchConstants.OS_RESPONSE_SCROLL_ID_FIELD));
-		HttpEntity<OpensearchScrollQueryDto> request = new HttpEntity<>(scrollQueryDto, requestHeaders);
+		HttpEntity<OpensearchScrollQueryData> request = new HttpEntity<>(scrollQueryDto, requestHeaders);
 		ResponseEntity<String> response = client.exchange(opensearchSearchFollowupUrl,
 				HttpMethod.GET,request,String.class);
 		return getDocumentsFromOpensearchResponse(response.getBody(), documents);

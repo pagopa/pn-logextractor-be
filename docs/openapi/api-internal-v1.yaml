@@ -243,7 +243,7 @@ paths:
         Add a new inefficiency start or end event
       tags:
         - downtime
-      operationId: addDowntimeEvent
+      operationId: addStatusChangeEvent
       requestBody:
         content:
           application/json:
@@ -336,12 +336,10 @@ components:
           type: string
           nullable: false
           format: date-time
-          #pattern: '([0-9]{4})-(?:[0-9]{2})-01T00:00:00.000Z'
         endMonth:
           type: string
           nullable: false
           format: date-time
-          #pattern: '([0-9]{4})-(?:[0-9]{2})-([0-9]{2})T00:00:00.000Z'
     PersonLogsRequestDto:
       type: object
       required:
@@ -400,6 +398,7 @@ components:
         message:
           type: string
     BaseResponseDto:
+      title: Success response from the server
       type: object
       required:
         - message
@@ -407,6 +406,7 @@ components:
         message:
           type: string
     ApiError:
+      title: Error response from the server
       type: object
       required:
         - message
@@ -434,15 +434,17 @@ components:
           items:
             $ref: '#/components/schemas/PnFunctionality'
     RecipientTypes:
+      title: PN recipient types
       type: string
       enum: [ "PF", "PG"]
     PnFunctionalityStatus:
+      title: PN functionalities' status
       type: string
       enum:
         - KO 
         - OK
     PnFunctionality:
-      title: Funzionalità di PN
+      title: PN functionalities
       description: >-
         - __NOTIFICATION_CREATE__: the possibility to create new notifications
         - __NOTIFICATION_VISUALIZATION__: the possibility to visualize the notifications and download the legalfacts

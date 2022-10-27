@@ -17,11 +17,11 @@ public class PersonController implements PersonsApi {
 
 	@Override
 	public ResponseEntity<GetBasicDataResponseDto> getPersonalPersonId(PersonPersonIdRequestDto personPersonIdRequestDto) throws Exception {
-		return ResponseEntity.ok(personService.getPersonId(personPersonIdRequestDto.getRecipientType(), personPersonIdRequestDto.getTicketNumber(), personPersonIdRequestDto.getTaxId().toUpperCase()));
+		return ResponseEntity.ok(personService.getPersonId(personPersonIdRequestDto));
 	}
 
 	@Override
 	public ResponseEntity<GetBasicDataResponseDto> getPersonalTaxId(PersonTaxIdRequestDto personTaxIdRequestDto) throws Exception {
-		return ResponseEntity.ok(personService.getTaxId(personTaxIdRequestDto.getPersonId()));
+		return ResponseEntity.ok(personService.getTaxId(personTaxIdRequestDto));
 	}
 }

@@ -1,6 +1,8 @@
 package it.gov.pagopa.logextractor.service;
 
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.GetBasicDataResponseDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.PersonPersonIdRequestDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.PersonTaxIdRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import org.springframework.web.client.HttpServerErrorException;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
@@ -12,18 +14,17 @@ public interface PersonService {
 	
 	/**
 	 * Method that retrieves a person's tax code corresponding to the input internal code
-	 * @param personId The person's internal code to obtain the tax code from
+	 * @param requestData The input data of type {@link PersonTaxIdRequestDto}
 	 * @return object of type {@link GetBasicDataResponseDto}, containing the tax code of a person
 	 * @throws HttpServerErrorException in case of an error during the integration process with external services
 	 * */
-	GetBasicDataResponseDto getTaxId(String personId) throws HttpServerErrorException, LogExtractorException;
+	GetBasicDataResponseDto getTaxId(PersonTaxIdRequestDto requestData) throws HttpServerErrorException, LogExtractorException;
 	
 	/**
 	 * Method that retrieves a person's internal code corresponding to the input tax code
-	 * @param recipientType The person's type, can be one of the {@link RecipientTypes} object values
-	 * @param ticketNumber The ticket number associated to the operation
+	 * @param requestData The input data of type {@link PersonPersonIdRequestDto}
 	 * @return object of type {@link GetBasicDataResponseDto}, containing the internal code of a person
 	 * @throws HttpServerErrorException in case of an error during the integration process with external services
 	 * */
-	GetBasicDataResponseDto getPersonId(RecipientTypes recipientType, String ticketNumber, String taxId) throws HttpServerErrorException, LogExtractorException;
+	GetBasicDataResponseDto getPersonId(PersonPersonIdRequestDto requestData) throws HttpServerErrorException, LogExtractorException;
 }

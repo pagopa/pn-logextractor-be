@@ -2,12 +2,10 @@ package it.gov.pagopa.logextractor.service;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import it.gov.pagopa.logextractor.pn_logextractor_be.model.BaseResponseDto;
-import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.*;
 import it.gov.pagopa.logextractor.util.constant.CognitoConstants;
 import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
 import org.apache.commons.io.FileUtils;
@@ -49,26 +47,33 @@ public class LogServiceImpl implements LogService {
 	DeanonimizationApiHandler deanonimizationApiHandler;
 
 	@Override
-	public BaseResponseDto getAnonymizedPersonLogs(LocalDate dateFrom, LocalDate dateTo, String ticketNumber, String iun, String personId) throws IOException {
-		log.info("Anonymized logs retrieve process - START - user={}, ticket number={}, internalId={}, startDate={}, endDate={}, iun={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), ticketNumber, personId, dateFrom, dateTo, iun);
+	public BaseResponseDto getAnonymizedPersonLogs(PersonLogsRequestDto requestData) throws IOException {
+		log.info("Anonymized logs retrieve process - START - user={}, ticketNumber={}, internalId={}, startDate={}," +
+				" endDate={}, iun={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER),
+				requestData.getTicketNumber(), requestData.getPersonId(), requestData,
+				requestData.getDateTo(), requestData.getIun());
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
 		List<String> openSearchResponse = new ArrayList<>();
 		// use case 7
-		if (dateFrom != null && dateTo != null && personId != null && iun == null) {
+		if (requestData.getDateFrom() != null && requestData.getDateTo() != null
+				&& requestData.getPersonId() != null && requestData.getIun() == null) {
 			log.info("Getting activities' anonymized history... ");
 			performanceMillis = System.currentTimeMillis();
-			openSearchResponse = openSearchApiHandler.getAnonymizedLogsByUid(personId, dateFrom, dateTo);
+			openSearchResponse = openSearchApiHandler.getAnonymizedLogsByUid(requestData.getPersonId(),
+					requestData.getDateFrom(), requestData.getDateTo());
 		} else {
 			// use case 8
-			if (iun != null && ticketNumber!=null) {
+			if (requestData.getIun() != null && requestData.getTicketNumber()!=null) {
 				log.info(LoggingConstants.GET_NOTIFICATION_DETAILS);
-				NotificationDetailsResponseDto notificationDetails = notificationApiHandler.getNotificationDetails(iun);
-				log.info("Service response: notificationDetails={} retrieved in {} ms", new ObjectMapper().writer().writeValueAsString(notificationDetails), System.currentTimeMillis() - serviceStartTime);
+				NotificationDetailsResponseDto notificationDetails = notificationApiHandler.getNotificationDetails(requestData.getIun());
+				log.info("Service response: notificationDetails={} retrieved in {} ms",
+						new ObjectMapper().writer().writeValueAsString(notificationDetails),
+						System.currentTimeMillis() - serviceStartTime);
 				OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
 				String notificationEndDate = notificationStartDate.plusMonths(3).toString();
 				performanceMillis = System.currentTimeMillis();
-				openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(iun, notificationStartDate.toString(), notificationEndDate);
+				openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate);
 			}
 		}
 		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
@@ -90,17 +95,22 @@ public class LogServiceImpl implements LogService {
 	}
 
 	@Override
-	public BaseResponseDto getMonthlyNotifications(String ticketNumber, OffsetDateTime referenceMonth, OffsetDateTime endMonth, String publicAuthorityName) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException {
-		log.info("Monthly notifications retrieve process - START - user={}, ticket number={}, reference month={}, end month={}, public authority name={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), ticketNumber, referenceMonth, endMonth, publicAuthorityName);
+	public BaseResponseDto getMonthlyNotifications(MonthlyNotificationsRequestDto requestData) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException {
+		log.info("Monthly notifications retrieve process - START - user={}, ticketNumber={}, referenceMonth={}, " +
+				"endMonth={}, publicAuthorityName={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER),
+				requestData.getTicketNumber(), requestData.getReferenceMonth(), requestData.getEndMonth(),
+				requestData.getPublicAuthorityName());
 		long serviceStartTime = System.currentTimeMillis();
 		FileUtilities utils = new FileUtilities();
 		List<File> csvFiles = new ArrayList<>();
 		log.info("Getting public authority id...");
 		long performanceMillis = System.currentTimeMillis();
-		String encodedPublicAuthorityName = deanonimizationApiHandler.getPublicAuthorityId(publicAuthorityName);
-        log.info("Public authority id retrieved in {} ms, getting notifications, publicAuthority={}, startDate={}, endDate={}", System.currentTimeMillis() - performanceMillis, encodedPublicAuthorityName, referenceMonth, endMonth);
+		String encodedPublicAuthorityName = deanonimizationApiHandler.getPublicAuthorityId(requestData.getPublicAuthorityName());
+        log.info("Public authority id retrieved in {} ms, getting notifications, publicAuthority={}, startDate={}, " +
+				"endDate={}", System.currentTimeMillis() - performanceMillis, encodedPublicAuthorityName,
+				requestData.getReferenceMonth(), requestData.getEndMonth());
         performanceMillis = System.currentTimeMillis();
-		List<NotificationData> notifications = notificationApiHandler.getNotificationsByMonthsPeriod(referenceMonth, endMonth, encodedPublicAuthorityName);
+		List<NotificationData> notifications = notificationApiHandler.getNotificationsByMonthsPeriod(requestData.getReferenceMonth(), requestData.getEndMonth(), encodedPublicAuthorityName);
 		log.info("{} notifications retrieved in {} ms, constructing service response...", notifications.size(), System.currentTimeMillis() - performanceMillis);
 		if(notifications.isEmpty()) {
 			performanceMillis = System.currentTimeMillis();
@@ -137,12 +147,13 @@ public class LogServiceImpl implements LogService {
 	}
 	
 	@Override
-	public BaseResponseDto getTraceIdLogs(LocalDate dateFrom, LocalDate dateTo, String traceId) throws IOException {
+	public BaseResponseDto getTraceIdLogs(TraceIdLogsRequestDto requestData) throws IOException {
 		log.info("Anonymized logs retrieve process - START - user={}, traceId={}, startDate={}, endDate={}",
-				MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), traceId, dateFrom, dateTo);
+				MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), requestData.getTraceId(),
+				requestData.getDateFrom(), requestData.getDateTo());
 		long serviceStartTime = System.currentTimeMillis();
 		log.info("Getting anonymized logs...");
-		List<String> openSearchResponse = openSearchApiHandler.getAnonymizedLogsByTraceId(traceId, dateFrom, dateTo);
+		List<String> openSearchResponse = openSearchApiHandler.getAnonymizedLogsByTraceId(requestData.getTraceId(), requestData.getDateFrom(), requestData.getDateTo());
 		long performanceMillis = System.currentTimeMillis() - serviceStartTime;
 		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, performanceMillis, openSearchResponse.size());
 		if(openSearchResponse.isEmpty()) {
@@ -164,8 +175,9 @@ public class LogServiceImpl implements LogService {
 	}
 	
 	@Override
-	public BaseResponseDto getNotificationInfoLogs(String ticketNumber, String iun) throws IOException {
-		log.info("Notification data retrieve process - START - user={}, ticket number={}, iun={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), ticketNumber, iun);
+	public BaseResponseDto getNotificationInfoLogs(NotificationInfoRequestDto requestData) throws IOException {
+		log.info("Notification data retrieve process - START - user={}, ticketNumber={}, iun={}",
+				MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), requestData.getTicketNumber(), requestData.getIun());
 		ArrayList<String> downloadUrls = new ArrayList<>();
 		long serviceStartTime = System.currentTimeMillis();
 		double secondsToWait = 0;
@@ -173,11 +185,11 @@ public class LogServiceImpl implements LogService {
 		FileUtilities utils = new FileUtilities();
 		ArrayList<File> filesToAdd = new ArrayList<>();
 		log.info(LoggingConstants.GET_NOTIFICATION_DETAILS);
-		NotificationDetailsResponseDto notificationDetails = notificationApiHandler.getNotificationDetails(iun);
+		NotificationDetailsResponseDto notificationDetails = notificationApiHandler.getNotificationDetails(requestData.getIun());
 		OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
 		String notificationEndDate = notificationStartDate.plusMonths(3).toString();
 		log.info("Service response: notificationDetails={} retrieved in {} ms, getting history data...", mapper.writer().writeValueAsString(notificationDetails), System.currentTimeMillis() - serviceStartTime);
-		NotificationHistoryResponseDto notificationHistory = notificationApiHandler.getNotificationHistory(iun, notificationDetails.getRecipients().size(), notificationStartDate.toString());
+		NotificationHistoryResponseDto notificationHistory = notificationApiHandler.getNotificationHistory(requestData.getIun(), notificationDetails.getRecipients().size(), notificationStartDate.toString());
 		log.info("Service response: notificationHistory={} retrieved in {} ms, getting legal facts' keys...", mapper.writer().writeValueAsString(notificationHistory), System.currentTimeMillis() - serviceStartTime);
 		long performanceMillis = System.currentTimeMillis();
 		ArrayList<String> downloadKeys = new ArrayList<>(notificationApiHandler.getLegalFactKeys(notificationHistory));
@@ -220,7 +232,7 @@ public class LogServiceImpl implements LogService {
         		filesToAdd.add(downloadedFile);
         	}
         	log.info("Physical files retrieved in {} ms", System.currentTimeMillis() - performanceMillis);
-        	List<String> openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(iun, notificationStartDate.toString(), notificationEndDate);
+        	List<String> openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate);
     		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
 			performanceMillis = System.currentTimeMillis();
 			DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(openSearchResponse, filesToAdd, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
@@ -231,33 +243,38 @@ public class LogServiceImpl implements LogService {
         }
 	}
 		
-	public BaseResponseDto getDeanonimizedPersonLogs(RecipientTypes recipientType, LocalDate dateFrom, LocalDate dateTo, String ticketNumber, String taxid, String iun) throws IOException, LogExtractorException {
-		log.info("Deanonimized logs retrieve process - START - user={}, ticket number={}, taxId={}, startDate={}, endDate={}, iun={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), ticketNumber, taxid, dateFrom, dateTo, iun);
+	public BaseResponseDto getDeanonimizedPersonLogs(PersonLogsRequestDto requestData) throws IOException, LogExtractorException {
+		log.info("Deanonimized logs retrieve process - START - user={}, ticketNumber={}, taxId={}, " +
+						"startDate={}, endDate={}, iun={}, recipientType={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER),
+				requestData.getTicketNumber(), requestData.getTaxId(), requestData.getDateFrom(),
+				requestData.getDateTo(), requestData.getIun(), requestData.getRecipientType());
 		long serviceStartTime = System.currentTimeMillis();
 		List<String> openSearchResponse;
 		long performanceMillis = 0;
 		List<String> deanonimizedOpenSearchResponse = new ArrayList<>();
 		//use case 3
-		if (dateFrom != null && dateTo != null && taxid != null && recipientType!=null && ticketNumber!=null && iun==null) {
+		if (requestData.getDateFrom() != null && requestData.getDateTo() != null && requestData.getTaxId() != null
+				&& requestData.getRecipientType() != null && requestData.getTicketNumber() != null
+				&& requestData.getIun() == null) {
 			log.info("Getting internal id...");
-			String internalId = deanonimizationApiHandler.getUniqueIdentifierForPerson(recipientType, taxid);
+			String internalId = deanonimizationApiHandler.getUniqueIdentifierForPerson(requestData.getRecipientType(), requestData.getTaxId());
 			log.info("Service response: internalId={} retrieved in {} ms", internalId, System.currentTimeMillis() - serviceStartTime);
 			performanceMillis = System.currentTimeMillis();
-			openSearchResponse = openSearchApiHandler.getAnonymizedLogsByUid(internalId, dateFrom, dateTo);
+			openSearchResponse = openSearchApiHandler.getAnonymizedLogsByUid(internalId, requestData.getDateFrom(), requestData.getDateTo());
 			log.info("Query execution completed in {} ms, retrieved {} documents, deanonimizing results...",
 					System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
 			performanceMillis = System.currentTimeMillis();
-			deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, recipientType);
-		} else{
-			//use case 4
-			if (iun!=null && ticketNumber!=null) {
+			deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, requestData.getRecipientType());
+		} else {
+			if (requestData.getIun() != null && requestData.getTicketNumber() != null) {
+				//use case 4
 				log.info(LoggingConstants.GET_NOTIFICATION_DETAILS);
-				NotificationDetailsResponseDto notificationDetails = notificationApiHandler.getNotificationDetails(iun);
+				NotificationDetailsResponseDto notificationDetails = notificationApiHandler.getNotificationDetails(requestData.getIun());
 				log.info("Service response: notificationDetails={} retrieved in {} ms", new ObjectMapper().writer().writeValueAsString(notificationDetails), System.currentTimeMillis() - serviceStartTime);
 				OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
 				String notificationEndDate = notificationStartDate.plusMonths(3).toString();
 				performanceMillis = System.currentTimeMillis();
-				openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(iun, notificationStartDate.toString(), notificationEndDate);
+				openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate);
 				log.info("Query execution completed in {} ms, retrieved {} documents, deanonimizing results...",
 						System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
 				performanceMillis = System.currentTimeMillis();

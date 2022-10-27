@@ -16,32 +16,23 @@ public class LogController implements LogsApi {
 	@Override
 	public ResponseEntity<BaseResponseDto> getPersonActivityLogs(PersonLogsRequestDto personLogsRequestDto) throws Exception {
 		if (Boolean.TRUE.equals(personLogsRequestDto.getDeanonimization())) {
-			return ResponseEntity.ok().body(logService.getDeanonimizedPersonLogs(personLogsRequestDto.getRecipientType(),
-					personLogsRequestDto.getDateFrom(), personLogsRequestDto.getDateTo(),
-					personLogsRequestDto.getTicketNumber(), personLogsRequestDto.getTaxId(),
-					personLogsRequestDto.getIun()));
+			return ResponseEntity.ok().body(logService.getDeanonimizedPersonLogs(personLogsRequestDto));
 		}
-		return ResponseEntity.ok().body(logService.getAnonymizedPersonLogs(personLogsRequestDto.getDateFrom(),
-				personLogsRequestDto.getDateTo(), personLogsRequestDto.getTicketNumber(),
-				personLogsRequestDto.getIun(), personLogsRequestDto.getPersonId()));
+		return ResponseEntity.ok().body(logService.getAnonymizedPersonLogs(personLogsRequestDto));
 	}
 
 	@Override
 	public ResponseEntity<BaseResponseDto> getNotificationInfoLogs(NotificationInfoRequestDto notificationInfoRequestDto) throws Exception {
-		return ResponseEntity.ok().body(logService.getNotificationInfoLogs(notificationInfoRequestDto.getTicketNumber(),
-				notificationInfoRequestDto.getIun()));
+		return ResponseEntity.ok().body(logService.getNotificationInfoLogs(notificationInfoRequestDto));
 	}
 
 	@Override
 	public ResponseEntity<BaseResponseDto> getNotificationsInMonth(MonthlyNotificationsRequestDto monthlyNotificationsRequestDto) throws Exception {
-		return ResponseEntity.ok().body(logService.getMonthlyNotifications(monthlyNotificationsRequestDto.getTicketNumber(),
-				monthlyNotificationsRequestDto.getReferenceMonth(), monthlyNotificationsRequestDto.getEndMonth(),
-				monthlyNotificationsRequestDto.getPublicAuthorityName()));
+		return ResponseEntity.ok().body(logService.getMonthlyNotifications(monthlyNotificationsRequestDto));
 	}
 
 	@Override
 	public ResponseEntity<BaseResponseDto> getProcessLogs(TraceIdLogsRequestDto traceIdLogsRequestDto) throws Exception {
-		return ResponseEntity.ok().body(logService.getTraceIdLogs(traceIdLogsRequestDto.getDateFrom(),
-				traceIdLogsRequestDto.getDateTo(), traceIdLogsRequestDto.getTraceId()));
+		return ResponseEntity.ok().body(logService.getTraceIdLogs(traceIdLogsRequestDto));
 	}
 }
