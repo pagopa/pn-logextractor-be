@@ -40,7 +40,7 @@ public class DowntimeApiHandler {
 
     public void addStatusChangeEvent(List<PnStatusUpdateEventRequestDto> pnStatusUpdateEventRequestDto) {
         HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.setContentType(MediaType.APPLICATION_PDF);
+        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.set("x-pagopa-pn-uid", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER));
         List<MediaType> acceptedTypes = new ArrayList<>();
         acceptedTypes.add(MediaType.APPLICATION_JSON);

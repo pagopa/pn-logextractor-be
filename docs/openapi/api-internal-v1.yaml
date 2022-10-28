@@ -420,6 +420,8 @@ components:
         - status
         - timestamp
         - functionality
+        - sourceType
+        - source
       properties:
         status:
           $ref: '#/components/schemas/PnFunctionalityStatus'
@@ -433,6 +435,14 @@ components:
           minItems: 1
           items:
             $ref: '#/components/schemas/PnFunctionality'
+        sourceType:
+          title: event origin type
+          type: string
+          enum:
+            - OPERATOR
+        source:
+            title: origin event identifier
+            type: string
     PnStatusResponseDto:
       title: PN actual status
       description: >-
