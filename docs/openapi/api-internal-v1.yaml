@@ -230,7 +230,7 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/BaseResponseDto'
+                  $ref: '#/components/schemas/PnStatusResponseDto'
         '500':
           description: Errors during the request elaboration
           content:
@@ -433,6 +433,57 @@ components:
           minItems: 1
           items:
             $ref: '#/components/schemas/PnFunctionality'
+    PnStatusResponseDto:
+      title: PN actual status
+      description: >-
+        PN functionalities and inefficiencies known list when the request is sent
+      type: object
+      required:
+        - functionalities
+        - openIncidents
+      properties:
+        functionalities:
+          title: PN functionalities list
+          type: array
+          items:
+            $ref: '#/components/schemas/PnFunctionality'
+        openIncidents:
+          title: Inefficiencies list
+          type: array
+          items:
+            $ref: '#/components/schemas/PnDowntimeEntry'
+    PnDowntimeEntry:
+      title: Dati relativi ad un disservizio di PN.
+      type: object
+      required:
+        - functionality
+        - status
+        - startDate
+      properties:
+        functionality:
+          $ref: '#/components/schemas/PnFunctionality'
+        status:
+          $ref: '#/components/schemas/PnFunctionalityStatus'
+        startDate:
+          title: Inefficiency start date
+          type: string
+          format: date-time
+        endDate:
+          title: Inefficiency end date
+          description: >-
+            se il disservizio è ancora attivo questo campo sarà assente o con valore _null_
+          type: string
+          format: date-time
+        legalFactId:
+          title: id dell'atto opponibile a terzi
+          description: >-
+            Se assente o valorizzato _null_ indica che l'atto opponibile a terzi non è ancora
+            disponibile. Questo avviene per i disservizi ancora aperti e per i disservizi 
+            terminati da pochi minuti. <br/>
+            Questo valore è da utilizzare con l'API _getLegalFact_ di questo stesso servizio.
+          type: string
+        fileAvailable:
+          type: boolean
     RecipientTypes:
       title: PN recipient types
       type: string

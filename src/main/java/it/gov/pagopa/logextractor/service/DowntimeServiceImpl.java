@@ -1,9 +1,8 @@
 package it.gov.pagopa.logextractor.service;
 
-import it.gov.pagopa.logextractor.dto.response.DowntimeCurrentStatusResponseDto;
-import it.gov.pagopa.logextractor.dto.response.GetDowntimeStatusResponseDto;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.BaseResponseDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusResponseDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusUpdateEventRequestDto;
 import it.gov.pagopa.logextractor.util.constant.CognitoConstants;
 import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
@@ -37,18 +36,14 @@ public class DowntimeServiceImpl implements DowntimeService{
     }
 
     @Override
-    public BaseResponseDto getCurrentStatus() throws LogExtractorException {
+    public PnStatusResponseDto getCurrentStatus() throws LogExtractorException {
         log.info("PN functionalities status retrieve process - START - user={} ",
                 MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER));
         long serviceStartTime = System.currentTimeMillis();
         log.info("Getting functionalities status...");
-        DowntimeCurrentStatusResponseDto currentStatus = downtimeApiHandler.getFunctionalitiesStatus();
+        PnStatusResponseDto currentStatusResponse = downtimeApiHandler.getFunctionalitiesStatus();
         log.info("Functionalities status retrieved in {} ms", System.currentTimeMillis() - serviceStartTime);
-        GetDowntimeStatusResponseDto response = new GetDowntimeStatusResponseDto();
-        response.setMessage(ResponseConstants.SUCCESS_RESPONSE_MESSAGE);
-        response.setFunctionalities(currentStatus.getFunctionalities());
-        response.setOpenIncidents(currentStatus.getOpenIncidents());
         log.info("PN functionalities status retrieve process - END in {} ms", System.currentTimeMillis() - serviceStartTime);
-        return response;
+        return currentStatusResponse;
     }
 }

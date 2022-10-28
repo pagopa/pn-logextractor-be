@@ -2,6 +2,7 @@ package it.gov.pagopa.logextractor.rest;
 
 import it.gov.pagopa.logextractor.pn_logextractor_be.api.DowntimeApi;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.BaseResponseDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusResponseDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusUpdateEventRequestDto;
 import it.gov.pagopa.logextractor.service.DowntimeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ public class DowntimeController implements DowntimeApi {
     }
 
     @Override
-    public ResponseEntity<BaseResponseDto> getCurrentStatus() throws Exception {
+    public ResponseEntity<PnStatusResponseDto> getCurrentStatus() throws Exception {
         return ResponseEntity.ok().body(downtimeService.getCurrentStatus());
     }
 }
