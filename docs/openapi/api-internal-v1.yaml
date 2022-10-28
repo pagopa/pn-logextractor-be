@@ -453,7 +453,7 @@ components:
           items:
             $ref: '#/components/schemas/PnDowntimeEntry'
     PnDowntimeEntry:
-      title: Dati relativi ad un disservizio di PN.
+      title: Data related to a PN inefficiency
       type: object
       required:
         - functionality
@@ -471,19 +471,9 @@ components:
         endDate:
           title: Inefficiency end date
           description: >-
-            se il disservizio è ancora attivo questo campo sarà assente o con valore _null_
+            if the inefficiency is still active, this field will be absent or _null_
           type: string
           format: date-time
-        legalFactId:
-          title: id dell'atto opponibile a terzi
-          description: >-
-            Se assente o valorizzato _null_ indica che l'atto opponibile a terzi non è ancora
-            disponibile. Questo avviene per i disservizi ancora aperti e per i disservizi 
-            terminati da pochi minuti. <br/>
-            Questo valore è da utilizzare con l'API _getLegalFact_ di questo stesso servizio.
-          type: string
-        fileAvailable:
-          type: boolean
     RecipientTypes:
       title: PN recipient types
       type: string
