@@ -427,6 +427,9 @@ components:
           type: string
           enum:
             - OPERATOR
+        source:
+            title: origin event identifier
+            type: string
     PnStatusResponseDto:
       title: PN actual status
       description: >-
