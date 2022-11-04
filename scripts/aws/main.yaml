@@ -153,3 +153,6 @@ Outputs:
   
   AlbListenerArn:
     Value: !GetAtt Backend.Outputs.AlbListenerArn
+  
+  DistributionId:
+    Value: !GetAtt Frontend.Outputs.DistributionId

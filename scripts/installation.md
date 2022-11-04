@@ -28,4 +28,5 @@ Eseguire il seguente comando dalla cartella `./scripts/aws`
 2) i sotto stack referenziati dentro main.yaml vanno spostati nella cartella "fragments" (modifica proposta nel branch)
 3) il bucket referenziato nei vari script va creato nel global.yaml (modifica proposta nel branch)
 4) in services.yaml non è definito il dedicated master node (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-opensearchservice-domain-clusterconfig.html#cfn-opensearchservice-domain-clusterconfig-dedicatedmastercount)
-5) che valore inserire nella variabile AdditionalMicroserviceSecurityGroup
+5) che valore inserire nella variabile AdditionalMicroserviceSecurityGroup? quello del cluster redis?
+6) come sono configurate le credenziali di accesso di OpenSearch?

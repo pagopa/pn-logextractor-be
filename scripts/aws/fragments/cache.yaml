@@ -70,4 +70,4 @@ Outputs:
 
   RedisEndpoint:
     Description: The id of the security group that can access the cache cluster
-    Value: !GetAtt Cluster.RedisEndpoint
+    Value: !GetAtt Cluster.RedisEndpoint.Address

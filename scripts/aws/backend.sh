@@ -148,7 +148,7 @@ aws cloudformation deploy --region "eu-south-1" --template-file "ecs-service.yam
         "LoadbalancerRulePriority=10" \
         "ContainerEnvEntry1=ENSURE_RECIPIENT_BY_EXTERNAL_ID_URL=${PnRootPath}/datavault-private/v1/recipients/external/%s" \
         "ContainerEnvEntry2=GET_RECIPIENT_DENOMINATION_BY_INTERNAL_ID_URL=${PnRootPath}/datavault-private/v1/recipients/internal" \
-        "ContainerEnvEntry3=GET_SENT_NOTIFICATION_URL==${PnRootPath}/delivery-private/search" \
+        "ContainerEnvEntry3=GET_SENT_NOTIFICATION_URL=${PnRootPath}/delivery-private/search" \
         "ContainerEnvEntry4=GET_SENT_NOTIFICATION_DETAILS_URL=${PnRootPath}/delivery-private/notifications/%s" \
         "ContainerEnvEntry5=GET_SENT_NOTIFICATION_HISTORY_URL=${PnRootPath}/delivery-push-private/%s/history" \
         "ContainerEnvEntry6=GET_ENCODED_IPA_CODE_URL=${PnRootPath}/ext-registry/pa/v1/activated-on-pn" \
