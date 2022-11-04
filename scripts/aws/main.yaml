@@ -130,3 +130,12 @@ Resources:
         SubnetIds: !Join [',', !Ref PrivateSubnetIds]
         VpcId: !Ref VpcId
       TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/services.yaml
+
+  Alarms:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      Parameters:
+        ProjectName: !Ref ProjectName
+        OpenSearchClusterName: !GetAtt Services.Outputs.ClusterName
+      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/alarms.yaml
+
