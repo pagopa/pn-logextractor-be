@@ -82,3 +82,9 @@ Resources:
         SecurityGroupIds:
           - Ref: SecurityGroup
         SubnetIds: !Ref SubnetIds
+
+Outputs:
+  ClusterName:
+    Description: The name of the OpenSearch Service domain
+    Value: !Ref OpenSearchServiceDomain
+
