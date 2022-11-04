@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,11 +14,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInternalIdResponseDto;
 import it.gov.pagopa.logextractor.dto.response.PublicAuthorityMappingResponseDto;
 import it.gov.pagopa.logextractor.dto.response.SelfCarePaDataResponseDto;
@@ -57,16 +53,10 @@ public class DeanonimizationApiHandler {
 	 * Method that makes a request to Piattaforma Notifiche external service to
 	 * retrieve the unique identifier of a person, given the recipient type and tax
 	 * id of a person
-	 * 
-	 * @param recipientType      represents the two values of the enum
-	 *                           {@link RecipientTypes}.
-	 * @param taxId              the tax id of a person
-	 * 
-	 * @return object of type {@link GetBasicDataResponseDto}, containing the unique
-	 *         identifier of a person
-	 * @throws LogExtractorException 
-	 * @throws {@link HttpServerErrorException}
-	 * @throws {@link HttpClientErrorException}
+	 * @param recipientType represents the two values of the enum {@link RecipientTypes}.
+	 * @param taxId the tax id of a person
+	 * @return object of type {@link GetBasicDataResponseDto}, containing the unique identifier of a person
+	 * @throws LogExtractorException if the external service response is "null", null or blank
 	 */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 	public String getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId) throws LogExtractorException {
@@ -83,15 +73,9 @@ public class DeanonimizationApiHandler {
 	/**
 	 * Method that makes a request to Piattaforma Notifiche external service to
 	 * retrieve the tax code of a person, given the person's unique identifier
-	 * 
-	 * @param personId           the unique identifier of a person
-	 *                           needs to make a request to Piattaforma Notifiche
-	 *                           service
-	 * @return object of type {@link GetBasicDataResponseDto}, containing the tax
-	 *         code of a person
-	 * @throws LogExtractorException 
-	 * @throws {@link HttpServerErrorException}
-	 * @throws {@link HttpClientErrorException}
+	 * @param personId the unique identifier of a person needs to make a request to Piattaforma Notifiche service
+	 * @return object of type {@link GetBasicDataResponseDto}, containing the tax code of a person
+	 * @throws LogExtractorException if the external service response is "null", null, blank or has 0 length
 	 */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 	public GetBasicDataResponseDto getTaxCodeForPerson(String personId) throws LogExtractorException {
@@ -123,10 +107,9 @@ public class DeanonimizationApiHandler {
 	
 	/**
 	 * Performs a GET HTTP request to the Piattaforma Notifiche external service to retrieve the general data of the notifications managed within a period
+	 * @param publicAuthorityName the public authority name to get the encoded id for
 	 * @return The list of notifications' general data
-	 * @throws LogExtractorException 
-	 * @throws {@link HttpServerErrorException}
-	 * @throws {@link HttpClientErrorException}
+	 * @throws LogExtractorException if the external service response is "null", null, blank or has 0 length
 	 * */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 	public String getPublicAuthorityId(String publicAuthorityName) throws LogExtractorException {
@@ -157,9 +140,7 @@ public class DeanonimizationApiHandler {
 	 * Performs a GET HTTP request to the Piattaforma Notifiche external service to retrieve the public authority name
 	 * @param publicAuthorityId The public authority id
 	 * @return The public authority name
-	 * @throws LogExtractorException 
-	 * @throws {@link HttpServerErrorException}
-	 * @throws {@link HttpClientErrorException}
+	 * @throws LogExtractorException if the external service response is "null", null or blank
 	 * */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 	public String getPublicAuthorityName(String publicAuthorityId) throws LogExtractorException {
@@ -173,17 +154,18 @@ public class DeanonimizationApiHandler {
 	
 	/** 
 	 * Returns the value associated with the specified key.
-	 * @param anonymizedDocuments the document list containing the content to write in the output file (.txt, .csv) contained in the output zip archive
+	 * @param recipientType the entity's recipient type
+	 * @param anonymizedDocuments the document list containing the content to write in the output
+	 *                               file (.txt, .csv) contained in the output zip archive
 	 * @return A list representing the de-anonymized documents 
-	 * @throws LogExtractorException 
+	 * @throws LogExtractorException if the external service response is "null", null or blank
 	 */
-	public List<String> deanonimizeDocuments(List<String> anonymizedDocuments, RecipientTypes recipientType) throws LogExtractorException{
+	public List<String> deanonimizeDocuments(List<String> anonymizedDocuments, RecipientTypes recipientType) throws LogExtractorException {
 		ArrayList<String> deanonymizedDocuments = new ArrayList<>();
 		JsonUtilities jsonUtils = new JsonUtilities();
-		for(int index=0; index < anonymizedDocuments.size(); index++) {
-			String uid = jsonUtils.getValue(anonymizedDocuments.get(index), OpensearchConstants.OS_UID_FIELD);
-			String cxId = jsonUtils.getValue(anonymizedDocuments.get(index), OpensearchConstants.OS_CX_ID_FIELD);
-			String document = anonymizedDocuments.get(index);
+		for(String currentDocument : anonymizedDocuments) {
+			String uid = jsonUtils.getValue(currentDocument, OpensearchConstants.OS_UID_FIELD);
+			String cxId = jsonUtils.getValue(currentDocument, OpensearchConstants.OS_CX_ID_FIELD);
 			HashMap<String,String> keyValues = new HashMap<>();
 			if(uid != null && !StringUtils.startsWith(uid, "APIKEY-")) {
 				GetBasicDataResponseDto taxCodeDto = getTaxCodeForPerson(recipientType.toString() + "-" + uid);
@@ -199,8 +181,8 @@ public class DeanonimizationApiHandler {
 				}
 				keyValues.put(OpensearchConstants.OS_CX_ID_FIELD, deanonimizedIdentifier);
 			}
-			document = jsonUtils.replaceValues(document, keyValues);
-			deanonymizedDocuments.add(document);
+			currentDocument = jsonUtils.replaceValues(currentDocument, keyValues);
+			deanonymizedDocuments.add(currentDocument);
 		}
 		return deanonymizedDocuments;
 	}

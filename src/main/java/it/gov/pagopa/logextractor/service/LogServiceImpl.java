@@ -6,6 +6,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.*;
+import it.gov.pagopa.logextractor.util.FileUtilities;
 import it.gov.pagopa.logextractor.util.constant.CognitoConstants;
 import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
 import org.apache.commons.io.FileUtils;
@@ -22,7 +23,6 @@ import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDto;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
-import it.gov.pagopa.logextractor.util.FileUtilities;
 import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
 import it.gov.pagopa.logextractor.util.ResponseConstructor;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandler;
@@ -64,7 +64,7 @@ public class LogServiceImpl implements LogService {
 					requestData.getDateFrom(), requestData.getDateTo());
 		} else {
 			// use case 8
-			if (requestData.getIun() != null && requestData.getTicketNumber()!=null) {
+			if (requestData.getIun() != null) {
 				log.info(LoggingConstants.GET_NOTIFICATION_DETAILS);
 				NotificationDetailsResponseDto notificationDetails = notificationApiHandler.getNotificationDetails(requestData.getIun());
 				log.info("Service response: notificationDetails={} retrieved in {} ms",
@@ -254,7 +254,7 @@ public class LogServiceImpl implements LogService {
 		List<String> deanonimizedOpenSearchResponse = new ArrayList<>();
 		//use case 3
 		if (requestData.getDateFrom() != null && requestData.getDateTo() != null && requestData.getTaxId() != null
-				&& requestData.getRecipientType() != null && requestData.getTicketNumber() != null
+				&& requestData.getRecipientType() != null
 				&& requestData.getIun() == null) {
 			log.info("Getting internal id...");
 			String internalId = deanonimizationApiHandler.getUniqueIdentifierForPerson(requestData.getRecipientType(), requestData.getTaxId());
@@ -266,7 +266,7 @@ public class LogServiceImpl implements LogService {
 			performanceMillis = System.currentTimeMillis();
 			deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, requestData.getRecipientType());
 		} else {
-			if (requestData.getIun() != null && requestData.getTicketNumber() != null) {
+			if (requestData.getIun() != null) {
 				//use case 4
 				log.info(LoggingConstants.GET_NOTIFICATION_DETAILS);
 				NotificationDetailsResponseDto notificationDetails = notificationApiHandler.getNotificationDetails(requestData.getIun());

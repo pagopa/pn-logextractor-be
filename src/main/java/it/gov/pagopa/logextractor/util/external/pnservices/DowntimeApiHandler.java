@@ -2,8 +2,6 @@ package it.gov.pagopa.logextractor.util.external.pnservices;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.json.JSONArray;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -13,12 +11,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusResponseDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusUpdateEventRequestDto;
 import it.gov.pagopa.logextractor.util.constant.CognitoConstants;
 
+/**
+ * Uility class for integrations with Piattaforma Notifiche downtime service
+ **/
 @Component
 public class DowntimeApiHandler {
 
@@ -32,6 +32,12 @@ public class DowntimeApiHandler {
     @Value("${external.downtime.events.url}")
     String downtimeEventsURL;
 
+    /**
+     * Performs a GET HTTP request to downtime microservice to obtain the current PN functionalities' status
+     * @return The list of down functionalities and the related inefficiencies' data or an empty list if every
+     * functionality is up
+     * @throws LogExtractorException if the external service response is null
+     * */
     public PnStatusResponseDto getFunctionalitiesStatus() throws LogExtractorException {
         PnStatusResponseDto response = client.getForEntity(downtimeStatusURL, PnStatusResponseDto.class).getBody();
         if(response == null) {
@@ -40,6 +46,9 @@ public class DowntimeApiHandler {
         return response;
     }
 
+    /**
+     * Performs a POST HTTP request to downtime microservice to save a new record of down or up for a PN functionality
+     * */
     public void addStatusChangeEvent(List<PnStatusUpdateEventRequestDto> pnStatusUpdateEventRequestDto) {
     	for(PnStatusUpdateEventRequestDto pnStatusUpdate : pnStatusUpdateEventRequestDto) {
     		pnStatusUpdate.setSource(MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER));

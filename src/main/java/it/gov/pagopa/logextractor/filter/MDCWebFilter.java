@@ -68,7 +68,7 @@ public class MDCWebFilter extends OncePerRequestFilter {
     }
     
 	@Override
-	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+	protected boolean shouldNotFilter(HttpServletRequest request) {
 		return "/health-check/status".equals(request.getRequestURI());
 	}
 

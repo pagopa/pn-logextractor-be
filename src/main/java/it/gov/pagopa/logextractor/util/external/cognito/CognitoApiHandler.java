@@ -16,11 +16,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
 
-@Component
-
 /**
  * Uility class for integrations with Cognito service
- * */
+ **/
+@Component
 public class CognitoApiHandler {
 
 	@Autowired
@@ -37,7 +36,7 @@ public class CognitoApiHandler {
 	 * Performs a GET HTTP request to the Cognito user pool to get the logged-in user identifier
 	 * @param accessToken The logged-in user access token for Cognito
 	 * @return The user identifier
-	 * @throws LogExtractorException 
+	 * @throws LogExtractorException if the external deanonimization service response is "null", null or blank
 	 * */
 	public String getUserIdentifier(String accessToken) throws LogExtractorException {
 		JSONObject requestBody = new JSONObject();
@@ -55,6 +54,7 @@ public class CognitoApiHandler {
 	 * Extracts the user identifier from the Cognito response
 	 * @param userAttributes The user attributes list
 	 * @return The user identifier
+	 * @throws LogExtractorException if the logged-in user has no identifier in Cognito
 	 * */
 	private String getUserUniqueIdentifier(String userAttributes) throws LogExtractorException {
 		JSONArray attributes = new JSONObject(userAttributes).getJSONArray("UserAttributes");
