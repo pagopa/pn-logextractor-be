@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -32,6 +31,7 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.dto.response.EnsureRecipientByExternalIdResponseDto;
@@ -47,6 +47,11 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.NotificationInfoReque
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.PersonLogsRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.PersonPersonIdRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.PersonTaxIdRequestDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnFunctionality;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnFunctionalityStatus;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusResponseDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusUpdateEventRequestDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusUpdateEventRequestDto.SourceTypeEnum;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.TraceIdLogsRequestDto;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
@@ -102,6 +107,10 @@ public abstract class AbstractMock {
 	protected final String notificationInfoUrl = "/logs/v1/notifications/info";
 	protected final String processesUrl = "/logs/v1/processes";
 	protected final String healthcheckUrl = "/health-check/status";
+
+	protected final String statusUrl = "/downtime/v1/status";
+	protected final String eventsUrl = "/downtime/v1/events";
+
 	protected final String fakeHeader = "Basic YWxhZGRpbjpvcGVuc2VzYW1l";
 	private static ObjectMapper mapper = new ObjectMapper();
 
@@ -122,8 +131,8 @@ public abstract class AbstractMock {
 	protected void mockUniqueIdentifierForPerson() throws RestClientException, IOException {
 		// The first return is used to simulate authentication
 		Mockito.when(client.postForObject(Mockito.anyString(), Mockito.any(), Mockito.any(Class.class))).thenReturn(
-				getStringFromResourse(authResponse),
-				mapper.registerModule(new JavaTimeModule()).writeValueAsString(EnsureRecipientByExternalIdResponseDto.builder().internalId("123").build()));
+				getStringFromResourse(authResponse), mapper.registerModule(new JavaTimeModule()).writeValueAsString(
+						EnsureRecipientByExternalIdResponseDto.builder().internalId("123").build()));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -169,7 +178,6 @@ public abstract class AbstractMock {
 				.thenReturn(scrollResponseSearch);
 		mockUniqueIdentifierForPerson();
 	}
-	
 
 	@SuppressWarnings("unchecked")
 	protected void mockPersonsLogUseCase6Response() throws IOException {
@@ -295,6 +303,22 @@ public abstract class AbstractMock {
 				.thenReturn(responseRecipient);
 	}
 
+	protected void getMockPnStatusResponseDto(PnStatusResponseDto fakePnStatusResponseDto)
+			throws JsonProcessingException {
+		ResponseEntity<PnStatusResponseDto> responseStatus = new ResponseEntity<>(fakePnStatusResponseDto,
+				HttpStatus.OK);
+		Mockito.when(
+				client.getForEntity(ArgumentMatchers.anyString(), ArgumentMatchers.<Class<PnStatusResponseDto>>any()))
+				.thenReturn(responseStatus);
+	}
+
+	@SuppressWarnings("unchecked")
+	protected void mockAddStatusChangeEvent(RestTemplate client) throws RestClientException, IOException {
+		String mock = "";
+		ResponseEntity<Object> response = new ResponseEntity<Object>(mock, HttpStatus.OK);
+		Mockito.when(client.getForObject(Mockito.anyString(), Mockito.any(Class.class))).thenReturn(response);
+	}
+
 	protected static String getMockPersonLogsRequestDto(int useCase, boolean isDeanonimization)
 			throws JsonProcessingException {
 		PersonLogsRequestDto dto = new PersonLogsRequestDto();
@@ -363,6 +387,23 @@ public abstract class AbstractMock {
 		return mapper.registerModule(new JavaTimeModule()).writeValueAsString(dto);
 	}
 
+	protected static String getMockPnStatusUpdateEventRequestDto(PnFunctionalityStatus pnFunctionalityStatus)
+			throws JsonProcessingException {
+		List<PnStatusUpdateEventRequestDto> listPnStatusUpdateEventRequestDto = new ArrayList<>();
+		List<PnFunctionality> listPnFunctionality = new ArrayList<>();
+		PnStatusUpdateEventRequestDto pnStatusUpdateEventRequestDto = new PnStatusUpdateEventRequestDto();
+		for (PnFunctionality pnFunctionality : PnFunctionality.values()) {
+			listPnFunctionality.add(pnFunctionality);
+		}
+		pnStatusUpdateEventRequestDto.setTimestamp(OffsetDateTime.parse("2022-11-03T17:00:15.995Z"));
+		pnStatusUpdateEventRequestDto.setStatus(pnFunctionalityStatus);
+		pnStatusUpdateEventRequestDto.setSourceType(SourceTypeEnum.OPERATOR);
+		pnStatusUpdateEventRequestDto.setFunctionality(listPnFunctionality);
+		listPnStatusUpdateEventRequestDto.add(pnStatusUpdateEventRequestDto);
+
+		return mapper.registerModule(new JavaTimeModule()).writeValueAsString(listPnStatusUpdateEventRequestDto);
+	}
+
 	protected static String getMockNotificationsRequestDto() throws JsonProcessingException {
 		NotificationInfoRequestDto dto = new NotificationInfoRequestDto();
 		dto.setTicketNumber("345");
@@ -375,33 +416,40 @@ public abstract class AbstractMock {
 	}
 
 	private static NotificationDetailsResponseDto getNotificationFromResource(Resource resource) throws IOException {
-		return mapper.registerModule(new JavaTimeModule()).readValue(resource.getInputStream(), NotificationDetailsResponseDto.class);
+		return mapper.registerModule(new JavaTimeModule()).readValue(resource.getInputStream(),
+				NotificationDetailsResponseDto.class);
 	}
 
 	private static NotificationsGeneralDataResponseDto getNotificationGeneralDataFromResource(Resource resource)
 			throws IOException {
-		return mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).registerModule(new JavaTimeModule()).readValue(resource.getInputStream(), NotificationsGeneralDataResponseDto.class);
+		return mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+				.registerModule(new JavaTimeModule())
+				.readValue(resource.getInputStream(), NotificationsGeneralDataResponseDto.class);
 	}
 
 	private static GetRecipientDenominationByInternalIdResponseDto[] getRecipientInternalFromResource(Resource resource)
 			throws IOException {
-		return mapper.registerModule(new JavaTimeModule()).readValue(resource.getInputStream(), GetRecipientDenominationByInternalIdResponseDto[].class);
+		return mapper.registerModule(new JavaTimeModule()).readValue(resource.getInputStream(),
+				GetRecipientDenominationByInternalIdResponseDto[].class);
 	}
 
 	private static NotificationHistoryResponseDto getNotificationHistoryFromResource(Resource resource)
 			throws IOException {
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		return mapper.registerModule(new JavaTimeModule()).readValue(resource.getInputStream(), NotificationHistoryResponseDto.class);
+		return mapper.registerModule(new JavaTimeModule()).readValue(resource.getInputStream(),
+				NotificationHistoryResponseDto.class);
 	}
 
 	private static FileDownloadMetadataResponseDto getFileDownloadMetadataFromResource(Resource resource)
 			throws IOException {
-		return mapper.registerModule(new JavaTimeModule()).readValue(resource.getInputStream(), FileDownloadMetadataResponseDto.class);
+		return mapper.registerModule(new JavaTimeModule()).readValue(resource.getInputStream(),
+				FileDownloadMetadataResponseDto.class);
 	}
 
 	private static SelfCarePaDataResponseDto getSelfCarePaDataResponseFromResource(Resource resource)
 			throws IOException {
-		return mapper.registerModule(new JavaTimeModule()).readValue(resource.getInputStream(), SelfCarePaDataResponseDto.class);
+		return mapper.registerModule(new JavaTimeModule()).readValue(resource.getInputStream(),
+				SelfCarePaDataResponseDto.class);
 	}
 
 }
