@@ -88,3 +88,5 @@ Outputs:
     Description: The name of the OpenSearch Service domain
     Value: !Ref OpenSearchServiceDomain
 
+  DomainEndpoint:
+    Value: !GetAtt OpenSearchServiceDomain.DomainEndpoint

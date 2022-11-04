@@ -139,3 +139,17 @@ Resources:
         OpenSearchClusterName: !GetAtt Services.Outputs.ClusterName
       TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/alarms.yaml
 
+Outputs:
+  ElasticacheEndpoint:
+    Description: Elasticache endpoint
+    Value: !GetAtt Cache.Outputs.RedisEndpoint
+  
+  ElasticacheSecurityGroup:
+    Value: !GetAtt Cache.Outputs.AllowedSecurityGroupId
+
+  OpenSearchEndpoint:
+    Description: OpenSearch endpoint
+    Value: !GetAtt Services.Outputs.DomainEndpoint
+  
+  AlbListenerArn:
+    Value: !GetAtt Backend.Outputs.AlbListenerArn
