@@ -97,8 +97,8 @@ echo "aws cloudformation ${profile_option} --region \"eu-south-1\" package --tem
 aws cloudformation ${profile_option} --region "eu-south-1" package --template-file "main.yaml" --s3-bucket ${bucket_name} --s3-prefix "regional" --output-template-file "dist/template.${environment}.packaged.yaml" --force-upload
 
 echo "\r\n\r\n"
-echo "source ./environments/.env.${environment}"
-source ./environments/.env.${environment}
+echo "source ./environments/.env.infra.${environment}"
+source ./environments/.env.infra.${environment}
 
 WafArn=$( aws ${profile_option} --region="us-east-1" cloudformation describe-stacks \
       --stack-name "pn-logextractor-global-${environment}" | jq -r \

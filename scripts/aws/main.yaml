@@ -53,6 +53,14 @@ Parameters:
     Type: String
     Description: OpenSearch nodes type
 
+  OpenSearchMasterUsername:
+    Type: String
+    Description: OpenSearch master username
+
+  OpenSearchMasterPassword:
+    Type: String
+    Description: OpenSearch master password
+
   ProjectName:
     Type: String
     Description: Name of the project
@@ -129,6 +137,8 @@ Resources:
         ProjectName: !Ref ProjectName
         SubnetIds: !Join [',', !Ref PrivateSubnetIds]
         VpcId: !Ref VpcId
+        MasterUsername: !Ref OpenSearchMasterUsername
+        MasterPassword: !Ref OpenSearchMasterPassword       
       TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/services.yaml
 
   Alarms:
@@ -156,3 +166,6 @@ Outputs:
   
   DistributionId:
     Value: !GetAtt Frontend.Outputs.DistributionId
+
+  DistributionDomainName:
+    Value: !GetAtt Frontend.Outputs.DomainName

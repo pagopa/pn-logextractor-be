@@ -42,6 +42,14 @@ Parameters:
     Type: "AWS::EC2::VPC::Id"
     Description: VPC id of the subnets
 
+  MasterUsername:
+    Type: String
+    Description: Master username
+
+  MasterPassword:
+    Type: String
+    Description: Master password
+
 Resources:
   SecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
@@ -60,12 +68,17 @@ Resources:
     Properties:
       AccessPolicies:
         Statement:
-          - Effect: Deny
+          - Effect: Allow
             Principal:
               AWS: "*"
             Action: "es:*"
             Resource: "*"
         Version: "2012-10-17"
+      AdvancedSecurityOptions:
+        Enabled: true
+        MasterUserOptions: 
+          MasterUserName: !Ref MasterUsername
+          MasterUserPassword: !Ref MasterPassword
       ClusterConfig:
         InstanceCount: !Ref InstanceReplicas
         InstanceType: !Ref InstanceType

@@ -143,3 +143,7 @@ Outputs:
   DistributionId:
     Description: Cloudfront distribution ID
     Value: !Ref Distribution
+
+  DomainName:
+    Description: Cloudfront distribution domain name
+    Value: !GetAtt Distribution.DomainName

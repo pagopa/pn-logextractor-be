@@ -83,18 +83,8 @@ bucket_name="${project_name}-infra"
 bucket_url="s3://${bucket_name}"
 HelpdeskAccount=$(aws sts get-caller-identity --profile $profile | jq -r .Account)
 
-
-#aws ecr get-login-password ${profile_option} --region eu-south-1 | docker login --username AWS --password-stdin ${HelpdeskAccount}.dkr.ecr.eu-south-1.amazonaws.com
-
-cd ../../
-
-#docker build -t pn-logextractor-${environment} .
-
-#docker tag pn-logextractor-${environment}:latest ${HelpdeskAccount}.dkr.ecr.eu-south-1.amazonaws.com/pn-logextractor-${environment}:${build_tag}
-
-#docker push ${HelpdeskAccount}.dkr.ecr.eu-south-1.amazonaws.com/pn-logextractor-${environment}:${build_tag}
-
-source ./scripts/aws/environments/.env.${environment}
+source ./environments/.env.infra.${environment}
+source ./environments/.env.backend.${environment}
 
 CognitoUserPoolArn=$( aws ${profile_option} --region="eu-central-1" cloudformation describe-stacks \
       --stack-name "pn-logextractor-support-${environment}" | jq -r \
