@@ -1,22 +1,18 @@
 package it.gov.pagopa.logextractor.util;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.opencsv.bean.HeaderColumnNameMappingStrategy;
 import org.apache.commons.io.FileUtils;
-
-import com.opencsv.ICSVWriter;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
-
 import it.gov.pagopa.logextractor.dto.NotificationCsvBean;
 import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
@@ -89,10 +85,15 @@ public class FileUtilities {
 		if (!file.getParentFile().exists()) {
 			file.getParentFile().mkdirs();
 		}
-		Writer writer = new FileWriter(file);
-		StatefulBeanToCsv<NotificationCsvBean> beanToCsv = new StatefulBeanToCsvBuilder<NotificationCsvBean>(writer).withSeparator(ICSVWriter.DEFAULT_SEPARATOR).build();
-		beanToCsv.write(notifications);
-		writer.close();
+		HeaderColumnNameMappingStrategy<NotificationCsvBean> strategy = new HeaderColumnNameMappingStrategy<>();
+		strategy.setType(NotificationCsvBean.class);
+		Path outputPath = Path.of(file.getPath());
+		try (var writer = Files.newBufferedWriter(outputPath)) {
+			StatefulBeanToCsv<NotificationCsvBean> csv = new StatefulBeanToCsvBuilder<NotificationCsvBean>(writer)
+					.withMappingStrategy(strategy)
+					.build();
+			csv.write(notifications);
+		}
 	}
 	
 	/**
@@ -109,12 +110,12 @@ public class FileUtilities {
 				recipientsBuilder.append(tempRecipient + "-");
 			}
 			recipientsBuilder.deleteCharAt(recipientsBuilder.length()-1);
-			notification.setCodici_fiscali(escapeUtils.escapeForCsv(recipientsBuilder.toString()));
+			notification.setCodiciFiscali(escapeUtils.escapeForCsv(recipientsBuilder.toString()));
 			recipientsBuilder.setLength(0);
 		}
 		notification.setIun(escapeUtils.escapeForCsv(notificationData.getIun()));
-		notification.setData_invio(escapeUtils.escapeForCsv(notificationData.getSentAt()));
-		notification.setData_generazione_attestazione_opponibile_a_terzi(
+		notification.setDataInvio(escapeUtils.escapeForCsv(notificationData.getSentAt()));
+		notification.setDataGenerazioneAttestazioneOpponibileATerzi(
 				escapeUtils.escapeForCsv(notificationData.getRequestAcceptedAt()));
 		notification.setOggetto(escapeUtils.escapeForCsv(notificationData.getSubject()));
 		return notification;

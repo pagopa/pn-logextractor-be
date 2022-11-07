@@ -1,5 +1,6 @@
 package it.gov.pagopa.logextractor.dto;
 
+import com.opencsv.bean.CsvBindByName;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,9 +8,14 @@ import lombok.Setter;
 @Setter
 public class NotificationCsvBean {
 
+	@CsvBindByName(column = "IUN")
 	private String iun;
-	private String data_invio;
-	private String data_generazione_attestazione_opponibile_a_terzi;
+	@CsvBindByName(column = "DATA INVIO")
+	private String dataInvio;
+	@CsvBindByName(column = "DATA GENERAZIONE ATTESTAZIONE OPPONIBILE A TERZI")
+	private String dataGenerazioneAttestazioneOpponibileATerzi;
+	@CsvBindByName(column = "OGGETTO")
 	private String oggetto;
-	private String codici_fiscali;
+	@CsvBindByName(column = "CODICI FISCALI")
+	private String codiciFiscali;
 }
