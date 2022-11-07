@@ -555,7 +555,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub '/ecs/${MicroServiceUniqueName}'
-      RetentionInDays: 3
+      RetentionInDays: 14
 
   # A role needed by ECS
   ExecutionRole:

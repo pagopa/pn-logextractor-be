@@ -1,9 +1,14 @@
 # INFRA
 ## Procedura
 
-Compilare il file `scripts/environments/.env.${ENVIRONMENT}` con i parametri:
+Compilare il file `scripts/environments/.env.infra.${ENVIRONMENT}` con i parametri:
 - *VpcId*: ID della private VPC
 - *PrivateSubnetIds*: ID delle subnets della private VPC, separati da virgola
+- *PnRootPath*: Base URL dell'API interne di PN
+- *SafeStorageEndpoint*: hostname dell'endpoint di SafeStorage
+- *SafeStorageCxId*: SafeStorage CX ID
+- *CognitoGetUserEndpoint*: Default a https://cognito-idp.eu-central-1.amazonaws.com
+- *AllowedOrigin*: Dominio da impostare nel CORS delle API
 
 Eseguire il seguente comando per assicurarsi che l'utente possa creare cluster OpenSearch sostituendo opportunamente la variabile profile. 
 
@@ -18,18 +23,18 @@ Creare il secret `pn-opensearch-master` con chiavi `username` e `password` da ut
 
 Eseguire il seguente comando dalla cartella `./scripts/aws`
 
-`./infra.sh -p \${PROFILE} -e ${ENVIRONMENT}`
+`./deployInfra.sh -p ${PROFILE} -e ${ENVIRONMENT}`
 
 # Opensearch
 Dopo aver creato il bastion host per accedere al cluster OpenSearch, eseguire i comandi come indicato nel manuale operativo "\[PN\] Manuale Operativo".
 
 Vanno eseguiti preliminarmente gli script di configurazione ruoli ed utenti:
-- PN-LOGS-READER-ROLE: crea il ruolo pn-log-extractor-reader
-- LAMBDA-WRITER-ROLE: crea il ruolo pn-lambda-writer
-- PN-LOGS-READER-USER: crea l'utente associato al ruolo pn-log-extractor-reader (bisogna fornire una password in input)
-- LAMBDA-WRITER-USER: crea l'utente associato al ruolo pn-lambda-writer (bisogna fornire una password in input)
+- PN-LOGS-READER-ROLE: crea il ruolo `pn-log-extractor-reader`
+- LAMBDA-WRITER-ROLE: crea il ruolo `pn-lambda-writer`
+- PN-LOGS-READER-USER: crea l'utente associato al ruolo `pn-log-extractor-reader` (bisogna fornire una password in input)
+- LAMBDA-WRITER-USER: crea l'utente associato al ruolo `pn-lambda-writer` (bisogna fornire una password in input)
 
-Creare il secret `pn-opensearch-logextractor` con chiavi `username` e `password` da utilizzare come credenziali dell'utente pn-log-extractor-reader di OpenSearch, creato al passwo precedente. Il secret va creato nella regione `eu-south-1`.
+Creare il secret `pn-opensearch-logextractor` con chiavi `username` e `password` da utilizzare come credenziali dell'utente `pn-log-extractor-reader` di OpenSearch, creato al password precedente. Il secret va creato nella regione `eu-south-1`.
 
 Gli script di configurazione dell'indice possono essere eseguiti in questo ordine:
 - BOOTSTRAP INGEST PIPELINE
@@ -43,14 +48,41 @@ Gli script di configurazione dell'indice possono essere eseguiti in questo ordin
 - BOOTSTRAP LIFECYCLE POLICY 5Y
 - BOOTSTRAP LIFECYCLE POLICY 120D
 - BOOTSTRAP ROUTING INDEX
-- BOOTSTRAP ROUTING INGEST PIPELINE: questo script va eseguito all'interno di DevTools di OpenSearch
+- BOOTSTRAP ROUTING INGEST PIPELINE: questo script va eseguito all'interno di **DevTools** di OpenSearch
 
 Le chiamate vanno autenticate con Basic Auth utilizzando le credenziali del master user di OpenSearch.
 
 # Backend
-Eseguire il seguente comando dalla cartella `./scripts/aws`
 
-`./backend.sh -p \${PROFILE} -e ${ENVIRONMENT} -t ${BUILD_TAG}`
+Compilare il file `scripts/environments/.env.backend.${ENVIRONMENT}` con i parametri:
+- *PnRootPath*: Base URL dell'API interne di PN
+- *SafeStorageEndpoint*: hostname dell'endpoint di SafeStorage
+- *SafeStorageCxId*: SafeStorage CX ID
+- *CognitoGetUserEndpoint*: Default a https://cognito-idp.eu-central-1.amazonaws.com
+- *AllowedOrigin*: Dominio da impostare nel CORS delle API
+
+Eseguire i seguenti comando dalla cartella `./scripts/aws`
+
+`./buildBackend.sh -p ${PROFILE} -e ${ENVIRONMENT} -t ${BUILD_TAG}`
+
+`./deployBackend.sh -p ${PROFILE} -e ${ENVIRONMENT} -t ${BUILD_TAG}`
+
+# Frontend
+Come pre-requisito è necessario avere installato node.js 16.x e yarn.
+
+Scaricare il progetto https://github.com/pagopa/pn-helpdesk-fe
+Posizionarsi nella root del progetto ed eseguire il comando `yarn install` 
+
+Eseguire il seguente comando dalla root del progetto:
+
+`./scripts/aws/deployFrontend.sh -p \${PROFILE} -e ${ENVIRONMENT}`
+
+# Test
+Creare un utente nel pool di Cognito (disponibile nella region eu-central-1).
+
+Accedere all'url impostata su Cloudfront ed eseguire il login con le credenziali dell'utente creato al passo precedente.
+
+Eseguire una ricerca per IUN o codice fiscale.
 
 # Open Issues
 

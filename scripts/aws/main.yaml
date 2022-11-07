@@ -11,7 +11,7 @@ Parameters:
 
   ApiLogRetentionInDays:
     Type: Number
-    Default: 1
+    Default: 14
     Description: Number of days to preserve the API logs
 
   CacheNodeType:
