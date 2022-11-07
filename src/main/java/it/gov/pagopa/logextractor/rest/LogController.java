@@ -1,42 +1,47 @@
 package it.gov.pagopa.logextractor.rest;
 
+import it.gov.pagopa.logextractor.pn_logextractor_be.api.LogsApi;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import it.gov.pagopa.logextractor.dto.response.DownloadLogResponseDto;
+import it.gov.pagopa.logextractor.service.LogService;
 
 @RestController
-@RequestMapping("/logs")
-public class LogController {
+public class LogController implements LogsApi {
 
-	@GetMapping(value = "/persons", produces="application/zip")
-	public ResponseEntity<DownloadLogResponseDto> getPersonActivityLogs(@RequestParam(required = true) String extractionType, 
-																		@RequestParam(required = true) int ticketNumber,
-																		@RequestParam(required = false) Integer iun, 
-																		@RequestParam(required = false) Integer months, 
-																		@RequestParam(required = true) boolean deanonimization,
-																		@RequestHeader(name = "fiscal-code", required = false) String taxId, 
-																		@RequestHeader(name = "person-id", required = false) String personId){
-		return ResponseEntity.ok(null);
+	@Autowired
+	LogService logService;
+
+	@Override
+	public ResponseEntity<BaseResponseDto> getPersonActivityLogs(PersonLogsRequestDto personLogsRequestDto) throws Exception {
+		if (Boolean.TRUE.equals(personLogsRequestDto.getDeanonimization())) {
+			return ResponseEntity.ok().body(logService.getDeanonimizedPersonLogs(personLogsRequestDto.getRecipientType(),
+					personLogsRequestDto.getDateFrom(), personLogsRequestDto.getDateTo(),
+					personLogsRequestDto.getTicketNumber(), personLogsRequestDto.getTaxId(),
+					personLogsRequestDto.getIun()));
+		}
+		return ResponseEntity.ok().body(logService.getAnonymizedPersonLogs(personLogsRequestDto.getDateFrom(),
+				personLogsRequestDto.getDateTo(), personLogsRequestDto.getTicketNumber(),
+				personLogsRequestDto.getIun(), personLogsRequestDto.getPersonId()));
 	}
-	
-	@GetMapping(value = "/operators", produces="application/zip")
-	public ResponseEntity<DownloadLogResponseDto> getOperatorsActivityLogs(@RequestParam(required = true) String extractionType, 
-																		   @RequestParam(required = true) int ticketNumber, 
-																		   @RequestParam(required = true) int months, 
-																		   @RequestHeader(name = "fiscal-code", required = false) String taxId) {
-		return ResponseEntity.ok(null);
+
+	@Override
+	public ResponseEntity<BaseResponseDto> getNotificationInfoLogs(NotificationInfoRequestDto notificationInfoRequestDto) throws Exception {
+		return ResponseEntity.ok().body(logService.getNotificationInfoLogs(notificationInfoRequestDto.getTicketNumber(),
+				notificationInfoRequestDto.getIun()));
 	}
-	
-	@GetMapping(value = "/notifications", produces="application/zip")
-	public ResponseEntity<DownloadLogResponseDto> getNotificationLogs(@RequestParam(required = true) String extractionType, 
-																	  @RequestParam(required = true) int ticketNumber,
-																	  @RequestParam(required = false) Integer iun,
-																	  @RequestParam(required = false) Integer referenceMonth,
-																	  @RequestHeader(name = "person-id", required = false) String personId){
-		return ResponseEntity.ok(null);
+
+	@Override
+	public ResponseEntity<BaseResponseDto> getNotificationsInMonth(MonthlyNotificationsRequestDto monthlyNotificationsRequestDto) throws Exception {
+		return ResponseEntity.ok().body(logService.getMonthlyNotifications(monthlyNotificationsRequestDto.getTicketNumber(),
+				monthlyNotificationsRequestDto.getReferenceMonth(), monthlyNotificationsRequestDto.getEndMonth(),
+				monthlyNotificationsRequestDto.getPublicAuthorityName()));
+	}
+
+	@Override
+	public ResponseEntity<BaseResponseDto> getProcessLogs(TraceIdLogsRequestDto traceIdLogsRequestDto) throws Exception {
+		return ResponseEntity.ok().body(logService.getTraceIdLogs(traceIdLogsRequestDto.getDateFrom(),
+				traceIdLogsRequestDto.getDateTo(), traceIdLogsRequestDto.getTraceId()));
 	}
 }

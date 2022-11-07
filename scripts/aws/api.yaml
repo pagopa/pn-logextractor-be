@@ -1,77 +1,69 @@
-AWSTemplateFormatVersion: 2010-09-09
-Description: >
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: |
   CloudFormation definition of Log Extractor public API subsystem
 
+
 Parameters:
-
-  ProjectName:
+  NetworkLoadBalancerDomain:
     Type: String
-    Description: Name of the project
+    Description: Network load balancer that dispatch request to microserveces
 
-  NetworkLoadBalancerLink:
+  CognitoUserPoolArn:
     Type: String
-    Description: Link inside the VPC
-
-  ApplicationLoadBalancerDomain:
-    Type: String
-    Description: Application load balancer that dispatch request to microserveces
+    Description: Cognito User Pool to use in the authorizer
 
   LogRetentionInDays:
     Type: Number
     Description: Number of days to preserve the API logs
 
+  NetworkLoadBalancerLink:
+    Type: String
+    Description: Link inside the VPC
+
+  ProjectName:
+    Type: String
+    Description: Name of the project
+
 Resources:
+  CloudWatchRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+      Path: /
+
+  Account:
+    Type: "AWS::ApiGateway::Account"
+    DependsOn:
+      - PublicRestApi
+    Properties:
+      CloudWatchRoleArn: !GetAtt CloudWatchRole.Arn
+
+  PublicApiLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      RetentionInDays: !Ref LogRetentionInDays
 
   PublicRestApi:
-    Type: AWS::ApiGateway::RestApi
+    Type: "AWS::ApiGateway::RestApi"
     Properties:
-      Name: !Sub ${ProjectName}-public-api
-      FailOnWarnings: true
       EndpointConfiguration:
         Types:
           - REGIONAL
-
-  # /{proxy+} resource
-  PublicApiProxyResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      RestApiId: !Ref PublicRestApi
-      ParentId: !GetAtt PublicRestApi.RootResourceId
-      PathPart: '{proxy+}'
-
-  # /{proxy+} methods
-  PublicApiProxyAnyMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      OperationName: Proxy to ECS microservices
-      RestApiId: !Ref PublicRestApi
-      ResourceId: !Ref PublicApiProxyResource
-      HttpMethod: ANY
-      AuthorizationType: NONE
-      ApiKeyRequired: true
-      RequestParameters:
-        method.request.path.proxy: true
-        method.request.header.x-pagopa-pn-uid: false
-        method.request.header.x-pagopa-pn-cx-id: false
-        method.request.header.x-pagopa-pn-cx-type: false
-        method.request.header.x-pagopa-pn-cx-groups: false
-      Integration:
-        ConnectionType: VPC_LINK
-        ConnectionId: !Ref NetworkLoadBalancerLink
-        IntegrationHttpMethod: ANY
-        Type: HTTP_PROXY
-        Uri: !Sub http://${ApplicationLoadBalancerDomain}:8080/{proxy}
-        RequestParameters:
-          integration.request.path.proxy: method.request.path.proxy
-          integration.request.header.x-pagopa-pn-uid: context.authorizer.uid
-          integration.request.header.x-pagopa-pn-cx-id: context.authorizer.cx_id
-          integration.request.header.x-pagopa-pn-cx-type: context.authorizer.cx_type
-          integration.request.header.x-pagopa-pn-cx-groups: context.authorizer.cx_groups
-        PassthroughBehavior: WHEN_NO_MATCH
-        TimeoutInMillis: 29000
+      FailOnWarnings: true
+      Name: !Sub ${ProjectName}-public-api
 
   GatewayResponse4XX:
-    Type: AWS::ApiGateway::GatewayResponse
+    Type: "AWS::ApiGateway::GatewayResponse"
     Properties:
       ResponseParameters:
         gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
@@ -79,7 +71,7 @@ Resources:
       RestApiId: !Ref PublicRestApi
 
   GatewayResponse5XX:
-    Type: AWS::ApiGateway::GatewayResponse
+    Type: "AWS::ApiGateway::GatewayResponse"
     Properties:
       ResponseParameters:
         gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
@@ -87,52 +79,309 @@ Resources:
       RestApiId: !Ref PublicRestApi
 
   PublicRestApiDeployment:
-    Type: AWS::ApiGateway::Deployment
+    Type: "AWS::ApiGateway::Deployment"
     DependsOn:
-      - PublicApiProxyAnyMethod
+      - PublicApiHealthCheckStatusMethod
+      - PublicApiLogsV1NotificationsInfoMethod
+      - PublicApiLogsV1NotificationsMonthlyMethod
+      - PublicApiLogsV1PersonsMethod
+      - PublicApiLogsV1ProcessesMethod
+      - PublicApiPersonsV1PersonIdMethod
+      - PublicApiPersonsV1TaxIdMethod
     Properties:
       RestApiId: !Ref PublicRestApi
+
+  CognitoAuthorizer:
+    Type: "AWS::ApiGateway::Authorizer"
+    Properties:
+      IdentitySource: method.request.header.Authorization
+      Name: CognitoAuthorizer
+      ProviderARNs:
+        - !Ref CognitoUserPoolArn
+      RestApiId: !Ref PublicRestApi
+      Type: COGNITO_USER_POOLS
 
   PublicRestApiStage:
-    Type: AWS::ApiGateway::Stage
+    Type: "AWS::ApiGateway::Stage"
     Properties:
-      RestApiId: !Ref PublicRestApi
-      StageName: unique
-      TracingEnabled: true
-      DeploymentId: !Ref PublicRestApiDeployment
       AccessLogSetting:
         DestinationArn: !GetAtt PublicApiLogGroup.Arn
-        Format: '{"requestTime":"$context.requestTime","requestId":"$context.requestId","httpMethod":"$context.httpMethod","path":"$context.path","routeKey":"$context.routeKey","status":$context.status,"responseLatency":$context.responseLatency}'
+        Format: "{\"requestTime\":\"$context.requestTime\",\"requestId\":\"$context.requestId\",\"httpMethod\":\"$context.httpMethod\",\"path\":\"$context.path\",\"routeKey\":\"$context.routeKey\",\"status\":$context.status,\"responseLatency\":$context.responseLatency}"
+      DeploymentId: !Ref PublicRestApiDeployment
       MethodSettings:
-        - ResourcePath: '/*'
-          HttpMethod: '*'
-          MetricsEnabled: 'true'
-          DataTraceEnabled: 'false'
+        - DataTraceEnabled: "false"
+          HttpMethod: "*"
+          MetricsEnabled: "true"
+          ResourcePath: /*
+      RestApiId: !Ref PublicRestApi
+      StageName: logextractor
+      TracingEnabled: true
 
-  CloudWatchRole:
-    Type: AWS::IAM::Role
+  UsagePlan:
+    Type: "AWS::ApiGateway::UsagePlan"
     Properties:
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - apigateway.amazonaws.com
-            Action: sts:AssumeRole
-      Path: "/"
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
+      ApiStages:
+        - ApiId: !Ref PublicRestApi
+          Stage: !Ref PublicRestApiStage
+      Description: Default usage plan
+      UsagePlanName: Default
 
-  Account:
-    DependsOn:
-      - PublicRestApi
-    Type: AWS::ApiGateway::Account
+  PublicApiBasePersonsResource:
+    Type: "AWS::ApiGateway::Resource"
     Properties:
-      CloudWatchRoleArn: !GetAtt CloudWatchRole.Arn
+      ParentId: !GetAtt PublicRestApi.RootResourceId
+      PathPart: "persons"
+      RestApiId: !Ref PublicRestApi
 
-  PublicApiLogGroup:
-    Type: AWS::Logs::LogGroup
+  PublicApiPersonsV1Resource:
+    Type: "AWS::ApiGateway::Resource"
     Properties:
-      RetentionInDays: !Ref LogRetentionInDays
+      ParentId: !Ref PublicApiBasePersonsResource
+      PathPart: "v1"
+      RestApiId: !Ref PublicRestApi
 
+  PublicApiPersonsV1PersonIdResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !Ref PublicApiPersonsV1Resource
+      PathPart: "person-id"
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiPersonsV1TaxIdResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !Ref PublicApiPersonsV1Resource
+      PathPart: "tax-id"
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiBaseLogsResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !GetAtt PublicRestApi.RootResourceId
+      PathPart: "logs"
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiLogsV1Resource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !Ref PublicApiBaseLogsResource
+      PathPart: "v1"
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiLogsV1NotificationsResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !Ref PublicApiLogsV1Resource
+      PathPart: "notifications"
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiLogsV1NotificationsInfoResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !Ref PublicApiLogsV1NotificationsResource
+      PathPart: "info"
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiLogsV1NotificationsMonthlyResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !Ref PublicApiLogsV1NotificationsResource
+      PathPart: "monthly"
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiLogsV1PersonsResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !Ref PublicApiLogsV1Resource
+      PathPart: "persons"
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiLogsV1ProcessesResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !Ref PublicApiLogsV1Resource
+      PathPart: "processes"
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiBaseHealthCheckResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !GetAtt PublicRestApi.RootResourceId
+      PathPart: "health-check"
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiHealthCheckStatusResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !Ref PublicApiBaseHealthCheckResource
+      PathPart: "status"
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiHealthCheckStatusMethod:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: GET
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/health-check/status"
+      OperationName: Proxy to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiHealthCheckStatusResource
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiLogsV1NotificationsInfoMethod:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthorizer
+      HttpMethod: POST
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/notifications/info"
+      OperationName: Proxy to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiLogsV1NotificationsInfoResource
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiLogsV1NotificationsMonthlyMethod:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthorizer
+      HttpMethod: POST
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/notifications/monthly"
+      OperationName: Proxy to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiLogsV1NotificationsMonthlyResource
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiLogsV1PersonsMethod:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthorizer
+      HttpMethod: POST
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/persons"
+      OperationName: Proxy to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiLogsV1PersonsResource
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiLogsV1ProcessesMethod:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthorizer
+      HttpMethod: POST
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/processes"
+      OperationName: Proxy to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiLogsV1ProcessesResource
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiPersonsV1PersonIdMethod:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthorizer
+      HttpMethod: POST
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/persons/v1/person-id"
+      OperationName: Proxy to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiPersonsV1PersonIdResource
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiPersonsV1TaxIdMethod:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthorizer
+      HttpMethod: POST
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/persons/v1/tax-id"
+      OperationName: Proxy to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiPersonsV1TaxIdResource
+      RestApiId: !Ref PublicRestApi
+
+Outputs:
+  RestApiId:
+    Description: Api id
+    Value: !Ref PublicRestApi
+
+  RestApiStageName:
+    Description: Api stage name
+    Value: !Ref PublicRestApiStage

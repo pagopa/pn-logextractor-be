@@ -1,69 +1,69 @@
-AWSTemplateFormatVersion: 2010-09-09
-Description: >
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: |
   CloudFormation definition of Log Extractor additional services
 
+
 Parameters:
+  NodeType:
+    Type: String
+    Description: Cache node type (i.e. cache.t2.micro)
 
   ProjectName:
     Type: String
     Description: Name of the project
-
-  VpcId:
-    Type: AWS::EC2::VPC::Id
-    Description: VPC id for the cluster
-
-  NodeType:
-    Type: String
-    Description: Cache node type (i.e. cache.t2.micro)
 
   Replicas:
     Type: Number
     Description: Number of nodes
 
   SubnetIds:
-    Type: List<AWS::EC2::Subnet::Id>
+    Type: "List<AWS::EC2::Subnet::Id>"
     Description: Private subnets to deploy resources into
 
+  VpcId:
+    Type: "AWS::EC2::VPC::Id"
+    Description: VPC id for the cluster
+
 Resources:
-
-  AllowedSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: !Sub ${ProjectName}-cache-sg
-      GroupDescription: "ingress none, egress all"
-      VpcId: !Ref VpcId
-
-  SecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: !Sub ${ProjectName}-redis-sg
-      GroupDescription: "ingress tcp 6379, egress all"
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 6379
-          ToPort: 6379
-          SourceSecurityGroupId: !GetAtt AllowedSecurityGroup.GroupId
-      VpcId: !Ref VpcId
-
-  Cluster:
-    Type: AWS::ElastiCache::CacheCluster
-    Properties:
-      Engine: redis
-      CacheSubnetGroupName: !Ref SubnetGroup
-      CacheNodeType: !Ref NodeType
-      NumCacheNodes: !Ref Replicas
-      VpcSecurityGroupIds:
-        - !GetAtt SecurityGroup.GroupId
-
   SubnetGroup:
-    Type: AWS::ElastiCache::SubnetGroup
+    Type: "AWS::ElastiCache::SubnetGroup"
     Properties:
       Description: Cache Subnet Group
       SubnetIds: !Ref SubnetIds
 
+  AllowedSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: Earn permissions to access cache
+      GroupName: !Sub ${ProjectName}-cache
+      VpcId: !Ref VpcId
+
+  SecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: Open Redis port
+      GroupName: !Sub ${ProjectName}-redis
+      SecurityGroupIngress:
+        - FromPort: 6379
+          IpProtocol: tcp
+          SourceSecurityGroupId: !GetAtt AllowedSecurityGroup.GroupId
+          ToPort: 6379
+      VpcId: !Ref VpcId
+
+  Cluster:
+    Type: "AWS::ElastiCache::CacheCluster"
+    Properties:
+      CacheNodeType: !Ref NodeType
+      CacheSubnetGroupName: !Ref SubnetGroup
+      Engine: redis
+      NumCacheNodes: !Ref Replicas
+      VpcSecurityGroupIds:
+        - "Fn::GetAtt":
+            - SecurityGroup
+            - GroupId
+
 Outputs:
-
   AllowedSecurityGroupId:
-    Value: !GetAtt AllowedSecurityGroup.GroupId
     Description: The id of the security group that can access the cache cluster
-
+    Value: !GetAtt AllowedSecurityGroup.GroupId

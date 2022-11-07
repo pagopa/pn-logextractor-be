@@ -1,8 +1,57 @@
-AWSTemplateFormatVersion: 2010-09-09
-Description: >
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: |
   CloudFormation definition of Log Extractor system
 
+
 Parameters:
+  ApiCognitoUserPoolArn:
+    Type: String
+    Description: User Pool ARN to authenticate API requests
+
+  ApiLogRetentionInDays:
+    Type: Number
+    Default: 1
+    Description: Number of days to preserve the API logs
+
+  CacheNodeType:
+    Type: String
+    Default: cache.t3.micro
+    Description: Type of the nodes in the cache cluster
+
+  CacheReplicas:
+    Type: Number
+    Default: 1
+    Description: Number of nodes in the cache cluster
+
+  CloudFrontLogBucketDomainName:
+    Type: String
+    Description: Bucket to store CloudFront logs
+
+  OpenSearchEbsIops:
+    Type: Number
+    Description: OpenSearch node volume iops
+
+  OpenSearchEbsSize:
+    Type: Number
+    Description: OpenSearch node volume size (in GiB)
+
+  OpenSearchEbsType:
+    Type: String
+    Description: OpenSearch node volume type such as standard, gp2, or io1
+
+  OpenSearchEngineVersion:
+    Type: String
+    Default: OpenSearch_1.2
+    Description: OpenSearch engine version
+
+  OpenSearchNodeReplicas:
+    Type: Number
+    Description: OpenSearch node replicas
+
+  OpenSearchNodeType:
+    Type: String
+    Description: OpenSearch nodes type
 
   ProjectName:
     Type: String
@@ -12,104 +61,81 @@ Parameters:
     Type: String
     Description: The S3 bucket from which to fetch the templates used by this stack
 
-  VpcNumber:
-    Type: Number
-    Description: This value determine current the second byte of CIDR's block
-    Default: 0
+  VpcId:
+    Type: "AWS::EC2::VPC::Id"
+    Description: Id of the VPC to deploy resources into
 
-  WafId:
+  PrivateSubnetIds:
+    Type: "List<AWS::EC2::Subnet::Id>"
+    Description: Private subnets of the given VPC
+
+  WafArn:
     Type: String
-    Description: Global WAF id for CloudFront
-
-  ApiLogRetentionInDays:
-    Type: Number
-    Description: Number of days to preserve the API logs
-    Default: 1
-
-  CacheNodeType:
-    Type: String
-    Default: cache.t2.micro
-    Description: Type of the nodes in the cache cluster
-
-  CacheReplicas:
-    Type: Number
-    Default: 1
-    Description: Number of nodes in the cache cluster
-
-  OpenSearchEngineVersion:
-    Type: String
-    Default: OpenSearch_1.2
-    Description: OpenSerach engine version
-
-  OpenSerachNodeType:
-    Type: String
-    Default: t3.small.search
-    Description: OpenSerach nodes type
+    Description: Global WAF (ARN) for CloudFront
 
 Resources:
-
-  Networking:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/networking.yaml
-      Parameters:
-        VpcNumber: !Ref VpcNumber
-
-  Frontend:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/frontend.yaml
-      Parameters:
-        ProjectName: !Ref ProjectName
-        WafId: !Ref WafId
-
-  Database:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/database.yaml
-      Parameters:
-        ProjectName: !Ref ProjectName
-        VpcId: !GetAtt Networking.Outputs.VpcId
-        RouteTableIds: !GetAtt Networking.Outputs.PrivateRouteTableIds
-
-  Cache:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/cache.yaml
-      Parameters:
-        ProjectName: !Ref ProjectName
-        VpcId: !GetAtt Networking.Outputs.VpcId
-        SubnetIds: !GetAtt Networking.Outputs.PrivateSubnetIds
-        NodeType: !Ref CacheNodeType
-        Replicas: !Ref CacheReplicas
-
-  Services:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/services.yaml
-      Parameters:
-        ProjectName: !Ref ProjectName
-        EngineVersion: !Ref OpenSearchEngineVersion
-        InstanceType: !Ref OpenSerachNodeType
-        VpcId: !GetAtt Networking.Outputs.VpcId
-        SubnetIds: !GetAtt Networking.Outputs.PrivateSubnetIds
-
   Backend:
-    Type: AWS::CloudFormation::Stack
+    Type: "AWS::CloudFormation::Stack"
     Properties:
-      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/backend.yaml
       Parameters:
         ProjectName: !Ref ProjectName
-        VpcId: !GetAtt Networking.Outputs.VpcId
-        SubnetIds: !GetAtt Networking.Outputs.PrivateSubnetIds
+        SubnetIds: !Join [',', !Ref PrivateSubnetIds]
+        VpcId: !Ref VpcId
+      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/backend.yaml
 
   Api:
-    Type: AWS::CloudFormation::Stack
+    Type: "AWS::CloudFormation::Stack"
     Properties:
+      Parameters:
+        NetworkLoadBalancerDomain: !GetAtt Backend.Outputs.NlbDomain
+        CognitoUserPoolArn: !Ref ApiCognitoUserPoolArn
+        LogRetentionInDays: !Ref ApiLogRetentionInDays
+        NetworkLoadBalancerLink: !GetAtt Backend.Outputs.NlbLink
+        ProjectName: !Ref ProjectName
       TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/api.yaml
+
+  Frontend:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      Parameters:
+        ApiId: !GetAtt Api.Outputs.RestApiId
+        ApiStageName: !GetAtt Api.Outputs.RestApiStageName
+        LogBucketDomainName: !Ref CloudFrontLogBucketDomainName
+        ProjectName: !Ref ProjectName
+        WafArn: !Ref WafArn
+      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/frontend.yaml
+
+  Cache:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      Parameters:
+        NodeType: !Ref CacheNodeType
+        ProjectName: !Ref ProjectName
+        Replicas: !Ref CacheReplicas
+        SubnetIds: !Join [',', !Ref PrivateSubnetIds]
+        VpcId: !Ref VpcId
+      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/cache.yaml
+
+  Services:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      Parameters:
+        EbsIops: !Ref OpenSearchEbsIops
+        EbsVolumeSize: !Ref OpenSearchEbsSize
+        EbsVolumeType: !Ref OpenSearchEbsType
+        EngineVersion: !Ref OpenSearchEngineVersion
+        InstanceReplicas: !Ref OpenSearchNodeReplicas
+        InstanceType: !Ref OpenSearchNodeType
+        ProjectName: !Ref ProjectName
+        SubnetIds: !Join [',', !Ref PrivateSubnetIds]
+        VpcId: !Ref VpcId
+      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/services.yaml
+
+  Alarms:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
       Parameters:
         ProjectName: !Ref ProjectName
-        NetworkLoadBalancerLink: !GetAtt Backend.Outputs.NlbLink
-        ApplicationLoadBalancerDomain: !GetAtt Backend.Outputs.AlbDomain
-        LogRetentionInDays: !Ref ApiLogRetentionInDays
+        OpenSearchClusterName: !GetAtt Services.Outputs.ClusterName
+      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/alarms.yaml
 

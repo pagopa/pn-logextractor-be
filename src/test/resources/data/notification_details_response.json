@@ -1,0 +1,22 @@
+{
+    "recipients": [
+        {
+            "payment": {
+                "pagoPaForm": {
+                    "ref": {
+                        "key": "TEST"
+                    }
+                }
+            }
+        }
+    ],
+    "documents": [
+        {
+            "ref": {
+                "key": "TEST"
+            },
+            "docIdx": "0"
+        }
+    ],
+    "sentAt": "2022-05-13T18:22:55.577+00:00"
+}

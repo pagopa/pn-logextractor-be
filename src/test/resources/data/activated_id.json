@@ -1,0 +1,11 @@
+{
+  "id":"1",
+  "name":"test",
+  "taxId":"test",
+  "generalContacts":{
+    "pec":"test@papec.com",
+    "email":"test@pamail.com",
+    "tel":"06817263",
+    "web":"https://localhost:8080"
+  }
+}

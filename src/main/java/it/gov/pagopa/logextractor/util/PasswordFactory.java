@@ -13,11 +13,11 @@ public class PasswordFactory {
 	/**
 	 * Generates a random password with the given length, number of lower case chars, upper case chars, 
 	 * digits and special chars and special char list
-	 * @param numberOfLowerChars the number of lower case chars
-	 * @param numberOfUpperChars the number of upper case chars
-	 * @param numberOfDigits the number of digits
+	 * @param numberOfLowerChars the minimum number of lower case chars
+	 * @param numberOfUpperChars the minimum number of upper case chars
+	 * @param numberOfDigits the minimum number of digits
 	 * @param specialCharList the list of special chars
-	 * @param numberOfSpecialChars the number of special chars
+	 * @param numberOfSpecialChars the minimum number of special chars
 	 * @param length the password length
 	 * @return the random generated password with the given specifications
 	 * */
@@ -37,7 +37,7 @@ public class PasswordFactory {
 	/**
 	 * Generates a special chars CharacterData instance from the input string containing the list of special chars
 	 * @param specialCharList the list of special chars
-	 * @return the random generated password with the given specifications
+	 * @return a new {@link CharacterData} instance
 	 * */
 	private CharacterData specialChars(String specialCharList) {
 		return new CharacterData() {

@@ -1,0 +1,15 @@
+{
+    "timeline": [
+        {
+            "legalFactsIds": [
+                {
+                    "key": "TEST",
+                    "category": "SENDER_ACK"
+                }
+            ]
+        },
+        {
+            "legalFactsIds": []
+        }
+    ]
+}
