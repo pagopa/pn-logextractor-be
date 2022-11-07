@@ -71,11 +71,12 @@ Resources:
           - Effect: Allow
             Principal:
               AWS: "*"
-            Action: "es:*"
+            Action: "es:ESHttp*"
             Resource: "*"
         Version: "2012-10-17"
       AdvancedSecurityOptions:
         Enabled: true
+        InternalUserDatabaseEnabled: true
         MasterUserOptions: 
           MasterUserName: !Ref MasterUsername
           MasterUserPassword: !Ref MasterPassword
