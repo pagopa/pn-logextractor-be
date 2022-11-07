@@ -55,7 +55,8 @@ Le chiamate vanno autenticate con Basic Auth utilizzando le credenziali del mast
 # Backend
 
 Compilare il file `scripts/environments/.env.backend.${ENVIRONMENT}` con i parametri:
-- *PnRootPath*: Base URL dell'API interne di PN
+- *PnCoreRootPath*: Base URL dell'API interne di PN Core
+- *PnDataVaultRootPath*: Base URL dell'API interne di PN Data Vault
 - *SafeStorageEndpoint*: hostname dell'endpoint di SafeStorage
 - *SafeStorageCxId*: SafeStorage CX ID
 - *CognitoGetUserEndpoint*: Default a https://cognito-idp.eu-central-1.amazonaws.com
@@ -78,7 +79,7 @@ Eseguire il seguente comando dalla root del progetto:
 `./scripts/aws/deployFrontend.sh -p \${PROFILE} -e ${ENVIRONMENT}`
 
 # Test
-Creare un utente nel pool di Cognito (disponibile nella region eu-central-1).
+Creare un utente nel pool di Cognito (disponibile nella region eu-central-1) e definire anche l'attributo custom `custom:log_identifier` come un valido codice fiscale.
 
 Accedere all'url impostata su Cloudfront ed eseguire il login con le credenziali dell'utente creato al passo precedente.
 

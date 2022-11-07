@@ -77,10 +77,6 @@ dump_params
 environment="${env_type}"
 profile=${aws_profile}
 profile_option="--profile ${profile}"
-dest_dir='dist'
-project_name="pn-logextractor-${environment}"
-bucket_name="${project_name}-infra"
-bucket_url="s3://${bucket_name}"
 HelpdeskAccount=$(aws sts get-caller-identity --profile $profile | jq -r .Account)
 
 source ./environments/.env.infra.${environment}
@@ -123,6 +119,7 @@ echo "AlbListenerArn="${AlbListenerArn}
 echo "OPENSEARCH_USERNAME="${OPENSEARCH_USERNAME}
 echo "OPENSEARCH_PASSWORD="${OPENSEARCH_PASSWORD}
 
+cd ../../
 aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-file "ecs-service.yaml" \
     --stack-name "pn-logextractor-service-dev" \
     --parameter-overrides "AdditionalMicroserviceSecurityGroup=${ElasticacheSecurityGroup}" "MicroServiceUniqueName=pn-logextractor-be" \
@@ -132,13 +129,13 @@ aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-fil
         "Subnets=${PrivateSubnetIds}" \
         "LoadBalancerListenerArn=${AlbListenerArn}" \
         "LoadbalancerRulePriority=10" \
-        "ContainerEnvEntry1=ENSURE_RECIPIENT_BY_EXTERNAL_ID_URL=${PnRootPath}/datavault-private/v1/recipients/external/%s" \
-        "ContainerEnvEntry2=GET_RECIPIENT_DENOMINATION_BY_INTERNAL_ID_URL=${PnRootPath}/datavault-private/v1/recipients/internal" \
-        "ContainerEnvEntry3=GET_SENT_NOTIFICATION_URL=${PnRootPath}/delivery-private/search" \
-        "ContainerEnvEntry4=GET_SENT_NOTIFICATION_DETAILS_URL=${PnRootPath}/delivery-private/notifications/%s" \
-        "ContainerEnvEntry5=GET_SENT_NOTIFICATION_HISTORY_URL=${PnRootPath}/delivery-push-private/%s/history" \
-        "ContainerEnvEntry6=GET_ENCODED_IPA_CODE_URL=${PnRootPath}/ext-registry/pa/v1/activated-on-pn" \
-        "ContainerEnvEntry7=GET_PUBLIC_AUTHORITY_NAME_URL=${PnRootPath}/ext-registry-private/pa/v1/activated-on-pn/%s" \
+        "ContainerEnvEntry1=ENSURE_RECIPIENT_BY_EXTERNAL_ID_URL=${PnDataVaultRootPath}/datavault-private/v1/recipients/external/%s" \
+        "ContainerEnvEntry2=GET_RECIPIENT_DENOMINATION_BY_INTERNAL_ID_URL=${PnDataVaultRootPath}/datavault-private/v1/recipients/internal" \
+        "ContainerEnvEntry3=GET_SENT_NOTIFICATION_URL=${PnCoreRootPath}/delivery-private/search" \
+        "ContainerEnvEntry4=GET_SENT_NOTIFICATION_DETAILS_URL=${PnCoreRootPath}/delivery-private/notifications/%s" \
+        "ContainerEnvEntry5=GET_SENT_NOTIFICATION_HISTORY_URL=${PnCoreRootPath}/delivery-push-private/%s/history" \
+        "ContainerEnvEntry6=GET_ENCODED_IPA_CODE_URL=${PnCoreRootPath}/ext-registry/pa/v1/activated-on-pn" \
+        "ContainerEnvEntry7=GET_PUBLIC_AUTHORITY_NAME_URL=${PnCoreRootPath}/ext-registry-private/pa/v1/activated-on-pn/%s" \
         "ContainerEnvEntry8=DOWNLOAD_FILE_URL=https://${SafeStorageEndpoint}/safe-storage/v1/files/%s" \
         "ContainerEnvEntry9=SAFESTORAGE_ENDPOINT=${SafeStorageEndpoint}" \
         "ContainerEnvEntry10=SAFESTORAGE_STAGE=dev" \

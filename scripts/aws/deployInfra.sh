@@ -132,3 +132,6 @@ aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-fil
   "OpenSearchEbsIops=0" "OpenSearchEbsType=gp2" \
   "OpenSearchMasterUsername=${OPENSEARCH_MASTER_USERNAME}" \
   "OpenSearchMasterPaassword=${OPENSEARCH_MASTER_PASSWORD}"
+
+
+rm -rf dist
