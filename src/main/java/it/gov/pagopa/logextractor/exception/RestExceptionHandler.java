@@ -9,14 +9,19 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.ProblemError;
 import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.MDC;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
@@ -54,6 +59,24 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		genericError.setErrors(errorDetailsList);
 		return ResponseEntity.internalServerError().body(genericError);
     }
+
+	@Override
+	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+		log.error(ExceptionUtils.getStackTrace(ex));
+		Problem genericError = new Problem();
+		genericError.setStatus(400);
+		genericError.setTitle(ResponseConstants.GENERIC_BAD_REQUEST_ERROR_ENGLISH_MESSAGE);
+		genericError.setDetail(ResponseConstants.GENERIC_BAD_REQUEST_ERROR_MESSAGE);
+		genericError.setTraceId(MDC.get(LoggingConstants.TRACE_ID_PLACEHOLDER));
+		genericError.setTimestamp(OffsetDateTime.now());
+		ProblemError errorDetails = new ProblemError();
+		errorDetails.setCode(HttpStatus.BAD_REQUEST.toString());
+		errorDetails.setDetail(ResponseConstants.GENERIC_BAD_REQUEST_ERROR_MESSAGE);
+		List<ProblemError> errorDetailsList = new ArrayList<>();
+		errorDetailsList.add(errorDetails);
+		genericError.setErrors(errorDetailsList);
+		return ResponseEntity.badRequest().body(genericError);
+	}
 	
 	/**
 	 * Manages the {@link IOException} creating a new {@link ResponseEntity} and sending it to the client
