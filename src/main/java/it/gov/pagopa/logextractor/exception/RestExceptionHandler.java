@@ -9,13 +9,11 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.ProblemError;
 import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.MDC;
-import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -38,7 +36,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	/**
 	 * Manages the {@link LogExtractorException} creating a new {@link ResponseEntity} and sending it to the client
-	 * with error code 500 and a custom error message
+	 * with error code 500 and information about the error
 	 * @param ex The intercepted exception
 	 * @return A new {@link ResponseEntity} with {@link Problem} body
 	 * */
@@ -60,6 +58,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity.internalServerError().body(genericError);
     }
 
+	/**
+	 * Manages the {@link MethodArgumentNotValidException} creating a new {@link ResponseEntity} and sending it to the client
+	 * with error code 400 and information about the error
+	 * @param ex The intercepted exception
+	 * @return A new {@link ResponseEntity} with {@link Problem} body
+	 * */
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
 		log.error(ExceptionUtils.getStackTrace(ex));
@@ -80,7 +84,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	/**
 	 * Manages the {@link IOException} creating a new {@link ResponseEntity} and sending it to the client
-	 * with error code 500 and a custom error message
+	 * with error code 500 and information about the error
 	 * @param ex The intercepted exception
 	 * @return A new {@link ResponseEntity} with {@link Problem} body
 	 * */
@@ -104,7 +108,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	/**
 	 * Manages the {@link CsvDataTypeMismatchException} creating a new {@link ResponseEntity} and sending it to the client
-	 * with error code 500 and a custom error message
+	 * with error code 500 and information about the error
 	 * @param ex The intercepted exception
 	 * @return A new {@link ResponseEntity} with {@link Problem} body
 	 * */
@@ -128,7 +132,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	/**
 	 * Manages the {@link CsvRequiredFieldEmptyException} creating a new {@link ResponseEntity} and sending it to the client
-	 * with error code 500 and a custom error message
+	 * with error code 500 and information about the error
 	 * @param ex The intercepted exception
 	 * @return A new {@link ResponseEntity} with {@link Problem} body
 	 * */
@@ -152,7 +156,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	/**
 	 * Manages the {@link HttpServerErrorException} creating a new {@link ResponseEntity} and sending it to the client
-	 * with error code 500 and a custom error message
+	 * with error code 500 and information about the error
 	 * @param ex The intercepted exception
 	 * @return A new {@link ResponseEntity} with {@link Problem} body
 	 * */
@@ -176,7 +180,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	/**
 	 * Manages the {@link HttpClientErrorException} creating a new {@link ResponseEntity} and sending it to the client
-	 * with error code 500 and a custom error message
+	 * with error code 500 and information about the error
 	 * @param ex The intercepted exception
 	 * @return A new {@link ResponseEntity} with {@link Problem} body
 	 * */
