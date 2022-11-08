@@ -80,7 +80,7 @@ public class LogServiceImpl implements LogService {
 		if(openSearchResponse.isEmpty()) {
 			performanceMillis = System.currentTimeMillis();
 			BaseResponseDto response = new BaseResponseDto();
-			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND);
+			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
         	log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END,
 					(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get(LoggingConstants.VALIDATION_TIME)));
@@ -115,7 +115,7 @@ public class LogServiceImpl implements LogService {
 		if(notifications.isEmpty()) {
 			performanceMillis = System.currentTimeMillis();
 			BaseResponseDto response = new BaseResponseDto();
-			response.setMessage(ResponseConstants.NO_NOTIFICATION_FOUND);
+			response.setMessage(ResponseConstants.NO_NOTIFICATION_FOUND_MESSAGE);
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
         	log.info("Monthly notifications retrieve process - END in {} ms",
 					(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get(LoggingConstants.VALIDATION_TIME)));
@@ -159,7 +159,7 @@ public class LogServiceImpl implements LogService {
 		if(openSearchResponse.isEmpty()) {
 			performanceMillis = System.currentTimeMillis();
 			BaseResponseDto response = new BaseResponseDto();
-			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND);
+			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
         	log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END, performanceMillis +
 					Long.parseLong(MDC.get(LoggingConstants.VALIDATION_TIME)));
@@ -285,7 +285,7 @@ public class LogServiceImpl implements LogService {
 		if(deanonimizedOpenSearchResponse.isEmpty()) {
 			performanceMillis = System.currentTimeMillis();
 			BaseResponseDto response = new BaseResponseDto();
-			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND);
+			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 			log.info("Deanonimized logs retrieve process - END in {} ms",
 					(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get(LoggingConstants.VALIDATION_TIME)));

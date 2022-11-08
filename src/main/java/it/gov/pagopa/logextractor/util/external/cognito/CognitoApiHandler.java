@@ -2,6 +2,7 @@ package it.gov.pagopa.logextractor.util.external.cognito;
 
 import it.gov.pagopa.logextractor.util.constant.CognitoConstants;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
+import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import org.json.JSONArray;
@@ -65,6 +66,6 @@ public class CognitoApiHandler {
 				return currentAttribute.getString("Value");
 			}
 		}
-		throw new LogExtractorException("Exception in " + MDC.get("trace_id") + " process, no identifier for logged in user");
+		throw new LogExtractorException("Exception in " + MDC.get(LoggingConstants.TRACE_ID_PLACEHOLDER) + " process, no identifier for logged in user");
 	}
 }

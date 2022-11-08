@@ -16,12 +16,12 @@ public class PersonController implements PersonsApi {
 	PersonService personService;
 
 	@Override
-	public ResponseEntity<GetBasicDataResponseDto> getPersonalPersonId(PersonPersonIdRequestDto personPersonIdRequestDto) throws Exception {
+	public ResponseEntity<GetBasicDataResponseDto> personalPersonId(PersonPersonIdRequestDto personPersonIdRequestDto) throws Exception {
 		return ResponseEntity.ok(personService.getPersonId(personPersonIdRequestDto));
 	}
 
 	@Override
-	public ResponseEntity<GetBasicDataResponseDto> getPersonalTaxId(PersonTaxIdRequestDto personTaxIdRequestDto) throws Exception {
+	public ResponseEntity<GetBasicDataResponseDto> personalTaxId(PersonTaxIdRequestDto personTaxIdRequestDto) throws Exception {
 		return ResponseEntity.ok(personService.getTaxId(personTaxIdRequestDto));
 	}
 }

@@ -46,7 +46,7 @@ public class MDCWebFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         try {
-			MDC.put("trace_id", new RandomUtils().generateRandomTraceId());
+			MDC.put(LoggingConstants.TRACE_ID_PLACEHOLDER, new RandomUtils().generateRandomTraceId());
 			if(StringUtils.isBlank(request.getHeader("Auth"))) {
 				throw new LogExtractorException("No Auth header found for current request: " + request.getRequestURI());
 			}
@@ -59,10 +59,10 @@ public class MDCWebFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (LogExtractorException e) {
 			log.error(ExceptionUtils.getStackTrace(e));
-			sendErrorResponse(response, ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR);
+			sendErrorResponse(response, ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
 		} finally {
             MDC.remove(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER);
-			MDC.remove("trace_id");
+			MDC.remove(LoggingConstants.TRACE_ID_PLACEHOLDER);
 			MDC.remove(LoggingConstants.VALIDATION_TIME);
         }
     }

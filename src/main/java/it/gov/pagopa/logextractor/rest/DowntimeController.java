@@ -22,7 +22,7 @@ public class DowntimeController implements DowntimeApi {
     }
 
     @Override
-    public ResponseEntity<PnStatusResponseDto> getCurrentStatus() throws Exception {
+    public ResponseEntity<PnStatusResponseDto> currentStatus() throws Exception {
         return ResponseEntity.ok().body(downtimeService.getCurrentStatus());
     }
 }

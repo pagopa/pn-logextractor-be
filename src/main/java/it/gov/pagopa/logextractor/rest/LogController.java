@@ -14,7 +14,7 @@ public class LogController implements LogsApi {
 	LogService logService;
 
 	@Override
-	public ResponseEntity<BaseResponseDto> getPersonActivityLogs(PersonLogsRequestDto personLogsRequestDto) throws Exception {
+	public ResponseEntity<BaseResponseDto> personActivityLogs(PersonLogsRequestDto personLogsRequestDto) throws Exception {
 		if (Boolean.TRUE.equals(personLogsRequestDto.getDeanonimization())) {
 			return ResponseEntity.ok().body(logService.getDeanonimizedPersonLogs(personLogsRequestDto));
 		}
@@ -22,17 +22,17 @@ public class LogController implements LogsApi {
 	}
 
 	@Override
-	public ResponseEntity<BaseResponseDto> getNotificationInfoLogs(NotificationInfoRequestDto notificationInfoRequestDto) throws Exception {
+	public ResponseEntity<BaseResponseDto> notificationInfoLogs(NotificationInfoRequestDto notificationInfoRequestDto) throws Exception {
 		return ResponseEntity.ok().body(logService.getNotificationInfoLogs(notificationInfoRequestDto));
 	}
 
 	@Override
-	public ResponseEntity<BaseResponseDto> getNotificationsInMonth(MonthlyNotificationsRequestDto monthlyNotificationsRequestDto) throws Exception {
+	public ResponseEntity<BaseResponseDto> notificationsInMonth(MonthlyNotificationsRequestDto monthlyNotificationsRequestDto) throws Exception {
 		return ResponseEntity.ok().body(logService.getMonthlyNotifications(monthlyNotificationsRequestDto));
 	}
 
 	@Override
-	public ResponseEntity<BaseResponseDto> getProcessLogs(TraceIdLogsRequestDto traceIdLogsRequestDto) throws Exception {
+	public ResponseEntity<BaseResponseDto> processLogs(TraceIdLogsRequestDto traceIdLogsRequestDto) throws Exception {
 		return ResponseEntity.ok().body(logService.getTraceIdLogs(traceIdLogsRequestDto));
 	}
 }
