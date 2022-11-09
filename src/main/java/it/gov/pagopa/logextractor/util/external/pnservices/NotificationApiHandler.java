@@ -1,13 +1,11 @@
 package it.gov.pagopa.logextractor.util.external.pnservices;
 
-import java.io.IOException;
 import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import it.gov.pagopa.logextractor.util.constant.ExternalServiceConstants;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 import org.apache.commons.io.IOUtils;
@@ -169,9 +167,8 @@ public class NotificationApiHandler {
 	 * Performs a GET HTTP request to obtain a physical file represented as a byte array
 	 * @param url The URL to make the request to
 	 * @return A byte array representation of a file
-	 * @throws IOException 
 	 */
-	public byte[] getFile(String url) throws IOException {
+	public byte[] getFile(String url) {
 		try {
 			URL urlToFileDownload = new URL(url);
             return IOUtils.toByteArray(urlToFileDownload);
@@ -240,7 +237,7 @@ public class NotificationApiHandler {
 	}
 	
 	/**
-	 * Extracts the payment documents' keys from the input notification details
+	 * Extracts the all the payment documents' keys from the input notification details
 	 * @param notificationInfo The notification details
 	 * @return The keys list
 	 * */
@@ -254,6 +251,11 @@ public class NotificationApiHandler {
 		return paymentKeys;
 	}
 
+	/**
+	 * Extracts the payment document's keys from the input notification payment metadata
+	 * @param recipient the recipient to extract the payment keys for
+	 * @return The keys list
+	 * */
 	private List<String> getCurrentRecipientPaymentKeys(NotificationDetailsRecipientsData recipient) {
 		ArrayList<String> currentRecipientPaymentKeys = new ArrayList<>();
 		if(null != recipient.getPayment()) {

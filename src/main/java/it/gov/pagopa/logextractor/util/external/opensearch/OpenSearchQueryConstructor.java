@@ -47,9 +47,9 @@ public class OpenSearchQueryConstructor {
 	
 	/**
 	 * Method that prepares query data
-	 * @param indexName the name of the index in OpenSearch
 	 * @param searchData a map containing the search field and the value of the field
-	 * @param rangeQueryData date range, if it is any
+	 * @param rangeQueryData date range, if there is any
+	 * @param sortFilters query result sort order
 	 * @return {@link OpenSearchQuerydata} ready to be passed to the query constructor
 	 */
 	public OpenSearchQuerydata prepareQueryData(Map<String, Object> searchData, OpenSearchRangeQueryData rangeQueryData, OpenSearchSortFilter sortFilters) {

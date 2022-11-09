@@ -88,6 +88,8 @@ Resources:
       - PublicApiLogsV1ProcessesMethod
       - PublicApiPersonsV1PersonIdMethod
       - PublicApiPersonsV1TaxIdMethod
+      - PublicApiDowntimeStatusMethod
+      - PublicApiDowntimeEventsMethod
     Properties:
       RestApiId: !Ref PublicRestApi
 
@@ -203,20 +205,41 @@ Resources:
       PathPart: "processes"
       RestApiId: !Ref PublicRestApi
 
-  PublicApiBaseHealthCheckResource:
-    Type: "AWS::ApiGateway::Resource"
-    Properties:
-      ParentId: !GetAtt PublicRestApi.RootResourceId
-      PathPart: "health-check"
-      RestApiId: !Ref PublicRestApi
-
   PublicApiHealthCheckStatusResource:
     Type: "AWS::ApiGateway::Resource"
     Properties:
-      ParentId: !Ref PublicApiBaseHealthCheckResource
+      ParentId: !GetAtt PublicRestApi.RootResourceId
       PathPart: "status"
       RestApiId: !Ref PublicRestApi
 
+  PublicApiBaseDowntimeResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !GetAtt PublicRestApi.RootResourceId
+      PathPart: "downtime"
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiDowntimeV1Resource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !Ref PublicApiBaseDowntimeResource
+      PathPart: "v1"
+      RestApiId: !Ref PublicRestApi
+      
+  PublicApiDowntimeV1StatusResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !Ref PublicApiDowntimeV1Resource
+      PathPart: "status"
+      RestApiId: !Ref PublicRestApi
+      
+  PublicApiDowntimeV1EventsResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !Ref PublicApiDowntimeV1Resource
+      PathPart: "events"
+      RestApiId: !Ref PublicRestApi
+      
   PublicApiHealthCheckStatusMethod:
     Type: "AWS::ApiGateway::Method"
     Properties:
@@ -232,7 +255,7 @@ Resources:
         RequestParameters:
           integration.request.path.proxy: method.request.path.proxy
         TimeoutInMillis: 29000
-        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/health-check/status"
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/status"
       OperationName: Proxy to ECS microservices
       RequestParameters:
         method.request.path.proxy: true
@@ -377,6 +400,51 @@ Resources:
       ResourceId: !Ref PublicApiPersonsV1TaxIdResource
       RestApiId: !Ref PublicRestApi
 
+  PublicApiDowntimeStatusMethod:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthorizer
+      HttpMethod: GET
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: GET
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/downtime/v1/status"
+      OperationName: Proxy to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiDowntimeV1StatusResource
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiDowntimeEventsMethod:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthorizer
+      HttpMethod: POST
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/downtime/v1/events"
+      OperationName: Proxy to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiDowntimeV1EventsResource
+      RestApiId: !Ref PublicRestApi
 Outputs:
   RestApiId:
     Description: Api id

@@ -49,7 +49,7 @@ public class ZipFactory {
 	 * @param parameters the parameters for the file
 	 * @param files the file list to add
 	 * @return the {@link ZipFile} input zip with the addition of the file
-	 * @throws {@link IOException}
+	 * @throws IOException in case of an IO error
 	 * */
 	public ZipFile addFiles(ZipFile archive, ZipParameters parameters, List<File> files) throws IOException {
 		for (File fileToAdd : files) {
@@ -64,14 +64,11 @@ public class ZipFactory {
 	 * @param parameters the parameters for the file
 	 * @param file the file add
 	 * @return the {@link ZipFile} input zip with the addition of the file
-	 * @throws {@link IOException}
+	 * @throws IOException in case of an IO error
 	 * */
 	public ZipFile addFile(ZipFile archive, ZipParameters parameters, File file) throws IOException {
 		if (!file.getParentFile().exists()) {
 			file.getParentFile().mkdirs();
-		}
-		if (!file.exists()) {
-			file.createNewFile();
 		}
 		archive.addFile(file, parameters);
 		archive.close();
@@ -85,14 +82,8 @@ public class ZipFactory {
 	 * @throws IOException in case of IO Error
 	 * */
 	public byte[] toByteArray(ZipFile archive) throws IOException {
-		InputStream stream = new FileInputStream(archive.getFile());
-		byte[] output = null;
-		try {
-			output = stream.readAllBytes();
+		try(InputStream stream = new FileInputStream(archive.getFile())) {
+			return stream.readAllBytes();
 		}
-		finally {
-			stream.close();
-		}
-		return output;
 	}
 }
