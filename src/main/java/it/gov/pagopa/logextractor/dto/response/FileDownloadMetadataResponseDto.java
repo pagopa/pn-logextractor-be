@@ -5,14 +5,5 @@ import lombok.Getter;
 
 @Getter
 public class FileDownloadMetadataResponseDto {
-
-	private String key;
-	private String versionId;
-	private String documentType;
-	private String documentStatus;
-	private String contentType;
-	private Integer contentLength;
-	private String checksum;
-	private String retentionUntil;
 	private FileDownloadInfo download;
 }

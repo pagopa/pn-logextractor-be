@@ -11,4 +11,5 @@ public class LoggingConstants {
     public static final String VALIDATION_TIME = "validationTime";
     public static final String QUERY_CONSTRUCTION = "Constructing Opensearch query...";
     public static final String QUERY_EXECUTION = "Executing query:";
+    public static final String TRACE_ID_PLACEHOLDER = "trace_id";
 }

@@ -2,7 +2,9 @@ package it.gov.pagopa.logextractor.util;
 
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.text.StringEscapeUtils;
-
+/**
+ * Utility class for escape operations
+ * */
 public class EscapeUtils {
 
     /**
