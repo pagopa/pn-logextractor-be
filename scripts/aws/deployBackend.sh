@@ -141,6 +141,8 @@ aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-fil
         "ContainerEnvEntry15=ELASTICACHE_PORT=6379" \
         "ContainerEnvEntry16=COGNITO_GET_USER_ENDPOINT=${CognitoGetUserEndpoint}" \
         "ContainerEnvEntry17=ALLOWED_ORIGIN=${AllowedOrigin}" \
+        "ContainerEnvEntry18=DOWNTIME_EVENTS_URL=${PnCoreRootPath}/downtime-internal/v1/events" \
+        "ContainerEnvEntry19=DOWNTIME_STATUS_URL=${PnCoreRootPath}/downtime/v1/status" \
         "ContainerSecret1=BASIC_AUTH_USERNAME=${OpenSearchSecretArn}:username:AWSCURRENT:" \
         "ContainerSecret2=BASIC_AUTH_PASSWORD=${OpenSearchSecretArn}:password:AWSCURRENT:" \
     --capabilities "CAPABILITY_NAMED_IAM"
