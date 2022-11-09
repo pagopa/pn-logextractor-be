@@ -43,19 +43,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(LogExtractorException.class)
     protected ResponseEntity<Problem> handleLogExtractorException(LogExtractorException ex) {
         log.error(ExceptionUtils.getStackTrace(ex));
-		Problem genericError = new Problem();
-		genericError.setStatus(500);
-		genericError.setTitle(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_ENGLISH_MESSAGE);
-		genericError.setDetail(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
-		genericError.setTraceId(MDC.get(LoggingConstants.TRACE_ID_PLACEHOLDER));
-		genericError.setTimestamp(OffsetDateTime.now());
-		ProblemError errorDetails = new ProblemError();
-		errorDetails.setCode(HttpStatus.INTERNAL_SERVER_ERROR.toString());
-		errorDetails.setDetail(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
-		List<ProblemError> errorDetailsList = new ArrayList<>();
-		errorDetailsList.add(errorDetails);
-		genericError.setErrors(errorDetailsList);
-		return ResponseEntity.internalServerError().body(genericError);
+		Problem problemResponse = createProblem(HttpStatus.INTERNAL_SERVER_ERROR,
+				ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_ENGLISH_MESSAGE,
+				ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
+		return ResponseEntity.internalServerError().body(problemResponse);
     }
 
 	/**
@@ -67,19 +58,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
 		log.error(ExceptionUtils.getStackTrace(ex));
-		Problem genericError = new Problem();
-		genericError.setStatus(400);
-		genericError.setTitle(ResponseConstants.GENERIC_BAD_REQUEST_ERROR_ENGLISH_MESSAGE);
-		genericError.setDetail(ResponseConstants.GENERIC_BAD_REQUEST_ERROR_MESSAGE);
-		genericError.setTraceId(MDC.get(LoggingConstants.TRACE_ID_PLACEHOLDER));
-		genericError.setTimestamp(OffsetDateTime.now());
-		ProblemError errorDetails = new ProblemError();
-		errorDetails.setCode(HttpStatus.BAD_REQUEST.toString());
-		errorDetails.setDetail(ResponseConstants.GENERIC_BAD_REQUEST_ERROR_MESSAGE);
-		List<ProblemError> errorDetailsList = new ArrayList<>();
-		errorDetailsList.add(errorDetails);
-		genericError.setErrors(errorDetailsList);
-		return ResponseEntity.badRequest().body(genericError);
+		Problem problemResponse = createProblem(HttpStatus.BAD_REQUEST,
+				ResponseConstants.GENERIC_BAD_REQUEST_ERROR_ENGLISH_MESSAGE,
+				ResponseConstants.GENERIC_BAD_REQUEST_ERROR_MESSAGE);
+		return ResponseEntity.internalServerError().body(problemResponse);
 	}
 	
 	/**
@@ -91,19 +73,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(IOException.class)
     protected ResponseEntity<Problem> handleIOException(IOException ex) {
         log.error(ExceptionUtils.getStackTrace(ex));
-		Problem genericError = new Problem();
-		genericError.setStatus(500);
-		genericError.setTitle(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_ENGLISH_MESSAGE);
-		genericError.setDetail(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
-		genericError.setTraceId(MDC.get(LoggingConstants.TRACE_ID_PLACEHOLDER));
-		genericError.setTimestamp(OffsetDateTime.now());
-		ProblemError errorDetails = new ProblemError();
-		errorDetails.setCode(HttpStatus.INTERNAL_SERVER_ERROR.toString());
-		errorDetails.setDetail(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
-		List<ProblemError> errorDetailsList = new ArrayList<>();
-		errorDetailsList.add(errorDetails);
-		genericError.setErrors(errorDetailsList);
-		return ResponseEntity.internalServerError().body(genericError);
+		Problem problemResponse = createProblem(HttpStatus.INTERNAL_SERVER_ERROR,
+				ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_ENGLISH_MESSAGE,
+				ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
+		return ResponseEntity.internalServerError().body(problemResponse);
     }
 	
 	/**
@@ -115,19 +88,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(CsvDataTypeMismatchException.class)
     protected ResponseEntity<Problem> handleCsvDataTypeMismatchException(CsvDataTypeMismatchException ex) {
         log.error(ExceptionUtils.getStackTrace(ex));
-		Problem genericError = new Problem();
-		genericError.setStatus(500);
-		genericError.setTitle(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_ENGLISH_MESSAGE);
-		genericError.setDetail(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
-		genericError.setTraceId(MDC.get(LoggingConstants.TRACE_ID_PLACEHOLDER));
-		genericError.setTimestamp(OffsetDateTime.now());
-		ProblemError errorDetails = new ProblemError();
-		errorDetails.setCode(HttpStatus.INTERNAL_SERVER_ERROR.toString());
-		errorDetails.setDetail(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
-		List<ProblemError> errorDetailsList = new ArrayList<>();
-		errorDetailsList.add(errorDetails);
-		genericError.setErrors(errorDetailsList);
-		return ResponseEntity.internalServerError().body(genericError);
+		Problem problemResponse = createProblem(HttpStatus.INTERNAL_SERVER_ERROR,
+				ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_ENGLISH_MESSAGE,
+				ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
+		return ResponseEntity.internalServerError().body(problemResponse);
     }
 	
 	/**
@@ -139,19 +103,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(CsvRequiredFieldEmptyException.class)
     protected ResponseEntity<Problem> handleCsvRequiredFieldEmptyException(CsvRequiredFieldEmptyException ex) {
         log.error(ExceptionUtils.getStackTrace(ex));
-		Problem genericError = new Problem();
-		genericError.setStatus(500);
-		genericError.setTitle(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_ENGLISH_MESSAGE);
-		genericError.setDetail(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
-		genericError.setTraceId(MDC.get(LoggingConstants.TRACE_ID_PLACEHOLDER));
-		genericError.setTimestamp(OffsetDateTime.now());
-		ProblemError errorDetails = new ProblemError();
-		errorDetails.setCode(HttpStatus.INTERNAL_SERVER_ERROR.toString());
-		errorDetails.setDetail(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
-		List<ProblemError> errorDetailsList = new ArrayList<>();
-		errorDetailsList.add(errorDetails);
-		genericError.setErrors(errorDetailsList);
-		return ResponseEntity.internalServerError().body(genericError);
+		Problem problemResponse = createProblem(HttpStatus.INTERNAL_SERVER_ERROR,
+				ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_ENGLISH_MESSAGE,
+				ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
+		return ResponseEntity.internalServerError().body(problemResponse);
     }
 	
 	/**
@@ -163,19 +118,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(HttpServerErrorException.class)
     protected ResponseEntity<Problem> handleHttpServerErrorException(HttpServerErrorException ex) {
         log.error(ExceptionUtils.getStackTrace(ex));
-		Problem genericError = new Problem();
-		genericError.setStatus(500);
-		genericError.setTitle(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_ENGLISH_MESSAGE);
-		genericError.setDetail(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
-		genericError.setTraceId(MDC.get(LoggingConstants.TRACE_ID_PLACEHOLDER));
-		genericError.setTimestamp(OffsetDateTime.now());
-		ProblemError errorDetails = new ProblemError();
-		errorDetails.setCode(HttpStatus.INTERNAL_SERVER_ERROR.toString());
-		errorDetails.setDetail(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
-		List<ProblemError> errorDetailsList = new ArrayList<>();
-		errorDetailsList.add(errorDetails);
-		genericError.setErrors(errorDetailsList);
-		return ResponseEntity.internalServerError().body(genericError);
+		Problem problemResponse = createProblem(HttpStatus.INTERNAL_SERVER_ERROR,
+				ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_ENGLISH_MESSAGE,
+				ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
+		return ResponseEntity.internalServerError().body(problemResponse);
     }
 	
 	/**
@@ -187,18 +133,25 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(HttpClientErrorException.class)
 	protected ResponseEntity<Problem> handleHttpServerErrorException(HttpClientErrorException ex) {
 		log.error(ExceptionUtils.getStackTrace(ex));
+		Problem problemResponse = createProblem(HttpStatus.INTERNAL_SERVER_ERROR,
+				ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_ENGLISH_MESSAGE,
+				ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
+		return ResponseEntity.internalServerError().body(problemResponse);
+	}
+
+	private Problem createProblem(HttpStatus responseCode, String titleMessage, String detailMessage){
 		Problem genericError = new Problem();
-		genericError.setStatus(500);
-		genericError.setTitle(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_ENGLISH_MESSAGE);
-		genericError.setDetail(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
+		genericError.setStatus(responseCode.value());
+		genericError.setTitle(titleMessage);
+		genericError.setDetail(detailMessage);
 		genericError.setTraceId(MDC.get(LoggingConstants.TRACE_ID_PLACEHOLDER));
 		genericError.setTimestamp(OffsetDateTime.now());
 		ProblemError errorDetails = new ProblemError();
-		errorDetails.setCode(HttpStatus.INTERNAL_SERVER_ERROR.toString());
-		errorDetails.setDetail(ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
+		errorDetails.setCode(responseCode.toString());
+		errorDetails.setDetail(detailMessage);
 		List<ProblemError> errorDetailsList = new ArrayList<>();
 		errorDetailsList.add(errorDetails);
 		genericError.setErrors(errorDetailsList);
-		return ResponseEntity.internalServerError().body(genericError);
+		return genericError;
 	}
 }
