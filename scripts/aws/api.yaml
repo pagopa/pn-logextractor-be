@@ -434,7 +434,7 @@ Resources:
         Type: HTTP_PROXY
         ConnectionId: !Ref NetworkLoadBalancerLink
         ConnectionType: VPC_LINK
-        IntegrationHttpMethod: GET
+        IntegrationHttpMethod: POST
         PassthroughBehavior: WHEN_NO_MATCH
         RequestParameters:
           integration.request.path.proxy: method.request.path.proxy
