@@ -115,10 +115,7 @@ CognitoUserPoolArn=$( aws ${profile_option} --region="eu-central-1" cloudformati
       ".Stacks[0].Outputs | .[] | select(.OutputKey==\"CognitoUserPoolArn\") | .OutputValue" \
     )
 
-OPENSEARCH_MASTER_USERNAME=$( aws secretsmanager get-secret-value $profile_option --region eu-south-1 --secret-id pn-opensearch-master | jq '.SecretString' | sed -e 's/^"//' -e 's/"$//' -e 's/\\"/"/g' | jq -r '.username' )
-OPENSEARCH_MASTER_PASSWORD=$( aws secretsmanager get-secret-value $profile_option --region eu-south-1 --secret-id pn-opensearch-master | jq '.SecretString' | sed -e 's/^"//' -e 's/"$//' -e 's/\\"/"/g' | jq -r '.password' )
-
-echo "aws cloudformation deploy ${profile_option} --region \"eu-south-1\" --template-file \"dist/template.${environment}.packaged.yaml\" --stack-name \"pn-logextractor-${environment}\" --capabilities \"CAPABILITY_IAM\" --parameter-overrides \"TemplateBucketBaseUrl=http://${bucket_name}.s3.amazonaws.com\" \"ProjectName=${project_name}\" \"WafArn=${WafArn}\" \"CloudFrontLogBucketDomainName=${CloudFrontLogBucketDomainName}\" \"ApiCognitoUserPoolArn=${CognitoUserPoolArn}\" \"VpcId=${VpcId}\" \"PrivateSubnetIds=${PrivateSubnetIds}\" \"OpenSearchNodeType=r5.xlarge.search\" \"OpenSearchNodeReplicas=3\" \"OpenSearchEbsSize=10\" \"OpenSearchEbsIops=0\" \"OpenSearchEbsType=gp2\""
+echo "aws cloudformation deploy ${profile_option} --region \"eu-south-1\" --template-file \"dist/template.${environment}.packaged.yaml\" --stack-name \"pn-logextractor-${environment}\" --capabilities \"CAPABILITY_IAM\" --parameter-overrides \"TemplateBucketBaseUrl=http://${bucket_name}.s3.amazonaws.com\" \"ProjectName=${project_name}\" \"WafArn=${WafArn}\" \"CloudFrontLogBucketDomainName=${CloudFrontLogBucketDomainName}\" \"ApiCognitoUserPoolArn=${CognitoUserPoolArn}\" \"VpcId=${VpcId}\" \"PrivateSubnetIds=${PrivateSubnetIds}\" \"OpenSearchNodeType=r5.xlarge.search\" \"OpenSearchNodeReplicas=3\" \"OpenSearchEbsSize=10\" \"OpenSearchEbsIops=0\" \"OpenSearchEbsType=gp2\" \"OpenSearchMasterCredentialSecret=pn-opensearch-master\""
 aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-file "dist/template.${environment}.packaged.yaml" \
   --stack-name "pn-logextractor-${environment}" \
   --capabilities "CAPABILITY_IAM" \
@@ -130,8 +127,7 @@ aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-fil
   "OpenSearchNodeType=r5.xlarge.search" \
   "OpenSearchNodeReplicas=3" "OpenSearchEbsSize=10" \
   "OpenSearchEbsIops=0" "OpenSearchEbsType=gp2" \
-  "OpenSearchMasterUsername=${OPENSEARCH_MASTER_USERNAME}" \
-  "OpenSearchMasterPaassword=${OPENSEARCH_MASTER_PASSWORD}"
+  "OpenSearchMasterCredentialSecret=pn-opensearch-master"
 
 
 rm -rf dist

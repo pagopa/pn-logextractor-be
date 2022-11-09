@@ -42,13 +42,9 @@ Parameters:
     Type: "AWS::EC2::VPC::Id"
     Description: VPC id of the subnets
 
-  MasterUsername:
+  MasterCredentialSecret:
     Type: String
-    Description: Master username
-
-  MasterPassword:
-    Type: String
-    Description: Master password
+    Description: Master credential secret
 
 Resources:
   SecurityGroup:
@@ -63,6 +59,29 @@ Resources:
           ToPort: 443
       VpcId: !Ref VpcId
 
+  ### AWS KMS / Server-side encryption for Kinesis Stream 
+  # https://docs.aws.amazon.com/streams/latest/dev/server-side-encryption.html
+  OpenSearchEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      KeyPolicy:
+        Statement:
+          - Action: kms:*
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::Join:
+                  - ""
+                  - - "arn:"
+                    - Ref: AWS::Partition
+                    - ":iam::"
+                    - Ref: AWS::AccountId
+                    - :root
+            Resource: "*"
+        Version: "2012-10-17"
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+
   OpenSearchServiceDomain:
     Type: "AWS::OpenSearchService::Domain"
     Properties:
@@ -74,12 +93,19 @@ Resources:
             Action: "es:ESHttp*"
             Resource: "*"
         Version: "2012-10-17"
+      EncryptionAtRestOptions:
+        Enabled: true
+        KmsKeyId: !GetAtt OpenSearchEncryptionKey.KeyId
+      NodeToNodeEncryptionOptions:
+        Enabled: true
+      DomainEndpointOptions:
+        EnforceHTTPS: true
       AdvancedSecurityOptions:
         Enabled: true
         InternalUserDatabaseEnabled: true
         MasterUserOptions: 
-          MasterUserName: !Ref MasterUsername
-          MasterUserPassword: !Ref MasterPassword
+          MasterUserName: !Sub '{{resolve:secretsmanager:${MasterCredentialSecret}:SecretString:username}}'
+          MasterUserPassword: !Sub '{{resolve:secretsmanager:${MasterCredentialSecret}:SecretString:password}}'
       ClusterConfig:
         InstanceCount: !Ref InstanceReplicas
         InstanceType: !Ref InstanceType
@@ -96,7 +122,8 @@ Resources:
         SecurityGroupIds:
           - Ref: SecurityGroup
         SubnetIds: !Ref SubnetIds
-
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
 Outputs:
   ClusterName:
     Description: The name of the OpenSearch Service domain

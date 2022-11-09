@@ -53,13 +53,9 @@ Parameters:
     Type: String
     Description: OpenSearch nodes type
 
-  OpenSearchMasterUsername:
+  OpenSearchMasterCredentialSecret:
     Type: String
-    Description: OpenSearch master username
-
-  OpenSearchMasterPassword:
-    Type: String
-    Description: OpenSearch master password
+    Description: OpenSearch master credential secret
 
   ProjectName:
     Type: String
@@ -124,7 +120,7 @@ Resources:
         VpcId: !Ref VpcId
       TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/cache.yaml
 
-  Services:
+  OpenSearch:
     Type: "AWS::CloudFormation::Stack"
     Properties:
       Parameters:
@@ -137,16 +133,15 @@ Resources:
         ProjectName: !Ref ProjectName
         SubnetIds: !Join [',', !Ref PrivateSubnetIds]
         VpcId: !Ref VpcId
-        MasterUsername: !Ref OpenSearchMasterUsername
-        MasterPassword: !Ref OpenSearchMasterPassword       
-      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/services.yaml
+        MasterCredentialSecret: !Ref OpenSearchMasterCredentialSecret
+      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/opensearch.yaml
 
   Alarms:
     Type: "AWS::CloudFormation::Stack"
     Properties:
       Parameters:
         ProjectName: !Ref ProjectName
-        OpenSearchClusterName: !GetAtt Services.Outputs.ClusterName
+        OpenSearchClusterName: !GetAtt OpenSearch.Outputs.ClusterName
       TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/alarms.yaml
 
 Outputs:
@@ -159,7 +154,7 @@ Outputs:
 
   OpenSearchEndpoint:
     Description: OpenSearch endpoint
-    Value: !GetAtt Services.Outputs.DomainEndpoint
+    Value: !GetAtt OpenSearch.Outputs.DomainEndpoint
   
   AlbListenerArn:
     Value: !GetAtt Backend.Outputs.AlbListenerArn

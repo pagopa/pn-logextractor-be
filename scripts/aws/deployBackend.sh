@@ -108,27 +108,22 @@ AlbListenerArn=$( aws ${profile_option} --region="eu-south-1" cloudformation des
       ".Stacks[0].Outputs | .[] | select(.OutputKey==\"AlbListenerArn\") | .OutputValue" \
     )
 
-OPENSEARCH_USERNAME=$( aws secretsmanager get-secret-value $profile_option --region eu-south-1 --secret-id pn-opensearch-logextractor | jq '.SecretString' | sed -e 's/^"//' -e 's/"$//' -e 's/\\"/"/g' | jq -r '.username' )
-OPENSEARCH_PASSWORD=$( aws secretsmanager get-secret-value $profile_option --region eu-south-1 --secret-id pn-opensearch-logextractor | jq '.SecretString' | sed -e 's/^"//' -e 's/"$//' -e 's/\\"/"/g' | jq -r '.password' )
-
 echo "CognitoUserPoolArn="${CognitoUserPoolArn}
 echo "OpenSearchEndpoint="${OpenSearchEndpoint}
 echo "ElasticacheEndpoint="${ElasticacheEndpoint}
 echo "ElasticacheSecurityGroup="${ElasticacheSecurityGroup}
 echo "AlbListenerArn="${AlbListenerArn}
-echo "OPENSEARCH_USERNAME="${OPENSEARCH_USERNAME}
-echo "OPENSEARCH_PASSWORD="${OPENSEARCH_PASSWORD}
 
 cd ../../
 aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-file "ecs-service.yaml" \
-    --stack-name "pn-logextractor-service-dev" \
-    --parameter-overrides "AdditionalMicroserviceSecurityGroup=${ElasticacheSecurityGroup}" "MicroServiceUniqueName=pn-logextractor-be" \
+    --stack-name "pn-logextractor-service-${environment}" \
+    --parameter-overrides "AdditionalMicroserviceSecurityGroup=${ElasticacheSecurityGroup}" "MicroServiceUniqueName=pn-logextractor-be-${environment}" \
         "ECSClusterName=pn-logextractor-${environment}-ecs-cluster" "MappedPaths=/*" \
         "ContainerImageURI=${HelpdeskAccount}.dkr.ecr.eu-south-1.amazonaws.com/pn-logextractor-${environment}:${build_tag}" \
         "CpuValue=1024" "MemoryAmount=4GB" "VpcId=${VpcId}" \
         "Subnets=${PrivateSubnetIds}" \
         "LoadBalancerListenerArn=${AlbListenerArn}" \
-        "LoadbalancerRulePriority=10" \
+        "LoadbalancerRulePriority=11" \
         "ContainerEnvEntry1=ENSURE_RECIPIENT_BY_EXTERNAL_ID_URL=${PnDataVaultRootPath}/datavault-private/v1/recipients/external/%s" \
         "ContainerEnvEntry2=GET_RECIPIENT_DENOMINATION_BY_INTERNAL_ID_URL=${PnDataVaultRootPath}/datavault-private/v1/recipients/internal" \
         "ContainerEnvEntry3=GET_SENT_NOTIFICATION_URL=${PnCoreRootPath}/delivery-private/search" \
@@ -140,12 +135,12 @@ aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-fil
         "ContainerEnvEntry9=SAFESTORAGE_ENDPOINT=${SafeStorageEndpoint}" \
         "ContainerEnvEntry10=SAFESTORAGE_STAGE=dev" \
         "ContainerEnvEntry11=SAFESTORAGE_CXID=${SafeStorageCxId}" \
-        "ContainerEnvEntry12=BASIC_AUTH_USERNAME=${OPENSEARCH_USERNAME}" \
-        "ContainerEnvEntry13=BASIC_AUTH_PASSWORD=${OPENSEARCH_PASSWORD}" \
-        "ContainerEnvEntry14=SEARCH_URL=${OpenSearchEndpoint}/pn-logs/_search" \
-        "ContainerEnvEntry15=SEARCH_FOLLOWUP_URL=${OpenSearchEndpoint}/_search/scroll" \
-        "ContainerEnvEntry16=ELASTICACHE_HOSTNAME=${ElasticacheEndpoint}" \
-        "ContainerEnvEntry17=ELASTICACHE_PORT=6379" \
-        "ContainerEnvEntry18=COGNITO_GET_USER_ENDPOINT=${CognitoGetUserEndpoint}" \
-        "ContainerEnvEntry19=ALLOWED_ORIGIN=${AllowedOrigin}" \
+        "ContainerEnvEntry12=SEARCH_URL=${OpenSearchEndpoint}/pn-logs/_search" \
+        "ContainerEnvEntry13=SEARCH_FOLLOWUP_URL=${OpenSearchEndpoint}/_search/scroll" \
+        "ContainerEnvEntry14=ELASTICACHE_HOSTNAME=${ElasticacheEndpoint}" \
+        "ContainerEnvEntry15=ELASTICACHE_PORT=6379" \
+        "ContainerEnvEntry16=COGNITO_GET_USER_ENDPOINT=${CognitoGetUserEndpoint}" \
+        "ContainerEnvEntry17=ALLOWED_ORIGIN=${AllowedOrigin}" \
+        "ContainerSecret1=BASIC_AUTH_USERNAME=${OpenSearchSecretArn}:username:AWSCURRENT:" \
+        "ContainerSecret2=BASIC_AUTH_PASSWORD=${OpenSearchSecretArn}:password:AWSCURRENT:" \
     --capabilities "CAPABILITY_NAMED_IAM"
