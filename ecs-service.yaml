@@ -626,7 +626,7 @@ Resources:
       Port: 8080
       HealthCheckEnabled: true
       HealthCheckIntervalSeconds: 300
-      HealthCheckPath: /health-check/status
+      HealthCheckPath: /status
       HealthCheckPort: 8080
       HealthCheckProtocol: HTTP
       Matcher:
