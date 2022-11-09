@@ -232,7 +232,7 @@ Resources:
         RequestParameters:
           integration.request.path.proxy: method.request.path.proxy
         TimeoutInMillis: 29000
-        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/health-check/status"
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/status"
       OperationName: Proxy to ECS microservices
       RequestParameters:
         method.request.path.proxy: true
