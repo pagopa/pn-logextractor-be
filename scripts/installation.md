@@ -61,6 +61,7 @@ Compilare il file `scripts/environments/.env.backend.${ENVIRONMENT}` con i param
 - *SafeStorageCxId*: SafeStorage CX ID
 - *CognitoGetUserEndpoint*: Default a https://cognito-idp.eu-central-1.amazonaws.com
 - *AllowedOrigin*: Dominio da impostare nel CORS delle API
+- *OpenSearchSecretArn*: Arn del secret `pn-opensearch-logextractor` 
 
 Eseguire i seguenti comando dalla cartella `./scripts/aws`
 
