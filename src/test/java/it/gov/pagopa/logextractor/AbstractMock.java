@@ -106,7 +106,7 @@ public abstract class AbstractMock {
 	protected final String notificationUrl = "/logs/v1/notifications/monthly";
 	protected final String notificationInfoUrl = "/logs/v1/notifications/info";
 	protected final String processesUrl = "/logs/v1/processes";
-	protected final String healthcheckUrl = "/health-check/status";
+	protected final String healthcheckUrl = "/status";
 
 	protected final String statusUrl = "/downtime/v1/status";
 	protected final String eventsUrl = "/downtime/v1/events";
