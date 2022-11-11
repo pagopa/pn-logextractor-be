@@ -1,42 +1,38 @@
 package it.gov.pagopa.logextractor.rest;
 
+import it.gov.pagopa.logextractor.pn_logextractor_be.api.LogsApi;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import it.gov.pagopa.logextractor.dto.response.DownloadLogResponseDto;
+import it.gov.pagopa.logextractor.service.LogService;
 
 @RestController
-@RequestMapping("/logs")
-public class LogController {
+public class LogController implements LogsApi {
 
-	@GetMapping(value = "/persons", produces="application/zip")
-	public ResponseEntity<DownloadLogResponseDto> getPersonActivityLogs(@RequestParam(required = true) String extractionType, 
-																		@RequestParam(required = true) int ticketNumber,
-																		@RequestParam(required = false) Integer iun, 
-																		@RequestParam(required = false) Integer months, 
-																		@RequestParam(required = true) boolean deanonimization,
-																		@RequestHeader(name = "fiscal-code", required = false) String taxId, 
-																		@RequestHeader(name = "person-id", required = false) String personId){
-		return ResponseEntity.ok(null);
+	@Autowired
+	LogService logService;
+
+	@Override
+	public ResponseEntity<BaseResponseDto> personActivityLogs(PersonLogsRequestDto personLogsRequestDto) throws Exception {
+		if (Boolean.TRUE.equals(personLogsRequestDto.getDeanonimization())) {
+			return ResponseEntity.ok().body(logService.getDeanonimizedPersonLogs(personLogsRequestDto));
+		}
+		return ResponseEntity.ok().body(logService.getAnonymizedPersonLogs(personLogsRequestDto));
 	}
-	
-	@GetMapping(value = "/operators", produces="application/zip")
-	public ResponseEntity<DownloadLogResponseDto> getOperatorsActivityLogs(@RequestParam(required = true) String extractionType, 
-																		   @RequestParam(required = true) int ticketNumber, 
-																		   @RequestParam(required = true) int months, 
-																		   @RequestHeader(name = "fiscal-code", required = false) String taxId) {
-		return ResponseEntity.ok(null);
+
+	@Override
+	public ResponseEntity<BaseResponseDto> notificationInfoLogs(NotificationInfoRequestDto notificationInfoRequestDto) throws Exception {
+		return ResponseEntity.ok().body(logService.getNotificationInfoLogs(notificationInfoRequestDto));
 	}
-	
-	@GetMapping(value = "/notifications", produces="application/zip")
-	public ResponseEntity<DownloadLogResponseDto> getNotificationLogs(@RequestParam(required = true) String extractionType, 
-																	  @RequestParam(required = true) int ticketNumber,
-																	  @RequestParam(required = false) Integer iun,
-																	  @RequestParam(required = false) Integer referenceMonth,
-																	  @RequestHeader(name = "person-id", required = false) String personId){
-		return ResponseEntity.ok(null);
+
+	@Override
+	public ResponseEntity<BaseResponseDto> notificationsInMonth(MonthlyNotificationsRequestDto monthlyNotificationsRequestDto) throws Exception {
+		return ResponseEntity.ok().body(logService.getMonthlyNotifications(monthlyNotificationsRequestDto));
+	}
+
+	@Override
+	public ResponseEntity<BaseResponseDto> processLogs(TraceIdLogsRequestDto traceIdLogsRequestDto) throws Exception {
+		return ResponseEntity.ok().body(logService.getTraceIdLogs(traceIdLogsRequestDto));
 	}
 }

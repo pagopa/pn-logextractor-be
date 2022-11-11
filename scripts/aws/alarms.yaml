@@ -1,0 +1,230 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: |
+  CloudFormation definition of Log Extractor alarms subsystem
+
+
+Parameters:
+  OpenSearchClusterName:
+    Type: String
+    Description: Name of the OpenSearch cluster
+
+  ProjectName:
+    Type: String
+    Description: Name of the project
+
+
+Resources:
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: !Ref ProjectName
+      FifoTopic: False
+      TopicName: 'os-alert-topic'
+
+  ClusterStatusRed:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName} ClusterStatus.red >= 1"
+      AlarmDescription: "Email when ClusterStatus.red >=1, 1 time within 1 minutes"
+      Namespace: "AWS/ES"
+      Dimensions:
+        - Name: ClientId
+          Value: !Ref AWS::AccountId
+        - Name: DomainName
+          Value:
+            Ref: OpenSearchClusterName
+      Statistic: Maximum
+      MetricName: "ClusterStatus.red"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Threshold: 1
+      Period: 60
+      EvaluationPeriods: 1
+      OKActions:
+        - !Ref SNSTopic
+      AlarmActions:
+        - !Ref SNSTopic
+
+  ClusterStatusYellow:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName} ClusterStatus.yellow >= 1"
+      AlarmDescription: "Email when ClusterStatus.yellow >=1, 1 time within 1 minute"
+      Namespace: "AWS/ES"
+      Dimensions:
+        - Name: ClientId
+          Value: !Ref AWS::AccountId
+        - Name: DomainName
+          Value:
+            Ref: OpenSearchClusterName
+      Statistic: Maximum
+      MetricName: "ClusterStatus.yellow"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Threshold: 1
+      Period: 60
+      EvaluationPeriods: 1
+      OKActions:
+        - !Ref SNSTopic
+      AlarmActions:
+        - !Ref SNSTopic
+
+  FreeStorageSpace:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName} FreeStorageSpace <= 20480"
+      AlarmDescription: "Email when FreeStorageSpace <= 20480, 1 time within 1 minute"
+      Namespace: "AWS/ES"
+      Dimensions:
+        - Name: ClientId
+          Value: !Ref AWS::AccountId
+        - Name: DomainName
+          Value:
+            Ref: OpenSearchClusterName
+      Statistic: Minimum
+      MetricName: "FreeStorageSpace"
+      ComparisonOperator: LessThanOrEqualToThreshold
+      Threshold: 20480
+      Period: 60
+      EvaluationPeriods: 1
+      OKActions:
+        - !Ref SNSTopic
+      AlarmActions:
+        - !Ref SNSTopic
+
+  ClusterIndexWritesBlocked:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName} ClusterIndexWritesBlocked >= 1"
+      AlarmDescription: "Email when ClusterIndexWritesBlocked >=1, 1 time within 5 minutes"
+      Namespace: "AWS/ES"
+      Dimensions:
+        - Name: ClientId
+          Value: !Ref AWS::AccountId
+        - Name: DomainName
+          Value:
+            Ref: OpenSearchClusterName
+      Statistic: Maximum
+      MetricName: "ClusterIndexWritesBlocked"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Threshold: 1
+      Period: 300
+      EvaluationPeriods: 1
+      OKActions:
+        - !Ref SNSTopic
+      AlarmActions:
+        - !Ref SNSTopic
+
+  CPUUtilization:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName} CPUUtilization >= 80"
+      AlarmDescription: "Email when CPUUtilization >=80, 3 time within 15 minutes"
+      Namespace: "AWS/ES"
+      Dimensions:
+        - Name: ClientId
+          Value: !Ref AWS::AccountId
+        - Name: DomainName
+          Value:
+            Ref: OpenSearchClusterName
+      Statistic: Maximum
+      MetricName: "CPUUtilization"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Threshold: 80
+      Period: 900
+      EvaluationPeriods: 3
+      OKActions:
+        - !Ref SNSTopic
+      AlarmActions:
+        - !Ref SNSTopic
+
+  JVMMemoryPressure:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName} JVMMemoryPressure >= 95"
+      AlarmDescription: "Email when JVMMemoryPressure >= 95, 3 time within 5 minutes"
+      Namespace: "AWS/ES"
+      Dimensions:
+        - Name: ClientId
+          Value: !Ref AWS::AccountId
+        - Name: DomainName
+          Value:
+            Ref: OpenSearchClusterName
+      Statistic: Maximum
+      MetricName: "JVMMemoryPressure"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Threshold: 95
+      Period: 300
+      EvaluationPeriods: 3
+      OKActions:
+        - !Ref SNSTopic
+      AlarmActions:
+        - !Ref SNSTopic
+
+  MasterCPUUtilization:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName} MasterCPUUtilization >= 50"
+      AlarmDescription: "Email when MasterCPUUtilization >= 50, 3 time within 15 minutes"
+      Namespace: "AWS/ES"
+      Dimensions:
+        - Name: ClientId
+          Value: !Ref AWS::AccountId
+        - Name: DomainName
+          Value:
+            Ref: OpenSearchClusterName
+      Statistic: Maximum
+      MetricName: "MasterCPUUtilization"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Threshold: 50
+      Period: 900
+      EvaluationPeriods: 3
+      OKActions:
+        - !Ref SNSTopic
+      AlarmActions:
+        - !Ref SNSTopic
+
+  MasterJVMMemoryPressure:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName} MasterJVMMemoryPressure >= 95"
+      AlarmDescription: "Email when MasterJVMMemoryPressure >= 95, 1 time within 15 minutes"
+      Namespace: "AWS/ES"
+      Dimensions:
+        - Name: ClientId
+          Value: !Ref AWS::AccountId
+        - Name: DomainName
+          Value:
+            Ref: OpenSearchClusterName
+      Statistic: Maximum
+      MetricName: "MasterJVMMemoryPressure"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Threshold: 95
+      Period: 900
+      EvaluationPeriods: 1
+      OKActions:
+        - !Ref SNSTopic
+      AlarmActions:
+        - !Ref SNSTopic
+
+  MasterReachableFromNode:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName} MasterReachableFromNode < 1"
+      AlarmDescription: "Email when MasterReachableFromNode < 1, 1 time within 1 day"
+      Namespace: "AWS/ES"
+      Dimensions:
+        - Name: ClientId
+          Value: !Ref AWS::AccountId
+        - Name: DomainName
+          Value:
+            Ref: OpenSearchClusterName
+      Statistic: Maximum
+      MetricName: "MasterReachableFromNode"
+      ComparisonOperator: LessThanThreshold
+      Threshold: 1
+      Period: 86400
+      EvaluationPeriods: 1
+      OKActions:
+        - !Ref SNSTopic
+      AlarmActions:
+        - !Ref SNSTopic

@@ -1,0 +1,16 @@
+{
+  "resultsPage": [
+    {
+        "iun": "TEST",
+        "paProtocolNumber": "TEST",
+        "sender": "TEST",
+        "sentAt": "2022-06-06T15:56:21.699+00:00",
+        "subject": "Subject",
+        "notificationStatus": "EFFECTIVE_DATE",
+        "requestAcceptedAt": "2022-06-06T15:56:21.699+00:00",
+        "recipients": ["TEST"]
+    }
+  ],
+  "moreResult": false,
+  "nextPagesKey": []
+}

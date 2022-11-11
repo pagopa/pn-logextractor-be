@@ -1,0 +1,125 @@
+{
+  "resultsPage": [
+      {
+        "iun": "TEST",
+        "paProtocolNumber": "TEST",
+        "sender": "TEST",
+        "sentAt": "2022-06-06T15:56:21.699+00:00",
+        "subject": "Subject",
+        "notificationStatus": "EFFECTIVE_DATE",
+        "requestAcceptedAt": "2022-06-06T15:56:21.699+00:00",
+        "recipients": ["TEST"]
+    },
+      {
+          "iun": "TEST",
+          "paProtocolNumber": "TEST",
+          "sender": "d0d28367-1695-4c50-a260-6fda526e9aab",
+          "sentAt": "2022-06-06T15:30:04.469+00:00",
+          "subject": "Subject",
+          "notificationStatus": "EFFECTIVE_DATE",
+          "requestAcceptedAt": "2022-06-06T15:56:21.699+00:00",
+          "recipients": [
+              "TEST"
+          ]
+      },
+      {
+          "iun": "TEST",
+          "paProtocolNumber": "TEST",
+          "sender": "d0d28367-1695-4c50-a260-6fda526e9aab",
+          "sentAt": "2022-06-06T13:20:33.371+00:00",
+          "subject": "Subject",
+          "notificationStatus": "VIEWED",
+          "requestAcceptedAt": "2022-06-06T15:56:21.699+00:00",
+          "recipients": [
+              "TEST"
+          ]
+      },
+      {
+          "iun": "TEST",
+          "paProtocolNumber": "TEST",
+          "sender": "TEST",
+          "sentAt": "2022-06-06T09:39:51.295+00:00",
+          "subject": "Subject",
+          "notificationStatus": "VIEWED",
+          "requestAcceptedAt": "2022-06-06T15:56:21.699+00:00",
+          "recipients": [
+              "TEST"
+          ]
+      },
+      {
+          "iun": "TEST",
+          "paProtocolNumber": "TEST",
+          "sender": "TEST",
+          "sentAt": "2022-06-06T09:33:25.410+00:00",
+          "subject": "Subject",
+          "notificationStatus": "VIEWED",
+          "requestAcceptedAt": "2022-06-06T15:56:21.699+00:00",
+          "recipients": [
+              "TEST"
+          ]
+      },
+      {
+          "iun": "TEST",
+          "paProtocolNumber": "TEST",
+          "sender": "TEST",
+          "sentAt": "2022-06-06T09:24:45.263+00:00",
+          "subject": "Subject",
+          "notificationStatus": "VIEWED",
+          "requestAcceptedAt": "2022-06-06T15:56:21.699+00:00",
+          "recipients": [
+              "TEST"
+          ]
+      },
+      {
+          "iun": "TEST",
+          "paProtocolNumber": "TEST",
+          "sender": "TEST",
+          "sentAt": "2022-06-06T09:10:11.397+00:00",
+          "subject": "Subject",
+          "notificationStatus": "VIEWED",
+          "requestAcceptedAt": "2022-06-06T15:56:21.699+00:00",
+          "recipients": [
+              "TEST"
+          ]
+      },
+      {
+          "iun": "TEST",
+          "paProtocolNumber": "TEST",
+          "sender": "TEST",
+          "sentAt": "2022-06-06T09:06:48.604+00:00",
+          "subject": "Test invio manuale ",
+          "notificationStatus": "VIEWED",
+          "requestAcceptedAt": "2022-06-06T15:56:21.699+00:00",
+          "recipients": [
+              "TEST"
+          ]
+      },
+      {
+          "iun": "TEST",
+          "paProtocolNumber": "TEST",
+          "sender": "TEST",
+          "sentAt": "2022-06-06T08:38:00.316+00:00",
+          "subject": "Multa salatissima",
+          "notificationStatus": "VIEWED",
+          "requestAcceptedAt": "2022-06-06T15:56:21.699+00:00",
+          "recipients": [
+              "=TEST",
+              "TEST"
+          ]
+      },
+      {
+          "iun": "TEST",
+          "paProtocolNumber": "TEST",
+          "sender": "TEST",
+          "sentAt": "2022-06-01T14:39:10.365+00:00",
+          "subject": "Multa salata",
+          "notificationStatus": "VIEWED",
+          "requestAcceptedAt": "2022-06-06T15:56:21.699+00:00",
+          "recipients": [
+              "TEST"
+          ]
+      }
+  ],
+  "moreResult": false,
+  "nextPagesKey": []
+}

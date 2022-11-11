@@ -1,10 +1,10 @@
 package it.gov.pagopa.logextractor.exception;
 
-public class LogExtractorException extends Exception{
+public class LogExtractorException extends Exception {
 
 	private static final long serialVersionUID = 1L;
-
-	public LogExtractorException(String message) {
-		super(message);
-	}
+	
+	public LogExtractorException(String errorMessage) {
+        super(errorMessage);
+    }
 }

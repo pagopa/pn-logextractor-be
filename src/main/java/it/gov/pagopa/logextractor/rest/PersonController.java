@@ -1,54 +1,27 @@
 package it.gov.pagopa.logextractor.rest;
 
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
-
+import it.gov.pagopa.logextractor.pn_logextractor_be.api.PersonsApi;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.GetBasicDataResponseDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.PersonPersonIdRequestDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.PersonTaxIdRequestDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import it.gov.pagopa.logextractor.annotation.RecipientType;
-import it.gov.pagopa.logextractor.dto.response.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.service.PersonService;
-import it.gov.pagopa.logextractor.util.Constants;
 
 @RestController
-@RequestMapping("/persons")
-public class PersonController {
+public class PersonController implements PersonsApi {
 
 	@Autowired
 	PersonService personService;
 
-	/**
-	 * A controller method used to retrieve the basic data of a person (the basic
-	 * data would be either unique identifier or tax code)
-	 * 
-	 * @param extractionType required parameter, which represents the integer value
-	 *                       of the extraction type
-	 * @param recipientType  required parameter, which represents the two values of
-	 *                       the enum {@link RecipientType}
-	 * @param ticketNumber   the ticket number of a person, this parameter should be
-	 *                       passed if the unique identifier should be retrieved as
-	 *                       basic data
-	 * @param taxId          the tax id of a person, this parameter should be passed
-	 *                       if the unique identifier should be retrieved as basic
-	 *                       data
-	 * @param personId       the unique identifier of a person, this parameter
-	 *                       should be passed if the tax code should be retrieved as
-	 *                       basic data
-	 * @return basic data of a person, depending on which parameters are present
-	 */
-	@GetMapping("/basicData")
-	public ResponseEntity<GetBasicDataResponseDto> getBasicData(@RequestParam(required = true) Integer extractionType,
-			@RequestParam(required = true) Boolean recipientType,
-			@RequestParam(required = false) @Pattern(regexp = Constants.ALPHA_NUMERIC_WITHOUT_SPECIAL_CHAR_PATTERN, message = "Invalid ticket number") String ticketNumber,
-			@RequestHeader(name = "fiscal-code", required = false) @Size(min = 16, max = 16) @Pattern(regexp = Constants.FISCAL_CODE_PATTERN, message = "Invalid Tax ID") String taxId,
-			@RequestHeader(name = "person-id", required = false) @Size(min = 1, max = 100, message = "Invalid person id") @Pattern(regexp = Constants.INTERNAL_ID_PATTERN) String personId) {
-		return ResponseEntity
-				.ok(personService.getPersonsBasicData(extractionType, recipientType, ticketNumber, taxId, personId));
+	@Override
+	public ResponseEntity<GetBasicDataResponseDto> personalPersonId(PersonPersonIdRequestDto personPersonIdRequestDto) throws Exception {
+		return ResponseEntity.ok(personService.getPersonId(personPersonIdRequestDto));
+	}
+
+	@Override
+	public ResponseEntity<GetBasicDataResponseDto> personalTaxId(PersonTaxIdRequestDto personTaxIdRequestDto) throws Exception {
+		return ResponseEntity.ok(personService.getTaxId(personTaxIdRequestDto));
 	}
 }

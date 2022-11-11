@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: |
+  CloudFormation definition of Log Extractor system (support)
+
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Name of the project
+
+Resources:
+  DistributionLogBucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Sub ${ProjectName}-distribution-logs
+
+  UserPool:
+    Type: "AWS::Cognito::UserPool"
+    Properties:
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: admin_only
+            Priority: 1
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+      AutoVerifiedAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 16
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          RequireUppercase: true
+      Schema:
+        - AttributeDataType: String
+          Name: log_identifier
+          Mutable: true
+      UserPoolName: !Sub ${ProjectName}-userpool
+      UsernameAttributes:
+        - email
+      UsernameConfiguration:
+        CaseSensitive: false
+
+  UserPoolClient:
+    Type: "AWS::Cognito::UserPoolClient"
+    Properties:
+      ClientName: ApiClient
+      AccessTokenValidity: 60
+      IdTokenValidity: 60
+      RefreshTokenValidity: 10
+      TokenValidityUnits:
+        AccessToken: minutes
+        IdToken: minutes
+        RefreshToken: hours
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      UserPoolId: !Ref UserPool
+
+Outputs:
+  CloudFrontLogBucketDomainName:
+    Description: CloudFront log bucket domain name
+    Value: !GetAtt DistributionLogBucket.DomainName
+
+  CognitoUserPoolArn:
+    Description: Cognito user pool ARN
+    Value: !GetAtt UserPool.Arn
