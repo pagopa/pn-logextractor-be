@@ -3,10 +3,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.6.7</version>
-		<relativePath/>
+		<groupId>it.pagopa.pn</groupId>
+		<artifactId>pn-parent</artifactId>
+		<version>1.0.0</version>
+		<relativePath />
 	</parent>
 	<groupId>it.gov.pagopa.logextractor</groupId>
 	<artifactId>pn-logextractor-be</artifactId>
@@ -15,6 +15,7 @@
 	<description>Microservice for log extraction</description>
 	<properties>
 		<java.version>11</java.version>
+		<spring.boot-version>2.6.7</spring.boot-version>
 	</properties>
 	<dependencies>
 		<dependency>
