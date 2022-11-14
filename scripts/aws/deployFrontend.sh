@@ -76,25 +76,8 @@ bucket_url="s3://${bucket_name}"
 HelpdeskAccount=$(aws sts get-caller-identity --profile $profile | jq -r .Account)
 
 mkdir -p $dest_dir
-# global
-echo "aws cloudformation package ${profile_option} --template-file \"global.yaml\" --s3-bucket ${bucket_name} --s3-prefix \"global\" --output-template-file \"dist/template.global.${environment}.packaged.yaml\" --force-upload"
-aws cloudformation package ${profile_option} --template-file "global.yaml" --s3-bucket ${bucket_name} --s3-prefix "global" --output-template-file "${dest_dir}/template.global.${environment}.packaged.yaml" --force-upload
 
-echo "\r\n\r\n"
-echo "aws cloudformation deploy ${profile_option} --region \"us-east-1\" --template-file \"global.yaml\" --stack-name \"pn-logextractor-global-${environment}\" --parameter-overrides \"ProjectName=pn-logextractor-${environment}\""
-aws cloudformation deploy ${profile_option} --region "us-east-1" --template-file "global.yaml" --stack-name "pn-logextractor-global-${environment}" --parameter-overrides "ProjectName=${project_name}"
-
-echo "\r\n\r\n"
-echo "aws cloudformation deploy ${profile_option} --region \"eu-central-1\" --template-file \"support.yaml\" --stack-name \"pn-logextractor-support-${environment}\" --parameter-overrides \"ProjectName=${project_name}\""
-aws cloudformation deploy ${profile_option} --region "eu-central-1" --template-file "support.yaml" --stack-name "pn-logextractor-support-${environment}" --parameter-overrides "ProjectName=${project_name}"
-
-echo "\r\n\r\n"
-echo "aws s3 sync ${profile_option} --region \"us-east-1\" --exclude \".git/*\" --exclude \"bin/*\" . \"${bucket_url}\""
-aws s3 sync ${profile_option} --region "us-east-1" --exclude ".git/*" --exclude "bin/*" . "${bucket_url}"
-
-echo "\r\n\r\n"
-echo "aws cloudformation ${profile_option} --region \"eu-south-1\" package --template-file \"main.yaml\" --s3-bucket ${bucket_name} --s3-prefix \"regional\" --output-template-file \"dist/template.${environment}.packaged.yaml\" --force-upload"
-aws cloudformation ${profile_option} --region "eu-south-1" package --template-file "main.yaml" --s3-bucket ${bucket_name} --s3-prefix "regional" --output-template-file "dist/template.${environment}.packaged.yaml" --force-upload
+aws cloudformation ${profile_option} --region "eu-south-1" package --template-file "frontend.yaml" --s3-bucket ${bucket_name} --s3-prefix "regional" --output-template-file "dist/template.${environment}.packaged.yaml" --force-upload
 
 echo "\r\n\r\n"
 echo "source ./environments/.env.infra.${environment}"
@@ -110,21 +93,28 @@ CloudFrontLogBucketDomainName=$( aws ${profile_option} --region="eu-central-1" c
       ".Stacks[0].Outputs | .[] | select(.OutputKey==\"CloudFrontLogBucketDomainName\") | .OutputValue" \
     )
 
-CognitoUserPoolArn=$( aws ${profile_option} --region="eu-central-1" cloudformation describe-stacks \
-      --stack-name "pn-logextractor-support-${environment}" | jq -r \
-      ".Stacks[0].Outputs | .[] | select(.OutputKey==\"CognitoUserPoolArn\") | .OutputValue" \
+ApiId=$( aws ${profile_option} --region="eu-south-1" cloudformation describe-stacks \
+      --stack-name "pn-logextractor-${environment}" | jq -r \
+      ".Stacks[0].Outputs | .[] | select(.OutputKey==\"ApiId\") | .OutputValue" \
     )
 
+ApiStageName=$( aws ${profile_option} --region="eu-south-1" cloudformation describe-stacks \
+      --stack-name "pn-logextractor-${environment}" | jq -r \
+      ".Stacks[0].Outputs | .[] | select(.OutputKey==\"ApiStageName\") | .OutputValue" \
+    )
+
+
 aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-file "dist/template.${environment}.packaged.yaml" \
-  --stack-name "pn-logextractor-${environment}" \
+  --stack-name "pn-logextractor-frontend-${environment}" \
   --capabilities "CAPABILITY_IAM" \
   --parameter-overrides "TemplateBucketBaseUrl=http://${bucket_name}.s3.amazonaws.com" \
   "ProjectName=${project_name}" \
   "WafArn=${WafArn}" \
   "CloudFrontLogBucketDomainName=${CloudFrontLogBucketDomainName}" \
-  "ApiCognitoUserPoolArn=${CognitoUserPoolArn}" \
   "VpcId=${VpcId}" \
-  "PrivateSubnetIds=${PrivateSubnetIds}"
+  "PrivateSubnetIds=${PrivateSubnetIds}" \
+  "ApiId=${ApiId}" \
+  "ApiStageName=${ApiStageName}" \
 
 
 rm -rf dist

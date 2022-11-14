@@ -28,6 +28,8 @@ Parameters:
 Resources:
   Hosting:
     Type: "AWS::S3::Bucket"
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       AccessControl: Private
       BucketName: !Sub ${ProjectName}-hosting

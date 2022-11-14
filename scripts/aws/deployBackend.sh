@@ -88,17 +88,17 @@ CognitoUserPoolArn=$( aws ${profile_option} --region="eu-central-1" cloudformati
     )
 
 OpenSearchEndpoint=$( aws ${profile_option} --region="eu-south-1" cloudformation describe-stacks \
-      --stack-name "pn-logextractor-${environment}" | jq -r \
+      --stack-name "pn-logextractor-storage-${environment}" | jq -r \
       ".Stacks[0].Outputs | .[] | select(.OutputKey==\"OpenSearchEndpoint\") | .OutputValue" \
     )
 
 ElasticacheEndpoint=$( aws ${profile_option} --region="eu-south-1" cloudformation describe-stacks \
-      --stack-name "pn-logextractor-${environment}" | jq -r \
+      --stack-name "pn-logextractor-storage-${environment}" | jq -r \
       ".Stacks[0].Outputs | .[] | select(.OutputKey==\"ElasticacheEndpoint\") | .OutputValue" \
     )
 
 ElasticacheSecurityGroup=$( aws ${profile_option} --region="eu-south-1" cloudformation describe-stacks \
-      --stack-name "pn-logextractor-${environment}" | jq -r \
+      --stack-name "pn-logextractor-storage-${environment}" | jq -r \
       ".Stacks[0].Outputs | .[] | select(.OutputKey==\"ElasticacheSecurityGroup\") | .OutputValue" \
     )
 

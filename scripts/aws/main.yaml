@@ -14,49 +14,6 @@ Parameters:
     Default: 14
     Description: Number of days to preserve the API logs
 
-  CacheNodeType:
-    Type: String
-    Default: cache.t3.micro
-    Description: Type of the nodes in the cache cluster
-
-  CacheReplicas:
-    Type: Number
-    Default: 1
-    Description: Number of nodes in the cache cluster
-
-  CloudFrontLogBucketDomainName:
-    Type: String
-    Description: Bucket to store CloudFront logs
-
-  OpenSearchEbsIops:
-    Type: Number
-    Description: OpenSearch node volume iops
-
-  OpenSearchEbsSize:
-    Type: Number
-    Description: OpenSearch node volume size (in GiB)
-
-  OpenSearchEbsType:
-    Type: String
-    Description: OpenSearch node volume type such as standard, gp2, or io1
-
-  OpenSearchEngineVersion:
-    Type: String
-    Default: OpenSearch_1.2
-    Description: OpenSearch engine version
-
-  OpenSearchNodeReplicas:
-    Type: Number
-    Description: OpenSearch node replicas
-
-  OpenSearchNodeType:
-    Type: String
-    Description: OpenSearch nodes type
-
-  OpenSearchMasterCredentialSecret:
-    Type: String
-    Description: OpenSearch master credential secret
-
   ProjectName:
     Type: String
     Description: Name of the project
@@ -72,10 +29,6 @@ Parameters:
   PrivateSubnetIds:
     Type: "List<AWS::EC2::Subnet::Id>"
     Description: Private subnets of the given VPC
-
-  WafArn:
-    Type: String
-    Description: Global WAF (ARN) for CloudFront
 
 Resources:
   Backend:
@@ -98,69 +51,15 @@ Resources:
         ProjectName: !Ref ProjectName
       TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/api.yaml
 
-  Frontend:
-    Type: "AWS::CloudFormation::Stack"
-    Properties:
-      Parameters:
-        ApiId: !GetAtt Api.Outputs.RestApiId
-        ApiStageName: !GetAtt Api.Outputs.RestApiStageName
-        LogBucketDomainName: !Ref CloudFrontLogBucketDomainName
-        ProjectName: !Ref ProjectName
-        WafArn: !Ref WafArn
-      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/frontend.yaml
-
-  Cache:
-    Type: "AWS::CloudFormation::Stack"
-    Properties:
-      Parameters:
-        NodeType: !Ref CacheNodeType
-        ProjectName: !Ref ProjectName
-        Replicas: !Ref CacheReplicas
-        SubnetIds: !Join [',', !Ref PrivateSubnetIds]
-        VpcId: !Ref VpcId
-      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/cache.yaml
-
-  OpenSearch:
-    Type: "AWS::CloudFormation::Stack"
-    Properties:
-      Parameters:
-        EbsIops: !Ref OpenSearchEbsIops
-        EbsVolumeSize: !Ref OpenSearchEbsSize
-        EbsVolumeType: !Ref OpenSearchEbsType
-        EngineVersion: !Ref OpenSearchEngineVersion
-        InstanceReplicas: !Ref OpenSearchNodeReplicas
-        InstanceType: !Ref OpenSearchNodeType
-        ProjectName: !Ref ProjectName
-        SubnetIds: !Join [',', !Ref PrivateSubnetIds]
-        VpcId: !Ref VpcId
-        MasterCredentialSecret: !Ref OpenSearchMasterCredentialSecret
-      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/opensearch.yaml
-
-  Alarms:
-    Type: "AWS::CloudFormation::Stack"
-    Properties:
-      Parameters:
-        ProjectName: !Ref ProjectName
-        OpenSearchClusterName: !GetAtt OpenSearch.Outputs.ClusterName
-      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/alarms.yaml
-
 Outputs:
-  ElasticacheEndpoint:
-    Description: Elasticache endpoint
-    Value: !GetAtt Cache.Outputs.RedisEndpoint
-  
-  ElasticacheSecurityGroup:
-    Value: !GetAtt Cache.Outputs.AllowedSecurityGroupId
-
-  OpenSearchEndpoint:
-    Description: OpenSearch endpoint
-    Value: !GetAtt OpenSearch.Outputs.DomainEndpoint
-  
   AlbListenerArn:
     Value: !GetAtt Backend.Outputs.AlbListenerArn
   
-  DistributionId:
-    Value: !GetAtt Frontend.Outputs.DistributionId
+  ApiDomain:
+    Value: !Sub ${Api.Outputs.RestApiId}.execute-api.${AWS::Region}.amazonaws.com
 
-  DistributionDomainName:
-    Value: !GetAtt Frontend.Outputs.DomainName
+  ApiId:
+    Value: !GetAtt Api.Outputs.RestApiId
+
+  ApiStageName:
+    Value: !GetAtt Api.Outputs.RestApiStageName
