@@ -11,7 +11,7 @@ Parameters:
 
   ApiLogRetentionInDays:
     Type: Number
-    Default: 1
+    Default: 14
     Description: Number of days to preserve the API logs
 
   CacheNodeType:
@@ -52,6 +52,10 @@ Parameters:
   OpenSearchNodeType:
     Type: String
     Description: OpenSearch nodes type
+
+  OpenSearchMasterCredentialSecret:
+    Type: String
+    Description: OpenSearch master credential secret
 
   ProjectName:
     Type: String
@@ -116,7 +120,7 @@ Resources:
         VpcId: !Ref VpcId
       TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/cache.yaml
 
-  Services:
+  OpenSearch:
     Type: "AWS::CloudFormation::Stack"
     Properties:
       Parameters:
@@ -129,13 +133,34 @@ Resources:
         ProjectName: !Ref ProjectName
         SubnetIds: !Join [',', !Ref PrivateSubnetIds]
         VpcId: !Ref VpcId
-      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/services.yaml
+        MasterCredentialSecret: !Ref OpenSearchMasterCredentialSecret
+      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/opensearch.yaml
 
   Alarms:
     Type: "AWS::CloudFormation::Stack"
     Properties:
       Parameters:
         ProjectName: !Ref ProjectName
-        OpenSearchClusterName: !GetAtt Services.Outputs.ClusterName
+        OpenSearchClusterName: !GetAtt OpenSearch.Outputs.ClusterName
       TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/alarms.yaml
 
+Outputs:
+  ElasticacheEndpoint:
+    Description: Elasticache endpoint
+    Value: !GetAtt Cache.Outputs.RedisEndpoint
+  
+  ElasticacheSecurityGroup:
+    Value: !GetAtt Cache.Outputs.AllowedSecurityGroupId
+
+  OpenSearchEndpoint:
+    Description: OpenSearch endpoint
+    Value: !GetAtt OpenSearch.Outputs.DomainEndpoint
+  
+  AlbListenerArn:
+    Value: !GetAtt Backend.Outputs.AlbListenerArn
+  
+  DistributionId:
+    Value: !GetAtt Frontend.Outputs.DistributionId
+
+  DistributionDomainName:
+    Value: !GetAtt Frontend.Outputs.DomainName

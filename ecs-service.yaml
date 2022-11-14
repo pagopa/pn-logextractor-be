@@ -224,6 +224,14 @@ Parameters:
     Description: 40th container environment entry in the form key=value
     Type: String
     Default: ''
+  ContainerSecret1:
+    Description: 1st container secret in the form key=secret arn
+    Type: String
+    Default: ''
+  ContainerSecret2:
+    Description: 2nd container secret in the form key=secret arn
+    Type: String
+    Default: ''
 
 
 Conditions:
@@ -269,6 +277,8 @@ Conditions:
   Env38Exist: !Not [ !Equals [ !Ref ContainerEnvEntry38, '' ] ]
   Env39Exist: !Not [ !Equals [ !Ref ContainerEnvEntry39, '' ] ]
   Env40Exist: !Not [ !Equals [ !Ref ContainerEnvEntry40, '' ] ]
+  Secret1Exist: !Not [ !Equals [ !Ref ContainerSecret1, '' ] ]
+  Secret2Exist: !Not [ !Equals [ !Ref ContainerSecret2, '' ] ]
 
 
 Resources:
@@ -281,6 +291,9 @@ Resources:
       Cluster: !Ref ECSClusterName
       TaskDefinition: !Ref TaskDefinition
       DeploymentConfiguration:
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
         MinimumHealthyPercent: 100
         MaximumPercent: 200
       DesiredCount: 1
@@ -336,6 +349,19 @@ Resources:
       ContainerDefinitions:
         - Name: !Sub '${MicroServiceUniqueName}'
           Image: !Ref ContainerImageURI
+          Secrets:
+            - 'Fn::If':
+              - Secret1Exist
+              - Name: !Select [ 0, !Split [ "=", !Ref ContainerSecret1 ] ]
+                ValueFrom:
+                  !Select [ 1, !Split [ "=", !Ref ContainerSecret1 ] ]
+              - !Ref "AWS::NoValue"
+            - 'Fn::If':
+              - Secret2Exist
+              - Name: !Select [ 0, !Split [ "=", !Ref ContainerSecret2 ] ]
+                ValueFrom:
+                  !Select [ 1, !Split [ "=", !Ref ContainerSecret2 ] ]
+              - !Ref "AWS::NoValue"
           Environment:
             - 'Fn::If':
                 - Env1Exist
@@ -555,7 +581,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub '/ecs/${MicroServiceUniqueName}'
-      RetentionInDays: 3
+      RetentionInDays: 14
 
   # A role needed by ECS
   ExecutionRole:
@@ -570,6 +596,16 @@ Resources:
             Action: 'sts:AssumeRole'
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
+      Policies:
+        - PolicyName: !Sub '${MicroServiceUniqueName}-ExecutionPolicy'
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                  - kms:Decrypt
+                Resource:
+                  - Fn::Sub: "arn:${AWS::Partition}:secretsmanager:*:${AWS::AccountId}:secret:*"
 
   # A role for the containers
   TaskRole:

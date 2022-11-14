@@ -67,3 +67,11 @@ Outputs:
   CognitoUserPoolArn:
     Description: Cognito user pool ARN
     Value: !GetAtt UserPool.Arn
+
+  CognitoWebClientId:
+    Description: Cognito web client ID
+    Value: !Ref UserPoolClient
+  
+  CognitoUserPoolId:
+    Description: Cognito user pool ID
+    Value: !Ref UserPool
