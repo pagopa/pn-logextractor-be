@@ -102,17 +102,24 @@ ElasticacheSecurityGroup=$( aws ${profile_option} --region="eu-south-1" cloudfor
       ".Stacks[0].Outputs | .[] | select(.OutputKey==\"ElasticacheSecurityGroup\") | .OutputValue" \
     )
 
-
 AlbListenerArn=$( aws ${profile_option} --region="eu-south-1" cloudformation describe-stacks \
       --stack-name "pn-logextractor-${environment}" | jq -r \
       ".Stacks[0].Outputs | .[] | select(.OutputKey==\"AlbListenerArn\") | .OutputValue" \
     )
+
+DistributionDomainName=$( aws ${profile_option} --region="eu-south-1" cloudformation describe-stacks \
+      --stack-name "pn-logextractor-frontend-${environment}" | jq -r \
+      ".Stacks[0].Outputs | .[] | select(.OutputKey==\"DistributionDomainName\") | .OutputValue" \
+    )
+
+AllowedOrigin=$( echo $AllowedOrigin | sed -e "s/\${DOMAIN_NAME}/$DistributionDomainName/" )
 
 echo "CognitoUserPoolArn="${CognitoUserPoolArn}
 echo "OpenSearchEndpoint="${OpenSearchEndpoint}
 echo "ElasticacheEndpoint="${ElasticacheEndpoint}
 echo "ElasticacheSecurityGroup="${ElasticacheSecurityGroup}
 echo "AlbListenerArn="${AlbListenerArn}
+echo "AllowedOrigin="${AllowedOrigin}
 
 cd ../../
 aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-file "ecs-service.yaml" \
