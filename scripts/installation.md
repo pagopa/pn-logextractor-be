@@ -25,6 +25,14 @@ Eseguire il seguente comando dalla cartella `./scripts/aws`
 
 `./deployInfra.sh -p ${PROFILE} -e ${ENVIRONMENT}`
 
+Eseguire il seguente comando dalla cartella `./scripts/aws`
+
+`./deployStorage.sh -p ${PROFILE} -e ${ENVIRONMENT}`
+
+Eseguire il seguente comando dalla cartella `./scripts/aws`
+
+`./deployFrontend.sh -p ${PROFILE} -e ${ENVIRONMENT}`
+
 # Opensearch
 Dopo aver creato il bastion host per accedere al cluster OpenSearch, eseguire i comandi come indicato nel manuale operativo "\[PN\] Manuale Operativo".
 
