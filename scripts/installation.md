@@ -85,7 +85,7 @@ Posizionarsi nella root del progetto ed eseguire il comando `yarn install`
 
 Eseguire il seguente comando dalla root del progetto:
 
-`./scripts/aws/deployFrontend.sh -p \${PROFILE} -e ${ENVIRONMENT}`
+`./scripts/aws/uploadApplication.sh -p \${PROFILE} -e ${ENVIRONMENT}`
 
 # Test
 Creare un utente nel pool di Cognito (disponibile nella region eu-central-1) e definire anche l'attributo custom `custom:log_identifier` come un valido codice fiscale.
