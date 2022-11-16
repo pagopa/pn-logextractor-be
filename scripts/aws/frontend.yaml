@@ -25,10 +25,6 @@ Parameters:
     Type: "List<AWS::EC2::Subnet::Id>"
     Description: Private subnets of the given VPC
 
-  WafArn:
-    Type: String
-    Description: Global WAF (ARN) for CloudFront
-
   ApiId:
     Type: String
     Description: Rest API Id
@@ -46,7 +42,6 @@ Resources:
         ApiStageName: !Ref ApiStageName
         LogBucketDomainName: !Ref CloudFrontLogBucketDomainName
         ProjectName: !Ref ProjectName
-        WafArn: !Ref WafArn
       TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/frontend.yaml
 
 Outputs:

@@ -83,11 +83,6 @@ echo "\r\n\r\n"
 echo "source ./environments/.env.infra.${environment}"
 source ./environments/.env.infra.${environment}
 
-WafArn=$( aws ${profile_option} --region="us-east-1" cloudformation describe-stacks \
-      --stack-name "pn-logextractor-global-${environment}" | jq -r \
-      ".Stacks[0].Outputs | .[] | select(.OutputKey==\"CloudFrontWafArn\") | .OutputValue" \
-    )
-
 CloudFrontLogBucketDomainName=$( aws ${profile_option} --region="eu-central-1" cloudformation describe-stacks \
       --stack-name "pn-logextractor-support-${environment}" | jq -r \
       ".Stacks[0].Outputs | .[] | select(.OutputKey==\"CloudFrontLogBucketDomainName\") | .OutputValue" \
@@ -109,7 +104,6 @@ aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-fil
   --capabilities "CAPABILITY_IAM" \
   --parameter-overrides "TemplateBucketBaseUrl=http://${bucket_name}.s3.amazonaws.com" \
   "ProjectName=${project_name}" \
-  "WafArn=${WafArn}" \
   "CloudFrontLogBucketDomainName=${CloudFrontLogBucketDomainName}" \
   "VpcId=${VpcId}" \
   "PrivateSubnetIds=${PrivateSubnetIds}" \
