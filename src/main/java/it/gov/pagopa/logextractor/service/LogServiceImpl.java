@@ -50,7 +50,7 @@ public class LogServiceImpl implements LogService {
 	public BaseResponseDto getAnonymizedPersonLogs(PersonLogsRequestDto requestData) throws IOException {
 		log.info("Anonymized logs retrieve process - START - user={}, ticketNumber={}, internalId={}, startDate={}," +
 				" endDate={}, iun={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER),
-				requestData.getTicketNumber(), requestData.getPersonId(), requestData,
+				requestData.getTicketNumber(), requestData.getPersonId(), requestData.getDateFrom(),
 				requestData.getDateTo(), requestData.getIun());
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
