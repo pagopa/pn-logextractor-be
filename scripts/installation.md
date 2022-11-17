@@ -45,18 +45,18 @@ Vanno eseguiti preliminarmente gli script di configurazione ruoli ed utenti:
 Creare il secret `pn-opensearch-logextractor` con chiavi `username` e `password` da utilizzare come credenziali dell'utente `pn-log-extractor-reader` di OpenSearch, creato al password precedente. Il secret va creato nella regione `eu-south-1`.
 
 Gli script di configurazione dell'indice possono essere eseguiti in questo ordine:
+- BOOTSTRAP ROUTING INGEST PIPELINE
 - BOOTSTRAP INGEST PIPELINE
-- BOOTSTRAP INDEX 10Y
-- BOOTSTRAP INDEX 5Y
-- BOOTSTRAP INDEX 120D
 - BOOTSTRAP INDEX TEMPLATE 10Y
 - BOOTSTRAP INDEX TEMPLATE 5Y
 - BOOTSTRAP INDEX TEMPLATE 120D
 - BOOTSTRAP LIFECYCLE POLICY 10Y
 - BOOTSTRAP LIFECYCLE POLICY 5Y
 - BOOTSTRAP LIFECYCLE POLICY 120D
+- BOOTSTRAP INDEX 10Y
+- BOOTSTRAP INDEX 5Y
+- BOOTSTRAP INDEX 120D
 - BOOTSTRAP ROUTING INDEX
-- BOOTSTRAP ROUTING INGEST PIPELINE: questo script va eseguito all'interno di **DevTools** di OpenSearch
 
 Le chiamate vanno autenticate con Basic Auth utilizzando le credenziali del master user di OpenSearch.
 
@@ -85,7 +85,7 @@ Posizionarsi nella root del progetto ed eseguire il comando `yarn install`
 
 Eseguire il seguente comando dalla root del progetto:
 
-`./scripts/aws/uploadApplication.sh -p \${PROFILE} -e ${ENVIRONMENT}`
+`./scripts/aws/uploadApplication.sh -p ${PROFILE} -e ${ENVIRONMENT}`
 
 # Test
 Creare un utente nel pool di Cognito (disponibile nella region eu-central-1) e definire anche l'attributo custom `custom:log_identifier` come un valido codice fiscale.
