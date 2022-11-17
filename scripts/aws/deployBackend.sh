@@ -142,8 +142,8 @@ aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-fil
         "ContainerEnvEntry9=SAFESTORAGE_ENDPOINT=${SafeStorageEndpoint}" \
         "ContainerEnvEntry10=SAFESTORAGE_STAGE=dev" \
         "ContainerEnvEntry11=SAFESTORAGE_CXID=${SafeStorageCxId}" \
-        "ContainerEnvEntry12=SEARCH_URL=${OpenSearchEndpoint}/pn-logs/_search" \
-        "ContainerEnvEntry13=SEARCH_FOLLOWUP_URL=${OpenSearchEndpoint}/_search/scroll" \
+        "ContainerEnvEntry12=SEARCH_URL=https://${OpenSearchEndpoint}/pn-logs/_search" \
+        "ContainerEnvEntry13=SEARCH_FOLLOWUP_URL=https://${OpenSearchEndpoint}/_search/scroll" \
         "ContainerEnvEntry14=ELASTICACHE_HOSTNAME=${ElasticacheEndpoint}" \
         "ContainerEnvEntry15=ELASTICACHE_PORT=6379" \
         "ContainerEnvEntry16=COGNITO_GET_USER_ENDPOINT=${CognitoGetUserEndpoint}" \
