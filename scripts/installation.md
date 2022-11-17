@@ -4,11 +4,7 @@
 Compilare il file `scripts/environments/.env.infra.${ENVIRONMENT}` con i parametri:
 - *VpcId*: ID della private VPC
 - *PrivateSubnetIds*: ID delle subnets della private VPC, separati da virgola
-- *PnRootPath*: Base URL dell'API interne di PN
-- *SafeStorageEndpoint*: hostname dell'endpoint di SafeStorage
-- *SafeStorageCxId*: SafeStorage CX ID
-- *CognitoGetUserEndpoint*: Default a https://cognito-idp.eu-central-1.amazonaws.com
-- *AllowedOrigin*: Dominio da impostare nel CORS delle API
+- *OpenSearchInitialStorageSize*: Dimensione in Gig dello storage iniziale del cluster OpenSearch
 
 Eseguire il seguente comando per assicurarsi che l'utente possa creare cluster OpenSearch sostituendo opportunamente la variabile profile. 
 
@@ -41,6 +37,8 @@ Vanno eseguiti preliminarmente gli script di configurazione ruoli ed utenti:
 - LAMBDA-WRITER-ROLE: crea il ruolo `pn-lambda-writer`
 - PN-LOGS-READER-USER: crea l'utente associato al ruolo `pn-log-extractor-reader` (bisogna fornire una password in input)
 - LAMBDA-WRITER-USER: crea l'utente associato al ruolo `pn-lambda-writer` (bisogna fornire una password in input)
+- PN-LOGS-READER-USER MAPPING: associazione ruolo utente per `pn-log-extractor-reader`
+- LAMBDA-WRITER-USER MAPPING: associazione ruolo utente per `pn-lambda-writer`
 
 Creare il secret `pn-opensearch-logextractor` con chiavi `username` e `password` da utilizzare come credenziali dell'utente `pn-log-extractor-reader` di OpenSearch, creato al password precedente. Il secret va creato nella regione `eu-south-1`.
 
@@ -66,6 +64,7 @@ Compilare il file `scripts/environments/.env.backend.${ENVIRONMENT}` con i param
 - *PnCoreRootPath*: Base URL dell'API interne di PN Core
 - *PnDataVaultRootPath*: Base URL dell'API interne di PN Data Vault
 - *SafeStorageEndpoint*: hostname dell'endpoint di SafeStorage
+- *SafeStorageStage*: stage dell'endpoint di SafeStorage
 - *SafeStorageCxId*: SafeStorage CX ID
 - *CognitoGetUserEndpoint*: Default a https://cognito-idp.eu-central-1.amazonaws.com
 - *AllowedOrigin*: Dominio da impostare nel CORS delle API

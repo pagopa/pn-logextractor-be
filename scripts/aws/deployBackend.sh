@@ -140,7 +140,7 @@ aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-fil
         "ContainerEnvEntry7=GET_PUBLIC_AUTHORITY_NAME_URL=${PnCoreRootPath}/ext-registry-private/pa/v1/activated-on-pn/%s" \
         "ContainerEnvEntry8=DOWNLOAD_FILE_URL=https://%s/%s/safe-storage/v1/files/%s" \
         "ContainerEnvEntry9=SAFESTORAGE_ENDPOINT=${SafeStorageEndpoint}" \
-        "ContainerEnvEntry10=SAFESTORAGE_STAGE=dev" \
+        "ContainerEnvEntry10=SAFESTORAGE_STAGE=${SafeStorageStage}" \
         "ContainerEnvEntry11=SAFESTORAGE_CXID=${SafeStorageCxId}" \
         "ContainerEnvEntry12=SEARCH_URL=https://${OpenSearchEndpoint}/pn-logs/_search" \
         "ContainerEnvEntry13=SEARCH_FOLLOWUP_URL=https://${OpenSearchEndpoint}/_search/scroll" \

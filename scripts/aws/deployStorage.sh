@@ -93,7 +93,7 @@ aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-fil
   "VpcId=${VpcId}" \
   "PrivateSubnetIds=${PrivateSubnetIds}" \
   "OpenSearchNodeType=r5.xlarge.search" \
-  "OpenSearchNodeReplicas=3" "OpenSearchEbsSize=10" \
+  "OpenSearchNodeReplicas=3" "OpenSearchEbsSize=${OpenSearchInitialStorageSize}" \
   "OpenSearchEbsIops=0" "OpenSearchEbsType=gp2" \
   "OpenSearchMasterCredentialSecret=pn-opensearch-master"
 
