@@ -81,7 +81,7 @@ public class OpenSearchApiHandler {
 		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		log.info(LoggingConstants.QUERY_CONSTRUCTION);
-		queryParams.put(OpensearchConstants.OS_IUN_FIELD + ".keyword", iun);
+		queryParams.put(OpensearchConstants.OS_IUN_FIELD, iun);
 		queryData.add(queryConstructor.prepareQueryData(queryParams,
 				new OpenSearchRangeQueryData(OpensearchConstants.OS_TIMESTAMP_FIELD, dateFrom, dateTo),
 				new OpenSearchSortFilter(OpensearchConstants.OS_TIMESTAMP_FIELD, SortOrders.ASC)));
