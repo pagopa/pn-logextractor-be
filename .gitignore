@@ -35,3 +35,5 @@ build/
 /export
 
 ./scripts/aws/dist
+
+.DS_Store

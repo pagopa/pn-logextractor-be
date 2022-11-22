@@ -10,40 +10,7 @@ Parameters:
     Description: Name of the project
 
 Resources:
-  CloudFrontWaf:
-    Type: "AWS::WAFv2::WebACL"
-    Properties:
-      DefaultAction:
-        Allow:
-          {}
-      Description: CloudFront WebACL
-      Name: !Sub ${ProjectName}WebACL
-      Rules:
-        - Name: AWS-AWSManagedRulesCommonRuleSet
-          OverrideAction:
-            None:
-              {}
-          Priority: 0
-          Statement:
-            ManagedRuleGroupStatement:
-              Name: AWSManagedRulesCommonRuleSet
-              VendorName: AWS
-          VisibilityConfig:
-            CloudWatchMetricsEnabled: true
-            MetricName: MetricForAMRCRS
-            SampledRequestsEnabled: true
-      Scope: CLOUDFRONT
-      VisibilityConfig:
-        CloudWatchMetricsEnabled: true
-        MetricName: !Sub ${ProjectName}WebACLMetric
-        SampledRequestsEnabled: true
-
   LogsStorage:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub ${ProjectName}-infra
-
-Outputs:
-  CloudFrontWafArn:
-    Description: CloudFront WAFv2 arn
-    Value: !GetAtt CloudFrontWaf.Arn

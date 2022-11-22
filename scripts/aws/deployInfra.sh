@@ -77,20 +77,20 @@ HelpdeskAccount=$(aws sts get-caller-identity --profile $profile | jq -r .Accoun
 
 mkdir -p $dest_dir
 # global
-echo "aws cloudformation package ${profile_option} --template-file \"global.yaml\" --s3-bucket ${bucket_name} --s3-prefix \"global\" --output-template-file \"dist/template.global.${environment}.packaged.yaml\" --force-upload"
-aws cloudformation package ${profile_option} --template-file "global.yaml" --s3-bucket ${bucket_name} --s3-prefix "global" --output-template-file "${dest_dir}/template.global.${environment}.packaged.yaml" --force-upload
+echo "aws cloudformation package ${profile_option} --template-file \"global.yaml\" --s3-bucket ${bucket_name} --s3-prefix \"regional\" --output-template-file \"dist/template.global.${environment}.packaged.yaml\" --force-upload"
+aws cloudformation package ${profile_option} --template-file "global.yaml" --s3-bucket ${bucket_name} --s3-prefix "regional" --output-template-file "${dest_dir}/template.global.${environment}.packaged.yaml" --force-upload
 
 echo "\r\n\r\n"
-echo "aws cloudformation deploy ${profile_option} --region \"us-east-1\" --template-file \"global.yaml\" --stack-name \"pn-logextractor-global-${environment}\" --parameter-overrides \"ProjectName=pn-logextractor-${environment}\""
-aws cloudformation deploy ${profile_option} --region "us-east-1" --template-file "global.yaml" --stack-name "pn-logextractor-global-${environment}" --parameter-overrides "ProjectName=${project_name}"
+echo "aws cloudformation deploy ${profile_option} --region \"eu-south-1\" --template-file \"global.yaml\" --stack-name \"pn-logextractor-global-${environment}\" --parameter-overrides \"ProjectName=pn-logextractor-${environment}\""
+aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-file "global.yaml" --stack-name "pn-logextractor-global-${environment}" --parameter-overrides "ProjectName=${project_name}"
 
 echo "\r\n\r\n"
 echo "aws cloudformation deploy ${profile_option} --region \"eu-central-1\" --template-file \"support.yaml\" --stack-name \"pn-logextractor-support-${environment}\" --parameter-overrides \"ProjectName=${project_name}\""
 aws cloudformation deploy ${profile_option} --region "eu-central-1" --template-file "support.yaml" --stack-name "pn-logextractor-support-${environment}" --parameter-overrides "ProjectName=${project_name}"
 
 echo "\r\n\r\n"
-echo "aws s3 sync ${profile_option} --region \"us-east-1\" --exclude \".git/*\" --exclude \"bin/*\" . \"${bucket_url}\""
-aws s3 sync ${profile_option} --region "us-east-1" --exclude ".git/*" --exclude "bin/*" . "${bucket_url}"
+echo "aws s3 sync ${profile_option} --region \"eu-south-1\" --exclude \".git/*\" --exclude \"bin/*\" . \"${bucket_url}\""
+aws s3 sync ${profile_option} --region "eu-south-1" --exclude ".git/*" --exclude "bin/*" . "${bucket_url}"
 
 echo "\r\n\r\n"
 echo "aws cloudformation ${profile_option} --region \"eu-south-1\" package --template-file \"main.yaml\" --s3-bucket ${bucket_name} --s3-prefix \"regional\" --output-template-file \"dist/template.${environment}.packaged.yaml\" --force-upload"
@@ -99,11 +99,6 @@ aws cloudformation ${profile_option} --region "eu-south-1" package --template-fi
 echo "\r\n\r\n"
 echo "source ./environments/.env.infra.${environment}"
 source ./environments/.env.infra.${environment}
-
-WafArn=$( aws ${profile_option} --region="us-east-1" cloudformation describe-stacks \
-      --stack-name "pn-logextractor-global-${environment}" | jq -r \
-      ".Stacks[0].Outputs | .[] | select(.OutputKey==\"CloudFrontWafArn\") | .OutputValue" \
-    )
 
 CloudFrontLogBucketDomainName=$( aws ${profile_option} --region="eu-central-1" cloudformation describe-stacks \
       --stack-name "pn-logextractor-support-${environment}" | jq -r \
@@ -115,19 +110,15 @@ CognitoUserPoolArn=$( aws ${profile_option} --region="eu-central-1" cloudformati
       ".Stacks[0].Outputs | .[] | select(.OutputKey==\"CognitoUserPoolArn\") | .OutputValue" \
     )
 
-echo "aws cloudformation deploy ${profile_option} --region \"eu-south-1\" --template-file \"dist/template.${environment}.packaged.yaml\" --stack-name \"pn-logextractor-${environment}\" --capabilities \"CAPABILITY_IAM\" --parameter-overrides \"TemplateBucketBaseUrl=http://${bucket_name}.s3.amazonaws.com\" \"ProjectName=${project_name}\" \"WafArn=${WafArn}\" \"CloudFrontLogBucketDomainName=${CloudFrontLogBucketDomainName}\" \"ApiCognitoUserPoolArn=${CognitoUserPoolArn}\" \"VpcId=${VpcId}\" \"PrivateSubnetIds=${PrivateSubnetIds}\" \"OpenSearchNodeType=r5.xlarge.search\" \"OpenSearchNodeReplicas=3\" \"OpenSearchEbsSize=10\" \"OpenSearchEbsIops=0\" \"OpenSearchEbsType=gp2\" \"OpenSearchMasterCredentialSecret=pn-opensearch-master\""
 aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-file "dist/template.${environment}.packaged.yaml" \
   --stack-name "pn-logextractor-${environment}" \
   --capabilities "CAPABILITY_IAM" \
   --parameter-overrides "TemplateBucketBaseUrl=http://${bucket_name}.s3.amazonaws.com" \
-  "ProjectName=${project_name}" "WafArn=${WafArn}" \
+  "ProjectName=${project_name}" \
   "CloudFrontLogBucketDomainName=${CloudFrontLogBucketDomainName}" \
-  "ApiCognitoUserPoolArn=${CognitoUserPoolArn}" "VpcId=${VpcId}" \
-  "PrivateSubnetIds=${PrivateSubnetIds}" \
-  "OpenSearchNodeType=r5.xlarge.search" \
-  "OpenSearchNodeReplicas=3" "OpenSearchEbsSize=10" \
-  "OpenSearchEbsIops=0" "OpenSearchEbsType=gp2" \
-  "OpenSearchMasterCredentialSecret=pn-opensearch-master"
+  "ApiCognitoUserPoolArn=${CognitoUserPoolArn}" \
+  "VpcId=${VpcId}" \
+  "PrivateSubnetIds=${PrivateSubnetIds}"
 
 
 rm -rf dist
