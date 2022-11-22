@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ResponseConstructorTest {
+class ResponseConstructorTest {
 
     @Test
     @DisplayName("Create zip archive with notification's related files")
