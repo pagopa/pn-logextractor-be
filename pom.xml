@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>it.pagopa.pn</groupId>
-		<artifactId>pn-parent</artifactId>
-		<version>1.0.1-SNAPSHOT</version>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.6.7</version>
 		<relativePath />
 	</parent>
 	<groupId>it.gov.pagopa.logextractor</groupId>
@@ -13,44 +14,13 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>pn-logextractor-be</name>
 	<description>Microservice for log extraction</description>
-	<scm>
-		<connection>${git.conn}</connection>
-		<developerConnection>${git.devConn}</developerConnection>
-		<url>${git.url}</url>
-	</scm>
 	<properties>
-		<jacoco.min.line.cover.ratio>0.10</jacoco.min.line.cover.ratio>
-		<awspring.version>2.3.2</awspring.version>
-		<testcontainers.version>1.16.2</testcontainers.version>
 		<java.version>11</java.version>
-		<spring.boot-version>2.6.7</spring.boot-version>
+		<jacoco.min.line.cover.ratio>0.10</jacoco.min.line.cover.ratio>
 		<openapi-generator-maven-plugin-version>5.1.0</openapi-generator-maven-plugin-version>
+		<testcontainer-version>1.15.3</testcontainer-version>
+		<sonar.coverage.jacoco.xmlReportPaths>${project.reporting.outputDirectory}/jacoco-unit-test-coverage-report/jacoco.xml,${project.reporting.outputDirectory}/jacoco-integration-test-coverage-report/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 	</properties>
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-starter-parent</artifactId>
-				<version>${spring.boot-version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>io.awspring.cloud</groupId>
-				<artifactId>spring-cloud-aws-dependencies</artifactId>
-				<version>${awspring.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.testcontainers</groupId>
-				<artifactId>testcontainers-bom</artifactId>
-				<version>${testcontainers.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -113,8 +83,20 @@
 			<version>20220320</version>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-redis</artifactId>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>5.9.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>${testcontainer-version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>redis.clients</groupId>
@@ -135,14 +117,22 @@
 			<artifactId>springfox-swagger-ui</artifactId>
 			<version>3.0.0</version>
 		</dependency>
-		<dependency>
-			<groupId>org.testcontainers</groupId>
-			<artifactId>junit-jupiter</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${project.parent.version}</version>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.openapitools</groupId>
 				<artifactId>openapi-generator-maven-plugin</artifactId>
