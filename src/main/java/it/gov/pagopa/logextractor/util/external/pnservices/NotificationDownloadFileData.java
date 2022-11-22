@@ -14,4 +14,10 @@ public class NotificationDownloadFileData {
         this.fileCategory = fileCategory;
         this.key = key;
     }
+
+    public NotificationDownloadFileData(String fileCategory, String key, String downloadUrl) {
+        this.fileCategory = fileCategory;
+        this.key = key;
+        this.downloadUrl = downloadUrl;
+    }
 }

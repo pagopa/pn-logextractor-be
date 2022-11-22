@@ -98,8 +98,10 @@ public class ResponseConstructor {
 	 *         its files
 	 * @throws IOException in case of an IO error
 	 */
-	public static DownloadArchiveResponseDto createNotificationLogResponse(List<String> openSearchLogs, List<File> filesToAdd,
-																		   List<NotificationDownloadFileData> filesNotDownloadable, String fileName,
+	public static DownloadArchiveResponseDto createNotificationLogResponse(List<String> openSearchLogs,
+																		   List<File> filesToAdd,
+																		   List<NotificationDownloadFileData> filesNotDownloadable,
+																		   String fileName,
 																		   String zipName) throws IOException {
 		PasswordFactory passwordFactory = new PasswordFactory();
 		String password = passwordFactory.createPassword(1, 1, 1, GenericConstants.SPECIAL_CHARS, 1, 16);

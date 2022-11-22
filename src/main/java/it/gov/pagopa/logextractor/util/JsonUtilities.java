@@ -71,6 +71,11 @@ public class JsonUtilities {
 		}
 	}
 
+	/**
+	 * Converts a {@link JSONArray} into string
+	 * @param listToConvert the input JSONArray object
+	 * @return A string representation of the {@link JSONArray} formatted with a line for every object of the array
+	 * */
 	public String toString(JSONArray listToConvert) {
 		StringBuilder builder = new StringBuilder();
 		for(int counter = 0; counter < listToConvert.length(); counter++){
@@ -79,6 +84,11 @@ public class JsonUtilities {
 		return builder.toString();
 	}
 
+	/**
+	 * Converts a list of {@link  NotificationDownloadFileData} into {@link JSONArray}
+	 * @param objectsToConvert the input NotificationDownloadFileData object list to convert
+	 * @return A {@link JSONArray} representing the input list
+	 * */
 	public JSONArray toJson(List<NotificationDownloadFileData> objectsToConvert) {
 		JSONArray convertedJson = new JSONArray();
 		for(NotificationDownloadFileData currentFile : objectsToConvert) {
@@ -87,6 +97,11 @@ public class JsonUtilities {
 		return convertedJson;
 	}
 
+	/**
+	 * Converts a {@link  NotificationDownloadFileData} object into {@link JSONObject}
+	 * @param objectToConvert the input NotificationDownloadFileData object to convert
+	 * @return A {@link JSONObject} containing the input object's category and key
+	 * */
 	public JSONObject toJson(NotificationDownloadFileData objectToConvert) {
 		JSONObject convertedJson = new JSONObject();
 		convertedJson.put(objectToConvert.getFileCategory(), objectToConvert.getKey());
