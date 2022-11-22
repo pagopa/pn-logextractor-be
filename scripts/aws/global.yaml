@@ -38,6 +38,11 @@ Resources:
         MetricName: !Sub ${ProjectName}WebACLMetric
         SampledRequestsEnabled: true
 
+  LogsStorage:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${ProjectName}-infra
+
 Outputs:
   CloudFrontWafArn:
     Description: CloudFront WAFv2 arn

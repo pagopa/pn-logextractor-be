@@ -168,6 +168,10 @@ Outputs:
     Description: FQDN of the application load balancer
     Value: !GetAtt ApplicationLoadBalancer.DNSName
 
+  AlbListenerArn:
+    Description: ARN of application load balancer listener
+    Value: !Ref ApplicationLoadBalancerListener
+
   NlbArn:
     Description: ARN of the Network load balancer
     Value: !Ref NetworkLoadBalancer
