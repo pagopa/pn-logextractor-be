@@ -3,12 +3,12 @@ package it.gov.pagopa.logextractor.service;
 import java.io.File;
 import java.io.IOException;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.*;
 import it.gov.pagopa.logextractor.util.FileUtilities;
 import it.gov.pagopa.logextractor.util.constant.CognitoConstants;
 import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
+import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +29,8 @@ import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 /**
  * Implementation class of {@link LogService}
@@ -178,7 +180,7 @@ public class LogServiceImpl implements LogService {
 	public BaseResponseDto getNotificationInfoLogs(NotificationInfoRequestDto requestData) throws IOException {
 		log.info("Notification data retrieve process - START - user={}, ticketNumber={}, iun={}",
 				MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), requestData.getTicketNumber(), requestData.getIun());
-		ArrayList<String> downloadUrls = new ArrayList<>();
+		ArrayList<NotificationDownloadFileData> downloadableFiles = new ArrayList<>();
 		long serviceStartTime = System.currentTimeMillis();
 		double secondsToWait = 0;
 		ObjectMapper mapper = new ObjectMapper();
@@ -192,24 +194,31 @@ public class LogServiceImpl implements LogService {
 		NotificationHistoryResponseDto notificationHistory = notificationApiHandler.getNotificationHistory(requestData.getIun(), notificationDetails.getRecipients().size(), notificationStartDate.toString());
 		log.info("Service response: notificationHistory={} retrieved in {} ms, getting legal facts' keys...", mapper.writer().writeValueAsString(notificationHistory), System.currentTimeMillis() - serviceStartTime);
 		long performanceMillis = System.currentTimeMillis();
-		ArrayList<String> downloadKeys = new ArrayList<>(notificationApiHandler.getLegalFactKeys(notificationHistory));
+		ArrayList<NotificationDownloadFileData> downloadFileData = new ArrayList<>(notificationApiHandler.getLegalFactFileDownloadData(notificationHistory));
 		log.info("Legal facts' keys retrieved in {} ms, getting notification documents' keys...", System.currentTimeMillis() - performanceMillis);
 		performanceMillis = System.currentTimeMillis();
-		downloadKeys.addAll(notificationApiHandler.getDocumentKeys(notificationDetails));
+		downloadFileData.addAll(notificationApiHandler.getNotificationDocumentFileDownloadData(notificationDetails));
         log.info("Notification documents' keys retrieved in {} ms, getting payment documents' keys...", System.currentTimeMillis() - performanceMillis);
         performanceMillis = System.currentTimeMillis();
-        downloadKeys.addAll(notificationApiHandler.getPaymentKeys(notificationDetails));
+		downloadFileData.addAll(notificationApiHandler.getPaymentFilesDownloadData(notificationDetails));
         log.info("Notification payment' keys retrieved in {} ms, getting downloads' metadata...", System.currentTimeMillis() - performanceMillis);
         performanceMillis = System.currentTimeMillis();
-        for(String key : downloadKeys) {
-        	FileDownloadMetadataResponseDto downloadData = notificationApiHandler.getDownloadMetadata(key);
-        	downloadUrls.add(downloadData.getDownload().getUrl());
-        	if(null != downloadData.getDownload()
-        			&& null == downloadData.getDownload().getUrl() && null != downloadData.getDownload().getRetryAfter()
-        			&& secondsToWait < downloadData.getDownload().getRetryAfter()) {
-        		secondsToWait = downloadData.getDownload().getRetryAfter();
-        	}
-        }
+		List<NotificationDownloadFileData> filesNotDownloadable = new ArrayList<>();
+		for(NotificationDownloadFileData currentDownloadData : downloadFileData) {
+			try {
+				FileDownloadMetadataResponseDto downloadMetaData = notificationApiHandler.getDownloadMetadata(currentDownloadData.getKey());
+				currentDownloadData.setDownloadUrl(downloadMetaData.getDownload().getUrl());
+				downloadableFiles.add(currentDownloadData);
+				if (null != downloadMetaData.getDownload()
+						&& null == downloadMetaData.getDownload().getUrl()
+						&& null != downloadMetaData.getDownload().getRetryAfter()
+						&& secondsToWait < downloadMetaData.getDownload().getRetryAfter()) {
+					secondsToWait = downloadMetaData.getDownload().getRetryAfter();
+				}
+			} catch (HttpServerErrorException | HttpClientErrorException ex) {
+				filesNotDownloadable.add(currentDownloadData);
+			}
+		}
         if(secondsToWait > 0) {
         	log.info("Notification downloads' metadata retrieved in {} ms, physical files aren't ready yet. Constructing service response...", System.currentTimeMillis() - performanceMillis);
 			performanceMillis = System.currentTimeMillis();
@@ -225,9 +234,10 @@ public class LogServiceImpl implements LogService {
         else {
         	log.info("Notification downloads' metadata retrieved in {} ms, getting physical files... ", System.currentTimeMillis() - performanceMillis);
         	performanceMillis = System.currentTimeMillis();
-        	for(String url : downloadUrls) {
-        		byte[] externalFile = notificationApiHandler.getFile(url);
-        		File downloadedFile = utils.getFile(GenericConstants.DOCUMENT_LABEL, GenericConstants.PDF_EXTENSION);
+        	for(NotificationDownloadFileData currentDownloadableFile : downloadableFiles) {
+        		byte[] externalFile = notificationApiHandler.getFile(currentDownloadableFile.getDownloadUrl());
+        		File downloadedFile = utils.getFile(currentDownloadableFile.getFileCategory()
+						+ "-" + currentDownloadableFile.getKey(), GenericConstants.PDF_EXTENSION);
         		FileUtils.writeByteArrayToFile(downloadedFile, externalFile);
         		filesToAdd.add(downloadedFile);
         	}
@@ -235,7 +245,7 @@ public class LogServiceImpl implements LogService {
         	List<String> openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate);
     		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
 			performanceMillis = System.currentTimeMillis();
-			DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(openSearchResponse, filesToAdd, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
+			DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(openSearchResponse, filesToAdd, filesNotDownloadable, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 			log.info("Notification data retrieve process - END in {} ms",
 					(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get(LoggingConstants.VALIDATION_TIME)));

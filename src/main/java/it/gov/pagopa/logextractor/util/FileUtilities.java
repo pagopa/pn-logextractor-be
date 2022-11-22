@@ -23,8 +23,9 @@ import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 public class FileUtilities {
 
 	/**
-	 * Create a new file with the given name
+	 * Create a new file with the given name plus a random alphanumeric string and the given extension
 	 * @param name the name of the file to retrieve
+	 * @param extension the file extension
 	 * @return a new {@link File} instance of a file with the given name
 	 * */
 	public File getFile(String name, String extension) {
@@ -59,7 +60,7 @@ public class FileUtilities {
 	 * Delete an existing file
 	 * @param file The file to be deleted
 	 * */
-	public void deleteFile(File file) throws IOException {
+	public void delete(File file) throws IOException {
 		Files.delete(file.toPath());
 	}
 	
@@ -67,9 +68,9 @@ public class FileUtilities {
 	 * Delete the files of the input file list
 	 * @param files The list of files to be deleted
 	 * */
-	public void deleteFiles(List<File> files) throws IOException {
+	public void delete(List<File> files) throws IOException {
 		for(File fileToDelete : files) {
-			deleteFile(fileToDelete);
+			delete(fileToDelete);
 		}
 	}
 	
