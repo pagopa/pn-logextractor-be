@@ -1,6 +1,10 @@
 package it.gov.pagopa.logextractor.util;
 
+import java.util.List;
 import java.util.Map;
+
+import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -65,5 +69,27 @@ public class JsonUtilities {
 			document.remove(key);
 			document.put(key, newValue);
 		}
+	}
+
+	public String toString(JSONArray listToConvert) {
+		StringBuilder builder = new StringBuilder();
+		for(int counter = 0; counter < listToConvert.length(); counter++){
+			builder.append(listToConvert.getJSONObject(counter).toString() + "\n");
+		}
+		return builder.toString();
+	}
+
+	public JSONArray toJson(List<NotificationDownloadFileData> objectsToConvert) {
+		JSONArray convertedJson = new JSONArray();
+		for(NotificationDownloadFileData currentFile : objectsToConvert) {
+			convertedJson.put(toJson(currentFile));
+		}
+		return convertedJson;
+	}
+
+	public JSONObject toJson(NotificationDownloadFileData objectToConvert) {
+		JSONObject convertedJson = new JSONObject();
+		convertedJson.put(objectToConvert.getFileCategory(), objectToConvert.getKey());
+		return convertedJson;
 	}
 }
