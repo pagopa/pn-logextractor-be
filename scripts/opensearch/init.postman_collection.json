@@ -1,0 +1,1144 @@
+{
+	"info": {
+		"_postman_id": "45eb109c-0cd3-4945-a0e1-44ce0b294402",
+		"name": "OPENSEARCH BOOTSTRAP",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "24585711"
+	},
+	"item": [
+		{
+			"name": "DELETE ISM",
+			"item": [
+				{
+					"name": "DELETE LIFECYCLE POLICY 120D",
+					"protocolProfileBehavior": {
+						"strictSSL": false
+					},
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{MASTER}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "master",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/_plugins/_ism/policies/rollover120d",
+							"host": [
+								"{{OPENSEARCH-DOMAIN-URL}}"
+							],
+							"port": "{{PORT}}",
+							"path": [
+								"_plugins",
+								"_ism",
+								"policies",
+								"rollover120d"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE  LIFECYCLE POLICY 5Y",
+					"protocolProfileBehavior": {
+						"strictSSL": false
+					},
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{MASTER}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "master",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/_plugins/_ism/policies/rollover5y",
+							"host": [
+								"{{OPENSEARCH-DOMAIN-URL}}"
+							],
+							"port": "{{PORT}}",
+							"path": [
+								"_plugins",
+								"_ism",
+								"policies",
+								"rollover5y"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE LIFECYCLE POLICY 10Y",
+					"protocolProfileBehavior": {
+						"strictSSL": false
+					},
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{MASTER}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "master",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/_plugins/_ism/policies/rollover10y",
+							"host": [
+								"{{OPENSEARCH-DOMAIN-URL}}"
+							],
+							"port": "{{PORT}}",
+							"path": [
+								"_plugins",
+								"_ism",
+								"policies",
+								"rollover10y"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "PROD",
+			"item": [
+				{
+					"name": "BOOTSTRAP ROUTING INGEST PIPELINE",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{MASTER}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "master",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"processors\": [\r\n{\r\n        \"script\" : {\r\n          \"source\" : \"         if ( ctx.tags != null && ctx.tags.size() > 0) {          for( String tag : ctx.tags ) {            if (tag.equals('AUDIT5Y')) {              ctx.index='pn-logs5y';            } else if (tag.equals('AUDIT10Y')) {              ctx._index='pn-logs10y';            } else {              ctx._index='pn-logs120d'            }          }         } else {            ctx._index='pn-logs120d'         }        \"\r\n        }\r\n      }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/_ingest/pipeline/routing_pipeline",
+							"host": [
+								"{{OPENSEARCH-DOMAIN-URL}}"
+							],
+							"port": "{{PORT}}",
+							"path": [
+								"_ingest",
+								"pipeline",
+								"routing_pipeline"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "BOOTSTRAP INGEST PIPELINE",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{MASTER}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "master",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"processors\" : [\r\n      {\r\n        \"grok\" : {\r\n          \"field\" : \"trace_id\",\r\n          \"patterns\" : [\r\n            \"^.*;Root=%{DATA:root_trace_id};.*$\"\r\n          ],\r\n          \"ignore_failure\" : true\r\n        }\r\n      },\r\n      {\r\n        \"grok\":{\r\n          \"ignore_failure\": true, \r\n          \"field\":\"uid\",\r\n          \"patterns\":[\r\n            \"^%{UID_PREFIX:uid_prefix}-%{DATA:uid}$\"\r\n            ],\r\n            \"pattern_definitions\":{\r\n              \"UID_PREFIX\":\"IO-PF|IO-PG|IO-PA\"\r\n            }\r\n        }\r\n      }\r\n    ]\r\n  }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/_ingest/pipeline/import",
+							"host": [
+								"{{OPENSEARCH-DOMAIN-URL}}"
+							],
+							"port": "{{PORT}}",
+							"path": [
+								"_ingest",
+								"pipeline",
+								"import"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "BOOTSTRAP INDEX  TEMPLATE 120D",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{MASTER}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "master",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"index_patterns\": [\r\n    \"pn-logs120d*\"\r\n  ],\r\n  \"template\": {\r\n    \"settings\": {\r\n      \"index\": {\r\n        \"final_pipeline\": \"import\",\r\n        \"opendistro\": {\r\n          \"index_state_management\": {\r\n            \"rollover_alias\": \"pn-logs120d\"\r\n          }\r\n        },\r\n        \"number_of_shards\": \"1\",\r\n        \"number_of_replicas\": \"1\"\r\n      }\r\n    },\r\n    \"mappings\":{\r\n      \"dynamic_templates\":[\r\n         {\r\n           \"strings_as_keyword\":{\r\n             \"match_mapping_type\":\"string\",\r\n             \"mapping\":{\r\n               \"type\":\"keyword\"\r\n             }\r\n           }\r\n         }\r\n        ],\r\n                \"properties\":{\r\n            \"@timestamp\":{\r\n                \"type\":\"date\"\r\n            }\r\n        }\r\n    },\r\n    \"aliases\": {\r\n      \"pn-logs\": {}\r\n    }\r\n  },\r\n  \"composed_of\": []\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/_index_template/ism_rollover120d",
+							"host": [
+								"{{OPENSEARCH-DOMAIN-URL}}"
+							],
+							"port": "{{PORT}}",
+							"path": [
+								"_index_template",
+								"ism_rollover120d"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "BOOTSTRAP INDEX  TEMPLATE 5Y",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{MASTER}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "master",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"index_patterns\": [\r\n    \"pn-logs5y*\"\r\n  ],\r\n  \"template\": {\r\n    \"settings\": {\r\n      \"index\": {\r\n        \"final_pipeline\": \"import\",\r\n        \"opendistro\": {\r\n          \"index_state_management\": {\r\n            \"rollover_alias\": \"pn-logs5y\"\r\n          }\r\n        },\r\n        \"number_of_shards\": \"1\",\r\n        \"number_of_replicas\": \"1\"\r\n      }\r\n    },\r\n    \"mappings\":{\r\n      \"dynamic_templates\":[\r\n         {\r\n           \"strings_as_keyword\":{\r\n             \"match_mapping_type\":\"string\",\r\n             \"mapping\":{\r\n               \"type\":\"keyword\"\r\n             }\r\n           }\r\n         }\r\n        ],\r\n        \"properties\":{\r\n            \"@timestamp\":{\r\n                \"type\":\"date\"\r\n            }\r\n        }\r\n        \r\n    },\r\n    \"aliases\": {\r\n      \"pn-logs\": {}\r\n    }\r\n  },\r\n  \"composed_of\": []\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/_index_template/ism_rollover5y",
+							"host": [
+								"{{OPENSEARCH-DOMAIN-URL}}"
+							],
+							"port": "{{PORT}}",
+							"path": [
+								"_index_template",
+								"ism_rollover5y"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "BOOTSTRAP INDEX  TEMPLATE 10Y",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{MASTER}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "master",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"index_patterns\": [\r\n    \"pn-logs10y*\"\r\n  ],\r\n  \"template\": {\r\n    \"settings\": {\r\n      \"index\": {\r\n        \"final_pipeline\": \"import\",\r\n        \"opendistro\": {\r\n          \"index_state_management\": {\r\n            \"rollover_alias\": \"pn-logs10y\"\r\n          }\r\n        },\r\n        \"number_of_shards\": \"1\",\r\n        \"number_of_replicas\": \"1\"\r\n      }\r\n    },\r\n    \"mappings\":{\r\n      \"dynamic_templates\":[\r\n         {\r\n           \"strings_as_keyword\":{\r\n             \"match_mapping_type\":\"string\",\r\n             \"mapping\":{\r\n               \"type\":\"keyword\"\r\n             }\r\n           }\r\n         }\r\n        ],\r\n                \"properties\":{\r\n            \"@timestamp\":{\r\n                \"type\":\"date\"\r\n            }\r\n        }\r\n    },\r\n    \"aliases\": {\r\n      \"pn-logs\": {}\r\n    }\r\n  },\r\n  \"composed_of\": []\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/_index_template/ism_rollover10y",
+							"host": [
+								"{{OPENSEARCH-DOMAIN-URL}}"
+							],
+							"port": "{{PORT}}",
+							"path": [
+								"_index_template",
+								"ism_rollover10y"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "BOOTSTRAP LIFECYCLE POLICY 120D",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{MASTER}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "master",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"policy\": {\r\n        \"description\" : \"Rollover audit120d\",\r\n        \"default_state\" : \"rollover\",\r\n        \"states\" : [\r\n          {\r\n            \"name\" : \"rollover\",\r\n            \"actions\" : [\r\n              {\r\n                \"rollover\" : {\r\n                  \"min_size\" : \"20gb\",\r\n                  \"min_index_age\":\"3d\"\r\n                }\r\n              }\r\n            ],\r\n            \"transitions\" : [\r\n              {\r\n                \"state_name\" : \"delete\",\r\n                \"conditions\" : {\r\n                  \"min_index_age\" : \"120d\"\r\n                }\r\n              }\r\n            ]\r\n          },\r\n          {\r\n            \"name\" : \"delete\",\r\n            \"actions\" : [\r\n              {\r\n                \"delete\" : { }\r\n              }\r\n            ],\r\n            \"transitions\" : [ ]\r\n          }\r\n        ],\r\n        \"ism_template\" : [\r\n          {\r\n            \"index_patterns\" : [\r\n              \"pn-logs120d*\"\r\n            ],\r\n            \"priority\" : 100\r\n          }\r\n        ]\r\n      }\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/_plugins/_ism/policies/rollover120d",
+							"host": [
+								"{{OPENSEARCH-DOMAIN-URL}}"
+							],
+							"port": "{{PORT}}",
+							"path": [
+								"_plugins",
+								"_ism",
+								"policies",
+								"rollover120d"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "BOOTSTRAP LIFECYCLE POLICY 5Y",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{MASTER}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "master",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"policy\": {\r\n        \"description\" : \"Rollover audit5y\",\r\n        \"default_state\" : \"rollover\",\r\n        \"states\" : [\r\n          {\r\n            \"name\" : \"rollover\",\r\n            \"actions\" : [\r\n              {\r\n                \"rollover\" : {\r\n                  \"min_size\" : \"20gb\",\r\n                  \"min_index_age\":\"3d\"\r\n                }\r\n              }\r\n            ],\r\n            \"transitions\" : [\r\n              {\r\n                \"state_name\" : \"delete\",\r\n                \"conditions\" : {\r\n                  \"min_index_age\" : \"1825d\"\r\n                }\r\n              }\r\n            ]\r\n          },\r\n          {\r\n            \"name\" : \"delete\",\r\n            \"actions\" : [\r\n              {\r\n                \"delete\" : { }\r\n              }\r\n            ],\r\n            \"transitions\" : [ ]\r\n          }\r\n        ],\r\n        \"ism_template\" : [\r\n          {\r\n            \"index_patterns\" : [\r\n              \"pn-logs5y*\"\r\n            ],\r\n            \"priority\" : 100\r\n          }\r\n        ]\r\n      }\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/_plugins/_ism/policies/rollover5y",
+							"host": [
+								"{{OPENSEARCH-DOMAIN-URL}}"
+							],
+							"port": "{{PORT}}",
+							"path": [
+								"_plugins",
+								"_ism",
+								"policies",
+								"rollover5y"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "BOOTSTRAP LIFECYCLE POLICY 10Y",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{MASTER}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "master",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"policy\": {\r\n        \"description\" : \"Rollover audit10y\",\r\n        \"default_state\" : \"rollover\",\r\n        \"states\" : [\r\n          {\r\n            \"name\" : \"rollover\",\r\n            \"actions\" : [\r\n              {\r\n                \"rollover\" : {\r\n                  \"min_size\" : \"20gb\",\r\n                  \"min_index_age\":\"3d\"\r\n                }\r\n              }\r\n            ],\r\n            \"transitions\" : [\r\n              {\r\n                \"state_name\" : \"delete\",\r\n                \"conditions\" : {\r\n                  \"min_index_age\" : \"3650d\"\r\n                }\r\n              }\r\n            ]\r\n          },\r\n          {\r\n            \"name\" : \"delete\",\r\n            \"actions\" : [\r\n              {\r\n                \"delete\" : { }\r\n              }\r\n            ],\r\n            \"transitions\" : [ ]\r\n          }\r\n        ],\r\n        \"ism_template\" : [\r\n          {\r\n            \"index_patterns\" : [\r\n              \"pn-logs10y*\"\r\n            ],\r\n            \"priority\" : 100\r\n          }\r\n        ]\r\n      }\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/_plugins/_ism/policies/rollover10y",
+							"host": [
+								"{{OPENSEARCH-DOMAIN-URL}}"
+							],
+							"port": "{{PORT}}",
+							"path": [
+								"_plugins",
+								"_ism",
+								"policies",
+								"rollover10y"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "BOOTSTRAP INDEX 10Y",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{MASTER}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "master",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"aliases\": {\r\n    \"pn-logs10y\": {\r\n      \"is_write_index\": true\r\n    }\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/pn-logs10y-000001",
+							"host": [
+								"{{OPENSEARCH-DOMAIN-URL}}"
+							],
+							"port": "{{PORT}}",
+							"path": [
+								"pn-logs10y-000001"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "BOOTSTRAP INDEX 5Y",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{MASTER}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "master",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"aliases\": {\r\n    \"pn-logs5y\": {\r\n      \"is_write_index\": true\r\n    }\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/pn-logs5y-000001",
+							"host": [
+								"{{OPENSEARCH-DOMAIN-URL}}"
+							],
+							"port": "{{PORT}}",
+							"path": [
+								"pn-logs5y-000001"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "BOOTSTRAP INDEX 120D",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{MASTER}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "master",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"aliases\": {\r\n    \"pn-logs120d\": {\r\n      \"is_write_index\": true\r\n    }\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/pn-logs120d-000001",
+							"host": [
+								"{{OPENSEARCH-DOMAIN-URL}}"
+							],
+							"port": "{{PORT}}",
+							"path": [
+								"pn-logs120d-000001"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "BOOTSTRAP ROUTING INDEX",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{MASTER}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "master",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"settings\": {\r\n    \"index.default_pipeline\": \"routing_pipeline\"\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/routing_index",
+							"host": [
+								"{{OPENSEARCH-DOMAIN-URL}}"
+							],
+							"port": "{{PORT}}",
+							"path": [
+								"routing_index"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "DELETE INDEX",
+			"item": [
+				{
+					"name": "DELETE ROUTING INDEX",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{MASTER}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "master",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/routing_index",
+							"host": [
+								"{{OPENSEARCH-DOMAIN-URL}}"
+							],
+							"port": "{{PORT}}",
+							"path": [
+								"routing_index"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE INDEX 120D",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{MASTER}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "master",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/pn-logs5y-000001",
+							"host": [
+								"{{OPENSEARCH-DOMAIN-URL}}"
+							],
+							"port": "{{PORT}}",
+							"path": [
+								"pn-logs5y-000001"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE INDEX 5Y",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{MASTER}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "master",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/pn-logs120d-000001",
+							"host": [
+								"{{OPENSEARCH-DOMAIN-URL}}"
+							],
+							"port": "{{PORT}}",
+							"path": [
+								"pn-logs120d-000001"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE INDEX 10Y",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{MASTER}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "master",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/pn-logs10y-000001",
+							"host": [
+								"{{OPENSEARCH-DOMAIN-URL}}"
+							],
+							"port": "{{PORT}}",
+							"path": [
+								"pn-logs10y-000001"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "PN-LOGS-READER-ROLE",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{MASTER}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "master",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"cluster_permissions\" : [\r\n        \"read\",\r\n        \"data_access\",\r\n        \"search\",\r\n        \"get\",\r\n        \"indices_monitor\"\r\n     ],\r\n    \"index_permissions\" : [\r\n      {\r\n        \"index_patterns\" : [\r\n          \"pn-logs*\"\r\n        ],\r\n        \"dls\" : \"\",\r\n        \"fls\" : [ ],\r\n        \"masked_fields\" : [ ],\r\n        \"allowed_actions\" : [\r\n          \"read\",\r\n          \"data_access\",\r\n          \"search\",\r\n          \"get\",\r\n          \"indices_monitor\"\r\n        ]\r\n      }\r\n    ],\r\n    \"tenant_permissions\" : [ ]\r\n  }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/_plugins/_security/api/roles/pn-log-extractor-reader",
+					"host": [
+						"{{OPENSEARCH-DOMAIN-URL}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"_plugins",
+						"_security",
+						"api",
+						"roles",
+						"pn-log-extractor-reader"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "LAMBDA-WRITER-ROLE",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{MASTER}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "master",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"cluster_permissions\" : [\r\n      \"write\",\r\n      \"index\"\r\n    ],\r\n    \"index_permissions\" : [\r\n      {\r\n        \"index_patterns\" : [\r\n          \"routing_index\",\r\n          \"pn-logs*\"\r\n        ],\r\n        \"dls\" : \"\",\r\n        \"fls\" : [ ],\r\n        \"masked_fields\" : [ ],\r\n        \"allowed_actions\" : [\r\n          \"write\",\r\n          \"index\"\r\n        ]\r\n      }\r\n    ]\r\n  }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/_plugins/_security/api/roles/pn-lambda-writer",
+					"host": [
+						"{{OPENSEARCH-DOMAIN-URL}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"_plugins",
+						"_security",
+						"api",
+						"roles",
+						"pn-lambda-writer"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PN-LOGS-READER-USER",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{MASTER}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "master",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "  {\r\n    \"password\": \"{{READER_PASSWORD}}\"\r\n  }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/_plugins/_security/api/internalusers/pn-log-extractor-reader",
+					"host": [
+						"{{OPENSEARCH-DOMAIN-URL}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"_plugins",
+						"_security",
+						"api",
+						"internalusers",
+						"pn-log-extractor-reader"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "LAMBDA-WRITER-USER",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{MASTER}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "master",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "  {\r\n    \"password\": \"{{WRITER_PASSWORD}}\"\r\n  }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/_plugins/_security/api/internalusers/pn-lambda-writer",
+					"host": [
+						"{{OPENSEARCH-DOMAIN-URL}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"_plugins",
+						"_security",
+						"api",
+						"internalusers",
+						"pn-lambda-writer"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PN-LOGS-READER-USER MAPPING",
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{MASTER}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "master",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"users\" : [ \"pn-log-extractor-reader\" ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/_plugins/_security/api/rolesmapping/pn-log-extractor-reader",
+					"host": [
+						"{{OPENSEARCH-DOMAIN-URL}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"_plugins",
+						"_security",
+						"api",
+						"rolesmapping",
+						"pn-log-extractor-reader"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "LAMBDA-WRITER-USER MAPPING",
+			"protocolProfileBehavior": {
+				"strictSSL": false
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{MASTER}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "master",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "  {\r\n    \"users\": [\"pn-lambda-writer\"]\r\n  }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{OPENSEARCH-DOMAIN-URL}}:{{PORT}}/_plugins/_security/api/rolesmapping/pn-lambda-writer",
+					"host": [
+						"{{OPENSEARCH-DOMAIN-URL}}"
+					],
+					"port": "{{PORT}}",
+					"path": [
+						"_plugins",
+						"_security",
+						"api",
+						"rolesmapping",
+						"pn-lambda-writer"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "OPENSEARCH-DOMAIN-URL",
+			"value": "localhost",
+			"type": "default"
+		},
+		{
+			"key": "PORT",
+			"value": "5601",
+			"type": "default"
+		}
+	]
+}
