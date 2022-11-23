@@ -30,7 +30,16 @@ Eseguire il seguente comando dalla cartella `./scripts/aws`
 `./deployFrontend.sh -p ${PROFILE} -e ${ENVIRONMENT}`
 
 # Opensearch
-Dopo aver creato il bastion host per accedere al cluster OpenSearch, eseguire i comandi come indicato nel manuale operativo "\[PN\] Manuale Operativo".
+Dopo aver creato il bastion host per accedere al cluster OpenSearch, eseguire i comandi attraverso Postman, avendo opportunamente configurato una connessione tramite port forwarding al cluster OpenSearch.
+
+Il workspace Postman è disponibile nella cartella `scripts/opensearch`.
+
+Nel workspace Postman va creato un environment con le seguenti variabili:
+- `OPENSEARCH-DOMAIN-URL`: es. http://localhost
+- `PORT`: es. 5601
+- `READER_PASSWORD`: password dell'utente `pn-log-extractor-reader` 
+- `WRITER_PASSWORD`: password dell'utente `pn-lambda-writer` 
+- `MASTER`: password dell'utente `master`
 
 Vanno eseguiti preliminarmente gli script di configurazione ruoli ed utenti:
 - PN-LOGS-READER-ROLE: crea il ruolo `pn-log-extractor-reader`
@@ -92,9 +101,3 @@ Creare un utente nel pool di Cognito (disponibile nella region eu-central-1) e d
 Accedere all'url impostata su Cloudfront ed eseguire il login con le credenziali dell'utente creato al passo precedente.
 
 Eseguire una ricerca per IUN o codice fiscale.
-
-# Open Issues
-
-1) in services.yaml non è definito il dedicated master node (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-opensearchservice-domain-clusterconfig.html#cfn-opensearchservice-domain-clusterconfig-dedicatedmastercount)
-2) se ricarico la pagina una volta aperto il frontend, ottengo un 403; bisogna aggiungere una regola che rimanda i 404 verso index.html così che il routing di react possa attivarsi (https://gist.github.com/bradwestfall/b5b0e450015dbc9b4e56e5f398df48ff#spa)
-3) fornire una dimensione iniziale dello spazio del cluster che non vada in conflitto con gli allarmi (l'allarme scatta quando si scende sotto 20GB ma il cluster parte da 10GB); probabilmente va rivisto anche il limite dell'allarme che è troppo alto.
