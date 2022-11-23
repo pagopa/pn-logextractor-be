@@ -10,13 +10,13 @@ cleanup() {
 
 usage() {
       cat <<EOF
-    Usage: $(basename "${BASH_SOURCE[0]}") [-h] [-v] [-p <aws-profile>] -e <env-type> -t <tag>
+    Usage: $(basename "${BASH_SOURCE[0]}") [-h] [-v] [-p <aws-profile>] -e <env-type> -i <container-image-url>
 
     [-h]                      : this help message
     [-v]                      : verbose mode
     [-p <aws-profile>]        : aws cli profile (optional)
     -e <env-type>             : one of dev / uat / svil / coll / cert / prod
-    -t <tag>                  : docker build tag
+    -i <container-image-url>  : container image url
     
 EOF
   exit 1
@@ -26,7 +26,7 @@ parse_params() {
   # default values of variables set from params
   aws_profile=""
   env_type=""
-  build_tag=""
+  container_image_url=""
 
   while :; do
     case "${1-}" in
@@ -40,8 +40,8 @@ parse_params() {
       env_type="${2-}"
       shift
       ;;
-    -t |  --tag)
-      build_tag="${2-}"
+    -i |  --container-image-url)
+      container_image_url="${2-}"
       shift
       ;;
     -?*) die "Unknown option: $1" ;;
@@ -54,7 +54,7 @@ parse_params() {
 
   # check required params and arguments
   [[ -z "${env_type-}" ]] && usage 
-  [[ -z "${build_tag-}" ]] && usage 
+  [[ -z "${container_image_url-}" ]] && usage 
   return 0
 }
 
@@ -62,9 +62,9 @@ dump_params(){
   echo ""
   echo "######      PARAMETERS      ######"
   echo "##################################"
-  echo "Env Name:          ${env_type}"
-  echo "AWS profile:       ${aws_profile}"
-  echo "Build tag:         ${build_tag}"
+  echo "Env Name:             ${env_type}"
+  echo "AWS profile:          ${aws_profile}"
+  echo "Container image url:  ${container_image_url}"
 }
 
 
@@ -126,7 +126,7 @@ aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-fil
     --stack-name "pn-logextractor-service-${environment}" \
     --parameter-overrides "AdditionalMicroserviceSecurityGroup=${ElasticacheSecurityGroup}" "MicroServiceUniqueName=pn-logextractor-be-${environment}" \
         "ECSClusterName=pn-logextractor-${environment}-ecs-cluster" "MappedPaths=/*" \
-        "ContainerImageURI=${HelpdeskAccount}.dkr.ecr.eu-south-1.amazonaws.com/pn-logextractor-${environment}:${build_tag}" \
+        "ContainerImageURI=${container_image_url}" \
         "CpuValue=1024" "MemoryAmount=4GB" "VpcId=${VpcId}" \
         "Subnets=${PrivateSubnetIds}" \
         "LoadBalancerListenerArn=${AlbListenerArn}" \

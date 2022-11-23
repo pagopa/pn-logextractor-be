@@ -18,16 +18,6 @@ Parameters:
     Description: VPC id of the subnets
 
 Resources:
-  ECRRepository:
-    Type: "AWS::ECR::Repository"
-    Properties:
-      EncryptionConfiguration:
-        EncryptionType: KMS
-      ImageScanningConfiguration:
-        ScanOnPush: true
-      ImageTagMutability: IMMUTABLE
-      RepositoryName: !Sub ${ProjectName}
-
   ECSCluster:
     Type: "AWS::ECS::Cluster"
     Properties:
