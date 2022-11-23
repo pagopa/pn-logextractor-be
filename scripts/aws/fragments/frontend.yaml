@@ -21,13 +21,11 @@ Parameters:
     Type: String
     Description: Name of the project
 
-  WafArn:
-    Type: String
-    Description: CloudFront WAFv2 arn
-
 Resources:
   Hosting:
     Type: "AWS::S3::Bucket"
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       AccessControl: Private
       BucketName: !Sub ${ProjectName}-hosting
@@ -137,7 +135,6 @@ Resources:
               OriginSSLProtocols:
                 - TLSv1.2
         PriceClass: PriceClass_100
-        WebACLId: !Ref WafArn
 
 Outputs:
   DistributionId:

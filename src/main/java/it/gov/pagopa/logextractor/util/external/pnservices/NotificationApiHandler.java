@@ -205,70 +205,82 @@ public class NotificationApiHandler {
 	/**
 	 * Extracts the legal fact documents' keys from the input notification history
 	 * @param notificationInfo The notification details
-	 * @return The keys list
+	 * @return A list of {@link NotificationDownloadFileData} containing the legal fact keys and the files name prefix
 	 * */
-	public List<String> getLegalFactKeys(NotificationHistoryResponseDto notificationInfo) {
-		ArrayList<String> legalFactKeys = new ArrayList<>();
+	public List<NotificationDownloadFileData> getLegalFactFileDownloadData(NotificationHistoryResponseDto notificationInfo) {
+		ArrayList<NotificationDownloadFileData> legalFacts = new ArrayList<>();
 		if(null != notificationInfo.getTimeline()) {
 			for (NotificationDetailsTimelineData timelineObject : notificationInfo.getTimeline()) {
 				if (null != timelineObject.getLegalFactsIds()) {
 					for(NotificationDetailsTimelineLegalFactsData legalFactsObject : timelineObject.getLegalFactsIds()) {
-						legalFactKeys.add(StringUtils.remove(legalFactsObject.getKey(), GenericConstants.SAFESTORAGE_PREFIX));
+						legalFacts.add(new NotificationDownloadFileData(
+								GenericConstants.LEGAL_FACT_FILE_NAME,
+								StringUtils.remove(legalFactsObject.getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
 					}
 				}
 			}
 		}
-		return legalFactKeys;
+		return legalFacts;
 	}
 	
 	/**
 	 * Extracts the documents' keys from the input notification details
 	 * @param notificationInfo The notification details
-	 * @return The keys list
+	 * @return A list of {@link NotificationDownloadFileData} containing the notification
+	 * document's keys and the file names prefix
 	 * */
-	public List<String> getDocumentKeys(NotificationDetailsResponseDto notificationInfo) {
-		ArrayList<String> docIdxs = new ArrayList<>();
+	public List<NotificationDownloadFileData> getNotificationDocumentFileDownloadData(NotificationDetailsResponseDto notificationInfo) {
+		ArrayList<NotificationDownloadFileData> docs = new ArrayList<>();
 		if(null != notificationInfo.getDocuments()) {
 			for (NotificationDetailsDocumentData doc : notificationInfo.getDocuments()) {
-				docIdxs.add(StringUtils.remove(doc.getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX));
+				docs.add(new NotificationDownloadFileData(
+						GenericConstants.NOTIFICATION_ATTACHMENT_FILE_NAME,
+						StringUtils.remove(doc.getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
 			}
 		}
-		return docIdxs;
+		return docs;
 	}
 	
 	/**
 	 * Extracts the all the payment documents' keys from the input notification details
 	 * @param notificationInfo The notification details
-	 * @return The keys list
+	 * @return A list of {@link NotificationDownloadFileData} containing the payment's keys and the files name prefix
 	 * */
-	public List<String> getPaymentKeys(NotificationDetailsResponseDto notificationInfo) {
-		ArrayList<String> paymentKeys = new ArrayList<>();
+	public List<NotificationDownloadFileData> getPaymentFilesDownloadData(NotificationDetailsResponseDto notificationInfo) {
+		ArrayList<NotificationDownloadFileData> payments = new ArrayList<>();
 		if(null != notificationInfo && null != notificationInfo.getRecipients()) {
 			for(NotificationDetailsRecipientsData recipient : notificationInfo.getRecipients()) {
-				paymentKeys.addAll(getCurrentRecipientPaymentKeys(recipient));
+				payments.addAll(getRecipientPayments(recipient));
 			}
 		}
-		return paymentKeys;
+		return payments;
 	}
 
 	/**
-	 * Extracts the payment document's keys from the input notification payment metadata
+	 * Extracts the payment document's keys from the input recipient's data
 	 * @param recipient the recipient to extract the payment keys for
-	 * @return The keys list
+	 * @return A list of {@link NotificationDownloadFileData} containing the payment's keys and the file names prefix
 	 * */
-	private List<String> getCurrentRecipientPaymentKeys(NotificationDetailsRecipientsData recipient) {
-		ArrayList<String> currentRecipientPaymentKeys = new ArrayList<>();
+	private List<NotificationDownloadFileData> getRecipientPayments(NotificationDetailsRecipientsData recipient) {
+		ArrayList<NotificationDownloadFileData> currentRecipientPayments = new ArrayList<>();
 		if(null != recipient.getPayment()) {
 			if(null != recipient.getPayment().getF24flatRate()) {
-				currentRecipientPaymentKeys.add(StringUtils.remove(recipient.getPayment().getF24flatRate().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX));
+				currentRecipientPayments.add(new NotificationDownloadFileData(
+								GenericConstants.F24_FLAT_RATE_PAYMENT_FILE_NAME,
+								StringUtils.remove(recipient.getPayment().getF24flatRate().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
 			}
 			if(null != recipient.getPayment().getF24standard()) {
-				currentRecipientPaymentKeys.add(StringUtils.remove(recipient.getPayment().getF24standard().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX));
+				currentRecipientPayments.add(new NotificationDownloadFileData(
+						GenericConstants.F24_STANDARD_PAYMENT_FILE_NAME,
+						StringUtils.remove(recipient.getPayment().getF24standard().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
+
 			}
 			if(null != recipient.getPayment().getPagoPaForm()) {
-				currentRecipientPaymentKeys.add(StringUtils.remove(recipient.getPayment().getPagoPaForm().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX));
+				currentRecipientPayments.add(new NotificationDownloadFileData(
+						GenericConstants.PAGOPA_FORMA_PAYMENT_FILE_NAME,
+						StringUtils.remove(recipient.getPayment().getPagoPaForm().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
 			}
 		}
-		return currentRecipientPaymentKeys;
+		return currentRecipientPayments;
 	}
 }

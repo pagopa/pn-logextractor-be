@@ -12,8 +12,6 @@ Parameters:
 Resources:
   DistributionLogBucket:
     Type: "AWS::S3::Bucket"
-    Properties:
-      BucketName: !Sub ${ProjectName}-distribution-logs
 
   UserPool:
     Type: "AWS::Cognito::UserPool"

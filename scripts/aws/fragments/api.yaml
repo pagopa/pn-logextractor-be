@@ -83,13 +83,21 @@ Resources:
     DependsOn:
       - PublicApiHealthCheckStatusMethod
       - PublicApiLogsV1NotificationsInfoMethod
+      - PublicApiLogsV1NotificationsInfoMethodCors
       - PublicApiLogsV1NotificationsMonthlyMethod
+      - PublicApiLogsV1NotificationsMonthlyMethodCors      
       - PublicApiLogsV1PersonsMethod
+      - PublicApiLogsV1PersonsMethodCors      
       - PublicApiLogsV1ProcessesMethod
+      - PublicApiLogsV1ProcessesMethodCors      
       - PublicApiPersonsV1PersonIdMethod
+      - PublicApiPersonsV1PersonIdMethodCors
       - PublicApiPersonsV1TaxIdMethod
+      - PublicApiPersonsV1TaxIdMethodCors      
       - PublicApiDowntimeStatusMethod
+      - PublicApiDowntimeStatusMethodCors      
       - PublicApiDowntimeEventsMethod
+      - PublicApiDowntimeEventsMethodCors      
     Properties:
       RestApiId: !Ref PublicRestApi
 
@@ -285,6 +293,28 @@ Resources:
       ResourceId: !Ref PublicApiLogsV1NotificationsInfoResource
       RestApiId: !Ref PublicRestApi
 
+  PublicApiLogsV1NotificationsInfoMethodCors:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: ANY
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/notifications/info"
+      OperationName: Proxy cors to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiLogsV1NotificationsInfoResource
+      RestApiId: !Ref PublicRestApi
+
   PublicApiLogsV1NotificationsMonthlyMethod:
     Type: "AWS::ApiGateway::Method"
     Properties:
@@ -303,6 +333,28 @@ Resources:
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/notifications/monthly"
       OperationName: Proxy to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiLogsV1NotificationsMonthlyResource
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiLogsV1NotificationsMonthlyMethodCors:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: ANY
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/notifications/monthly"
+      OperationName: Proxy cors to ECS microservices
       RequestParameters:
         method.request.path.proxy: true
       ResourceId: !Ref PublicApiLogsV1NotificationsMonthlyResource
@@ -331,6 +383,28 @@ Resources:
       ResourceId: !Ref PublicApiLogsV1PersonsResource
       RestApiId: !Ref PublicRestApi
 
+  PublicApiLogsV1PersonsMethodCors:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: ANY
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/persons"
+      OperationName: Proxy cors to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiLogsV1PersonsResource
+      RestApiId: !Ref PublicRestApi
+
   PublicApiLogsV1ProcessesMethod:
     Type: "AWS::ApiGateway::Method"
     Properties:
@@ -349,6 +423,28 @@ Resources:
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/processes"
       OperationName: Proxy to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiLogsV1ProcessesResource
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiLogsV1ProcessesMethodCors:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: ANY
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/processes"
+      OperationName: Proxy cors to ECS microservices
       RequestParameters:
         method.request.path.proxy: true
       ResourceId: !Ref PublicApiLogsV1ProcessesResource
@@ -377,6 +473,28 @@ Resources:
       ResourceId: !Ref PublicApiPersonsV1PersonIdResource
       RestApiId: !Ref PublicRestApi
 
+  PublicApiPersonsV1PersonIdMethodCors:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: ANY
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/persons/v1/person-id"
+      OperationName: Proxy Cors to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiPersonsV1PersonIdResource
+      RestApiId: !Ref PublicRestApi
+
   PublicApiPersonsV1TaxIdMethod:
     Type: "AWS::ApiGateway::Method"
     Properties:
@@ -395,6 +513,28 @@ Resources:
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/persons/v1/tax-id"
       OperationName: Proxy to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiPersonsV1TaxIdResource
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiPersonsV1TaxIdMethodCors:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: ANY
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/persons/v1/tax-id"
+      OperationName: Proxy cors to ECS microservices
       RequestParameters:
         method.request.path.proxy: true
       ResourceId: !Ref PublicApiPersonsV1TaxIdResource
@@ -423,6 +563,28 @@ Resources:
       ResourceId: !Ref PublicApiDowntimeV1StatusResource
       RestApiId: !Ref PublicRestApi
 
+  PublicApiDowntimeStatusMethodCors:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: ANY
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/downtime/v1/status"
+      OperationName: Proxy cors to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiDowntimeV1StatusResource
+      RestApiId: !Ref PublicRestApi
+
   PublicApiDowntimeEventsMethod:
     Type: "AWS::ApiGateway::Method"
     Properties:
@@ -441,6 +603,28 @@ Resources:
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/downtime/v1/events"
       OperationName: Proxy to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiDowntimeV1EventsResource
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiDowntimeEventsMethodCors:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: ANY
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/downtime/v1/events"
+      OperationName: Proxy cors to ECS microservices
       RequestParameters:
         method.request.path.proxy: true
       ResourceId: !Ref PublicApiDowntimeV1EventsResource

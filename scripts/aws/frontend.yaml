@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: |
+  CloudFormation definition of Log Extractor system
+
+
+Parameters:
+  CloudFrontLogBucketDomainName:
+    Type: String
+    Description: Bucket to store CloudFront logs
+
+  ProjectName:
+    Type: String
+    Description: Name of the project
+
+  TemplateBucketBaseUrl:
+    Type: String
+    Description: The S3 bucket from which to fetch the templates used by this stack
+
+  VpcId:
+    Type: "AWS::EC2::VPC::Id"
+    Description: Id of the VPC to deploy resources into
+
+  PrivateSubnetIds:
+    Type: "List<AWS::EC2::Subnet::Id>"
+    Description: Private subnets of the given VPC
+
+  ApiId:
+    Type: String
+    Description: Rest API Id
+
+  ApiStageName:
+    Type: String
+    Description: API stage name
+
+Resources:
+  Frontend:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      Parameters:
+        ApiId: !Ref ApiId
+        ApiStageName: !Ref ApiStageName
+        LogBucketDomainName: !Ref CloudFrontLogBucketDomainName
+        ProjectName: !Ref ProjectName
+      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/frontend.yaml
+
+Outputs:
+  DistributionId:
+    Value: !GetAtt Frontend.Outputs.DistributionId
+
+  DistributionDomainName:
+    Value: !GetAtt Frontend.Outputs.DomainName
+  
