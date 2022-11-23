@@ -4,28 +4,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import java.time.LocalDate;
 
 @SpringBootTest(classes = PnLogextractorBeApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@RunWith(SpringRunner.class)
 @AutoConfigureMockMvc
 @EnableWebMvc
-public class MockLogControllerTest extends AbstractMock {
+class MockLogControllerTest extends AbstractMock {
 	
 	
 	@Test
-	public void test_healthcheck() throws Exception {
+	void test_healthcheck() throws Exception {
 		mockMissingUniqueIdentifierForPerson();
 		MockHttpServletResponse response = mvc
 				.perform(get(healthcheckUrl).accept(APPLICATION_JSON_UTF8).header("Auth", fakeHeader)
@@ -36,7 +33,7 @@ public class MockLogControllerTest extends AbstractMock {
 	
 
 	@Test
-	public void test_useCase3_4_7_8() throws Exception {
+	void test_useCase3_4_7_8() throws Exception {
 		test_getPersonsLogsPA(3, true, jsonDocSearchPA);
 		test_getPersonsLogs(3, true, jsonDocSearchPF);
 		test_getPersonsLogs(4, true, jsonDocSearchPF);
@@ -45,11 +42,11 @@ public class MockLogControllerTest extends AbstractMock {
 	}
 
 	@Test
-	public void test_useCase10() throws Exception {
+	void test_useCase10() throws Exception {
 		test_getProcesses(LocalDate.now(), LocalDate.now(), "traceId");
 	}
 
-	public void test_getPersonsLogsPA(int useCase, boolean isDeanonimization, String json) throws Exception {
+	void test_getPersonsLogsPA(int useCase, boolean isDeanonimization, String json) throws Exception {
 		// use case 3 PA
 		mockPersonsLogResponse(json);
 		mockPublicAuthorityName();
@@ -61,7 +58,7 @@ public class MockLogControllerTest extends AbstractMock {
 		assertThat(response.getContentAsString()).contains("password");
 	}
 
-	public void test_getPersonsLogs(int useCase, boolean isDeanonimization, String json) throws Exception {
+	void test_getPersonsLogs(int useCase, boolean isDeanonimization, String json) throws Exception {
 		// use case 3,4,7,8
 		mockPersonsLogResponse(json);
 		mockTaxCodeForPerson();
@@ -73,7 +70,7 @@ public class MockLogControllerTest extends AbstractMock {
 	}
 	
 	@Test
-	public void test_case4EmptyOpenSearchResponse() throws Exception {
+	void test_case4EmptyOpenSearchResponse() throws Exception {
 		// use case 4 
 		mockPersonsLogResponse(jsonEmptyDocSearchPF);
 		mockTaxCodeForPerson();
@@ -85,7 +82,7 @@ public class MockLogControllerTest extends AbstractMock {
 	}
 
 	@Test
-	public void test_getNotificationLogs() throws Exception {
+	void test_getNotificationLogs() throws Exception {
 		// use case 6
 		mockPublicAuthorityIdAndNotificationsBetweenMonths(false);
 		mockNotificationResponse();
@@ -99,7 +96,7 @@ public class MockLogControllerTest extends AbstractMock {
 	}
 	
 	@Test
-	public void test_getNotificationLogsNotificationsIsEmpty() throws Exception {
+	void test_getNotificationLogsNotificationsIsEmpty() throws Exception {
 		mockPublicAuthorityIdAndNotificationsBetweenMonths(true);
 		mockPersonsLogUseCase6Response();
 		MockHttpServletResponse response = mvc
@@ -111,7 +108,7 @@ public class MockLogControllerTest extends AbstractMock {
 	}
 	
 	@Test
-	public void test_getPersonsLogsOpenSearchResponseIsEmpty() throws Exception {
+	void test_getPersonsLogsOpenSearchResponseIsEmpty() throws Exception {
 		mockPersonsLogResponse(jsonDocSearchPF);
 		mockTaxCodeForPerson();
 		MockHttpServletResponse response = mvc
@@ -123,7 +120,7 @@ public class MockLogControllerTest extends AbstractMock {
 	}
 
 	@Test
-	public void test_getNotificationInfoLogs() throws Exception {
+	void test_getNotificationInfoLogs() throws Exception {
 		mockNotificationDetailsResponse();
 		mockNotificationHistoryResponse();
 		mockFileDownloadMetadataResponseDTO(mockFileKey);
@@ -138,7 +135,7 @@ public class MockLogControllerTest extends AbstractMock {
 	}
 
 	@Test
-	public void test_CheckMissingUIAttributes() throws Exception {
+	void test_CheckMissingUIAttributes() throws Exception {
 		mockMissingUniqueIdentifierForPerson();
 		MockHttpServletResponse response = mvc
 				.perform(post(notificationUrl).accept(APPLICATION_JSON_UTF8).header("Auth", fakeHeader)
@@ -148,7 +145,7 @@ public class MockLogControllerTest extends AbstractMock {
 	}
 
 	@Test
-	public void test_CheckAuthError() throws Exception {
+	void test_CheckAuthError() throws Exception {
 		mockUniqueIdentifierForPerson();
 		MockHttpServletResponse response = mvc
 				.perform(post(notificationUrl).accept(APPLICATION_JSON_UTF8)
@@ -157,7 +154,7 @@ public class MockLogControllerTest extends AbstractMock {
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
 	}
 
-	public void test_getProcesses(LocalDate dateFrom, LocalDate dateTo, String traceId) throws Exception {
+	void test_getProcesses(LocalDate dateFrom, LocalDate dateTo, String traceId) throws Exception {
 		mockPersonsLogResponse(jsonDocSearchPF);
 		MockHttpServletResponse response = mvc.perform(post(processesUrl).accept(APPLICATION_JSON_UTF8)
 				.header("Auth", fakeHeader).content(getMockTraceIdLogsRequestDto(dateFrom, dateTo, traceId))

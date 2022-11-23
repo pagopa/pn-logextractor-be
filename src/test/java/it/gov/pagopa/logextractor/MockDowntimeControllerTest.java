@@ -8,14 +8,12 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnDowntimeEntry;
@@ -25,15 +23,14 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusResponseDto;
 
 @SpringBootTest(classes = PnLogextractorBeApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@RunWith(SpringRunner.class)
 @AutoConfigureMockMvc
 @EnableWebMvc
-public class MockDowntimeControllerTest extends AbstractMock {
+class MockDowntimeControllerTest extends AbstractMock {
 
 	/** jUnit test for the getCurrentStatus service */
 
 	@Test
-	public void test_CheckCurretStatus() throws Exception {
+	void test_CheckCurretStatus() throws Exception {
 		mockUniqueIdentifierForPerson();
 		PnStatusResponseDto pnStatusResponseDto = new PnStatusResponseDto();
 		PnDowntimeEntry itemPnDowntimeEntry = new PnDowntimeEntry();
@@ -63,7 +60,7 @@ public class MockDowntimeControllerTest extends AbstractMock {
 	}
 
 	@Test
-	public void test_CheckStatusOK() throws Exception {
+	void test_CheckStatusOK() throws Exception {
 		mockUniqueIdentifierForPerson();
 		PnStatusResponseDto pnStatusResponseDtoResponseOK = new PnStatusResponseDto();
 		getMockPnStatusResponseDto(pnStatusResponseDtoResponseOK);
@@ -76,14 +73,14 @@ public class MockDowntimeControllerTest extends AbstractMock {
 	}
 
 	@Test
-	public void test_CheckStatusAuthError() throws Exception {
+	void test_CheckStatusAuthError() throws Exception {
 		mockUniqueIdentifierForPerson();
 		MockHttpServletResponse response = mvc.perform(get(statusUrl)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
 	}
 
 	@Test
-	public void test_CheckStatusLogExtractorException() throws Exception {
+	void test_CheckStatusLogExtractorException() throws Exception {
 		mockUniqueIdentifierForPerson();
 		PnStatusResponseDto pnStatusResponseDtoResponseOK = null;
 		getMockPnStatusResponseDto(pnStatusResponseDtoResponseOK);
@@ -96,16 +93,16 @@ public class MockDowntimeControllerTest extends AbstractMock {
 	/** jUnit test for the addStatusChangeEvent service */
 
 	@Test
-	public void test_CheckAddStatusChangeKO() throws Exception {
+	void test_CheckAddStatusChangeKO() throws Exception {
 		test_CheckAddStatusChange(PnFunctionalityStatus.KO);
 	}
 
 	@Test
-	public void test_CheckAddStatusChangeOK() throws Exception {
+	void test_CheckAddStatusChangeOK() throws Exception {
 		test_CheckAddStatusChange(PnFunctionalityStatus.OK);
 	}
 
-	public void test_CheckAddStatusChange(PnFunctionalityStatus pnFunctionalityStatus) throws Exception {
+	void test_CheckAddStatusChange(PnFunctionalityStatus pnFunctionalityStatus) throws Exception {
 		mockUniqueIdentifierForPerson();
 		mockAddStatusChangeEvent(client);
 		MockHttpServletResponse response = mvc.perform(post(eventsUrl).accept(APPLICATION_JSON_UTF8)
