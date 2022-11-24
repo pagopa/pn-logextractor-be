@@ -81,9 +81,7 @@ Compilare il file `scripts/environments/.env.backend.${ENVIRONMENT}` con i param
 
 Eseguire i seguenti comando dalla cartella `./scripts/aws`
 
-`./buildBackend.sh -p ${PROFILE} -e ${ENVIRONMENT} -t ${BUILD_TAG}`
-
-`./deployBackend.sh -p ${PROFILE} -e ${ENVIRONMENT} -t ${BUILD_TAG}`
+`./deployBackend.sh -p ${PROFILE} -e ${ENVIRONMENT} -i ${CONTAINER_IMAGE_URL}`
 
 # Frontend
 Come pre-requisito è necessario avere installato node.js 16.x e yarn.
