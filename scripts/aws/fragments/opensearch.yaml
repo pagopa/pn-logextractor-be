@@ -30,6 +30,15 @@ Parameters:
     Type: String
     Description: "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/supported-instance-types.html"
 
+  MasterNodeType:
+    Type: String
+    Description: "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/supported-instance-types.html Master Node Instance Type"
+    Default: ""
+    
+  MasterNodeInstancesNumber:
+    Type: Number
+    Description: "Master Node Instance number"
+
   ProjectName:
     Type: String
     Description: Name of the project
@@ -45,6 +54,9 @@ Parameters:
   MasterCredentialSecret:
     Type: String
     Description: Master credential secret
+
+Conditions:
+  HasDedicatedMaster: !Equals [ !Ref MasterNodeType, "" ]
 
 Resources:
   SecurityGroup:
@@ -109,6 +121,9 @@ Resources:
       ClusterConfig:
         InstanceCount: !Ref InstanceReplicas
         InstanceType: !Ref InstanceType
+        DedicatedMasterCount: !If [ HasDedicatedMaster , !Ref MasterNodeInstancesNumber , !Ref "AWS::NoValue" ]
+        DedicatedMasterEnabled: !If [ HasDedicatedMaster , true, false ]
+        DedicatedMasterType: !If [ HasDedicatedMaster, !Ref MasterNodeType, !Ref "AWS::NoValue" ]
         ZoneAwarenessConfig:
           AvailabilityZoneCount: 3
         ZoneAwarenessEnabled: true

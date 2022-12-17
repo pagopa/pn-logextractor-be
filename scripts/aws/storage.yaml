@@ -44,6 +44,15 @@ Parameters:
     Type: String
     Description: OpenSearch master credential secret
 
+  OpenSearchMasterNodeType:
+    Type: String
+    Default: ""
+    Description: OpenSearch Master nodes type
+  
+  OpenSearchMasterNodeInstanceNumber:
+    Type: Number
+    Description: Dedicated master nodes number for OpenSearch cluster
+
   ProjectName:
     Type: String
     Description: Name of the project
@@ -82,6 +91,8 @@ Resources:
         EngineVersion: !Ref OpenSearchEngineVersion
         InstanceReplicas: !Ref OpenSearchNodeReplicas
         InstanceType: !Ref OpenSearchNodeType
+        MasterNodeType: !Ref OpenSearchMasterNodeType
+        MasterNodeInstanceNumber: !Ref OpenSearchMasterNodeInstanceNumber
         ProjectName: !Ref ProjectName
         SubnetIds: !Join [',', !Ref PrivateSubnetIds]
         VpcId: !Ref VpcId
