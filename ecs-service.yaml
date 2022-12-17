@@ -298,7 +298,7 @@ Resources:
         MaximumPercent: 200
       DesiredCount: 1
       # This may need to be adjusted if the container takes a while to start up
-      #HealthCheckGracePeriodSeconds: 30
+      HealthCheckGracePeriodSeconds: 60
       LaunchType: FARGATE
       PlatformVersion: 1.4.0
       NetworkConfiguration:
@@ -563,10 +563,6 @@ Resources:
                 - Name: !Select [ 0, !Split [ "=", !Ref ContainerEnvEntry40 ] ]
                   Value: !Select [ 1, !Split [ "=", !Ref ContainerEnvEntry40 ] ]
                 - !Ref "AWS::NoValue"
-          HealthCheck:
-            Command:
-              - CMD-SHELL
-              - "curl -f http://localhost:8080/status || exit 1"
           PortMappings:
             - ContainerPort: 8080
           # Send logs to CloudWatch Logs
