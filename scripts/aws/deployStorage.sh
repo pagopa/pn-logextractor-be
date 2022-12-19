@@ -78,12 +78,18 @@ HelpdeskAccount=$(aws sts get-caller-identity --profile $profile | jq -r .Accoun
 mkdir -p $dest_dir
 
 echo "\r\n\r\n"
+echo "aws s3 sync ${profile_option} --region \"eu-south-1\" --exclude \".git/*\" --exclude \"bin/*\" . \"${bucket_url}\""
+aws s3 sync ${profile_option} --region "eu-south-1" --exclude ".git/*" --exclude "bin/*" . "${bucket_url}"
+
+echo "\r\n\r\n"
 echo "aws cloudformation ${profile_option} --region \"eu-south-1\" package --template-file \"storage.yaml\" --s3-bucket ${bucket_name} --s3-prefix \"regional\" --output-template-file \"dist/template.${environment}.packaged.yaml\" --force-upload"
 aws cloudformation ${profile_option} --region "eu-south-1" package --template-file "storage.yaml" --s3-bucket ${bucket_name} --s3-prefix "regional" --output-template-file "dist/template.${environment}.packaged.yaml" --force-upload
 
 echo "\r\n\r\n"
 echo "source ./environments/.env.infra.${environment}"
 source ./environments/.env.infra.${environment}
+
+env
 
 aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-file "dist/template.${environment}.packaged.yaml" \
   --stack-name "pn-logextractor-storage-${environment}" \
@@ -95,7 +101,7 @@ aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-fil
   "OpenSearchNodeType=${OpenSearchNodeType}" \
   "OpenSearchNodeReplicas=${OpenSearchNodeReplicas}" "OpenSearchEbsSize=${OpenSearchInitialStorageSize}" \
   "OpenSearchEbsIops=${OpenSearchEbsIops}" "OpenSearchEbsType=${OpenSearchEbsType}" \
-  "OpenSearchMasterNodeType=${OpenSearchMasterNodeType} OpenSearchMasterNodeInstanceNumber=${OpenSearchMasterNodeInstanceNumber}"
+  "OpenSearchMasterNodeType=${OpenSearchMasterNodeType}" "OpenSearchMasterNodeInstanceNumber=${OpenSearchMasterNodeInstanceNumber}" \
   "OpenSearchMasterCredentialSecret=pn-opensearch-master"
 
 

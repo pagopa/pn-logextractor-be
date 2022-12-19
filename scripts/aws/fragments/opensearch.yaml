@@ -56,7 +56,7 @@ Parameters:
     Description: Master credential secret
 
 Conditions:
-  HasDedicatedMaster: !Equals [ !Ref MasterNodeType, "" ]
+  HasDedicatedMaster: !Not [ !Equals [ !Ref MasterNodeType, "" ] ]
 
 Resources:
   SecurityGroup:
@@ -119,14 +119,22 @@ Resources:
           MasterUserName: !Sub '{{resolve:secretsmanager:${MasterCredentialSecret}:SecretString:username}}'
           MasterUserPassword: !Sub '{{resolve:secretsmanager:${MasterCredentialSecret}:SecretString:password}}'
       ClusterConfig:
-        InstanceCount: !Ref InstanceReplicas
-        InstanceType: !Ref InstanceType
-        DedicatedMasterCount: !If [ HasDedicatedMaster , !Ref MasterNodeInstancesNumber , !Ref "AWS::NoValue" ]
-        DedicatedMasterEnabled: !If [ HasDedicatedMaster , true, false ]
-        DedicatedMasterType: !If [ HasDedicatedMaster, !Ref MasterNodeType, !Ref "AWS::NoValue" ]
-        ZoneAwarenessConfig:
-          AvailabilityZoneCount: 3
-        ZoneAwarenessEnabled: true
+        !If 
+          - HasDedicatedMaster
+          - InstanceCount: !Ref InstanceReplicas
+            InstanceType: !Ref InstanceType
+            DedicatedMasterCount: !Ref MasterNodeInstancesNumber
+            DedicatedMasterEnabled: true
+            DedicatedMasterType: !Ref MasterNodeType
+            ZoneAwarenessConfig:
+              AvailabilityZoneCount: 3
+            ZoneAwarenessEnabled: true
+          - InstanceCount: !Ref InstanceReplicas
+            InstanceType: !Ref InstanceType
+            DedicatedMasterEnabled: false
+            ZoneAwarenessConfig:
+              AvailabilityZoneCount: 3
+            ZoneAwarenessEnabled: true
       EBSOptions:
         EBSEnabled: true
         Iops: !Ref EbsIops

@@ -92,7 +92,7 @@ Resources:
         InstanceReplicas: !Ref OpenSearchNodeReplicas
         InstanceType: !Ref OpenSearchNodeType
         MasterNodeType: !Ref OpenSearchMasterNodeType
-        MasterNodeInstanceNumber: !Ref OpenSearchMasterNodeInstanceNumber
+        MasterNodeInstancesNumber: !Ref OpenSearchMasterNodeInstanceNumber
         ProjectName: !Ref ProjectName
         SubnetIds: !Join [',', !Ref PrivateSubnetIds]
         VpcId: !Ref VpcId
