@@ -30,6 +30,15 @@ Parameters:
     Type: String
     Description: "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/supported-instance-types.html"
 
+  MasterNodeType:
+    Type: String
+    Description: "https://docs.aws.amazon.com/opensearch-service/latest/developerguide/supported-instance-types.html Master Node Instance Type"
+    Default: ""
+    
+  MasterNodeInstancesNumber:
+    Type: Number
+    Description: "Master Node Instance number"
+
   ProjectName:
     Type: String
     Description: Name of the project
@@ -45,6 +54,9 @@ Parameters:
   MasterCredentialSecret:
     Type: String
     Description: Master credential secret
+
+Conditions:
+  HasDedicatedMaster: !Not [ !Equals [ !Ref MasterNodeType, "" ] ]
 
 Resources:
   SecurityGroup:
@@ -107,11 +119,22 @@ Resources:
           MasterUserName: !Sub '{{resolve:secretsmanager:${MasterCredentialSecret}:SecretString:username}}'
           MasterUserPassword: !Sub '{{resolve:secretsmanager:${MasterCredentialSecret}:SecretString:password}}'
       ClusterConfig:
-        InstanceCount: !Ref InstanceReplicas
-        InstanceType: !Ref InstanceType
-        ZoneAwarenessConfig:
-          AvailabilityZoneCount: 3
-        ZoneAwarenessEnabled: true
+        !If 
+          - HasDedicatedMaster
+          - InstanceCount: !Ref InstanceReplicas
+            InstanceType: !Ref InstanceType
+            DedicatedMasterCount: !Ref MasterNodeInstancesNumber
+            DedicatedMasterEnabled: true
+            DedicatedMasterType: !Ref MasterNodeType
+            ZoneAwarenessConfig:
+              AvailabilityZoneCount: 3
+            ZoneAwarenessEnabled: true
+          - InstanceCount: !Ref InstanceReplicas
+            InstanceType: !Ref InstanceType
+            DedicatedMasterEnabled: false
+            ZoneAwarenessConfig:
+              AvailabilityZoneCount: 3
+            ZoneAwarenessEnabled: true
       EBSOptions:
         EBSEnabled: true
         Iops: !Ref EbsIops
