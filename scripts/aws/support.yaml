@@ -35,6 +35,9 @@ Resources:
         - AttributeDataType: String
           Name: log_identifier
           Mutable: true
+        - AttributeDataType: String
+          Name: backoffice_tags
+          Mutable: true
       UserPoolName: !Sub ${ProjectName}-userpool
       UsernameAttributes:
         - email
