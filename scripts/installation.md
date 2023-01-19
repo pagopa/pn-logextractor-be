@@ -96,6 +96,21 @@ Aggiornare il file `desired-commit-ids-env.sh` sul bucket `cd-pipeline-cdartifac
 # Installare Pipeline Helpdesk
 Installare da cloudformation lo stack [helpdesk-only-pipeline](https://github.com/pagopa/pn-cicd/blob/main/cd-cli/cnf-templates/helpdesk-only-pipeline.yaml).
 
+Al termine dell'installazione della pipeline, seguire i seguenti passi:
+- nel repository  `cd-pipeline-cdartifactbucket-...` creare il file empty.zip come già fatto per l'ambiente CORE
+- nel repository  `cd-pipeline-cdartifactbucket-...` creare la cartella `config` e posizionarci un file `desired-commit-ids-env.sh` copiando questa struttura (se si è già in possesso dei nuovi commit id di logextractor-be e helpdesk-fe, aggiornarli in questo momento):
+```
+export cd_scripts_commitId=6a3ac5f41284ee3c54e2740bf89ae91b8e9ab39b
+export pn_infra_commitId=004e0275519264320e03ff437e530a8f8c28f428
+
+export pn_logextractor_be_commitId=848b5d0cffdc316088861732586888e890ba1ac3
+export pn_logextractor_be_imageUrl=911845998067.dkr.ecr.eu-central-1.amazonaws.com/pn-logextractor-be@sha256:ecfdffabc4795aa3263b90289ed2538a7a5b7ded2cc0a590e82ac201e6f8dd41
+
+export pn_helpdesk_fe_commitId=3c7401707062dfcfbb70524c93faa9b112bf5421
+```
+
+Come valori di `cd_scripts_commitId` e `pn_infra_commitId` prendere gli ultimi commid ID dai repository [pn-cicd](https://github.com/pagopa/pn-cicd) e [pn-infra](https://github.com/pagopa/pn-infra).
+
 # Deploy Frontend e Backend
 Da Codepipeline, eseguire la pipeline `pn-env-update-pipeline`.
 
