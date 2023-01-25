@@ -234,6 +234,40 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
+  '/logs/v1/sessions':
+    post:
+      tags:
+        - logs
+      security:                                                                # ONLY EXTERNAL
+        - bearerAuth: [ ]
+      operationId: sessionLogs
+      description: Download the logs archive related to a user session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionLogsRequestDto'
+      responses:
+        '200':
+          description: >-
+            The operation has been successfully completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponseDto'
+        '400':
+          description: Errors during the request validation
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Errors during the request elaboration
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
   "/downtime/v1/status":
     get:
       description: >-
@@ -297,6 +331,28 @@ paths:
           description: The application is running
 components:
   schemas:
+    SessionLogsRequestDto:
+      type: object
+      required:
+        - ticketNumber
+        - jti
+        - dateFrom
+        - dateTo
+        - deanonimization
+      properties:
+        ticketNumber:
+          type: string
+        jti:
+          type: string
+          pattern: '^[A-Za-z0-9-]*$'
+        dateFrom:
+          type: string
+          format: date
+        dateTo:
+          type: string
+          format: date
+        deanonimization:
+          type: boolean
     PersonPersonIdRequestDto:
       type: object
       required:
