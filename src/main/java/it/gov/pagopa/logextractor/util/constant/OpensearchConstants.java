@@ -10,6 +10,7 @@ public class OpensearchConstants {
     public static final String OS_UID_FIELD = "uid";
     public static final String OS_CX_ID_FIELD = "cx_id";
     public static final String OS_TRACE_ID_FIELD = "root_trace_id";
+    public static final String OS_JTI_FIELD = "jti";
     public static final String OS_RESPONSE_SCROLL_ID_FIELD = "_scroll_id";
     public static final int OS_QUERY_RESULT_PAGE_SIZE = 10000;
     public static final String OS_SCROLL_PARAMETER ="scroll";
