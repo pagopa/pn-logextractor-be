@@ -80,8 +80,13 @@ mkdir -p $dest_dir
 aws cloudformation ${profile_option} --region "eu-south-1" package --template-file "frontend.yaml" --s3-bucket ${bucket_name} --s3-prefix "regional" --output-template-file "dist/template.${environment}.packaged.yaml" --force-upload
 
 echo "\r\n\r\n"
-echo "aws s3 sync ${profile_option} --region \"us-east-1\" --exclude \".git/*\" --exclude \"bin/*\" . \"${bucket_url}\""
-aws s3 sync ${profile_option} --region "us-east-1" --exclude ".git/*" --exclude "bin/*" . "${bucket_url}"
+s3_region="eu-south-1"
+if $env_type = 'hotfix'
+  s3_region="us-east-1"
+fi
+
+echo "aws s3 sync ${profile_option} --region \"${s3_region}\" --exclude \".git/*\" --exclude \"bin/*\" . \"${bucket_url}\""
+aws s3 sync ${profile_option} --region "${s3_region}" --exclude ".git/*" --exclude "bin/*" . "${bucket_url}"
 
 echo "\r\n\r\n"
 echo "source ./environments/.env.infra.${environment}"
