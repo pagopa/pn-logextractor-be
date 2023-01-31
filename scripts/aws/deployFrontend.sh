@@ -80,7 +80,13 @@ mkdir -p $dest_dir
 aws cloudformation ${profile_option} --region "eu-south-1" package --template-file "frontend.yaml" --s3-bucket ${bucket_name} --s3-prefix "regional" --output-template-file "dist/template.${environment}.packaged.yaml" --force-upload
 
 echo "\r\n\r\n"
+echo "aws s3 sync ${profile_option} --region \"us-east-1\" --exclude \".git/*\" --exclude \"bin/*\" . \"${bucket_url}\""
+aws s3 sync ${profile_option} --region "us-east-1" --exclude ".git/*" --exclude "bin/*" . "${bucket_url}"
+
+echo "\r\n\r\n"
 echo "source ./environments/.env.infra.${environment}"
+AlternateWebDomain=""
+
 source ./environments/.env.infra.${environment}
 
 CloudFrontLogBucketDomainName=$( aws ${profile_option} --region="eu-central-1" cloudformation describe-stacks \
@@ -92,12 +98,13 @@ ApiId=$( aws ${profile_option} --region="eu-south-1" cloudformation describe-sta
       --stack-name "pn-logextractor-${environment}" | jq -r \
       ".Stacks[0].Outputs | .[] | select(.OutputKey==\"ApiId\") | .OutputValue" \
     )
-
-ApiStageName=$( aws ${profile_option} --region="eu-south-1" cloudformation describe-stacks \
-      --stack-name "pn-logextractor-${environment}" | jq -r \
-      ".Stacks[0].Outputs | .[] | select(.OutputKey==\"ApiStageName\") | .OutputValue" \
-    )
-
+    
+OptionalParameters=""
+if ( [ ! -z "$AlternateWebDomain" ] ) then
+  OptionalParameters="${OptionalParameters} AlternateWebDomain=${AlternateWebDomain}"
+  OptionalParameters="${OptionalParameters} WebDomainReferenceToSite=false"
+  OptionalParameters="${OptionalParameters} AlternateWebDomainReferenceToSite=true"
+fi
 
 aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-file "dist/template.${environment}.packaged.yaml" \
   --stack-name "pn-logextractor-frontend-${environment}" \
@@ -106,9 +113,11 @@ aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-fil
   "ProjectName=${project_name}" \
   "CloudFrontLogBucketDomainName=${CloudFrontLogBucketDomainName}" \
   "VpcId=${VpcId}" \
-  "PrivateSubnetIds=${PrivateSubnetIds}" \
   "ApiId=${ApiId}" \
-  "ApiStageName=${ApiStageName}" \
-
+  "PrivateSubnetIds=${PrivateSubnetIds}" \
+  "WebDomain=${WebDomain}" \
+  "WebCertificateArn=${WebCertificateArn}" \
+  "HostedZoneId=${HostedZoneId}" \
+  $OptionalParameters
 
 rm -rf dist

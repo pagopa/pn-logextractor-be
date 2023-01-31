@@ -29,17 +29,51 @@ Parameters:
     Type: String
     Description: Rest API Id
 
-  ApiStageName:
+  HostedZoneId:
     Type: String
-    Description: API stage name
+    Description: Hosted Zone ID
 
+  WebDomain:
+    Type: String
+    Description: Web domain name
+
+  WebDomainReferenceToSite:
+    Description: true if the website must be reachable using the WebDomain
+    Type: String
+    Default: 'true'
+
+  AlternateWebDomain:
+    Description: "Alternate Domain name for the webapp"
+    Type: String
+    Default: ''
+
+  AlternateWebDomainReferenceToSite:
+    Description: true if the website must be reachable using the AlternateWebDomain
+    Type: String
+    Default: 'true' 
+
+  AlternateHostedZoneId:
+    Description: Hosted Zone Id in which you want to add alternate DNS
+    Type: String
+    Default: ''
+
+  WebCertificateArn:
+    Description: "ACM Web Certificate ARN"
+    Type: String
+    
 Resources:
   Frontend:
     Type: "AWS::CloudFormation::Stack"
     Properties:
       Parameters:
         ApiId: !Ref ApiId
-        ApiStageName: !Ref ApiStageName
+        HostedZoneId: !Ref HostedZoneId
+        WebDomain: !Ref WebDomain
+        WebDomainReferenceToSite: !Ref WebDomainReferenceToSite
+        AlternateWebDomain: !Ref AlternateWebDomain
+        AlternateWebDomainReferenceToSite: !Ref AlternateWebDomainReferenceToSite
+        AlternateHostedZoneId: !Ref AlternateHostedZoneId
+        WebCertificateArn: !Ref WebCertificateArn
         LogBucketDomainName: !Ref CloudFrontLogBucketDomainName
         ProjectName: !Ref ProjectName
       TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/frontend.yaml
