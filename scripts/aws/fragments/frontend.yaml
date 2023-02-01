@@ -4,10 +4,6 @@ Description: |
   CloudFormation definition of Log Extractor Frontend subsystem
 
 Parameters:
-  ApiId:
-    Type: String
-    Description: Rest API id
-
   LogBucketDomainName:
     Type: String
     Description: Bucket (domain name) to store CloudFront logs
@@ -46,6 +42,14 @@ Parameters:
 
   WebCertificateArn:
     Description: "ACM Web Certificate ARN"
+    Type: String
+
+  ApiUrl:
+    Description: "Helpdesk API Base URL"
+    Type: String
+  
+  CoreApiUrl:
+    Description: "Core API Url"
     Type: String
 
 Conditions:
@@ -247,7 +251,9 @@ Resources:
                 - - "default-src 'self';"
                   - "object-src 'none';" 
                   - !Sub " connect-src 'self' \
-                           https://${ApiId}.execute-api.${AWS::Region}.amazonaws.com; \
+                           https://cognito-idp.eu-central-1.amazonaws.com \
+                           ${CoreApiUrl} \
+                           ${ApiUrl}; \
                            style-src 'self' 'unsafe-inline'; \
                            worker-src 'none'; \
                            font-src 'self'; \

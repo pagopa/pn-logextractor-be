@@ -88,13 +88,20 @@ echo "\r\n\r\n"
 echo "aws cloudformation deploy ${profile_option} --region \"eu-central-1\" --template-file \"support.yaml\" --stack-name \"pn-logextractor-support-${environment}\" --parameter-overrides \"ProjectName=${project_name}\""
 aws cloudformation deploy ${profile_option} --region "eu-central-1" --template-file "support.yaml" --stack-name "pn-logextractor-support-${environment}" --parameter-overrides "ProjectName=${project_name}"
 
+s3_region="eu-south-1"
+if ([ $env_type = 'hotfix' ]) then ## the s3 bucket has been wrongly created in the us-east-1 region in
+  s3_region="us-east-1"
+fi
+
 echo "\r\n\r\n"
-echo "aws s3 sync ${profile_option} --region \"eu-south-1\" --exclude \".git/*\" --exclude \"bin/*\" . \"${bucket_url}\""
-aws s3 sync ${profile_option} --region "eu-south-1" --exclude ".git/*" --exclude "bin/*" . "${bucket_url}"
+echo "aws s3 sync ${profile_option} --region \"${s3_region}\" --exclude \".git/*\" --exclude \"bin/*\" . \"${bucket_url}\""
+aws s3 sync ${profile_option} --region "${s3_region}" --exclude ".git/*" --exclude "bin/*" . "${bucket_url}"
 
 echo "\r\n\r\n"
 echo "aws cloudformation ${profile_option} --region \"eu-south-1\" package --template-file \"main.yaml\" --s3-bucket ${bucket_name} --s3-prefix \"regional\" --output-template-file \"dist/template.${environment}.packaged.yaml\" --force-upload"
 aws cloudformation ${profile_option} --region "eu-south-1" package --template-file "main.yaml" --s3-bucket ${bucket_name} --s3-prefix "regional" --output-template-file "dist/template.${environment}.packaged.yaml" --force-upload
+
+AlternateApiDomain=""
 
 echo "\r\n\r\n"
 echo "source ./environments/.env.infra.${environment}"
@@ -110,6 +117,11 @@ CognitoUserPoolArn=$( aws ${profile_option} --region="eu-central-1" cloudformati
       ".Stacks[0].Outputs | .[] | select(.OutputKey==\"CognitoUserPoolArn\") | .OutputValue" \
     )
 
+OptionalParameters=""
+if ( [ ! -z "$AlternateApiDomain" ] ) then
+  OptionalParameters="${OptionalParameters} AlternateApiDomain=${AlternateApiDomain}"
+fi
+
 aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-file "dist/template.${environment}.packaged.yaml" \
   --stack-name "pn-logextractor-${environment}" \
   --capabilities "CAPABILITY_IAM" \
@@ -118,7 +130,10 @@ aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-fil
   "CloudFrontLogBucketDomainName=${CloudFrontLogBucketDomainName}" \
   "ApiCognitoUserPoolArn=${CognitoUserPoolArn}" \
   "VpcId=${VpcId}" \
-  "PrivateSubnetIds=${PrivateSubnetIds}"
-
+  "PrivateSubnetIds=${PrivateSubnetIds}" \
+  "ApiDomain=${ApiDomain}" \
+  "ApiCertificateArn=${ApiCertificateArn}" \
+  "HostedZoneId=${HostedZoneId}" \
+  $OptionalParameters
 
 rm -rf dist

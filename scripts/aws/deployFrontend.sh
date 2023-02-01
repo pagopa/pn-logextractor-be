@@ -81,17 +81,17 @@ aws cloudformation ${profile_option} --region "eu-south-1" package --template-fi
 
 echo "\r\n\r\n"
 s3_region="eu-south-1"
-if $env_type = 'hotfix'
+if ([ $env_type = 'hotfix' ]) then ## the s3 bucket has been wrongly created in the us-east-1 region in
   s3_region="us-east-1"
 fi
 
 echo "aws s3 sync ${profile_option} --region \"${s3_region}\" --exclude \".git/*\" --exclude \"bin/*\" . \"${bucket_url}\""
 aws s3 sync ${profile_option} --region "${s3_region}" --exclude ".git/*" --exclude "bin/*" . "${bucket_url}"
 
-echo "\r\n\r\n"
-echo "source ./environments/.env.infra.${environment}"
 AlternateWebDomain=""
 
+echo "\r\n\r\n"
+echo "source ./environments/.env.infra.${environment}"
 source ./environments/.env.infra.${environment}
 
 CloudFrontLogBucketDomainName=$( aws ${profile_option} --region="eu-central-1" cloudformation describe-stacks \
@@ -99,11 +99,6 @@ CloudFrontLogBucketDomainName=$( aws ${profile_option} --region="eu-central-1" c
       ".Stacks[0].Outputs | .[] | select(.OutputKey==\"CloudFrontLogBucketDomainName\") | .OutputValue" \
     )
 
-ApiId=$( aws ${profile_option} --region="eu-south-1" cloudformation describe-stacks \
-      --stack-name "pn-logextractor-${environment}" | jq -r \
-      ".Stacks[0].Outputs | .[] | select(.OutputKey==\"ApiId\") | .OutputValue" \
-    )
-    
 OptionalParameters=""
 if ( [ ! -z "$AlternateWebDomain" ] ) then
   OptionalParameters="${OptionalParameters} AlternateWebDomain=${AlternateWebDomain}"
@@ -118,11 +113,12 @@ aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-fil
   "ProjectName=${project_name}" \
   "CloudFrontLogBucketDomainName=${CloudFrontLogBucketDomainName}" \
   "VpcId=${VpcId}" \
-  "ApiId=${ApiId}" \
   "PrivateSubnetIds=${PrivateSubnetIds}" \
   "WebDomain=${WebDomain}" \
   "WebCertificateArn=${WebCertificateArn}" \
   "HostedZoneId=${HostedZoneId}" \
+  "ApiUrl=${ApiUrl}" \
+  "CoreApiUrl=${CoreApiUrl}" \
   $OptionalParameters
 
 rm -rf dist
