@@ -24,6 +24,14 @@ Parameters:
   ProjectName:
     Type: String
     Description: Name of the project
+    
+  ApiDomain:
+    Type: String
+    Description: API domain name
+
+  ServiceApiPath:
+    Type: String
+    Description: Service API Path for mapping
 
 Resources:
   CloudWatchRole:
@@ -101,6 +109,15 @@ Resources:
     Properties:
       RestApiId: !Ref PublicRestApi
 
+  # Expose API to custom domain
+  APIMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      BasePath: !Ref ServiceApiPath
+      DomainName: !Ref ApiDomain
+      RestApiId: !Ref PublicRestApi
+      Stage: !Ref PublicRestApiStage
+      
   CognitoAuthorizer:
     Type: "AWS::ApiGateway::Authorizer"
     Properties:
