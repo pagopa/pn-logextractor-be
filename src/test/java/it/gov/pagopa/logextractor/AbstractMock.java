@@ -53,6 +53,7 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusResponseDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusUpdateEventRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusUpdateEventRequestDto.SourceTypeEnum;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.SessionLogsRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.TraceIdLogsRequestDto;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 
@@ -103,6 +104,7 @@ public abstract class AbstractMock {
 	protected final String identifierUrl = "/persons/v1/person-id";
 	protected final String taxCodeUrl = "/persons/v1/tax-id";
 	protected final String personUrl = "/logs/v1/persons";
+	protected final String sessionUrl = "/logs/v1/sessions";
 	protected final String notificationUrl = "/logs/v1/notifications/monthly";
 	protected final String notificationInfoUrl = "/logs/v1/notifications/info";
 	protected final String processesUrl = "/logs/v1/processes";
@@ -344,6 +346,16 @@ public abstract class AbstractMock {
 		return mapper.registerModule(new JavaTimeModule()).writeValueAsString(dto);
 	}
 
+	protected static String getMockSessionLogsRequestDto(boolean isDeanonimization)	throws JsonProcessingException {
+		SessionLogsRequestDto dto = new SessionLogsRequestDto();
+		dto.setDateFrom(LocalDate.now());
+		dto.setDateTo(LocalDate.now());
+		dto.setDeanonimization(isDeanonimization);
+		dto.setJti("12954F907C0535ABE97F761829C6BD11");
+		dto.setTicketNumber("123");
+		return mapper.registerModule(new JavaTimeModule()).writeValueAsString(dto);
+	}
+	
 	protected static String getMockPersonLogsRequestDtoPersonIdNull() throws JsonProcessingException {
 		PersonLogsRequestDto dto = new PersonLogsRequestDto();
 		dto.setDateFrom(LocalDate.now());

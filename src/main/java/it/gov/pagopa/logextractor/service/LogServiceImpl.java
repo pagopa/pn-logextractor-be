@@ -3,36 +3,44 @@ package it.gov.pagopa.logextractor.service;
 import java.io.File;
 import java.io.IOException;
 import java.time.OffsetDateTime;
-import java.util.*;
-import it.gov.pagopa.logextractor.pn_logextractor_be.model.*;
-import it.gov.pagopa.logextractor.util.FileUtilities;
-import it.gov.pagopa.logextractor.util.constant.CognitoConstants;
-import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
-import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.io.FileUtils;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
+
 import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
 import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDto;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
-import it.gov.pagopa.logextractor.util.constant.GenericConstants;
-import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.BaseResponseDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.MonthlyNotificationsRequestDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.NotificationInfoRequestDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.PersonLogsRequestDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.SessionLogsRequestDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.TraceIdLogsRequestDto;
+import it.gov.pagopa.logextractor.util.FileUtilities;
 import it.gov.pagopa.logextractor.util.ResponseConstructor;
+import it.gov.pagopa.logextractor.util.constant.CognitoConstants;
+import it.gov.pagopa.logextractor.util.constant.GenericConstants;
+import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
+import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
+import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 
 /**
  * Implementation class of {@link LogService}
