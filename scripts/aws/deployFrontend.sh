@@ -81,7 +81,7 @@ aws cloudformation ${profile_option} --region "eu-south-1" package --template-fi
 
 echo "\r\n\r\n"
 s3_region="eu-south-1"
-if ([ $env_type = 'hotfix' ]) then ## the s3 bucket has been wrongly created in the us-east-1 region in
+if ([ $env_type = 'hotfix' ]) then ## the s3 bucket has been wrongly created in the us-east-1 region (see task PN-3889)
   s3_region="us-east-1"
 fi
 

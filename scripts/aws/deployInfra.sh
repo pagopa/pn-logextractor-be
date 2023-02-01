@@ -89,7 +89,7 @@ echo "aws cloudformation deploy ${profile_option} --region \"eu-central-1\" --te
 aws cloudformation deploy ${profile_option} --region "eu-central-1" --template-file "support.yaml" --stack-name "pn-logextractor-support-${environment}" --parameter-overrides "ProjectName=${project_name}"
 
 s3_region="eu-south-1"
-if ([ $env_type = 'hotfix' ]) then ## the s3 bucket has been wrongly created in the us-east-1 region in
+if ([ $env_type = 'hotfix' ]) then ## the s3 bucket has been wrongly created in the us-east-1 region (see task PN-3889)
   s3_region="us-east-1"
 fi
 
