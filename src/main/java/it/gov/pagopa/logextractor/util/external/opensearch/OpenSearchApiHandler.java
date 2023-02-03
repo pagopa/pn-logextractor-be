@@ -200,18 +200,21 @@ public class OpenSearchApiHandler {
 	 * */
 	private ArrayList<String> getDocumentsFromCurrentResponse(String openSearchResponseBody) {
 		ArrayList<String> documents = new ArrayList<>();
-		JSONObject documentListObject = new JSONObject(openSearchResponseBody);
-		if(!documentListObject.isNull("hits")) {
-			JSONObject documentData = documentListObject.getJSONObject("hits");
-			if(!documentData.isNull("hits")) {
-				JSONArray opensearchEnrichedDoc = documentData.getJSONArray("hits");
-				for(int hitIndex = 0; hitIndex < opensearchEnrichedDoc.length(); hitIndex++) {
-					if(!opensearchEnrichedDoc.getJSONObject(hitIndex).isNull("_source")) {
-						documents.add(opensearchEnrichedDoc.getJSONObject(hitIndex).getJSONObject("_source").toString());
+		if (!StringUtils.isEmpty(openSearchResponseBody)) {
+			JSONObject documentListObject = new JSONObject(openSearchResponseBody);
+			if (!documentListObject.isNull("hits")) {
+				JSONObject documentData = documentListObject.getJSONObject("hits");
+				if (!documentData.isNull("hits")) {
+					JSONArray opensearchEnrichedDoc = documentData.getJSONArray("hits");
+					for (int hitIndex = 0; hitIndex < opensearchEnrichedDoc.length(); hitIndex++) {
+						if (!opensearchEnrichedDoc.getJSONObject(hitIndex).isNull("_source")) {
+							documents.add(
+									opensearchEnrichedDoc.getJSONObject(hitIndex).getJSONObject("_source").toString());
+						}
 					}
 				}
 			}
 		}
-        return documents;
+		return documents;
 	}
 }

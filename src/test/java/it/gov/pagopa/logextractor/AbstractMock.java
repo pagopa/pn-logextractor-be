@@ -180,6 +180,22 @@ public abstract class AbstractMock {
 				.thenReturn(scrollResponseSearch);
 		mockUniqueIdentifierForPerson();
 	}
+	
+	@SuppressWarnings("unchecked")
+	protected void mockEmptyPersonsLogResponse(String jsonDocSearch) throws IOException {
+		NotificationDetailsResponseDto jsonResponse = getNotificationFromResource(mockNotification);
+		ResponseEntity<Object> response = new ResponseEntity<Object>(jsonResponse, HttpStatus.OK);
+		Mockito.when(client.getForEntity(Mockito.anyString(), Mockito.any())).thenReturn(response);
+		ResponseEntity<String> responseSearch = new ResponseEntity<String>("", HttpStatus.OK);
+		Mockito.when(openClient.exchange(ArgumentMatchers.anyString(), ArgumentMatchers.any(HttpMethod.class),
+				ArgumentMatchers.any(HttpEntity.class), ArgumentMatchers.any(Class.class), ArgumentMatchers.anyMap()))
+				.thenReturn(responseSearch);
+		ResponseEntity<String> scrollResponseSearch = new ResponseEntity<String>(scrollMockSearch, HttpStatus.OK);
+		Mockito.when(openClient.exchange(ArgumentMatchers.anyString(), ArgumentMatchers.any(HttpMethod.class),
+				ArgumentMatchers.any(HttpEntity.class), ArgumentMatchers.<Class<String>>any()))
+				.thenReturn(scrollResponseSearch);
+		mockUniqueIdentifierForPerson();
+	}
 
 	@SuppressWarnings("unchecked")
 	protected void mockPersonsLogUseCase6Response() throws IOException {
