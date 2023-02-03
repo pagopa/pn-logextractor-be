@@ -281,7 +281,7 @@ public class LogServiceImpl implements LogService {
 			log.info("Service response: internalId={} retrieved in {} ms", internalId, System.currentTimeMillis() - serviceStartTime);
 			performanceMillis = System.currentTimeMillis();
 			openSearchResponse = openSearchApiHandler.getAnonymizedLogsByUid(internalId, requestData.getDateFrom(), requestData.getDateTo());
-			log.info("Query execution completed in {} ms, retrieved {} documents, deanonimizing results...",
+			log.info(LoggingConstants.QEURY_EXECUTION_COMPLETED_TIME_DEANONIMIZE_DOCS,
 					System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
 			performanceMillis = System.currentTimeMillis();
 			deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, requestData.getRecipientType());
@@ -295,7 +295,7 @@ public class LogServiceImpl implements LogService {
 				String notificationEndDate = notificationStartDate.plusMonths(3).toString();
 				performanceMillis = System.currentTimeMillis();
 				openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate);
-				log.info("Query execution completed in {} ms, retrieved {} documents, deanonimizing results...",
+				log.info(LoggingConstants.QEURY_EXECUTION_COMPLETED_TIME_DEANONIMIZE_DOCS,
 						System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
 				performanceMillis = System.currentTimeMillis();
 				deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, RecipientTypes.PF);
@@ -324,7 +324,7 @@ public class LogServiceImpl implements LogService {
 		log.info("Anonymized session logs retrieve process - START - user={}, ticketNumber={}, jti={}, startDate={}," + " endDate={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), requestData.getTicketNumber(), requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
-		List<String> openSearchResponse = new ArrayList<>();
+		List<String> openSearchResponse;
 		
 		log.info("Getting session activities' anonymized history... ");
 		performanceMillis = System.currentTimeMillis();
@@ -352,8 +352,8 @@ public class LogServiceImpl implements LogService {
 		log.info("Deanonimized session logs retrieve process - START - user={}, ticketNumber={}, jti={}, startDate={}," + " endDate={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), requestData.getTicketNumber(), requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
-		List<String> openSearchResponse = new ArrayList<>();
-		List<String> deanonimizedOpenSearchResponse = new ArrayList<>();
+		List<String> openSearchResponse;
+		List<String> deanonimizedOpenSearchResponse;
 		
 		log.info("Getting session activities' deanonimized history... ");
 		performanceMillis = System.currentTimeMillis();
