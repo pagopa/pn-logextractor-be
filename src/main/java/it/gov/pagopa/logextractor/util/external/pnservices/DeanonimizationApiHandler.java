@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -16,6 +17,11 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInternalIdResponseDto;
 import it.gov.pagopa.logextractor.dto.response.PublicAuthorityMappingResponseDto;
 import it.gov.pagopa.logextractor.dto.response.SelfCarePaDataResponseDto;
@@ -151,7 +157,7 @@ public class DeanonimizationApiHandler {
 		}
 		return response.getName();
 	}
-	
+
 	/** 
 	 * Returns the value associated with the specified key.
 	 * @param recipientType the entity's recipient type
@@ -159,31 +165,36 @@ public class DeanonimizationApiHandler {
 	 *                               file (.txt, .csv) contained in the output zip archive
 	 * @return A list representing the de-anonymized documents 
 	 * @throws LogExtractorException if the external service response is "null", null or blank
+	 * @throws JsonProcessingException 
 	 */
-	public List<String> deanonimizeDocuments(List<String> anonymizedDocuments, RecipientTypes recipientType) throws LogExtractorException {
+	public List<String> deanonimizeDocuments(List<String> anonymizedDocuments, RecipientTypes recipientType) throws LogExtractorException, JsonProcessingException {
 		ArrayList<String> deanonymizedDocuments = new ArrayList<>();
+		ObjectMapper mapper = new ObjectMapper();
 		JsonUtilities jsonUtils = new JsonUtilities();
+		Map<String, String> keyValues = new HashMap<>();
 		for(String currentDocument : anonymizedDocuments) {
-			String uid = jsonUtils.getValue(currentDocument, OpensearchConstants.OS_UID_FIELD);
-			String cxId = jsonUtils.getValue(currentDocument, OpensearchConstants.OS_CX_ID_FIELD);
-			HashMap<String,String> keyValues = new HashMap<>();
-			if(uid != null && !StringUtils.startsWith(uid, "APIKEY-")) {
-				GetBasicDataResponseDto taxCodeDto = getTaxCodeForPerson(recipientType.toString() + "-" + uid);
-				keyValues.put(OpensearchConstants.OS_UID_FIELD, taxCodeDto.getData());
-			}
-			if(cxId != null) {
-				String deanonimizedIdentifier = null;
-				if((StringUtils.startsWithIgnoreCase(cxId, "PF-") || StringUtils.startsWithIgnoreCase(cxId, "PG-"))) {
-					deanonimizedIdentifier = getTaxCodeForPerson(cxId).getData();
+				JsonNode root = mapper.readTree(currentDocument);
+				JsonNode uid = root.get(OpensearchConstants.OS_UID_FIELD);
+				JsonNode cxId = root.get(OpensearchConstants.OS_CX_ID_FIELD);
+
+				if (uid != null && !uid.asText().startsWith("APIKEY-")) {
+					GetBasicDataResponseDto taxCodeDto = getTaxCodeForPerson(
+							recipientType.toString() + "-" + uid.asText());
+					keyValues.put(OpensearchConstants.OS_UID_FIELD, taxCodeDto.getData());
 				}
-				if((StringUtils.startsWithIgnoreCase(cxId, "PA-"))) {
-					deanonimizedIdentifier = getPublicAuthorityName(cxId);
+				if (cxId != null) {
+					String deanonimizedIdentifier = null;
+					if (cxId.asText().startsWith("PF-") || cxId.asText().startsWith("PG-")) {
+						deanonimizedIdentifier = getTaxCodeForPerson(cxId.asText()).getData();
+					} else if (cxId.asText().startsWith("PA-")) {
+						deanonimizedIdentifier = getPublicAuthorityName(cxId.asText());
+					}
+					keyValues.put(OpensearchConstants.OS_CX_ID_FIELD, deanonimizedIdentifier);
 				}
-				keyValues.put(OpensearchConstants.OS_CX_ID_FIELD, deanonimizedIdentifier);
-			}
-			currentDocument = jsonUtils.replaceValues(currentDocument, keyValues);
-			deanonymizedDocuments.add(currentDocument);
+				currentDocument = jsonUtils.replaceValues(currentDocument, keyValues);
+				deanonymizedDocuments.add(currentDocument);
 		}
-		return deanonymizedDocuments;
+		
+		return  deanonymizedDocuments;
 	}
 }

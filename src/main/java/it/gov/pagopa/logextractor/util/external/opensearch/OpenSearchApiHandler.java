@@ -114,6 +114,29 @@ public class OpenSearchApiHandler {
 	}
 	
 	/**
+	 * Construct and executes a multi-search query searching for document
+	 * with the given jti value within the input date range
+	 * @param jti The jti value to use for the multi-search query
+	 * @param dateFrom The period start date
+	 * @param dateTo The period end date
+	 * @return The documents list contained into the Opensearch response
+	 * */
+	public List<String> getAnonymizedSessionLogsByJti(String jti, LocalDate dateFrom, LocalDate dateTo){
+		HashMap<String, Object> queryParams = new HashMap<>();
+		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
+		log.info(LoggingConstants.QUERY_CONSTRUCTION);
+		queryParams.put(OpensearchConstants.OS_JTI_FIELD, jti);
+		OpenSearchQuerydata queryData = queryConstructor.prepareQueryData(queryParams,
+				new OpenSearchRangeQueryData(OpensearchConstants.OS_TIMESTAMP_FIELD, dateFrom.toString(), dateTo.toString()),
+				new OpenSearchSortFilter(OpensearchConstants.OS_TIMESTAMP_FIELD, SortOrders.ASC));
+		ArrayList<OpenSearchQuerydata> listOfQueryData = new ArrayList<>();
+		listOfQueryData.add(queryData);
+		String query = queryConstructor.createBooleanMultiSearchQuery(listOfQueryData);
+		log.info(LoggingConstants.QUERY_EXECUTION + RegExUtils.removeAll(query, "\n"));
+		return extractDocumentsFromOpensearch(query);
+	}
+	
+	/**
 	 * Performs a search HTTP GET request to the Opensearch service and extract the documents
 	 * that satisfy the input query
 	 * @param query The search query to be sent
@@ -177,18 +200,21 @@ public class OpenSearchApiHandler {
 	 * */
 	private ArrayList<String> getDocumentsFromCurrentResponse(String openSearchResponseBody) {
 		ArrayList<String> documents = new ArrayList<>();
-		JSONObject documentListObject = new JSONObject(openSearchResponseBody);
-		if(!documentListObject.isNull("hits")) {
-			JSONObject documentData = documentListObject.getJSONObject("hits");
-			if(!documentData.isNull("hits")) {
-				JSONArray opensearchEnrichedDoc = documentData.getJSONArray("hits");
-				for(int hitIndex = 0; hitIndex < opensearchEnrichedDoc.length(); hitIndex++) {
-					if(!opensearchEnrichedDoc.getJSONObject(hitIndex).isNull("_source")) {
-						documents.add(opensearchEnrichedDoc.getJSONObject(hitIndex).getJSONObject("_source").toString());
+		if (!StringUtils.isEmpty(openSearchResponseBody)) {
+			JSONObject documentListObject = new JSONObject(openSearchResponseBody);
+			if (!documentListObject.isNull("hits")) {
+				JSONObject documentData = documentListObject.getJSONObject("hits");
+				if (!documentData.isNull("hits")) {
+					JSONArray opensearchEnrichedDoc = documentData.getJSONArray("hits");
+					for (int hitIndex = 0; hitIndex < opensearchEnrichedDoc.length(); hitIndex++) {
+						if (!opensearchEnrichedDoc.getJSONObject(hitIndex).isNull("_source")) {
+							documents.add(
+									opensearchEnrichedDoc.getJSONObject(hitIndex).getJSONObject("_source").toString());
+						}
 					}
 				}
 			}
 		}
-        return documents;
+		return documents;
 	}
 }

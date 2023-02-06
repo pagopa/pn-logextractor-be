@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
+import java.time.LocalDate;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,14 +14,11 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import java.time.LocalDate;
-
 @SpringBootTest(classes = PnLogextractorBeApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @EnableWebMvc
 class MockLogControllerTest extends AbstractMock {
-	
 	
 	@Test
 	void test_healthcheck() throws Exception {
@@ -117,6 +116,50 @@ class MockLogControllerTest extends AbstractMock {
 				.andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("message");
+	}
+	
+	@Test
+	void test_getSessionLogsOpenSearchResponseAnonymized() throws Exception {	
+		mockPersonsLogResponse(jsonDocSearchPF);
+		mockTaxCodeForPerson();
+		MockHttpServletResponse response = mvc.perform(post(sessionUrl).accept(APPLICATION_JSON_UTF8)
+				.header("Auth", fakeHeader).content(getMockSessionLogsRequestDto(true))
+				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+		assertThat(response.getContentAsString()).contains("password");
+	}
+	
+	@Test
+	void test_getSessionLogsOpenSearchResponseDeanonymized() throws Exception {	
+		mockPersonsLogResponse(jsonDocSearchPF);
+		mockTaxCodeForPerson();
+		MockHttpServletResponse response = mvc.perform(post(sessionUrl).accept(APPLICATION_JSON_UTF8)
+				.header("Auth", fakeHeader).content(getMockSessionLogsRequestDto(false))
+				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+		assertThat(response.getContentAsString()).contains("password");
+	}
+	
+	@Test
+	void test_getSessionLogsOpenSearchResponseAnonymizedWithEmptySearch() throws Exception {	
+		mockEmptyPersonsLogResponse(jsonDocSearchPF);
+		mockTaxCodeForPerson();
+		MockHttpServletResponse response = mvc.perform(post(sessionUrl).accept(APPLICATION_JSON_UTF8)
+				.header("Auth", fakeHeader).content(getMockSessionLogsRequestDto(false))
+				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+		assertThat(response.getContentAsString()).contains("Nessun documento trovato per i dati inseriti");
+	}
+	
+	@Test
+	void test_getSessionLogsOpenSearchResponseDeanonymizedWithEmptySearch() throws Exception {	
+		mockEmptyPersonsLogResponse(jsonDocSearchPF);
+		mockTaxCodeForPerson();
+		MockHttpServletResponse response = mvc.perform(post(sessionUrl).accept(APPLICATION_JSON_UTF8)
+				.header("Auth", fakeHeader).content(getMockSessionLogsRequestDto(true))
+				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+		assertThat(response.getContentAsString()).contains("Nessun documento trovato per i dati inseriti");
 	}
 
 	@Test

@@ -66,4 +66,8 @@ public interface LogService {
 	 * @throws IOException in case of an IO error
 	 */
 	BaseResponseDto getNotificationInfoLogs(NotificationInfoRequestDto requestData) throws IOException;
+	
+	BaseResponseDto getAnonymizedSessionLogs(SessionLogsRequestDto requestData) throws IOException;
+	
+	BaseResponseDto getDeanonimizedSessionLogs(SessionLogsRequestDto requestData) throws IOException, LogExtractorException;
 }

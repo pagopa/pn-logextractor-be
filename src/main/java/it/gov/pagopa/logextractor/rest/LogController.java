@@ -35,4 +35,12 @@ public class LogController implements LogsApi {
 	public ResponseEntity<BaseResponseDto> processLogs(TraceIdLogsRequestDto traceIdLogsRequestDto) throws Exception {
 		return ResponseEntity.ok().body(logService.getTraceIdLogs(traceIdLogsRequestDto));
 	}
+	
+	@Override
+	public ResponseEntity<BaseResponseDto> sessionLogs(SessionLogsRequestDto sessionLogsRequestDto) throws Exception {
+		if (Boolean.TRUE.equals(sessionLogsRequestDto.getDeanonimization())) {
+			return ResponseEntity.ok(logService.getDeanonimizedSessionLogs(sessionLogsRequestDto));
+		}
+		return ResponseEntity.ok(logService.getAnonymizedSessionLogs(sessionLogsRequestDto));
+	}
 }
