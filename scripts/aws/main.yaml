@@ -118,6 +118,8 @@ Outputs:
         - !Ref AlternateApiDomain
         - !Ref ApiDomain
 
+  AlbSecurityGroup:
+    Value: !GetAtt Backend.Outputs.AlbSecurityGroup
 
   ApiId:
     Value: !GetAtt Api.Outputs.RestApiId

@@ -164,6 +164,10 @@ Outputs:
     Description: ARN of application load balancer listener
     Value: !Ref ApplicationLoadBalancerListener
 
+  AlbSecurityGroup:
+    Description: ALB Security Group
+    Value: !Ref SecurityGroup
+    
   NlbArn:
     Description: ARN of the Network load balancer
     Value: !Ref NetworkLoadBalancer

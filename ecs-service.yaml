@@ -17,6 +17,11 @@ Parameters:
     Default: '-'
     Description: 'An ARN of an SNS topic where to send alarm when DLQ contain messages'
 
+  AlbSecurityGroup:
+    Type: String
+    Default: ''
+    Description: Security Group of ALB
+
   AdditionalMicroserviceSecurityGroup:
     Type: AWS::EC2::SecurityGroup::Id
     Default: ""
@@ -236,6 +241,7 @@ Parameters:
 
 Conditions:
   HasAlarmTopic: !Not [ !Equals [ !Ref AlarmSNSTopicArn, '-' ] ]
+  HasAlbSecurityGroup: !Not [ !Equals [ !Ref AlbSecurityGroup, '' ] ]
 
   Env1Exist: !Not [ !Equals [!Ref ContainerEnvEntry1, '']]
   Env2Exist: !Not [ !Equals [!Ref ContainerEnvEntry2, '']]
@@ -321,10 +327,16 @@ Resources:
       GroupDescription: !Sub '${MicroServiceUniqueName}-EcsSvcSecGrp'
       VpcId: !Ref VpcId
       SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 8080
-          ToPort: 8080
-          CidrIp: 0.0.0.0/0
+        - 'Fn::If':
+          - HasAlbSecurityGroup
+          - IpProtocol: tcp
+            FromPort: 8080
+            ToPort: 8080
+            SourceSecurityGroupId: !Ref AlbSecurityGroup
+          - IpProtocol: tcp
+            FromPort: 8080
+            ToPort: 8080
+            CidrIp: 0.0.0.0/0
 
   # ECS Task
   TaskDefinition:
