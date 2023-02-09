@@ -707,30 +707,6 @@ Resources:
           MetricNamespace: "ErrorFatalLogs"
           MetricName: !Sub "${MicroServiceUniqueName}-ErrorFatalMetric"
 
-  # Create alarm
-  ErrorFatalLogsMetricAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Condition: HasAlarmTopic
-    DependsOn: ErrorFatalLogsMetricFilter
-    Properties:
-      AlarmName: !Sub "${MicroServiceUniqueName}-ErrorFatalLogs-Alarm"
-      AlarmDescription: "CloudWatch alarm for when ECS LogGroup has ERROR or FATAL line."
-      AlarmActions:
-        - !Ref AlarmSNSTopicArn
-      InsufficientDataActions:
-        - !Ref AlarmSNSTopicArn
-      OKActions:
-        - !Ref AlarmSNSTopicArn
-      DatapointsToAlarm: 1
-      MetricName: !Sub "${MicroServiceUniqueName}-ErrorFatalMetric"
-      Namespace: "ErrorFatalLogs"
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      EvaluationPeriods: 60
-      Period: 60
-      Statistic: Sum
-      Threshold: 1
-      TreatMissingData: missing
-
 Outputs:
   ServiceName:
     Description: Nome del servizio di cui fare deploy
