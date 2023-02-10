@@ -12,10 +12,10 @@ Parameters:
     Type: String
     Description: ECS Cluster Name where the service is going to be deployed
 
-  AlarmSNSTopicArn:
+  AlbSecurityGroup:
     Type: String
-    Default: '-'
-    Description: 'An ARN of an SNS topic where to send alarm when DLQ contain messages'
+    Default: ''
+    Description: Security Group of ALB
 
   AdditionalMicroserviceSecurityGroup:
     Type: AWS::EC2::SecurityGroup::Id
@@ -235,7 +235,7 @@ Parameters:
 
 
 Conditions:
-  HasAlarmTopic: !Not [ !Equals [ !Ref AlarmSNSTopicArn, '-' ] ]
+  HasAlbSecurityGroup: !Not [ !Equals [ !Ref AlbSecurityGroup, '' ] ]
 
   Env1Exist: !Not [ !Equals [!Ref ContainerEnvEntry1, '']]
   Env2Exist: !Not [ !Equals [!Ref ContainerEnvEntry2, '']]
@@ -321,10 +321,16 @@ Resources:
       GroupDescription: !Sub '${MicroServiceUniqueName}-EcsSvcSecGrp'
       VpcId: !Ref VpcId
       SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 8080
-          ToPort: 8080
-          CidrIp: 0.0.0.0/0
+        - 'Fn::If':
+          - HasAlbSecurityGroup
+          - IpProtocol: tcp
+            FromPort: 8080
+            ToPort: 8080
+            SourceSecurityGroupId: !Ref AlbSecurityGroup
+          - IpProtocol: tcp
+            FromPort: 8080
+            ToPort: 8080
+            CidrIp: 0.0.0.0/0
 
   # ECS Task
   TaskDefinition:
@@ -685,7 +691,6 @@ Resources:
 
   # CloudWatch metric to filer ERROR - FATAL lines, in Log group
   ErrorFatalLogsMetricFilter:
-    Condition: HasAlarmTopic
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref LogGroup
@@ -694,30 +699,6 @@ Resources:
         - MetricValue: 1
           MetricNamespace: "ErrorFatalLogs"
           MetricName: !Sub "${MicroServiceUniqueName}-ErrorFatalMetric"
-
-  # Create alarm
-  ErrorFatalLogsMetricAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Condition: HasAlarmTopic
-    DependsOn: ErrorFatalLogsMetricFilter
-    Properties:
-      AlarmName: !Sub "${MicroServiceUniqueName}-ErrorFatalLogs-Alarm"
-      AlarmDescription: "CloudWatch alarm for when ECS LogGroup has ERROR or FATAL line."
-      AlarmActions:
-        - !Ref AlarmSNSTopicArn
-      InsufficientDataActions:
-        - !Ref AlarmSNSTopicArn
-      OKActions:
-        - !Ref AlarmSNSTopicArn
-      DatapointsToAlarm: 1
-      MetricName: !Sub "${MicroServiceUniqueName}-ErrorFatalMetric"
-      Namespace: "ErrorFatalLogs"
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      EvaluationPeriods: 60
-      Period: 60
-      Statistic: Sum
-      Threshold: 1
-      TreatMissingData: missing
 
 Outputs:
   ServiceName:

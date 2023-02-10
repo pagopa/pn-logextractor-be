@@ -99,14 +99,6 @@ Resources:
         MasterCredentialSecret: !Ref OpenSearchMasterCredentialSecret
       TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/opensearch.yaml
 
-  Alarms:
-    Type: "AWS::CloudFormation::Stack"
-    Properties:
-      Parameters:
-        ProjectName: !Ref ProjectName
-        OpenSearchClusterName: !GetAtt OpenSearch.Outputs.ClusterName
-      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/alarms.yaml
-
 Outputs:
   ElasticacheEndpoint:
     Description: Elasticache endpoint
@@ -119,3 +111,6 @@ Outputs:
     Description: OpenSearch endpoint
     Value: !GetAtt OpenSearch.Outputs.DomainEndpoint
   
+  OpenSearchClusterName:
+    Description: OpenSearch cluster name
+    Value: !GetAtt OpenSearch.Outputs.ClusterName

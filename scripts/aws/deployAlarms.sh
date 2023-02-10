@@ -88,8 +88,8 @@ echo "aws s3 sync ${profile_option} --region \"${s3_region}\" --exclude \".git/*
 aws s3 sync ${profile_option} --region "${s3_region}" --exclude ".git/*" --exclude "bin/*" . "${bucket_url}"
 
 echo "\r\n\r\n"
-echo "aws cloudformation ${profile_option} --region \"eu-south-1\" package --template-file \"storage.yaml\" --s3-bucket ${bucket_name} --s3-prefix \"regional\" --output-template-file \"dist/template.${environment}.packaged.yaml\" --force-upload"
-aws cloudformation ${profile_option} --region "eu-south-1" package --template-file "storage.yaml" --s3-bucket ${bucket_name} --s3-prefix "regional" --output-template-file "dist/template.${environment}.packaged.yaml" --force-upload
+echo "aws cloudformation ${profile_option} --region \"eu-south-1\" package --template-file \"alarms.yaml\" --s3-bucket ${bucket_name} --s3-prefix \"regional\" --output-template-file \"dist/template.${environment}.packaged.yaml\" --force-upload"
+aws cloudformation ${profile_option} --region "eu-south-1" package --template-file "alarms.yaml" --s3-bucket ${bucket_name} --s3-prefix "regional" --output-template-file "dist/template.${environment}.packaged.yaml" --force-upload
 
 echo "\r\n\r\n"
 echo "source ./environments/.env.infra.${environment}"
@@ -97,18 +97,18 @@ source ./environments/.env.infra.${environment}
 
 env
 
+OpenSearchClusterName=$( aws ${profile_option} --region="eu-central-1" cloudformation describe-stacks \
+      --stack-name "pn-logextractor-storage-${environment}" | jq -r \
+      ".Stacks[0].Outputs | .[] | select(.OutputKey==\"OpenSearchClusterName\") | .OutputValue" \
+    )
+
+
 aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-file "dist/template.${environment}.packaged.yaml" \
-  --stack-name "pn-logextractor-storage-${environment}" \
+  --stack-name "pn-logextractor-alarms-${environment}" \
   --capabilities "CAPABILITY_IAM" \
-  --parameter-overrides "TemplateBucketBaseUrl=http://${bucket_name}.s3.amazonaws.com" \
+  --parameter-overrides \
   "ProjectName=${project_name}" \
-  "VpcId=${VpcId}" \
-  "PrivateSubnetIds=${PrivateSubnetIds}" \
-  "OpenSearchNodeType=${OpenSearchNodeType}" \
-  "OpenSearchNodeReplicas=${OpenSearchNodeReplicas}" "OpenSearchEbsSize=${OpenSearchInitialStorageSize}" \
-  "OpenSearchEbsIops=${OpenSearchEbsIops}" "OpenSearchEbsType=${OpenSearchEbsType}" \
-  "OpenSearchMasterNodeType=${OpenSearchMasterNodeType}" "OpenSearchMasterNodeInstanceNumber=${OpenSearchMasterNodeInstanceNumber}" \
-  "OpenSearchMasterCredentialSecret=pn-opensearch-master"
+  "OpenSearchClusterName=${OpenSearchClusterName}"
 
 
 rm -rf dist
