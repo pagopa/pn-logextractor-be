@@ -99,11 +99,6 @@ Resources:
         MasterCredentialSecret: !Ref OpenSearchMasterCredentialSecret
       TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/opensearch.yaml
 
-  AlarmSNSTopic:
-    Type: AWS::SNS::Topic
-    Properties:
-      DisplayName: 'helpdesk account alarms topic'
-
 Outputs:
   ElasticacheEndpoint:
     Description: Elasticache endpoint
@@ -119,11 +114,3 @@ Outputs:
   OpenSearchClusterName:
     Description: OpenSearch cluster name
     Value: !GetAtt OpenSearch.Outputs.ClusterName
-
-  AlarmSNSTopicArn:
-    Value: !Ref AlarmSNSTopic
-    Description: ARN of the Alarm SNS Topic
-
-  AlarmSNSTopicName:
-    Value: !GetAtt  AlarmSNSTopic.TopicName
-    Description: Name of the Alarm SNS Topic

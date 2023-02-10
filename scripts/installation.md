@@ -22,6 +22,9 @@ aws --profile=${PROFILE} \
 
 Creare il secret `pn-opensearch-master` con chiavi `username` e `password` da utilizzare come credenziali dell'utente master di OpenSearch. Il secret va creato nella regione `eu-south-1`.
 
+Eseguire il seguente comando dalla cartella `./scripts/aws`
+
+`./deployTopics.sh -p ${PROFILE} -e ${ENVIRONMENT}`
 
 Eseguire il seguente comando dalla cartella `./scripts/aws`
 

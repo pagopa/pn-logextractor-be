@@ -12,11 +12,6 @@ Parameters:
     Type: String
     Description: ECS Cluster Name where the service is going to be deployed
 
-  AlarmSNSTopicArn:
-    Type: String
-    Default: '-'
-    Description: 'An ARN of an SNS topic where to send alarm when DLQ contain messages'
-
   AlbSecurityGroup:
     Type: String
     Default: ''
@@ -240,7 +235,6 @@ Parameters:
 
 
 Conditions:
-  HasAlarmTopic: !Not [ !Equals [ !Ref AlarmSNSTopicArn, '-' ] ]
   HasAlbSecurityGroup: !Not [ !Equals [ !Ref AlbSecurityGroup, '' ] ]
 
   Env1Exist: !Not [ !Equals [!Ref ContainerEnvEntry1, '']]
@@ -697,7 +691,6 @@ Resources:
 
   # CloudWatch metric to filer ERROR - FATAL lines, in Log group
   ErrorFatalLogsMetricFilter:
-    Condition: HasAlarmTopic
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref LogGroup
