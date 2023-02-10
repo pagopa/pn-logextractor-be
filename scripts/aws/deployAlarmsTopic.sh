@@ -78,7 +78,7 @@ HelpdeskAccount=$(aws sts get-caller-identity --profile $profile | jq -r .Accoun
 mkdir -p $dest_dir
 
 echo "\r\n\r\n"
-echo "aws cloudformation deploy ${profile_option} --region \"eu-south-1\" --template-file \"topics.yaml\" --stack-name \"pn-logextractor-topics-${environment}\""
-aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-file "topics.yaml" --stack-name "pn-logextractor-topics-${environment}"
+echo "aws cloudformation deploy ${profile_option} --region \"eu-south-1\" --template-file \"alarmsTopic.yaml\" --stack-name \"pn-logextractor-topics-${environment}\""
+aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-file "alarmsTopic.yaml" --stack-name "pn-logextractor-topics-${environment}"
 
 rm -rf dist

@@ -24,7 +24,7 @@ Creare il secret `pn-opensearch-master` con chiavi `username` e `password` da ut
 
 Eseguire il seguente comando dalla cartella `./scripts/aws`
 
-`./deployTopics.sh -p ${PROFILE} -e ${ENVIRONMENT}`
+`./deployAlarmsTopic.sh -p ${PROFILE} -e ${ENVIRONMENT}`
 
 Eseguire il seguente comando dalla cartella `./scripts/aws`
 
