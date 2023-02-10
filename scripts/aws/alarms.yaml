@@ -26,6 +26,14 @@ Parameters:
     Type: String
     Description: Environment Type
 
+  OpenSearchMasterNodeType:
+    Default: ""
+    Type: String
+    Description: Environment Type
+
+Conditions:
+  HasMasterNode: !Not [ !Equals [ !Ref OpenSearchMasterNodeType, "" ] ]
+
 Resources:
   ClusterStatusRed:
     Type: AWS::CloudWatch::Alarm
@@ -189,6 +197,7 @@ Resources:
 
   MasterCPUUtilization:
     Type: AWS::CloudWatch::Alarm
+    Condition: HasMasterNode
     Properties:
       AlarmName: !Sub "${ProjectName}-master-cpu"
       AlarmDescription: "Email when MasterCPUUtilization >= 50, 3 time within 15 minutes"
@@ -212,6 +221,7 @@ Resources:
 
   MasterJVMMemoryPressure:
     Type: AWS::CloudWatch::Alarm
+    Condition: HasMasterNode
     Properties:
       AlarmName: !Sub "${ProjectName}-master-jvm-pressure"
       AlarmDescription: "Email when MasterJVMMemoryPressure >= 95, 1 time within 15 minutes"
