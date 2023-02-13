@@ -95,7 +95,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmName: !Sub "${ProjectName}-low-storage"
-      AlarmDescription: "Email when FreeStorageSpace <= 20%, 1 time within 1 minute"
+      AlarmDescription: "Email when FreeStorageSpace <= 30%, 1 time within 1 minute"
       Metrics:
         - Id: m1
           MetricStat:
@@ -129,7 +129,7 @@ Resources:
           Expression: (m1*100)/(m1+m2)
           Label: !Sub "${ProjectName}-avg free space"
       ComparisonOperator: LessThanOrEqualToThreshold
-      Threshold: 20
+      Threshold: 30
       EvaluationPeriods: 1
       OKActions:
         - !Ref AlarmSNSTopicArn
@@ -343,6 +343,8 @@ Resources:
   ### DASHBOARD ###
   CloudWatchDashboard:
     Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - CloudWatchDashboardTransform
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/microservice-cloudwatch-dashboard.yaml"
       Parameters:
