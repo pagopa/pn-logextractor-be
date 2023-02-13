@@ -1,8 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
-
 Description: |
   CloudFormation definition of Log Extractor alarms subsystem
-
 
 Parameters:
   OpenSearchClusterName:
@@ -31,10 +29,22 @@ Parameters:
     Type: String
     Description: Environment Type
 
+  TemplateBucketBaseUrl:
+    Type: String
+    Description: 'The S3 bucket from which to fetch the templates used by this stack.'
+
 Conditions:
   HasMasterNode: !Not [ !Equals [ !Ref OpenSearchMasterNodeType, "" ] ]
 
 Resources:
+  ###                       CLOUDFORMATION TRANSFORM LAMBDAS              ###
+  ###########################################################################
+  CloudWatchDashboardTransform:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-cloudwatch-dashboard-transform.yaml"
+
+  ### ALARMS ###
   ClusterStatusRed:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -330,3 +340,19 @@ Resources:
           Expression: SUM([m1,m2])
           Label: !Sub "${ProjectName}-APIGatewayErrorMetric"
 
+  ### DASHBOARD ###
+  CloudWatchDashboard:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/microservice-cloudwatch-dashboard.yaml"
+      Parameters:
+        DashboardName: !Sub "${ProjectName}-dashboard"
+        AlarmArns: !Join
+          - ','
+          - - !GetAtt APIGatewayApiErrorAlarm.Arn
+            - !GetAtt APIGatewayApiLatencyAlarm.Arn
+            - !GetAtt LogextractorFatalLogsMetricAlarm.Arn
+            - !GetAtt ClusterIndexWritesBlocked.Arn
+            - !GetAtt ClusterStatusRed.Arn
+            - !GetAtt ClusterStatusYellow.Arn
+            - !GetAtt FreeStorageSpace.Arn
