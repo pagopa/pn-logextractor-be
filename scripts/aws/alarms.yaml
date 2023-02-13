@@ -358,3 +358,5 @@ Resources:
             - !GetAtt ClusterStatusRed.Arn
             - !GetAtt ClusterStatusYellow.Arn
             - !GetAtt FreeStorageSpace.Arn
+            - !If [ HasMasterNode, !GetAtt MasterJVMMemoryPressure.Arn, '']
+            - !If [ HasMasterNode, !GetAtt MasterCPUUtilization.Arn, '']            
