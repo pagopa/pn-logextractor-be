@@ -35,10 +35,16 @@ paths:
         - persons
       parameters:
         - in: header
-          name: x-pagopa-helpd-uid
+          name: x-pagopa-uid
           schema:
             type: string
             pattern: '^[A-Za-z0-9-]*$'
+          required: true
+        - in: header
+          name: x-pagopa-cx-type
+          schema:
+            type: string
+            pattern: '^[A-Za-z]*$'
           required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
@@ -76,10 +82,16 @@ paths:
         - persons
       parameters:
         - in: header
-          name: x-pagopa-helpd-uid
+          name: x-pagopa-uid
           schema:
             type: string
             pattern: '^[A-Za-z0-9-]*$'
+          required: true
+        - in: header
+          name: x-pagopa-cx-type
+          schema:
+            type: string
+            pattern: '^[A-Za-z]*$'
           required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
@@ -117,10 +129,16 @@ paths:
         - logs
       parameters:
         - in: header
-          name: x-pagopa-helpd-uid
+          name: x-pagopa-uid
           schema:
             type: string
             pattern: '^[A-Za-z0-9-]*$'
+          required: true
+        - in: header
+          name: x-pagopa-cx-type
+          schema:
+            type: string
+            pattern: '^[A-Za-z]*$'
           required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
@@ -158,10 +176,16 @@ paths:
         - logs
       parameters:
         - in: header
-          name: x-pagopa-helpd-uid
+          name: x-pagopa-uid
           schema:
             type: string
             pattern: '^[A-Za-z0-9-]*$'
+          required: true
+        - in: header
+          name: x-pagopa-cx-type
+          schema:
+            type: string
+            pattern: '^[A-Za-z]*$'
           required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
@@ -200,10 +224,16 @@ paths:
         - logs
       parameters:
         - in: header
-          name: x-pagopa-helpd-uid
+          name: x-pagopa-uid
           schema:
             type: string
             pattern: '^[A-Za-z0-9-]*$'
+          required: true
+        - in: header
+          name: x-pagopa-cx-type
+          schema:
+            type: string
+            pattern: '^[A-Za-z]*$'
           required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
@@ -241,10 +271,16 @@ paths:
         - logs
       parameters:
         - in: header
-          name: x-pagopa-helpd-uid
+          name: x-pagopa-uid
           schema:
             type: string
             pattern: '^[A-Za-z0-9-]*$'
+          required: true
+        - in: header
+          name: x-pagopa-cx-type
+          schema:
+            type: string
+            pattern: '^[A-Za-z]*$'
           required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
@@ -282,10 +318,16 @@ paths:
         - logs
       parameters:
         - in: header
-          name: x-pagopa-helpd-uid
+          name: x-pagopa-uid
           schema:
             type: string
             pattern: '^[A-Za-z0-9-]*$'
+          required: true
+        - in: header
+          name: x-pagopa-cx-type
+          schema:
+            type: string
+            pattern: '^[A-Za-z]*$'
           required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
@@ -325,10 +367,16 @@ paths:
         - downtime
       parameters:
         - in: header
-          name: x-pagopa-helpd-uid
+          name: x-pagopa-uid
           schema:
             type: string
             pattern: '^[A-Za-z0-9-]*$'
+          required: true
+        - in: header
+          name: x-pagopa-cx-type
+          schema:
+            type: string
+            pattern: '^[A-Za-z]*$'
           required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
@@ -354,10 +402,16 @@ paths:
         - downtime
       parameters:
         - in: header
-          name: x-pagopa-helpd-uid
+          name: x-pagopa-uid
           schema:
             type: string
             pattern: '^[A-Za-z0-9-]*$'
+          required: true
+        - in: header
+          name: x-pagopa-cx-type
+          schema:
+            type: string
+            pattern: '^[A-Za-z]*$'
           required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
