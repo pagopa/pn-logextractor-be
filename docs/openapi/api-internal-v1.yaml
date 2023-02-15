@@ -33,6 +33,13 @@ paths:
     post:
       tags:
         - persons
+      parameters:
+        - in: header
+          name: x-pagopa-helpd-uid
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]*$'
+          required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
       operationId: personalPersonId
@@ -67,6 +74,13 @@ paths:
     post:
       tags:
         - persons
+      parameters:
+        - in: header
+          name: x-pagopa-helpd-uid
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]*$'
+          required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
       operationId: personalTaxId
@@ -101,6 +115,13 @@ paths:
     post:
       tags:
         - logs
+      parameters:
+        - in: header
+          name: x-pagopa-helpd-uid
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]*$'
+          required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
       operationId: notificationInfoLogs
@@ -135,6 +156,13 @@ paths:
     post:
       tags:
         - logs
+      parameters:
+        - in: header
+          name: x-pagopa-helpd-uid
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]*$'
+          required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
       operationId: notificationsInMonth
@@ -170,6 +198,13 @@ paths:
     post:
       tags:
         - logs
+      parameters:
+        - in: header
+          name: x-pagopa-helpd-uid
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]*$'
+          required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
       operationId: personActivityLogs
@@ -204,6 +239,13 @@ paths:
     post:
       tags:
         - logs
+      parameters:
+        - in: header
+          name: x-pagopa-helpd-uid
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]*$'
+          required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
       operationId: processLogs
@@ -238,6 +280,13 @@ paths:
     post:
       tags:
         - logs
+      parameters:
+        - in: header
+          name: x-pagopa-helpd-uid
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]*$'
+          required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
       operationId: sessionLogs
@@ -274,6 +323,13 @@ paths:
         Get the PN functionalities and inefficiencies list at invocation time
       tags:
         - downtime
+      parameters:
+        - in: header
+          name: x-pagopa-helpd-uid
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]*$'
+          required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
       operationId: currentStatus
@@ -296,6 +352,13 @@ paths:
         Add a new inefficiency start or end event
       tags:
         - downtime
+      parameters:
+        - in: header
+          name: x-pagopa-helpd-uid
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]*$'
+          required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
       operationId: addStatusChangeEvent
