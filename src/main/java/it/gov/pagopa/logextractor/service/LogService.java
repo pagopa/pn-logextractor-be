@@ -18,7 +18,7 @@ public interface LogService {
 	 *         its files
 	 * @throws IOException in case of an IO error
 	 */
-	BaseResponseDto getAnonymizedPersonLogs(PersonLogsRequestDto requestData) throws IOException;
+	BaseResponseDto getAnonymizedPersonLogs(PersonLogsRequestDto requestData, String xPagopaHelpdUid) throws IOException;
 	
 	/**
 	 * Service method that retrieves informations about the notifications sent by a public authority in a specific month
@@ -30,7 +30,7 @@ public interface LogService {
 	 * @throws CsvRequiredFieldEmptyException in case of any required field is missing
 	 * @throws LogExtractorException in case of a business logic error
 	 */
-	BaseResponseDto getMonthlyNotifications(MonthlyNotificationsRequestDto requestData) throws IOException, ParseException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException;
+	BaseResponseDto getMonthlyNotifications(MonthlyNotificationsRequestDto requestData, String xPagopaHelpdUid) throws IOException, ParseException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException;
 	
 	/**
 	 * Service method that retrieves the anonymized logs belonging to the same process within a period
@@ -41,19 +41,20 @@ public interface LogService {
 	 * @throws IOException in case of an IO error
 	 * @throws LogExtractorException in case of a business logic error
 	 */
-	BaseResponseDto getTraceIdLogs(TraceIdLogsRequestDto requestData) throws IOException, LogExtractorException;
+	BaseResponseDto getTraceIdLogs(TraceIdLogsRequestDto requestData, String xPagopaHelpdUid) throws IOException, LogExtractorException;
 	
 	/**
 	 * Service method that retrieves the de-anonymized logs related to a person's activities history in a period
 	 * or to a notification's activities history within 3 months from its legal start date
 	 * @param requestData the input data of type {@link PersonLogsRequestDto}
+	 * @param xPagopaHelpdUid 
 	 * @return {@link BaseResponseDto} containing a byte array
 	 *         representation of the output zip archive and the password to access
 	 *         its files
 	 * @throws IOException in case of an IO error
 	 * @throws LogExtractorException in case of a business logic error
 	 */
-	BaseResponseDto getDeanonimizedPersonLogs(PersonLogsRequestDto requestData) throws IOException, LogExtractorException;
+	BaseResponseDto getDeanonimizedPersonLogs(PersonLogsRequestDto requestData, String xPagopaHelpdUid) throws IOException, LogExtractorException;
 	
 	/**
 	 * Service method that retrieves the whole information about a notification -
@@ -65,9 +66,9 @@ public interface LogService {
 	 *         its files
 	 * @throws IOException in case of an IO error
 	 */
-	BaseResponseDto getNotificationInfoLogs(NotificationInfoRequestDto requestData) throws IOException;
+	BaseResponseDto getNotificationInfoLogs(NotificationInfoRequestDto requestData, String xPagopaHelpdUid) throws IOException;
 	
-	BaseResponseDto getAnonymizedSessionLogs(SessionLogsRequestDto requestData) throws IOException;
+	BaseResponseDto getAnonymizedSessionLogs(SessionLogsRequestDto requestData, String xPagopaHelpdUid) throws IOException;
 	
-	BaseResponseDto getDeanonimizedSessionLogs(SessionLogsRequestDto requestData) throws IOException, LogExtractorException;
+	BaseResponseDto getDeanonimizedSessionLogs(SessionLogsRequestDto requestData, String xPagopaHelpdUid) throws IOException, LogExtractorException;
 }

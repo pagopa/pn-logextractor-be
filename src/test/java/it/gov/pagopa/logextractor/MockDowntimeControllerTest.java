@@ -72,12 +72,12 @@ class MockDowntimeControllerTest extends AbstractMock {
 		assertThat(response.getContentAsString()).contains("openIncidents");
 	}
 
-	@Test
-	void test_CheckStatusAuthError() throws Exception {
-		mockUniqueIdentifierForPerson();
-		MockHttpServletResponse response = mvc.perform(get(statusUrl)).andReturn().getResponse();
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
-	}
+//	@Test
+//	void test_CheckStatusAuthError() throws Exception {
+//		mockUniqueIdentifierForPerson();
+//		MockHttpServletResponse response = mvc.perform(get(statusUrl)).andReturn().getResponse();
+//		assertThat(response.getStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
+//	}
 
 	@Test
 	void test_CheckStatusLogExtractorException() throws Exception {

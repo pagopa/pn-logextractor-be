@@ -12,13 +12,15 @@ import org.springframework.test.context.ActiveProfiles;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import it.gov.pagopa.logextractor.util.constant.HeaderConstants;
+
 @SpringBootTest(classes = PnLogextractorBeApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 class MockPersonControllerTest extends AbstractMock {
 
 	void mvcPostPerform(String url, String body, String key, String value, HttpStatus responseCode) throws JsonProcessingException, Exception {
-		MockHttpServletResponse response = mvc.perform(post(url).accept(APPLICATION_JSON_UTF8).header("Auth", fakeHeader)
+		MockHttpServletResponse response = mvc.perform(post(url).accept(APPLICATION_JSON_UTF8).header(HeaderConstants.PAGO_PA_UID, fakeHeader)
 				.content(body).contentType(APPLICATION_JSON_UTF8)).andReturn()
 				.getResponse();
 		assertThat(response.getStatus()).isEqualTo(responseCode.value());
@@ -28,7 +30,7 @@ class MockPersonControllerTest extends AbstractMock {
 
 	@Test
 	void test_getPersonsBasicDataWithUniqueIdentifier_ok() throws Exception {
-		mockUniqueIdentifierForPerson();
+		//mockUniqueIdentifierForPerson();
 		mvcPostPerform(identifierUrl, getMockPersonPersonIdRequestDto(), "data", "123", HttpStatus.OK);
 	}
 

@@ -14,7 +14,7 @@ import org.springframework.web.client.RestTemplate;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusResponseDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusUpdateEventRequestDto;
-import it.gov.pagopa.logextractor.util.constant.CognitoConstants;
+import it.gov.pagopa.logextractor.util.constant.HeaderConstants;
 
 /**
  * Uility class for integrations with Piattaforma Notifiche downtime service
@@ -49,13 +49,13 @@ public class DowntimeApiHandler {
     /**
      * Performs a POST HTTP request to downtime microservice to save a new record of down or up for a PN functionality
      * */
-    public void addStatusChangeEvent(List<PnStatusUpdateEventRequestDto> pnStatusUpdateEventRequestDto) {
+    public void addStatusChangeEvent(List<PnStatusUpdateEventRequestDto> pnStatusUpdateEventRequestDto, String xPagopaHelpdUid) {
     	for(PnStatusUpdateEventRequestDto pnStatusUpdate : pnStatusUpdateEventRequestDto) {
-    		pnStatusUpdate.setSource(MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER));
+    		pnStatusUpdate.setSource(xPagopaHelpdUid);
     	}
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-        requestHeaders.set("x-pagopa-pn-uid", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER));
+        requestHeaders.set("x-pagopa-pn-uid", xPagopaHelpdUid);
         List<MediaType> acceptedTypes = new ArrayList<>();
         acceptedTypes.add(MediaType.APPLICATION_PROBLEM_JSON);
         requestHeaders.setAccept(acceptedTypes);

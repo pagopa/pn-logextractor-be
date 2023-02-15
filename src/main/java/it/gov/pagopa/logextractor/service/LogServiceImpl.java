@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -32,7 +31,6 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.SessionLogsRequestDto
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.TraceIdLogsRequestDto;
 import it.gov.pagopa.logextractor.util.FileUtilities;
 import it.gov.pagopa.logextractor.util.ResponseConstructor;
-import it.gov.pagopa.logextractor.util.constant.CognitoConstants;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
 import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
@@ -59,9 +57,9 @@ public class LogServiceImpl implements LogService {
 	DeanonimizationApiHandler deanonimizationApiHandler;
 
 	@Override
-	public BaseResponseDto getAnonymizedPersonLogs(PersonLogsRequestDto requestData) throws IOException {
+	public BaseResponseDto getAnonymizedPersonLogs(PersonLogsRequestDto requestData, String xPagopaHelpdUid) throws IOException {
 		log.info("Anonymized logs retrieve process - START - user={}, ticketNumber={}, internalId={}, startDate={}," +
-				" endDate={}, iun={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER),
+				" endDate={}, iun={}", xPagopaHelpdUid,
 				requestData.getTicketNumber(), requestData.getPersonId(), requestData.getDateFrom(),
 				requestData.getDateTo(), requestData.getIun());
 		long serviceStartTime = System.currentTimeMillis();
@@ -95,21 +93,21 @@ public class LogServiceImpl implements LogService {
 			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
         	log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END,
-					(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get(LoggingConstants.VALIDATION_TIME)));
+					(System.currentTimeMillis() - serviceStartTime));
         	return response;
 		}
 		performanceMillis = System.currentTimeMillis();
 		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(openSearchResponse, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END,
-				(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get(LoggingConstants.VALIDATION_TIME)));
+				(System.currentTimeMillis() - serviceStartTime));
 		return response;
 	}
 
 	@Override
-	public BaseResponseDto getMonthlyNotifications(MonthlyNotificationsRequestDto requestData) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException {
+	public BaseResponseDto getMonthlyNotifications(MonthlyNotificationsRequestDto requestData, String xPagopaHelpdUid) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException {
 		log.info("Monthly notifications retrieve process - START - user={}, ticketNumber={}, referenceMonth={}, " +
-				"endMonth={}, publicAuthorityName={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER),
+				"endMonth={}, publicAuthorityName={}", xPagopaHelpdUid,
 				requestData.getTicketNumber(), requestData.getReferenceMonth(), requestData.getEndMonth(),
 				requestData.getPublicAuthorityName());
 		long serviceStartTime = System.currentTimeMillis();
@@ -130,7 +128,7 @@ public class LogServiceImpl implements LogService {
 			response.setMessage(ResponseConstants.NO_NOTIFICATION_FOUND_MESSAGE);
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
         	log.info("Monthly notifications retrieve process - END in {} ms",
-					(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get(LoggingConstants.VALIDATION_TIME)));
+					(System.currentTimeMillis() - serviceStartTime));
         	return response;
 		}
 		performanceMillis = System.currentTimeMillis();
@@ -154,14 +152,14 @@ public class LogServiceImpl implements LogService {
 		DownloadArchiveResponseDto response = ResponseConstructor.createCsvFileResponse(csvFiles, GenericConstants.ZIP_ARCHIVE_NAME);
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info("Monthly notifications retrieve process - END in {} ms",
-				(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get(LoggingConstants.VALIDATION_TIME)));
+				(System.currentTimeMillis() - serviceStartTime));
 		return response;
 	}
 	
 	@Override
-	public BaseResponseDto getTraceIdLogs(TraceIdLogsRequestDto requestData) throws IOException {
+	public BaseResponseDto getTraceIdLogs(TraceIdLogsRequestDto requestData, String xPagopaHelpdUid) throws IOException {
 		log.info("Anonymized logs retrieve process - START - user={}, traceId={}, startDate={}, endDate={}",
-				MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), requestData.getTraceId(),
+				xPagopaHelpdUid, requestData.getTraceId(),
 				requestData.getDateFrom(), requestData.getDateTo());
 		long serviceStartTime = System.currentTimeMillis();
 		log.info("Getting anonymized logs...");
@@ -173,23 +171,21 @@ public class LogServiceImpl implements LogService {
 			BaseResponseDto response = new BaseResponseDto();
 			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-        	log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END, performanceMillis +
-					Long.parseLong(MDC.get(LoggingConstants.VALIDATION_TIME)));
+        	log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END, performanceMillis);
         	return response;
 		}
 		performanceMillis = System.currentTimeMillis();
 		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(openSearchResponse,
 				GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-		log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END, (System.currentTimeMillis() - serviceStartTime) +
-				Long.parseLong(MDC.get(LoggingConstants.VALIDATION_TIME)));
+		log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END, (System.currentTimeMillis() - serviceStartTime));
 		return response;
 	}
 	
 	@Override
-	public BaseResponseDto getNotificationInfoLogs(NotificationInfoRequestDto requestData) throws IOException {
+	public BaseResponseDto getNotificationInfoLogs(NotificationInfoRequestDto requestData, String xPagopaHelpdUid) throws IOException {
 		log.info("Notification data retrieve process - START - user={}, ticketNumber={}, iun={}",
-				MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), requestData.getTicketNumber(), requestData.getIun());
+				xPagopaHelpdUid, requestData.getTicketNumber(), requestData.getIun());
 		ArrayList<NotificationDownloadFileData> downloadableFiles = new ArrayList<>();
 		long serviceStartTime = System.currentTimeMillis();
 		double secondsToWait = 0;
@@ -238,7 +234,7 @@ public class LogServiceImpl implements LogService {
 					(timeToWaitInMinutes > 1 ? GenericConstants.MINUTES_LABEL : GenericConstants.MINUTE_LABEL));
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 			log.info("Notification data retrieve process - END in {} ms",
-					(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get(LoggingConstants.VALIDATION_TIME)));
+					(System.currentTimeMillis() - serviceStartTime));
         	return response;
         }
         else {
@@ -258,14 +254,14 @@ public class LogServiceImpl implements LogService {
 			DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(openSearchResponse, filesToAdd, filesNotDownloadable, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 			log.info("Notification data retrieve process - END in {} ms",
-					(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get(LoggingConstants.VALIDATION_TIME)));
+					(System.currentTimeMillis() - serviceStartTime));
     		return response;
         }
 	}
 		
-	public BaseResponseDto getDeanonimizedPersonLogs(PersonLogsRequestDto requestData) throws IOException, LogExtractorException {
+	public BaseResponseDto getDeanonimizedPersonLogs(PersonLogsRequestDto requestData, String xPagopaHelpdUid) throws IOException, LogExtractorException {
 		log.info("Deanonimized logs retrieve process - START - user={}, ticketNumber={}, taxId={}, " +
-						"startDate={}, endDate={}, iun={}, recipientType={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER),
+						"startDate={}, endDate={}, iun={}, recipientType={}", xPagopaHelpdUid,
 				requestData.getTicketNumber(), requestData.getTaxId(), requestData.getDateFrom(),
 				requestData.getDateTo(), requestData.getIun(), requestData.getRecipientType());
 		long serviceStartTime = System.currentTimeMillis();
@@ -308,20 +304,20 @@ public class LogServiceImpl implements LogService {
 			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 			log.info("Deanonimized logs retrieve process - END in {} ms",
-					(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get(LoggingConstants.VALIDATION_TIME)));
+					(System.currentTimeMillis() - serviceStartTime));
 			return response;
 		}
 		performanceMillis = System.currentTimeMillis();
 		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(deanonimizedOpenSearchResponse, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info("deanonimized logs retrieve process - END in {} ms",
-				(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get(LoggingConstants.VALIDATION_TIME)));
+				(System.currentTimeMillis() - serviceStartTime));
 		return response;
 	}
 	
 	@Override
-	public BaseResponseDto getAnonymizedSessionLogs(SessionLogsRequestDto requestData) throws IOException {
-		log.info("Anonymized session logs retrieve process - START - user={}, ticketNumber={}, jti={}, startDate={}," + " endDate={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), requestData.getTicketNumber(), requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
+	public BaseResponseDto getAnonymizedSessionLogs(SessionLogsRequestDto requestData, String xPagopaHelpdUid) throws IOException {
+		log.info("Anonymized session logs retrieve process - START - user={}, ticketNumber={}, jti={}, startDate={}," + " endDate={}", xPagopaHelpdUid, requestData.getTicketNumber(), requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
 		List<String> openSearchResponse;
@@ -337,19 +333,19 @@ public class LogServiceImpl implements LogService {
 			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
         	log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END,
-					(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get(LoggingConstants.VALIDATION_TIME)));
+					(System.currentTimeMillis() - serviceStartTime));
         	return response;
 		}
 		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(openSearchResponse, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END,
-				(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get(LoggingConstants.VALIDATION_TIME)));
+				(System.currentTimeMillis() - serviceStartTime));
 		return response;
 	}
 	
 	@Override
-	public BaseResponseDto getDeanonimizedSessionLogs(SessionLogsRequestDto requestData) throws IOException, LogExtractorException {
-		log.info("Deanonimized session logs retrieve process - START - user={}, ticketNumber={}, jti={}, startDate={}," + " endDate={}", MDC.get(CognitoConstants.USER_IDENTIFIER_PLACEHOLDER), requestData.getTicketNumber(), requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
+	public BaseResponseDto getDeanonimizedSessionLogs(SessionLogsRequestDto requestData, String xPagopaHelpdUid) throws IOException, LogExtractorException {
+		log.info("Deanonimized session logs retrieve process - START - user={}, ticketNumber={}, jti={}, startDate={}," + " endDate={}", xPagopaHelpdUid, requestData.getTicketNumber(), requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
 		List<String> openSearchResponse;
@@ -370,13 +366,13 @@ public class LogServiceImpl implements LogService {
 			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 			log.info(LoggingConstants.DEANONIMIZED_RETRIEVE_PROCESS_END,
-					(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get(LoggingConstants.VALIDATION_TIME)));
+					(System.currentTimeMillis() - serviceStartTime));
 			return response;
 		}
 		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(deanonimizedOpenSearchResponse, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info(LoggingConstants.DEANONIMIZED_RETRIEVE_PROCESS_END,
-				(System.currentTimeMillis() - serviceStartTime) + Long.parseLong(MDC.get(LoggingConstants.VALIDATION_TIME)));
+				(System.currentTimeMillis() - serviceStartTime));
 		return response;
 	}
 	

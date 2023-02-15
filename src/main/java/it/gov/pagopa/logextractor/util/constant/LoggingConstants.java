@@ -10,7 +10,6 @@ public class LoggingConstants {
     public static final String DEANONIMIZED_RETRIEVE_PROCESS_END = "Deanonimized session logs retrieve process - END in {} ms";
     public  static final String SERVICE_RESPONSE_CONSTRUCTION_TIME = "Service response constructed in {} ms";
     public static final String ANONYMIZED_RETRIEVE_PROCESS_END = "Anonymized logs retrieve process - END in {} ms";
-    public static final String VALIDATION_TIME = "validationTime";
     public static final String QUERY_CONSTRUCTION = "Constructing Opensearch query...";
     public static final String QUERY_EXECUTION = "Executing query:";
     public static final String TRACE_ID_PLACEHOLDER = "trace_id";
