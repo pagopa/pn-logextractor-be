@@ -31,7 +31,6 @@ class MockDowntimeControllerTest extends AbstractMock {
 
 	@Test
 	void test_CheckCurretStatus() throws Exception {
-		mockUniqueIdentifierForPerson();
 		PnStatusResponseDto pnStatusResponseDto = new PnStatusResponseDto();
 		PnDowntimeEntry itemPnDowntimeEntry = new PnDowntimeEntry();
 		List<PnDowntimeEntry> listPnDowntimeEntry = new ArrayList<>();
@@ -50,9 +49,8 @@ class MockDowntimeControllerTest extends AbstractMock {
 		pnStatusResponseDto.setOpenIncidents(listPnDowntimeEntry);
 		
 		getMockPnStatusResponseDto(pnStatusResponseDto);
-		
-		MockHttpServletResponse response = mvc.perform(get(statusUrl).header("Auth", fakeHeader)).andReturn()
-				.getResponse();
+
+		MockHttpServletResponse response = mvc.perform(get(statusUrl).headers(getHeaders())).andReturn().getResponse();
 
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("functionalities");
@@ -61,10 +59,9 @@ class MockDowntimeControllerTest extends AbstractMock {
 
 	@Test
 	void test_CheckStatusOK() throws Exception {
-		mockUniqueIdentifierForPerson();
 		PnStatusResponseDto pnStatusResponseDtoResponseOK = new PnStatusResponseDto();
 		getMockPnStatusResponseDto(pnStatusResponseDtoResponseOK);
-		MockHttpServletResponse response = mvc.perform(get(statusUrl).header("Auth", fakeHeader)).andReturn()
+		MockHttpServletResponse response = mvc.perform(get(statusUrl).headers(getHeaders())).andReturn()
 				.getResponse();
 
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
@@ -81,10 +78,9 @@ class MockDowntimeControllerTest extends AbstractMock {
 
 	@Test
 	void test_CheckStatusLogExtractorException() throws Exception {
-		mockUniqueIdentifierForPerson();
 		PnStatusResponseDto pnStatusResponseDtoResponseOK = null;
 		getMockPnStatusResponseDto(pnStatusResponseDtoResponseOK);
-		MockHttpServletResponse response = mvc.perform(get(statusUrl).header("Auth", fakeHeader)).andReturn()
+		MockHttpServletResponse response = mvc.perform(get(statusUrl).headers(getHeaders())).andReturn()
 				.getResponse();
 
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
@@ -103,10 +99,9 @@ class MockDowntimeControllerTest extends AbstractMock {
 	}
 
 	void test_CheckAddStatusChange(PnFunctionalityStatus pnFunctionalityStatus) throws Exception {
-		mockUniqueIdentifierForPerson();
 		mockAddStatusChangeEvent(client);
 		MockHttpServletResponse response = mvc.perform(post(eventsUrl).accept(APPLICATION_JSON_UTF8)
-				.header("Auth", fakeHeader).content(getMockPnStatusUpdateEventRequestDto(pnFunctionalityStatus))
+				.headers(getHeaders()).content(getMockPnStatusUpdateEventRequestDto(pnFunctionalityStatus))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());

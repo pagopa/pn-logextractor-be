@@ -26,7 +26,7 @@ class MockLogControllerTest extends AbstractMock {
 	void test_healthcheck() throws Exception {
 		mockMissingUniqueIdentifierForPerson();
 		MockHttpServletResponse response = mvc
-				.perform(get(healthcheckUrl).accept(APPLICATION_JSON_UTF8).header(HeaderConstants.PAGO_PA_UID, fakeHeader)
+				.perform(get(healthcheckUrl).accept(APPLICATION_JSON_UTF8).headers(getHeaders())
 						.contentType(APPLICATION_JSON_UTF8))
 				.andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());	
@@ -53,7 +53,7 @@ class MockLogControllerTest extends AbstractMock {
 		mockPublicAuthorityName();
 		mockTaxCodeForPerson();
 		MockHttpServletResponse response = mvc.perform(post(personUrl).accept(APPLICATION_JSON_UTF8)
-				.header(HeaderConstants.PAGO_PA_UID, fakeHeader).content(getMockPersonLogsRequestDto(useCase, isDeanonimization))
+				.headers(getHeaders()).content(getMockPersonLogsRequestDto(useCase, isDeanonimization))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("password");
@@ -64,7 +64,7 @@ class MockLogControllerTest extends AbstractMock {
 		mockPersonsLogResponse(json);
 		mockTaxCodeForPerson();
 		MockHttpServletResponse response = mvc.perform(post(personUrl).accept(APPLICATION_JSON_UTF8)
-				.header(HeaderConstants.PAGO_PA_UID, fakeHeader).content(getMockPersonLogsRequestDto(useCase, isDeanonimization))
+				.headers(getHeaders()).content(getMockPersonLogsRequestDto(useCase, isDeanonimization))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("password");
@@ -76,7 +76,7 @@ class MockLogControllerTest extends AbstractMock {
 		mockPersonsLogResponse(jsonEmptyDocSearchPF);
 		mockTaxCodeForPerson();
 		MockHttpServletResponse response = mvc.perform(post(personUrl).accept(APPLICATION_JSON_UTF8)
-				.header(HeaderConstants.PAGO_PA_UID, fakeHeader).content(getMockPersonLogsRequestDto(4, true))
+				.headers(getHeaders()).content(getMockPersonLogsRequestDto(4, true))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("Nessun documento trovato");
@@ -89,7 +89,7 @@ class MockLogControllerTest extends AbstractMock {
 		mockNotificationResponse();
 		mockPersonsLogUseCase6Response();
 		MockHttpServletResponse response = mvc
-				.perform(post(notificationUrl).accept(APPLICATION_JSON_UTF8).header(HeaderConstants.PAGO_PA_UID, fakeHeader)
+				.perform(post(notificationUrl).accept(APPLICATION_JSON_UTF8).headers(getHeaders())
 						.content(getMockMonthlyNotificationsRequestDto()).contentType(APPLICATION_JSON_UTF8))
 				.andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
@@ -101,7 +101,7 @@ class MockLogControllerTest extends AbstractMock {
 		mockPublicAuthorityIdAndNotificationsBetweenMonths(true);
 		mockPersonsLogUseCase6Response();
 		MockHttpServletResponse response = mvc
-				.perform(post(notificationUrl).accept(APPLICATION_JSON_UTF8).header(HeaderConstants.PAGO_PA_UID, fakeHeader)
+				.perform(post(notificationUrl).accept(APPLICATION_JSON_UTF8).headers(getHeaders())
 						.content(getMockMonthlyNotificationsRequestDto()).contentType(APPLICATION_JSON_UTF8))
 				.andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
@@ -113,7 +113,7 @@ class MockLogControllerTest extends AbstractMock {
 		mockPersonsLogResponse(jsonDocSearchPF);
 		mockTaxCodeForPerson();
 		MockHttpServletResponse response = mvc
-				.perform(post(personUrl).accept(APPLICATION_JSON_UTF8).header(HeaderConstants.PAGO_PA_UID, fakeHeader)
+				.perform(post(personUrl).accept(APPLICATION_JSON_UTF8).headers(getHeaders())
 						.content(getMockPersonLogsRequestDtoPersonIdNull()).contentType(APPLICATION_JSON_UTF8))
 				.andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
@@ -125,7 +125,7 @@ class MockLogControllerTest extends AbstractMock {
 		mockPersonsLogResponse(jsonDocSearchPF);
 		mockTaxCodeForPerson();
 		MockHttpServletResponse response = mvc.perform(post(sessionUrl).accept(APPLICATION_JSON_UTF8)
-				.header(HeaderConstants.PAGO_PA_UID, fakeHeader).content(getMockSessionLogsRequestDto(true))
+				.headers(getHeaders()).content(getMockSessionLogsRequestDto(true))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("password");
@@ -136,7 +136,7 @@ class MockLogControllerTest extends AbstractMock {
 		mockPersonsLogResponse(jsonDocSearchPF);
 		mockTaxCodeForPerson();
 		MockHttpServletResponse response = mvc.perform(post(sessionUrl).accept(APPLICATION_JSON_UTF8)
-				.header(HeaderConstants.PAGO_PA_UID, fakeHeader).content(getMockSessionLogsRequestDto(false))
+				.headers(getHeaders()).content(getMockSessionLogsRequestDto(false))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("password");
@@ -147,7 +147,7 @@ class MockLogControllerTest extends AbstractMock {
 		mockEmptyPersonsLogResponse(jsonDocSearchPF);
 		mockTaxCodeForPerson();
 		MockHttpServletResponse response = mvc.perform(post(sessionUrl).accept(APPLICATION_JSON_UTF8)
-				.header(HeaderConstants.PAGO_PA_UID, fakeHeader).content(getMockSessionLogsRequestDto(false))
+				.headers(getHeaders()).content(getMockSessionLogsRequestDto(false))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("Nessun documento trovato per i dati inseriti");
@@ -158,7 +158,7 @@ class MockLogControllerTest extends AbstractMock {
 		mockEmptyPersonsLogResponse(jsonDocSearchPF);
 		mockTaxCodeForPerson();
 		MockHttpServletResponse response = mvc.perform(post(sessionUrl).accept(APPLICATION_JSON_UTF8)
-				.header(HeaderConstants.PAGO_PA_UID, fakeHeader).content(getMockSessionLogsRequestDto(true))
+				.headers(getHeaders()).content(getMockSessionLogsRequestDto(true))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("Nessun documento trovato per i dati inseriti");
@@ -172,7 +172,7 @@ class MockLogControllerTest extends AbstractMock {
 		mockDocumentsByMultiSearchQuery();
 		mockPersonsLogResponse(jsonDocSearchPF);
 		MockHttpServletResponse response = mvc
-				.perform(post(notificationInfoUrl).accept(APPLICATION_JSON_UTF8).header(HeaderConstants.PAGO_PA_UID, fakeHeader)
+				.perform(post(notificationInfoUrl).accept(APPLICATION_JSON_UTF8).headers(getHeaders())
 						.content(getMockNotificationsRequestDto()).contentType(APPLICATION_JSON_UTF8))
 				.andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
@@ -202,7 +202,7 @@ class MockLogControllerTest extends AbstractMock {
 	void test_getProcesses(LocalDate dateFrom, LocalDate dateTo, String traceId) throws Exception {
 		mockPersonsLogResponse(jsonDocSearchPF);
 		MockHttpServletResponse response = mvc.perform(post(processesUrl).accept(APPLICATION_JSON_UTF8)
-				.header(HeaderConstants.PAGO_PA_UID, fakeHeader).content(getMockTraceIdLogsRequestDto(dateFrom, dateTo, traceId))
+				.headers(getHeaders()).content(getMockTraceIdLogsRequestDto(dateFrom, dateTo, traceId))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("password");

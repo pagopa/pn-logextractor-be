@@ -1,15 +1,16 @@
 package it.gov.pagopa.logextractor.util;
 
-import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
-import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
+import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
 
 class ResponseConstructorTest {
 
