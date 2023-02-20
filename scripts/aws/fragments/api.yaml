@@ -89,7 +89,9 @@ Resources:
       - PublicApiLogsV1PersonsMethod
       - PublicApiLogsV1PersonsMethodCors      
       - PublicApiLogsV1ProcessesMethod
-      - PublicApiLogsV1ProcessesMethodCors      
+      - PublicApiLogsV1ProcessesMethodCors
+      - PublicApiLogsV1SessionsMethod
+      - PublicApiLogsV1SessionsMethodCors
       - PublicApiPersonsV1PersonIdMethod
       - PublicApiPersonsV1PersonIdMethodCors
       - PublicApiPersonsV1TaxIdMethod
@@ -97,7 +99,7 @@ Resources:
       - PublicApiDowntimeStatusMethod
       - PublicApiDowntimeStatusMethodCors      
       - PublicApiDowntimeEventsMethod
-      - PublicApiDowntimeEventsMethodCors      
+      - PublicApiDowntimeEventsMethodCors
     Properties:
       RestApiId: !Ref PublicRestApi
 
@@ -211,6 +213,13 @@ Resources:
     Properties:
       ParentId: !Ref PublicApiLogsV1Resource
       PathPart: "processes"
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiLogsV1SessionsResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !Ref PublicApiLogsV1Resource
+      PathPart: "sessions"
       RestApiId: !Ref PublicRestApi
 
   PublicApiHealthCheckStatusResource:
@@ -448,6 +457,51 @@ Resources:
       RequestParameters:
         method.request.path.proxy: true
       ResourceId: !Ref PublicApiLogsV1ProcessesResource
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiLogsV1SessionsMethod:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthorizer
+      HttpMethod: POST
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/sessions"
+      OperationName: Proxy to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiLogsV1SessionsResource
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiLogsV1SessionsMethodCors:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: ANY
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/downtime/v1/events"
+      OperationName: Proxy cors to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiLogsV1SessionsResource
       RestApiId: !Ref PublicRestApi
 
   PublicApiPersonsV1PersonIdMethod:
