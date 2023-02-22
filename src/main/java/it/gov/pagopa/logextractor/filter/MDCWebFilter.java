@@ -21,13 +21,9 @@ import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
 /**
  * WebFilter that puts in the MDC log map a unique identifier for incoming requests.
  */
-//@Slf4j
 @Component
 public class MDCWebFilter extends OncePerRequestFilter {
 
-	@Autowired
-	@Qualifier("simpleObjectMapper")
-	private ObjectMapper mapper;
 	
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

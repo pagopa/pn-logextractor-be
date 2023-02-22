@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -57,7 +56,7 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusUpdateEventRe
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.SessionLogsRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.TraceIdLogsRequestDto;
-import it.gov.pagopa.logextractor.util.constant.HeaderConstants;
+import it.gov.pagopa.logextractor.util.HeaderConstants;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 
 public abstract class AbstractMock {
