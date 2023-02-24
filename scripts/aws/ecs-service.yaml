@@ -710,3 +710,6 @@ Outputs:
   TaskRoleName:
     Description: Container execution role name, useful to attach custom policies
     Value: !Ref TaskRole
+  LogGroup:
+    Description: LogGroup
+    Value: !Ref LogGroup
