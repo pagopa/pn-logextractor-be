@@ -33,7 +33,7 @@ Parameters:
     Type: String
     Description: 'The S3 bucket from which to fetch the templates used by this stack.'
 
-  LogGroup:
+  LogGroupName:
     Type: String
     Description: LogGroup
 
@@ -366,5 +366,5 @@ Resources:
             - !If [ HasMasterNode, !GetAtt MasterCPUUtilization.Arn, '']
         LogGroupsNames: !Join
           - ','
-          - - !Ref LogGroup
+          - - !Ref LogGroupName
           
