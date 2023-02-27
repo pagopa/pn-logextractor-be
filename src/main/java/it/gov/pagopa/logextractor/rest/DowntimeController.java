@@ -24,12 +24,13 @@ public class DowntimeController implements DowntimeApi {
     public ResponseEntity<BaseResponseDto> addStatusChangeEvent(@RequestHeader(value="x-pagopa-uid", required=true) String xPagopaUid,
     		 @RequestHeader(value="x-pagopa-cx-type", required=true) String xPagopaCxType,
     		@RequestBody List<PnStatusUpdateEventRequestDto> pnStatusUpdateEventRequestDto) {
-        return ResponseEntity.ok().body(downtimeService.addStatusChangeEvent(pnStatusUpdateEventRequestDto, xPagopaUid));
+        return ResponseEntity.ok().body(downtimeService.addStatusChangeEvent(pnStatusUpdateEventRequestDto,
+				xPagopaUid, xPagopaCxType));
     }
 
 	@Override
 	public ResponseEntity<PnStatusResponseDto> currentStatus(@RequestHeader(value="x-pagopa-uid", required=true) String xPagopaUid,
    		 @RequestHeader(value="x-pagopa-cx-type", required=true) String xPagopaCxType) throws Exception {
-		return ResponseEntity.ok().body(downtimeService.getCurrentStatus(xPagopaUid));
+		return ResponseEntity.ok().body(downtimeService.getCurrentStatus(xPagopaUid, xPagopaCxType));
 	}
 }

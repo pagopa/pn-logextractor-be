@@ -9,7 +9,8 @@ import java.util.List;
 
 public interface DowntimeService {
 
-    BaseResponseDto addStatusChangeEvent(List<PnStatusUpdateEventRequestDto> pnStatusUpdateEventRequestDto, String xPagopaHelpdUid);
+    BaseResponseDto addStatusChangeEvent(List<PnStatusUpdateEventRequestDto> pnStatusUpdateEventRequestDto,
+                                         String xPagopaHelpdUid, String xPagopaCxType);
 
-    PnStatusResponseDto getCurrentStatus(String xPagopaHelpdUid) throws LogExtractorException;
+    PnStatusResponseDto getCurrentStatus(String xPagopaHelpdUid, String xPagopaCxType) throws LogExtractorException;
 }

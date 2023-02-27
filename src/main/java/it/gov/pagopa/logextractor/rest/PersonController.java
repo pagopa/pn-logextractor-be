@@ -19,12 +19,12 @@ public class PersonController implements PersonsApi {
 	@Override
 	public ResponseEntity<GetBasicDataResponseDto> personalPersonId(@RequestHeader(value="x-pagopa-uid", required=true) String xPagopaUid,
 	   		 @RequestHeader(value="x-pagopa-cx-type", required=true) String xPagopaCxType, PersonPersonIdRequestDto personPersonIdRequestDto) throws Exception {
-		return ResponseEntity.ok(personService.getPersonId(personPersonIdRequestDto, xPagopaUid));
+		return ResponseEntity.ok(personService.getPersonId(personPersonIdRequestDto, xPagopaUid, xPagopaCxType));
 	}
 
 	@Override
 	public ResponseEntity<GetBasicDataResponseDto> personalTaxId(@RequestHeader(value="x-pagopa-uid", required=true) String xPagopaUid,
 	   		 @RequestHeader(value="x-pagopa-cx-type", required=true) String xPagopaCxType, PersonTaxIdRequestDto personTaxIdRequestDto) throws Exception {
-		return ResponseEntity.ok(personService.getTaxId(personTaxIdRequestDto, xPagopaUid));
+		return ResponseEntity.ok(personService.getTaxId(personTaxIdRequestDto, xPagopaUid, xPagopaCxType));
 	}
 }

@@ -57,9 +57,11 @@ public class LogServiceImpl implements LogService {
 	DeanonimizationApiHandler deanonimizationApiHandler;
 
 	@Override
-	public BaseResponseDto getAnonymizedPersonLogs(PersonLogsRequestDto requestData, String xPagopaHelpdUid) throws IOException {
-		log.info("Anonymized logs retrieve process - START - user={}, ticketNumber={}, internalId={}, startDate={}," +
-				" endDate={}, iun={}", xPagopaHelpdUid,
+	public BaseResponseDto getAnonymizedPersonLogs(PersonLogsRequestDto requestData,
+												   String xPagopaHelpdUid,
+												   String xPagopaCxType) throws IOException {
+		log.info("Anonymized logs retrieve process - START - user={}, userType={}, ticketNumber={}, " +
+						"internalId={}, startDate={}, endDate={}, iun={}", xPagopaHelpdUid, xPagopaCxType,
 				requestData.getTicketNumber(), requestData.getPersonId(), requestData.getDateFrom(),
 				requestData.getDateTo(), requestData.getIun());
 		long serviceStartTime = System.currentTimeMillis();
@@ -105,11 +107,13 @@ public class LogServiceImpl implements LogService {
 	}
 
 	@Override
-	public BaseResponseDto getMonthlyNotifications(MonthlyNotificationsRequestDto requestData, String xPagopaHelpdUid) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException {
-		log.info("Monthly notifications retrieve process - START - user={}, ticketNumber={}, referenceMonth={}, " +
-				"endMonth={}, publicAuthorityName={}", xPagopaHelpdUid,
-				requestData.getTicketNumber(), requestData.getReferenceMonth(), requestData.getEndMonth(),
-				requestData.getPublicAuthorityName());
+	public BaseResponseDto getMonthlyNotifications(MonthlyNotificationsRequestDto requestData,
+												   String xPagopaHelpdUid,
+												   String xPagopaCxType) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException {
+		log.info("Monthly notifications retrieve process - START - user={}," +
+						"userType={}, ticketNumber={}, referenceMonth={}, endMonth={}, publicAuthorityName={}",
+				xPagopaHelpdUid, xPagopaCxType, requestData.getTicketNumber(), requestData.getReferenceMonth(),
+				requestData.getEndMonth(), requestData.getPublicAuthorityName());
 		long serviceStartTime = System.currentTimeMillis();
 		FileUtilities utils = new FileUtilities();
 		List<File> csvFiles = new ArrayList<>();
@@ -157,10 +161,12 @@ public class LogServiceImpl implements LogService {
 	}
 	
 	@Override
-	public BaseResponseDto getTraceIdLogs(TraceIdLogsRequestDto requestData, String xPagopaHelpdUid) throws IOException {
-		log.info("Anonymized logs retrieve process - START - user={}, traceId={}, startDate={}, endDate={}",
-				xPagopaHelpdUid, requestData.getTraceId(),
-				requestData.getDateFrom(), requestData.getDateTo());
+	public BaseResponseDto getTraceIdLogs(TraceIdLogsRequestDto requestData,
+										  String xPagopaHelpdUid,
+										  String xPagopaCxType) throws IOException {
+		log.info("Anonymized logs retrieve process - START - user={}, userType={}," +
+						" traceId={}, startDate={}, endDate={}", xPagopaHelpdUid, xPagopaCxType,
+				requestData.getTraceId(), requestData.getDateFrom(), requestData.getDateTo());
 		long serviceStartTime = System.currentTimeMillis();
 		log.info("Getting anonymized logs...");
 		List<String> openSearchResponse = openSearchApiHandler.getAnonymizedLogsByTraceId(requestData.getTraceId(), requestData.getDateFrom(), requestData.getDateTo());
@@ -183,9 +189,11 @@ public class LogServiceImpl implements LogService {
 	}
 	
 	@Override
-	public BaseResponseDto getNotificationInfoLogs(NotificationInfoRequestDto requestData, String xPagopaHelpdUid) throws IOException {
-		log.info("Notification data retrieve process - START - user={}, ticketNumber={}, iun={}",
-				xPagopaHelpdUid, requestData.getTicketNumber(), requestData.getIun());
+	public BaseResponseDto getNotificationInfoLogs(NotificationInfoRequestDto requestData,
+												   String xPagopaHelpdUid,
+												   String xPagopaCxType) throws IOException {
+		log.info("Notification data retrieve process - START - user={}, userType={}, ticketNumber={}, iun={}",
+				xPagopaHelpdUid, xPagopaCxType, requestData.getTicketNumber(), requestData.getIun());
 		ArrayList<NotificationDownloadFileData> downloadableFiles = new ArrayList<>();
 		long serviceStartTime = System.currentTimeMillis();
 		double secondsToWait = 0;
@@ -259,9 +267,11 @@ public class LogServiceImpl implements LogService {
         }
 	}
 		
-	public BaseResponseDto getDeanonimizedPersonLogs(PersonLogsRequestDto requestData, String xPagopaHelpdUid) throws IOException, LogExtractorException {
-		log.info("Deanonimized logs retrieve process - START - user={}, ticketNumber={}, taxId={}, " +
-						"startDate={}, endDate={}, iun={}, recipientType={}", xPagopaHelpdUid,
+	public BaseResponseDto getDeanonimizedPersonLogs(PersonLogsRequestDto requestData,
+													 String xPagopaHelpdUid,
+													 String xPagopaCxType) throws IOException, LogExtractorException {
+		log.info("Deanonimized logs retrieve process - START - user={}, userType={}, ticketNumber={}, taxId={}, " +
+						"startDate={}, endDate={}, iun={}, recipientType={}", xPagopaHelpdUid, xPagopaCxType,
 				requestData.getTicketNumber(), requestData.getTaxId(), requestData.getDateFrom(),
 				requestData.getDateTo(), requestData.getIun(), requestData.getRecipientType());
 		long serviceStartTime = System.currentTimeMillis();
@@ -316,8 +326,13 @@ public class LogServiceImpl implements LogService {
 	}
 	
 	@Override
-	public BaseResponseDto getAnonymizedSessionLogs(SessionLogsRequestDto requestData, String xPagopaHelpdUid) throws IOException {
-		log.info("Anonymized session logs retrieve process - START - user={}, ticketNumber={}, jti={}, startDate={}," + " endDate={}", xPagopaHelpdUid, requestData.getTicketNumber(), requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
+	public BaseResponseDto getAnonymizedSessionLogs(SessionLogsRequestDto requestData,
+													String xPagopaHelpdUid,
+													String xPagopaCxType) throws IOException {
+		log.info("Anonymized session logs retrieve process - START - user={}, userType={}," +
+				" ticketNumber={}, jti={}, startDate={}, endDate={}", xPagopaHelpdUid, xPagopaCxType,
+				requestData.getTicketNumber(), requestData.getJti(), requestData.getDateFrom(),
+				requestData.getDateTo());
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
 		List<String> openSearchResponse;
@@ -344,8 +359,12 @@ public class LogServiceImpl implements LogService {
 	}
 	
 	@Override
-	public BaseResponseDto getDeanonimizedSessionLogs(SessionLogsRequestDto requestData, String xPagopaHelpdUid) throws IOException, LogExtractorException {
-		log.info("Deanonimized session logs retrieve process - START - user={}, ticketNumber={}, jti={}, startDate={}," + " endDate={}", xPagopaHelpdUid, requestData.getTicketNumber(), requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
+	public BaseResponseDto getDeanonimizedSessionLogs(SessionLogsRequestDto requestData,
+													  String xPagopaHelpdUid,
+													  String xPagopaCxType) throws IOException, LogExtractorException {
+		log.info("Deanonimized session logs retrieve process - START - user={}, userType={}, ticketNumber={}, " +
+				"jti={}, startDate={}, endDate={}", xPagopaHelpdUid, xPagopaCxType, requestData.getTicketNumber(),
+				requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
 		List<String> openSearchResponse;

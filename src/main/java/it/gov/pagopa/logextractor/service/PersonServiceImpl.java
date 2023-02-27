@@ -23,8 +23,11 @@ public class PersonServiceImpl implements PersonService {
 	DeanonimizationApiHandler handler;
 
 	@Override
-	public GetBasicDataResponseDto getTaxId(PersonTaxIdRequestDto requestData, String xPagopaHelpdUid) throws HttpServerErrorException, LogExtractorException {
-		log.info("Tax id retrieve process - START - user={} - internalId={}", xPagopaHelpdUid, requestData.getPersonId());
+	public GetBasicDataResponseDto getTaxId(PersonTaxIdRequestDto requestData,
+											String xPagopaHelpdUid,
+											String xPagopaCxType) throws HttpServerErrorException, LogExtractorException {
+		log.info("Tax id retrieve process - START - user={}, userType={}, internalId={}",
+				xPagopaHelpdUid, xPagopaCxType, requestData.getPersonId());
 		long serviceStartTime = System.currentTimeMillis();
 		log.info("Getting tax id...");
 		GetBasicDataResponseDto response = handler.getTaxCodeForPerson(requestData.getPersonId());
@@ -35,9 +38,11 @@ public class PersonServiceImpl implements PersonService {
 	}
 
 	@Override
-	public GetBasicDataResponseDto getPersonId(PersonPersonIdRequestDto requestData, String xPagopaHelpdUid) throws HttpServerErrorException, LogExtractorException {
-		log.info("Internal id retrieve process - START - user={}, ticket number={}, recipientType={}, taxId={}", 
-				xPagopaHelpdUid, requestData.getTicketNumber(),
+	public GetBasicDataResponseDto getPersonId(PersonPersonIdRequestDto requestData,
+											   String xPagopaHelpdUid,
+											   String xPagopaCxType) throws HttpServerErrorException, LogExtractorException {
+		log.info("Internal id retrieve process - START - user={}, userType={}, ticket number={}, " +
+						"recipientType={}, taxId={}", xPagopaHelpdUid, xPagopaCxType, requestData.getTicketNumber(),
 				requestData.getRecipientType(), requestData.getTaxId());
 		long serviceStartTime = System.currentTimeMillis();
 		log.info("Getting internal id...");

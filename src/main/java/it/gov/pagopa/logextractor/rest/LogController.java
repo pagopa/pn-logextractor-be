@@ -18,35 +18,42 @@ public class LogController implements LogsApi {
 	public ResponseEntity<BaseResponseDto> personActivityLogs(@RequestHeader(value="x-pagopa-uid", required=true) String xPagopaUid,
    		 @RequestHeader(value="x-pagopa-cx-type", required=true) String xPagopaCxType, PersonLogsRequestDto personLogsRequestDto) throws Exception {
 		if (Boolean.TRUE.equals(personLogsRequestDto.getDeanonimization())) {
-			return ResponseEntity.ok().body(logService.getDeanonimizedPersonLogs(personLogsRequestDto, xPagopaUid));
+			return ResponseEntity.ok().body(logService.getDeanonimizedPersonLogs(personLogsRequestDto,
+					xPagopaUid, xPagopaCxType));
 		}
-		return ResponseEntity.ok().body(logService.getAnonymizedPersonLogs(personLogsRequestDto, xPagopaUid));
+		return ResponseEntity.ok().body(logService.getAnonymizedPersonLogs(personLogsRequestDto,
+				xPagopaUid, xPagopaCxType));
 	}
 
 	@Override
 	public ResponseEntity<BaseResponseDto> notificationInfoLogs(@RequestHeader(value="x-pagopa-uid", required=true) String xPagopaUid,
 	   		 @RequestHeader(value="x-pagopa-cx-type", required=true) String xPagopaCxType, NotificationInfoRequestDto notificationInfoRequestDto) throws Exception {
-		return ResponseEntity.ok().body(logService.getNotificationInfoLogs(notificationInfoRequestDto, xPagopaUid));
+		return ResponseEntity.ok().body(logService.getNotificationInfoLogs(notificationInfoRequestDto,
+				xPagopaUid, xPagopaCxType));
 	}
 
 	@Override
 	public ResponseEntity<BaseResponseDto> notificationsInMonth(@RequestHeader(value="x-pagopa-uid", required=true) String xPagopaUid,
 	   		 @RequestHeader(value="x-pagopa-cx-type", required=true) String xPagopaCxType, MonthlyNotificationsRequestDto monthlyNotificationsRequestDto) throws Exception {
-		return ResponseEntity.ok().body(logService.getMonthlyNotifications(monthlyNotificationsRequestDto, xPagopaUid));
+		return ResponseEntity.ok().body(logService.getMonthlyNotifications(monthlyNotificationsRequestDto,
+				xPagopaUid, xPagopaCxType));
 	}
 
 	@Override
 	public ResponseEntity<BaseResponseDto> processLogs(@RequestHeader(value="x-pagopa-uid", required=true) String xPagopaUid,
 	   		 @RequestHeader(value="x-pagopa-cx-type", required=true) String xPagopaCxType, TraceIdLogsRequestDto traceIdLogsRequestDto) throws Exception {
-		return ResponseEntity.ok().body(logService.getTraceIdLogs(traceIdLogsRequestDto, xPagopaUid));
+		return ResponseEntity.ok().body(logService.getTraceIdLogs(traceIdLogsRequestDto,
+				xPagopaUid, xPagopaCxType));
 	}
 	
 	@Override
 	public ResponseEntity<BaseResponseDto> sessionLogs(@RequestHeader(value="x-pagopa-uid", required=true) String xPagopaUid,
 	   		 @RequestHeader(value="x-pagopa-cx-type", required=true) String xPagopaCxType, SessionLogsRequestDto sessionLogsRequestDto) throws Exception {
 		if (Boolean.TRUE.equals(sessionLogsRequestDto.getDeanonimization())) {
-			return ResponseEntity.ok(logService.getDeanonimizedSessionLogs(sessionLogsRequestDto, xPagopaUid));
+			return ResponseEntity.ok(logService.getDeanonimizedSessionLogs(sessionLogsRequestDto,
+					xPagopaUid, xPagopaCxType));
 		}
-		return ResponseEntity.ok(logService.getAnonymizedSessionLogs(sessionLogsRequestDto, xPagopaUid));
+		return ResponseEntity.ok(logService.getAnonymizedSessionLogs(sessionLogsRequestDto,
+				xPagopaUid, xPagopaCxType));
 	}
 }

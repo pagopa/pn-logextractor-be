@@ -21,9 +21,10 @@ public class DowntimeServiceImpl implements DowntimeService{
     DowntimeApiHandler downtimeApiHandler;
 
     @Override
-    public BaseResponseDto addStatusChangeEvent(List<PnStatusUpdateEventRequestDto> pnStatusUpdateEventRequestDto, String xPagopaHelpdUid) {
-        log.info("Status change event addition process - START - user={}",
-        		xPagopaHelpdUid);
+    public BaseResponseDto addStatusChangeEvent(List<PnStatusUpdateEventRequestDto> pnStatusUpdateEventRequestDto,
+                                                String xPagopaHelpdUid, String xPagopaCxType) {
+        log.info("Status change event addition process - START - user={}, userType={}",
+        		xPagopaHelpdUid, xPagopaCxType);
         long serviceStartTime = System.currentTimeMillis();
         log.info("Adding a new status change event...");
         downtimeApiHandler.addStatusChangeEvent(pnStatusUpdateEventRequestDto, xPagopaHelpdUid);
@@ -36,9 +37,9 @@ public class DowntimeServiceImpl implements DowntimeService{
     }
 
     @Override
-    public PnStatusResponseDto getCurrentStatus(String xPagopaHelpdUid) throws LogExtractorException {
-        log.info("PN functionalities status retrieve process - START - user={} ",
-        		xPagopaHelpdUid);
+    public PnStatusResponseDto getCurrentStatus(String xPagopaHelpdUid, String xPagopaCxType) throws LogExtractorException {
+        log.info("PN functionalities status retrieve process - START - user={}, userType={}",
+        		xPagopaHelpdUid, xPagopaCxType);
         long serviceStartTime = System.currentTimeMillis();
         log.info("Getting functionalities status...");
         PnStatusResponseDto currentStatusResponse = downtimeApiHandler.getFunctionalitiesStatus();
