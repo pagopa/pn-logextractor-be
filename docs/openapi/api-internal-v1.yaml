@@ -344,7 +344,8 @@ components:
           type: string
         jti:
           type: string
-          pattern: '^[A-Za-z0-9-]*$'
+          pattern: '[\w-]+'
+          maxLength: 60
         dateFrom:
           type: string
           format: date
