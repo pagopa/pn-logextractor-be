@@ -16,7 +16,7 @@ public class GenericConstants {
 	public static final String MINUTES_LABEL = " minuti";
 	public static final String MINUTE_LABEL = " minuto";
 	public static final String SAFESTORAGE_PREFIX = "safestorage://";
-	public static final int PAGE_SIZE = 1000;
+	public static final int PAGE_SIZE = 50;
 	public static final String SPECIAL_CHARS = "!@#$%^&()_+";
 	public static final String ERROR_MESSAGE_KEY = "message";
 	public static final int CSV_FILE_MAX_ROWS = 200000;

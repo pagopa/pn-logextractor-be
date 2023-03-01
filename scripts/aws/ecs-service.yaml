@@ -710,3 +710,6 @@ Outputs:
   TaskRoleName:
     Description: Container execution role name, useful to attach custom policies
     Value: !Ref TaskRole
+  LogGroupName:
+    Description: Log Group Name
+    Value: !Sub '/ecs/${MicroServiceUniqueName}'

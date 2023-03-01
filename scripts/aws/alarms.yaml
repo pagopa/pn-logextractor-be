@@ -33,6 +33,10 @@ Parameters:
     Type: String
     Description: 'The S3 bucket from which to fetch the templates used by this stack.'
 
+  LogGroupName:
+    Type: String
+    Description: LogGroup
+
 Conditions:
   HasMasterNode: !Not [ !Equals [ !Ref OpenSearchMasterNodeType, "" ] ]
 
@@ -359,4 +363,8 @@ Resources:
             - !GetAtt ClusterStatusYellow.Arn
             - !GetAtt FreeStorageSpace.Arn
             - !If [ HasMasterNode, !GetAtt MasterJVMMemoryPressure.Arn, '']
-            - !If [ HasMasterNode, !GetAtt MasterCPUUtilization.Arn, '']            
+            - !If [ HasMasterNode, !GetAtt MasterCPUUtilization.Arn, '']
+        LogGroupsNames: !Join
+          - ','
+          - - !Ref LogGroupName
+          
