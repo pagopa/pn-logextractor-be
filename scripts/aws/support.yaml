@@ -33,6 +33,9 @@ Resources:
           RequireUppercase: true
       Schema:
         - AttributeDataType: String
+          Name: log_identifier # the attribute isn't used anymore but we have to keep it becasuse user pool schema cannot be altered
+          Mutable: true
+        - AttributeDataType: String
           Name: backoffice_tags
           Mutable: true
       UserPoolName: !Sub ${ProjectName}-userpool
