@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -55,12 +56,14 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusUpdateEventRe
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.SessionLogsRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.TraceIdLogsRequestDto;
+import it.gov.pagopa.logextractor.util.HeaderConstants;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 
 public abstract class AbstractMock {
 
 	@Autowired
 	MockMvc mvc;
+
 
 	@Mock
 	NotificationApiHandler notificationApiHandler;
@@ -116,25 +119,31 @@ public abstract class AbstractMock {
 	protected final String fakeHeader = "Basic YWxhZGRpbjpvcGVuc2VzYW1l";
 	private static ObjectMapper mapper = new ObjectMapper();
 
-	// protected static String jsonDocSearchPF =
-	// "{\"responses\":[{\"hits\":{\"hits\":[{\"_source\":{\"_source\":\"3242342323\",
-	// \"cx_id\":\"PF-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}]}";
-	// protected static String jsonDocSearchPA =
-	// "{\"responses\":[{\"hits\":{\"hits\":[{\"_source\":{\"_source\":\"3242342323\",
-	// \"cx_id\":\"PA-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}]}";
 
 	protected final String jsonDocSearchPF = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [{\"_source\":{\"_source\":\"3242342323\",\"cx_id\":\"PF-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}";
 	protected final String jsonEmptyDocSearchPF = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : []}}";
 	protected final String jsonDocSearchPA = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [{\"_source\":{\"_source\":\"3242342323\",\"cx_id\":\"PA-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}";
 
 	protected final String scrollMockSearch = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : []}}";
+	
+	protected HttpHeaders getHeaders() {
+		HttpHeaders headers = new HttpHeaders();
+		headers.add(HeaderConstants.PAGO_PA_UID, fakeHeader);
+		headers.add(HeaderConstants.PAGO_PA_CXTYPE, fakeHeader);
+		return headers;
+	}
 
 	@SuppressWarnings("unchecked")
+	@Deprecated
 	protected void mockUniqueIdentifierForPerson() throws RestClientException, IOException {
 		// The first return is used to simulate authentication
 		Mockito.when(client.postForObject(Mockito.anyString(), Mockito.any(), Mockito.any(Class.class))).thenReturn(
 				getStringFromResourse(authResponse), mapper.registerModule(new JavaTimeModule()).writeValueAsString(
 						EnsureRecipientByExternalIdResponseDto.builder().internalId("123").build()));
+	}
+	
+	protected void mockAnonymizedTaxId() throws RestClientException, IOException {
+		Mockito.when(client.postForObject(Mockito.anyString(), Mockito.any(), Mockito.any(Class.class))).thenReturn("8712361940283615");
 	}
 
 	@SuppressWarnings("unchecked")

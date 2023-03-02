@@ -1,7 +1,7 @@
 package it.gov.pagopa.logextractor.util;
 
-import it.gov.pagopa.logextractor.util.JsonUtilities;
-import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
+import java.util.List;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -11,7 +11,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import java.util.List;
+
+import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
 
 @SpringBootTest
 @ActiveProfiles("test")
