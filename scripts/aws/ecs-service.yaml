@@ -636,7 +636,7 @@ Resources:
                   Action:
                     - "s3:Get*"
                   Resource:
-                    - !Ref SamlAssertionBucketArn
+                    - !Sub "${SamlAssertionBucketArn}/*"
                 - !Ref AWS::NoValue
   # A role for the containers
   TaskRole:
