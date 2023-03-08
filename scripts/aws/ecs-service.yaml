@@ -233,9 +233,20 @@ Parameters:
     Type: String
     Default: ''
 
+  SamlAssertionBucketKeyArn:
+    Type: String
+    Default: ''
+    Description: Saml assertion bucket key arn
+
+  SamlAssertionBucketArn:
+    Type: String
+    Default: ''
+    Description: Saml assertion bucket arn
 
 Conditions:
   HasAlbSecurityGroup: !Not [ !Equals [ !Ref AlbSecurityGroup, '' ] ]
+  HasSamlAssertionKmsKeyArn: !Not [ !Equals [ !Ref SamlAssertionBucketKeyArn, '' ] ]
+  HasSamlAssertionBucketArn: !Not [ !Equals [ !Ref SamlAssertionBucketArn, '' ] ]
 
   Env1Exist: !Not [ !Equals [!Ref ContainerEnvEntry1, '']]
   Env2Exist: !Not [ !Equals [!Ref ContainerEnvEntry2, '']]
@@ -336,7 +347,6 @@ Resources:
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     # Makes sure the log group is created before it is used.
-    DependsOn: LogGroup
     Properties:
       # Name of the task definition. Subsequent versions of the task definition are grouped together under this name.
       Family: !Ref MicroServiceUniqueName
@@ -608,7 +618,26 @@ Resources:
                   - kms:Decrypt
                 Resource:
                   - Fn::Sub: "arn:${AWS::Partition}:secretsmanager:*:${AWS::AccountId}:secret:*"
-
+              - Fn::If:
+                - HasSamlAssertionKmsKeyArn
+                - Effect: Allow
+                  Action:
+                    - "kms:Encrypt"
+                    - "kms:Decrypt"
+                    - "kms:ReEncrypt*"
+                    - "kms:GenerateDataKey*"
+                    - "kms:DescribeKey"
+                  Resource:
+                    - !Ref SamlAssertionBucketKeyArn
+                - !Ref AWS::NoValue
+              - Fn::If:
+                - HasSamlAssertionBucketArn
+                - Effect: Allow
+                  Action:
+                    - "s3:Get*"
+                  Resource:
+                    - !Sub "${SamlAssertionBucketArn}/*"
+                - !Ref AWS::NoValue
   # A role for the containers
   TaskRole:
     Type: AWS::IAM::Role
