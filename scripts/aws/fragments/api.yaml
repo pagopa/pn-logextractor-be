@@ -3,7 +3,9 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: |
   CloudFormation definition of Log Extractor public API subsystem
 
-
+Transform:
+  - UpdateDeploymentTransform
+  
 Parameters:
   NetworkLoadBalancerDomain:
     Type: String
@@ -86,7 +88,8 @@ Resources:
       ResponseType: DEFAULT_5XX
       RestApiId: !Ref PublicRestApi
 
-  PublicRestApiDeployment:
+   # Deployment
+  PublicRestApiDeploymentPnPlaceholderEpochSeconds:
     Type: "AWS::ApiGateway::Deployment"
     DependsOn:
       - PublicApiHealthCheckStatusMethod
@@ -136,7 +139,7 @@ Resources:
       AccessLogSetting:
         DestinationArn: !GetAtt PublicApiLogGroup.Arn
         Format: "{\"requestTime\":\"$context.requestTime\",\"requestId\":\"$context.requestId\",\"httpMethod\":\"$context.httpMethod\",\"path\":\"$context.path\",\"routeKey\":\"$context.routeKey\",\"status\":$context.status,\"responseLatency\":$context.responseLatency}"
-      DeploymentId: !Ref PublicRestApiDeployment
+      DeploymentId: !Ref PublicRestApiDeploymentPnPlaceholderEpochSeconds
       MethodSettings:
         - DataTraceEnabled: "false"
           HttpMethod: "*"

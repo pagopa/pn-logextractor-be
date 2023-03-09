@@ -54,6 +54,15 @@ Conditions:
       - ""
 
 Resources:
+  
+  ###                       CLOUDFORMATION TRANSFORM LAMBDAS              ###
+  ###########################################################################
+
+  UpdateDeploymentTransform:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-update-deployment-transform.yaml"
+
   Backend:
     Type: "AWS::CloudFormation::Stack"
     Properties:
@@ -92,6 +101,8 @@ Resources:
 
   Api:
     Type: "AWS::CloudFormation::Stack"
+    DependsOn:
+      - UpdateDeploymentTransform
     Properties:
       Parameters:
         NetworkLoadBalancerDomain: !GetAtt Backend.Outputs.NlbDomain
