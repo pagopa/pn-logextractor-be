@@ -2,12 +2,16 @@ package it.gov.pagopa.logextractor.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.gov.pagopa.logextractor.util.JsonUtilities;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -55,6 +59,9 @@ public class LogServiceImpl implements LogService {
 	
 	@Autowired
 	DeanonimizationApiHandler deanonimizationApiHandler;
+
+	@Value("${external.safeStorage.downloadFile.downloadUrl}")
+	String downloadFileUrl;
 
 	@Override
 	public BaseResponseDto getAnonymizedPersonLogs(PersonLogsRequestDto requestData,
@@ -291,6 +298,27 @@ public class LogServiceImpl implements LogService {
 					System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
 			performanceMillis = System.currentTimeMillis();
 			deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, requestData.getRecipientType());
+
+			if(!deanonimizedOpenSearchResponse.isEmpty()) {
+				JsonUtilities jsonUtils = new JsonUtilities();
+
+				String date = LocalDateTime.parse(jsonUtils.getValue(openSearchResponse.get(0), "@timestamp"),
+								DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+						.toLocalDate().toString();
+
+				String name = String.format("%s-%s", jsonUtils.getValue(openSearchResponse.get(0), "jti"), date);
+				String downloadUrl = String.format("%s/%s", downloadFileUrl, name);
+
+				FileUtilities fileUtils = new FileUtilities();
+
+				List<File> filesToAdd = new ArrayList<>();
+				filesToAdd.add(fileUtils.getFileWithName(name, GenericConstants.JSON_EXTENSION, downloadUrl));
+
+				DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(openSearchResponse, filesToAdd, new ArrayList<>(), GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
+
+				return response;
+			}
+
 		} else {
 			if (requestData.getIun() != null) {
 				//use case 4
@@ -351,7 +379,23 @@ public class LogServiceImpl implements LogService {
 					(System.currentTimeMillis() - serviceStartTime));
         	return response;
 		}
-		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(openSearchResponse, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
+
+		JsonUtilities jsonUtils = new JsonUtilities();
+
+		String date = LocalDateTime.parse(jsonUtils.getValue(openSearchResponse.get(0), "@timestamp"),
+						DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+				.toLocalDate().toString();
+
+		String name = String.format("%s-%s", jsonUtils.getValue(openSearchResponse.get(0), "jti"), date);
+		String downloadUrl = String.format("%s/%s", downloadFileUrl, name);
+
+		FileUtilities fileUtils = new FileUtilities();
+
+		List<File> filesToAdd = new ArrayList<>();
+		filesToAdd.add(fileUtils.getFileWithName(name, GenericConstants.JSON_EXTENSION, downloadUrl));
+
+		DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(openSearchResponse, filesToAdd, new ArrayList<>(), GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
+
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END,
 				(System.currentTimeMillis() - serviceStartTime));
@@ -388,7 +432,23 @@ public class LogServiceImpl implements LogService {
 					(System.currentTimeMillis() - serviceStartTime));
 			return response;
 		}
-		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(deanonimizedOpenSearchResponse, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
+
+		JsonUtilities jsonUtils = new JsonUtilities();
+
+		String date = LocalDateTime.parse(jsonUtils.getValue(openSearchResponse.get(0), "@timestamp"),
+						DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+				.toLocalDate().toString();
+
+		String name = String.format("%s-%s", jsonUtils.getValue(openSearchResponse.get(0), "jti"), date);
+		String downloadUrl = String.format("%s/%s", downloadFileUrl, name);
+
+		FileUtilities fileUtils = new FileUtilities();
+
+		List<File> filesToAdd = new ArrayList<>();
+		filesToAdd.add(fileUtils.getFileWithName(name, GenericConstants.JSON_EXTENSION, downloadUrl));
+
+		DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(openSearchResponse, filesToAdd, new ArrayList<>(), GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
+
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info(LoggingConstants.DEANONIMIZED_RETRIEVE_PROCESS_END,
 				(System.currentTimeMillis() - serviceStartTime));
