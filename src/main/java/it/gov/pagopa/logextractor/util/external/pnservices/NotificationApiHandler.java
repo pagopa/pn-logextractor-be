@@ -162,23 +162,7 @@ public class NotificationApiHandler {
 		HttpEntity<?> entity = new HttpEntity<>(requestHeaders);
 		return client.exchange(url, HttpMethod.GET, entity, FileDownloadMetadataResponseDto.class).getBody();
 	}
-	
-	/**
-	 * Performs a GET HTTP request to obtain a physical file represented as a byte array
-	 * @param url The URL to make the request to
-	 * @return A byte array representation of a file
-	 */
-	public byte[] getFile(String url) {
-		try {
-			URL urlToFileDownload = new URL(url);
-            return IOUtils.toByteArray(urlToFileDownload);
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        } finally {
-            IOUtils.closeQuietly();
-        }
-	}
-	
+
 	/**
 	 * Performs a GET HTTP request to get the notification history
 	 * @param iun The notification IUN

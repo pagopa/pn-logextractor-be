@@ -256,11 +256,11 @@ public class LogServiceImpl implements LogService {
         	log.info("Notification downloads' metadata retrieved in {} ms, getting physical files... ", System.currentTimeMillis() - performanceMillis);
         	performanceMillis = System.currentTimeMillis();
         	for(NotificationDownloadFileData currentDownloadableFile : downloadableFiles) {
-        		byte[] externalFile = notificationApiHandler.getFile(currentDownloadableFile.getDownloadUrl());
-        		File downloadedFile = utils.getFile(currentDownloadableFile.getFileCategory()
-						+ "-" + currentDownloadableFile.getKey(), GenericConstants.PDF_EXTENSION);
-        		FileUtils.writeByteArrayToFile(downloadedFile, externalFile);
-        		filesToAdd.add(downloadedFile);
+
+				FileUtilities fileUtils = new FileUtilities();
+
+				filesToAdd.add(fileUtils.getFileWithName(currentDownloadableFile.getFileCategory()
+						+ "-" + currentDownloadableFile.getKey(), GenericConstants.PDF_EXTENSION, currentDownloadableFile.getDownloadUrl()));
         	}
         	log.info("Physical files retrieved in {} ms", System.currentTimeMillis() - performanceMillis);
         	List<String> openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate);
@@ -380,21 +380,7 @@ public class LogServiceImpl implements LogService {
         	return response;
 		}
 
-		JsonUtilities jsonUtils = new JsonUtilities();
-
-		String date = LocalDateTime.parse(jsonUtils.getValue(openSearchResponse.get(0), "@timestamp"),
-						DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-				.toLocalDate().toString();
-
-		String name = String.format("%s-%s", jsonUtils.getValue(openSearchResponse.get(0), "jti"), date);
-		String downloadUrl = String.format("%s/%s", downloadFileUrl, name);
-
-		FileUtilities fileUtils = new FileUtilities();
-
-		List<File> filesToAdd = new ArrayList<>();
-		filesToAdd.add(fileUtils.getFileWithName(name, GenericConstants.JSON_EXTENSION, downloadUrl));
-
-		DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(openSearchResponse, filesToAdd, new ArrayList<>(), GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
+		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(openSearchResponse, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
 
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END,
