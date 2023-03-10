@@ -2,7 +2,6 @@ package it.gov.pagopa.logextractor.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -30,7 +29,7 @@ public class FileUtilities {
 	 * @param extension the file extension
 	 * @return a new {@link File} instance of a file with the given name
 	 * */
-	public File getFile(String name, String extension) {
+	public File getFileWithRandomName(String name, String extension) {
 		return FileUtils.getFile(GenericConstants.EXPORT_FOLDER + name + "-" +  new RandomUtils().generateRandomAlphaNumericString() + extension);
 	}
 
@@ -40,7 +39,7 @@ public class FileUtilities {
 	 * @param extension the file extension
 	 * @return a new {@link File} instance of a file with the given name
 	 * */
-	public File getFileWithName(String name, String extension, String url) throws IOException {
+	public File getFile(String name, String extension, String url) throws IOException {
 		File downloadedFile = FileUtils.getFile(GenericConstants.EXPORT_FOLDER + name + extension);;
 		FileUtils.copyURLToFile(new URL(url), downloadedFile);
 		return downloadedFile;

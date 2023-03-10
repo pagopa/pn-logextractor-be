@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.gov.pagopa.logextractor.util.JsonUtilities;
-import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -155,7 +154,7 @@ public class LogServiceImpl implements LogService {
 						notificationPlaceholder+ GenericConstants.CSV_FILE_MAX_ROWS);
 				notificationPlaceholder += GenericConstants.CSV_FILE_MAX_ROWS;
 			}
-			File file = utils.getFile(GenericConstants.NOTIFICATION_CSV_FILE_NAME, GenericConstants.CSV_EXTENSION);
+			File file = utils.getFileWithRandomName(GenericConstants.NOTIFICATION_CSV_FILE_NAME, GenericConstants.CSV_EXTENSION);
 			utils.writeCsv(file, utils.toCsv(notificationsPartition));
 			csvFiles.add(file);
 			numberOfFiles--;
@@ -259,7 +258,7 @@ public class LogServiceImpl implements LogService {
 
 				FileUtilities fileUtils = new FileUtilities();
 
-				filesToAdd.add(fileUtils.getFileWithName(currentDownloadableFile.getFileCategory()
+				filesToAdd.add(fileUtils.getFile(currentDownloadableFile.getFileCategory()
 						+ "-" + currentDownloadableFile.getKey(), GenericConstants.PDF_EXTENSION, currentDownloadableFile.getDownloadUrl()));
         	}
         	log.info("Physical files retrieved in {} ms", System.currentTimeMillis() - performanceMillis);
@@ -312,7 +311,7 @@ public class LogServiceImpl implements LogService {
 				FileUtilities fileUtils = new FileUtilities();
 
 				List<File> filesToAdd = new ArrayList<>();
-				filesToAdd.add(fileUtils.getFileWithName(name, GenericConstants.JSON_EXTENSION, downloadUrl));
+				filesToAdd.add(fileUtils.getFile(name, GenericConstants.JSON_EXTENSION, downloadUrl));
 
 				DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(openSearchResponse, filesToAdd, new ArrayList<>(), GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
 
@@ -431,7 +430,7 @@ public class LogServiceImpl implements LogService {
 		FileUtilities fileUtils = new FileUtilities();
 
 		List<File> filesToAdd = new ArrayList<>();
-		filesToAdd.add(fileUtils.getFileWithName(name, GenericConstants.JSON_EXTENSION, downloadUrl));
+		filesToAdd.add(fileUtils.getFile(name, GenericConstants.JSON_EXTENSION, downloadUrl));
 
 		DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(openSearchResponse, filesToAdd, new ArrayList<>(), GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
 
