@@ -124,7 +124,7 @@ fi
 
 aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-file "dist/template.${environment}.packaged.yaml" \
   --stack-name "pn-logextractor-${environment}" \
-  --capabilities "CAPABILITY_IAM" \
+  --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND \
   --parameter-overrides "TemplateBucketBaseUrl=http://${bucket_name}.s3.amazonaws.com" \
   "ProjectName=${project_name}" \
   "CloudFrontLogBucketDomainName=${CloudFrontLogBucketDomainName}" \
