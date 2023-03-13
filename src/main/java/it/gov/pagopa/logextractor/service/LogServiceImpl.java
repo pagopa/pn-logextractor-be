@@ -59,7 +59,7 @@ public class LogServiceImpl implements LogService {
 	@Autowired
 	DeanonimizationApiHandler deanonimizationApiHandler;
 
-	@Value("${external.safeStorage.downloadFile.downloadUrl}")
+	@Value("${external.s3.downloadFile.downloadUrl}")
 	String downloadFileUrl;
 
 	@Override
