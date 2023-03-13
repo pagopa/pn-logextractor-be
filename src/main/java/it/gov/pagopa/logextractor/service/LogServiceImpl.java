@@ -265,7 +265,15 @@ public class LogServiceImpl implements LogService {
         	List<String> openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate);
     		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
 			performanceMillis = System.currentTimeMillis();
-			DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(openSearchResponse, filesToAdd, filesNotDownloadable, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
+
+			FileUtilities fileUtils = new FileUtilities();
+
+			if(!openSearchResponse.isEmpty()){
+				File logFile = fileUtils.writeTxt(openSearchResponse, GenericConstants.LOG_FILE_NAME);
+				filesToAdd.add(logFile);
+			}
+
+			DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(filesToAdd, filesNotDownloadable, GenericConstants.ZIP_ARCHIVE_NAME);
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 			log.info("Notification data retrieve process - END in {} ms",
 					(System.currentTimeMillis() - serviceStartTime));
@@ -313,7 +321,12 @@ public class LogServiceImpl implements LogService {
 				List<File> filesToAdd = new ArrayList<>();
 				filesToAdd.add(fileUtils.getFile(name, GenericConstants.JSON_EXTENSION, downloadUrl));
 
-				DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(openSearchResponse, filesToAdd, new ArrayList<>(), GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
+				if(!openSearchResponse.isEmpty()){
+					File logFile = fileUtils.writeTxt(openSearchResponse, GenericConstants.LOG_FILE_NAME);
+					filesToAdd.add(logFile);
+				}
+
+				DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(filesToAdd, new ArrayList<>(), GenericConstants.ZIP_ARCHIVE_NAME);
 
 				return response;
 			}
@@ -432,7 +445,12 @@ public class LogServiceImpl implements LogService {
 		List<File> filesToAdd = new ArrayList<>();
 		filesToAdd.add(fileUtils.getFile(name, GenericConstants.JSON_EXTENSION, downloadUrl));
 
-		DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(openSearchResponse, filesToAdd, new ArrayList<>(), GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
+		if(!openSearchResponse.isEmpty()){
+			File logFile = fileUtils.writeTxt(openSearchResponse, GenericConstants.LOG_FILE_NAME);
+			filesToAdd.add(logFile);
+		}
+
+		DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(filesToAdd, new ArrayList<>(), GenericConstants.ZIP_ARCHIVE_NAME);
 
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info(LoggingConstants.DEANONIMIZED_RETRIEVE_PROCESS_END,

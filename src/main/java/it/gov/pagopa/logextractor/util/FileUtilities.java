@@ -147,4 +147,16 @@ public class FileUtilities {
 		}
 		return csvNotifications;
 	}
+
+	/**
+	 * Write open search logs data to a txt file
+	 * @param openSearchLogs the list of {@link String} the contents from OpenSearch to write in the output file
+	 * @param fileName the name of file
+	 * @return a new {@link File} instance of a file with the given name and content
+	 * */
+	public File writeTxt(List<String> openSearchLogs, String fileName) throws IOException {
+		File logFile = getFileWithRandomName(fileName, GenericConstants.TXT_EXTENSION);
+		write(logFile, openSearchLogs);
+		return logFile;
+	}
 }

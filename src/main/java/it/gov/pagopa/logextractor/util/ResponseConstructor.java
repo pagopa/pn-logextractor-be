@@ -84,24 +84,18 @@ public class ResponseConstructor {
 	
 	/**
 	 * Method that manages the notification logs response creation phase.
-	 * 
-	 * @param openSearchLogs the contents from OpenSearch to write in the output
-	 *                       file (.txt), contained in the output zip archive
+	 *
 	 * @param filesToAdd     list, containing every notification file to add in the
 	 *                       zip archive
 	 * @param filesNotDownloadable the list of files that couldn't be downloaded during the execution
-	 * @param fileName       the name of file, containing the logs in the output zip
-	 *                       archive
 	 * @param zipName        the name of the output zip archive
 	 * @return {@link DownloadArchiveResponseDto} containing a byte array
 	 *         representation of the output zip archive and the password to access
 	 *         its files
 	 * @throws IOException in case of an IO error
 	 */
-	public static DownloadArchiveResponseDto createNotificationLogResponse(List<String> openSearchLogs,
-																		   List<File> filesToAdd,
+	public static DownloadArchiveResponseDto createNotificationLogResponse(List<File> filesToAdd,
 																		   List<NotificationDownloadFileData> filesNotDownloadable,
-																		   String fileName,
 																		   String zipName) throws IOException {
 		PasswordFactory passwordFactory = new PasswordFactory();
 		String password = passwordFactory.createPassword(1, 1, 1, GenericConstants.SPECIAL_CHARS, 1, 16);
@@ -110,12 +104,7 @@ public class ResponseConstructor {
 		ZipFile zipArchive = zipFactory.createZipArchive(zipName, password);
 		ZipParameters params = zipFactory.createZipParameters(true, CompressionLevel.HIGHER, EncryptionMethod.AES);
 		zipFactory.addFiles(zipArchive, params, filesToAdd);
-		if(!openSearchLogs.isEmpty()){
-			File logFile = fileUtils.getFileWithRandomName(fileName, GenericConstants.TXT_EXTENSION);
-			fileUtils.write(logFile, openSearchLogs);
-			zipArchive = zipFactory.addFile(zipArchive, params, logFile);
-			fileUtils.delete(logFile);
-		}
+
 		if(!filesNotDownloadable.isEmpty()){
 			File failureSummaryFile = fileUtils.getFileWithRandomName(GenericConstants.ERROR_SUMMARY_FILE_NAME, GenericConstants.TXT_EXTENSION);
 			JsonUtilities jsonUtilities = new JsonUtilities();

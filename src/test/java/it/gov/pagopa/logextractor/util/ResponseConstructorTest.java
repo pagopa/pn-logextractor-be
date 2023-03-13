@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,8 +25,15 @@ class ResponseConstructorTest {
                 new NotificationDownloadFileData("test1", "test1", "test1")
         );
 
-        DownloadArchiveResponseDto output = ResponseConstructor.createNotificationLogResponse(openSearchLogs,
-                filesToAdd, filesNotDownloadable, "test", "test");
+        FileUtilities fileUtils = new FileUtilities();
+
+        if(!openSearchLogs.isEmpty()){
+            File logFile = fileUtils.writeTxt(openSearchLogs, GenericConstants.LOG_FILE_NAME);
+            filesToAdd.add(logFile);
+        }
+
+        DownloadArchiveResponseDto output = ResponseConstructor.createNotificationLogResponse( filesToAdd,
+                filesNotDownloadable, "test");
         Assertions.assertNotNull(output, () -> "Output zip archive shouldn't be null");
     }
 }
