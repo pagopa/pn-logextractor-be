@@ -120,9 +120,9 @@ public abstract class AbstractMock {
 	private static ObjectMapper mapper = new ObjectMapper();
 
 
-	protected final String jsonDocSearchPF = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [{\"_source\":{\"_source\":\"3242342323\",\"cx_id\":\"PF-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}";
+	protected final String jsonDocSearchPF = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [{\"_source\":{\"_source\":\"3242342323\",\"cx_id\":\"PF-2dfc9690-a648-4462-986d-769d90752e6f\", \"@timestamp\":\"2023-01-10T12:10:15.300Z\"}}]}}";
 	protected final String jsonEmptyDocSearchPF = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : []}}";
-	protected final String jsonDocSearchPA = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [{\"_source\":{\"_source\":\"3242342323\",\"cx_id\":\"PA-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}";
+	protected final String jsonDocSearchPA = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [{\"_source\":{\"_source\":\"3242342323\",\"cx_id\":\"PA-2dfc9690-a648-4462-986d-769d90752e6f\", \"@timestamp\":\"2023-01-10T12:10:15.300Z\"}}]}}";
 
 	protected final String scrollMockSearch = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : []}}";
 	
