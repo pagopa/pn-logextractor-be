@@ -40,7 +40,7 @@ public class FileUtilities {
 	 * @return a new {@link File} instance of a file with the given name
 	 * */
 	public File getFile(String name, String extension, String url) throws IOException {
-		File downloadedFile = FileUtils.getFile(GenericConstants.EXPORT_FOLDER + name + extension);;
+		File downloadedFile = FileUtils.getFile(GenericConstants.EXPORT_FOLDER + name + extension);
 		FileUtils.copyURLToFile(new URL(url), downloadedFile);
 		return downloadedFile;
 	}

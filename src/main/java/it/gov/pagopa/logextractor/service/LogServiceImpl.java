@@ -204,7 +204,6 @@ public class LogServiceImpl implements LogService {
 		long serviceStartTime = System.currentTimeMillis();
 		double secondsToWait = 0;
 		ObjectMapper mapper = new ObjectMapper();
-		FileUtilities utils = new FileUtilities();
 		ArrayList<File> filesToAdd = new ArrayList<>();
 		log.info(LoggingConstants.GET_NOTIFICATION_DETAILS);
 		NotificationDetailsResponseDto notificationDetails = notificationApiHandler.getNotificationDetails(requestData.getIun());
@@ -325,10 +324,7 @@ public class LogServiceImpl implements LogService {
 					File logFile = fileUtils.writeTxt(openSearchResponse, GenericConstants.LOG_FILE_NAME);
 					filesToAdd.add(logFile);
 				}
-
-				DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(filesToAdd, new ArrayList<>(), GenericConstants.ZIP_ARCHIVE_NAME);
-
-				return response;
+				return ResponseConstructor.createNotificationLogResponse(filesToAdd, new ArrayList<>(), GenericConstants.ZIP_ARCHIVE_NAME);
 			}
 
 		} else {
@@ -374,11 +370,10 @@ public class LogServiceImpl implements LogService {
 				requestData.getTicketNumber(), requestData.getJti(), requestData.getDateFrom(),
 				requestData.getDateTo());
 		long serviceStartTime = System.currentTimeMillis();
-		long performanceMillis = 0;
 		List<String> openSearchResponse;
 		
 		log.info("Getting session activities' anonymized history... ");
-		performanceMillis = System.currentTimeMillis();
+		long performanceMillis = System.currentTimeMillis();
 		openSearchResponse = openSearchApiHandler.getAnonymizedSessionLogsByJti(requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
 
 		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
@@ -408,12 +403,11 @@ public class LogServiceImpl implements LogService {
 				"jti={}, startDate={}, endDate={}", xPagopaHelpdUid, xPagopaCxType, requestData.getTicketNumber(),
 				requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
 		long serviceStartTime = System.currentTimeMillis();
-		long performanceMillis = 0;
 		List<String> openSearchResponse;
 		List<String> deanonimizedOpenSearchResponse;
 		
 		log.info("Getting session activities' deanonimized history... ");
-		performanceMillis = System.currentTimeMillis();
+		long performanceMillis = System.currentTimeMillis();
 		openSearchResponse = openSearchApiHandler.getAnonymizedSessionLogsByJti(requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
 
 		log.info("Query execution completed in {} ms, retrieved {} documents, deanonimizing results...",
