@@ -311,15 +311,14 @@ public class LogServiceImpl implements LogService {
 				String date = LocalDateTime.parse(jsonUtils.getValue(openSearchResponse.get(0), "@timestamp"),
 								DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 						.toLocalDate().toString();
-
 				String name = String.format("%s-%s", jsonUtils.getValue(openSearchResponse.get(0), "jti"), date);
 				String downloadUrl = String.format("%s/%s", downloadFileUrl, name);
-
 				FileUtilities fileUtils = new FileUtilities();
-
 				List<File> filesToAdd = new ArrayList<>();
+				log.info("Retrieving SAML assertion from s3 bucket... ");
+				performanceMillis = System.currentTimeMillis();
 				filesToAdd.add(fileUtils.getFile(name, GenericConstants.JSON_EXTENSION, downloadUrl));
-
+				log.info("SAML assertion from s3 bucket retrieved in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
 				if(!openSearchResponse.isEmpty()){
 					File logFile = fileUtils.writeTxt(openSearchResponse, GenericConstants.LOG_FILE_NAME);
 					filesToAdd.add(logFile);
@@ -414,7 +413,7 @@ public class LogServiceImpl implements LogService {
 				System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
 		deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, RecipientTypes.PF);
 
-		log.info("Deanonimization completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
+		log.info("Deanonimization completed in {} ms", System.currentTimeMillis() - performanceMillis);
 		performanceMillis = System.currentTimeMillis();
 		if(deanonimizedOpenSearchResponse.isEmpty()) {
 			BaseResponseDto response = new BaseResponseDto();
@@ -424,28 +423,22 @@ public class LogServiceImpl implements LogService {
 					(System.currentTimeMillis() - serviceStartTime));
 			return response;
 		}
-
 		JsonUtilities jsonUtils = new JsonUtilities();
-
 		String date = LocalDateTime.parse(jsonUtils.getValue(openSearchResponse.get(0), "@timestamp"),
-						DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-				.toLocalDate().toString();
-
+						DateTimeFormatter.ISO_OFFSET_DATE_TIME).toLocalDate().toString();
 		String name = String.format("%s-%s", jsonUtils.getValue(openSearchResponse.get(0), "jti"), date);
 		String downloadUrl = String.format("%s/%s", downloadFileUrl, name);
-
 		FileUtilities fileUtils = new FileUtilities();
-
 		List<File> filesToAdd = new ArrayList<>();
+		log.info("Retrieving SAML assertion from s3 bucket... ");
+		performanceMillis = System.currentTimeMillis();
 		filesToAdd.add(fileUtils.getFile(name, GenericConstants.JSON_EXTENSION, downloadUrl));
-
+		log.info("SAML assertion from s3 bucket retrieved in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
 		if(!openSearchResponse.isEmpty()){
 			File logFile = fileUtils.writeTxt(openSearchResponse, GenericConstants.LOG_FILE_NAME);
 			filesToAdd.add(logFile);
 		}
-
 		DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(filesToAdd, new ArrayList<>(), GenericConstants.ZIP_ARCHIVE_NAME);
-
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info(LoggingConstants.DEANONIMIZED_RETRIEVE_PROCESS_END,
 				(System.currentTimeMillis() - serviceStartTime));
