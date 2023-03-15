@@ -122,6 +122,7 @@ class MockLogControllerTest extends AbstractMock {
 	void test_getSessionLogsOpenSearchResponseAnonymized() throws Exception {	
 		mockPersonsLogResponse(jsonDocSearchPF);
 		mockTaxCodeForPerson();
+		mockGetFile();
 		MockHttpServletResponse response = mvc.perform(post(sessionUrl).accept(APPLICATION_JSON_UTF8)
 				.headers(getHeaders()).content(getMockSessionLogsRequestDto(true))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();

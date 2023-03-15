@@ -1,5 +1,6 @@
 package it.gov.pagopa.logextractor;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
@@ -120,9 +121,9 @@ public abstract class AbstractMock {
 	private static ObjectMapper mapper = new ObjectMapper();
 
 
-	protected final String jsonDocSearchPF = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [{\"_source\":{\"_source\":\"3242342323\",\"cx_id\":\"PF-2dfc9690-a648-4462-986d-769d90752e6f\", \"@timestamp\":\"2023-01-10T12:10:15.300Z\"}}]}}";
+	protected final String jsonDocSearchPF = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [{\"_source\":{\"_source\":\"3242342323\",\"cx_id\":\"PF-2dfc9690-a648-4462-986d-769d90752e6f\", \"@timestamp\":\"\"}}]}}";
 	protected final String jsonEmptyDocSearchPF = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : []}}";
-	protected final String jsonDocSearchPA = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [{\"_source\":{\"_source\":\"3242342323\",\"cx_id\":\"PA-2dfc9690-a648-4462-986d-769d90752e6f\", \"@timestamp\":\"2023-01-10T12:10:15.300Z\"}}]}}";
+	protected final String jsonDocSearchPA = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [{\"_source\":{\"_source\":\"3242342323\",\"cx_id\":\"PA-2dfc9690-a648-4462-986d-769d90752e6f\", \"@timestamp\":\"\"}}]}}";
 
 	protected final String scrollMockSearch = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : []}}";
 	
@@ -339,6 +340,14 @@ public abstract class AbstractMock {
 				.thenReturn(responseStatus);
 	}
 
+	protected void mockGetFile() {
+		byte[] file = new byte[]{};
+		ResponseEntity<byte[]> response = new ResponseEntity<>(file, HttpStatus.OK);
+
+		Mockito.when(client.getForEntity(ArgumentMatchers.anyString(), ArgumentMatchers.<Class<byte[]>>any()))
+				.thenReturn(response);
+	}
+
 	@SuppressWarnings("unchecked")
 	protected void mockAddStatusChangeEvent(RestTemplate client) throws RestClientException, IOException {
 		String mock = "";
@@ -488,5 +497,4 @@ public abstract class AbstractMock {
 		return mapper.registerModule(new JavaTimeModule()).readValue(resource.getInputStream(),
 				SelfCarePaDataResponseDto.class);
 	}
-
 }

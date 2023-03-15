@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.gov.pagopa.logextractor.util.JsonUtilities;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -59,7 +60,7 @@ public class LogServiceImpl implements LogService {
 	@Autowired
 	DeanonimizationApiHandler deanonimizationApiHandler;
 
-	@Value("${external.s3.downloadFile.downloadUrl}")
+	@Value("${external.s3.saml.assertion.downloadUrl}")
 	String downloadFileUrl;
 
 	@Override
@@ -304,25 +305,26 @@ public class LogServiceImpl implements LogService {
 					System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
 			performanceMillis = System.currentTimeMillis();
 			deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, requestData.getRecipientType());
-
 			if(!deanonimizedOpenSearchResponse.isEmpty()) {
 				JsonUtilities jsonUtils = new JsonUtilities();
-
-				String date = LocalDateTime.parse(jsonUtils.getValue(openSearchResponse.get(0), "@timestamp"),
-								DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-						.toLocalDate().toString();
-				String name = String.format("%s-%s", jsonUtils.getValue(openSearchResponse.get(0), "jti"), date);
-				String downloadUrl = String.format("%s/%s", downloadFileUrl, name);
-				FileUtilities fileUtils = new FileUtilities();
 				List<File> filesToAdd = new ArrayList<>();
-				log.info("Retrieving SAML assertion from s3 bucket... ");
-				performanceMillis = System.currentTimeMillis();
-				filesToAdd.add(fileUtils.getFile(name, GenericConstants.JSON_EXTENSION, downloadUrl));
-				log.info("SAML assertion from s3 bucket retrieved in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
-				if(!openSearchResponse.isEmpty()){
-					File logFile = fileUtils.writeTxt(openSearchResponse, GenericConstants.LOG_FILE_NAME);
-					filesToAdd.add(logFile);
+				FileUtilities fileUtils = new FileUtilities();
+				String date = jsonUtils.getValue(openSearchResponse.get(0), "@timestamp");
+				if(StringUtils.isNotBlank(date)) {
+					String name = String.format("%s-%s", jsonUtils.getValue(openSearchResponse.get(0), "jti"),
+							LocalDateTime.parse(date, DateTimeFormatter.ISO_OFFSET_DATE_TIME).toLocalDate().toString());
+					String downloadUrl = String.format(downloadFileUrl, name);
+					log.info("Retrieving SAML assertion from s3 bucket... ");
+					performanceMillis = System.currentTimeMillis();
+					File assertion = fileUtils.getFile(name, GenericConstants.JSON_EXTENSION, downloadUrl);
+					if(assertion != null) {
+						filesToAdd.add(assertion);
+						log.info("SAML assertion from s3 bucket retrieved in {} ms, constructing service response...",
+								System.currentTimeMillis() - performanceMillis);
+					}
 				}
+				File logFile = fileUtils.writeTxt(deanonimizedOpenSearchResponse, GenericConstants.LOG_FILE_NAME);
+				filesToAdd.add(logFile);
 				return ResponseConstructor.createNotificationLogResponse(filesToAdd, new ArrayList<>(), GenericConstants.ZIP_ARCHIVE_NAME);
 			}
 
@@ -404,15 +406,12 @@ public class LogServiceImpl implements LogService {
 		long serviceStartTime = System.currentTimeMillis();
 		List<String> openSearchResponse;
 		List<String> deanonimizedOpenSearchResponse;
-		
 		log.info("Getting session activities' deanonimized history... ");
 		long performanceMillis = System.currentTimeMillis();
 		openSearchResponse = openSearchApiHandler.getAnonymizedSessionLogsByJti(requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
-
 		log.info("Query execution completed in {} ms, retrieved {} documents, deanonimizing results...",
 				System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
 		deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, RecipientTypes.PF);
-
 		log.info("Deanonimization completed in {} ms", System.currentTimeMillis() - performanceMillis);
 		performanceMillis = System.currentTimeMillis();
 		if(deanonimizedOpenSearchResponse.isEmpty()) {
@@ -424,20 +423,20 @@ public class LogServiceImpl implements LogService {
 			return response;
 		}
 		JsonUtilities jsonUtils = new JsonUtilities();
-		String date = LocalDateTime.parse(jsonUtils.getValue(openSearchResponse.get(0), "@timestamp"),
-						DateTimeFormatter.ISO_OFFSET_DATE_TIME).toLocalDate().toString();
-		String name = String.format("%s-%s", jsonUtils.getValue(openSearchResponse.get(0), "jti"), date);
-		String downloadUrl = String.format("%s/%s", downloadFileUrl, name);
+		String date = jsonUtils.getValue(openSearchResponse.get(0), "@timestamp");
 		FileUtilities fileUtils = new FileUtilities();
 		List<File> filesToAdd = new ArrayList<>();
-		log.info("Retrieving SAML assertion from s3 bucket... ");
-		performanceMillis = System.currentTimeMillis();
-		filesToAdd.add(fileUtils.getFile(name, GenericConstants.JSON_EXTENSION, downloadUrl));
-		log.info("SAML assertion from s3 bucket retrieved in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
-		if(!openSearchResponse.isEmpty()){
-			File logFile = fileUtils.writeTxt(openSearchResponse, GenericConstants.LOG_FILE_NAME);
-			filesToAdd.add(logFile);
+		if(StringUtils.isNotBlank(date)){
+			String name = String.format("%s-%s", jsonUtils.getValue(openSearchResponse.get(0), "jti"),
+					LocalDateTime.parse(date, DateTimeFormatter.ISO_OFFSET_DATE_TIME).toLocalDate().toString());
+			String downloadUrl = String.format(downloadFileUrl, name);
+			log.info("Retrieving SAML assertion from s3 bucket... ");
+			performanceMillis = System.currentTimeMillis();
+			filesToAdd.add(fileUtils.getFile(name, GenericConstants.JSON_EXTENSION, downloadUrl));
+			log.info("SAML assertion from s3 bucket retrieved in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
 		}
+		File logFile = fileUtils.writeTxt(deanonimizedOpenSearchResponse, GenericConstants.LOG_FILE_NAME);
+		filesToAdd.add(logFile);
 		DownloadArchiveResponseDto response = ResponseConstructor.createNotificationLogResponse(filesToAdd, new ArrayList<>(), GenericConstants.ZIP_ARCHIVE_NAME);
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info(LoggingConstants.DEANONIMIZED_RETRIEVE_PROCESS_END,
