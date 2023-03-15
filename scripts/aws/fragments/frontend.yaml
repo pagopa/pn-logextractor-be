@@ -223,6 +223,13 @@ Resources:
           TargetOriginId: s3_hosting
           ViewerProtocolPolicy: redirect-to-https
         DefaultRootObject: index.html
+        CustomErrorResponses:
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: "/index.html"
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: "/index.html"
         Enabled: true
         Logging:
           Bucket: !Ref LogBucketDomainName
@@ -303,36 +310,6 @@ Resources:
         DNSName: !GetAtt Distribution.DomainName
         EvaluateTargetHealth: false
         HostedZoneId: Z2FDTNDATAQYW2
-
-  ## 
-  ## Rewrite rule based on example provided by aws at https://github.com/aws-samples/amazon-cloudfront-functions/blob/main/url-rewrite-single-page-apps/index.js
-  RewriteFunction:
-    Type: AWS::CloudFront::Function
-    Properties:
-      AutoPublish: true
-      FunctionCode: |
-        function handler(event) {
-            var request = event.request;
-            var uri = request.uri;
-            
-            if( uri != '/' && uri != '' ) { // Do not override default root object
-              
-              // Check whether the URI is missing a file name.
-              if (uri.endsWith('/')) {
-                request.uri += 'index.html';
-              } 
-              // Check whether the URI is missing a file extension.
-              else if (!uri.includes('.')) {
-                request.uri += '/index.html';
-              }
-            }
-            
-            return request;
-        }
-      FunctionConfig:
-        Comment: 'Rewriting the request between a CloudFront Distribution and an origin'
-        Runtime: cloudfront-js-1.0
-      Name: !Sub "${ProjectName}-RewriteDefaultIndexRequest"
 
 Outputs:
   DistributionId:
