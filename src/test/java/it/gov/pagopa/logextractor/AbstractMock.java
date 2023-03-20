@@ -1,6 +1,5 @@
 package it.gov.pagopa.logextractor;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
@@ -8,7 +7,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
+import it.gov.pagopa.logextractor.util.FileUtilities;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -103,6 +102,7 @@ public abstract class AbstractMock {
 	@Value("classpath:data/activated_id.json")
 	protected Resource mockSelfCarePaData;
 
+
 	public static final MediaType APPLICATION_JSON_UTF8 = new MediaType(MediaType.APPLICATION_JSON.getType(),
 			MediaType.APPLICATION_JSON.getSubtype(), Charset.forName("utf8"));
 	protected final String identifierUrl = "/persons/v1/person-id";
@@ -119,6 +119,9 @@ public abstract class AbstractMock {
 
 	protected final String fakeHeader = "Basic YWxhZGRpbjpvcGVuc2VzYW1l";
 	private static ObjectMapper mapper = new ObjectMapper();
+
+	@Mock
+	private FileUtilities fileUtils = new FileUtilities();
 
 
 	protected final String jsonDocSearchPF = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [{\"_source\":{\"_source\":\"3242342323\",\"cx_id\":\"PF-2dfc9690-a648-4462-986d-769d90752e6f\", \"@timestamp\":\"\"}}]}}";
@@ -338,14 +341,6 @@ public abstract class AbstractMock {
 		Mockito.when(
 				client.getForEntity(ArgumentMatchers.anyString(), ArgumentMatchers.<Class<PnStatusResponseDto>>any()))
 				.thenReturn(responseStatus);
-	}
-
-	protected void mockGetFile() {
-		byte[] file = new byte[]{};
-		ResponseEntity<byte[]> response = new ResponseEntity<>(file, HttpStatus.OK);
-
-		Mockito.when(client.getForEntity(ArgumentMatchers.anyString(), ArgumentMatchers.<Class<byte[]>>any()))
-				.thenReturn(response);
 	}
 
 	@SuppressWarnings("unchecked")

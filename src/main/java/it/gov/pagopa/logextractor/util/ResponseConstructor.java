@@ -13,13 +13,13 @@ import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.CompressionLevel;
 import net.lingala.zip4j.model.enums.EncryptionMethod;
 import org.apache.commons.io.FileUtils;
+import org.springframework.stereotype.Component;
 
 /**
  * Utility class to manage the server response construction
  */
+@Component
 public class ResponseConstructor {
-
-	private ResponseConstructor(){}
 	
 	/**
 	 * Manages the response creation phase.
@@ -34,7 +34,7 @@ public class ResponseConstructor {
 	 *         representation of the output zip archive and the password to access
 	 *         its files
 	 */
-	public static DownloadArchiveResponseDto createSimpleLogResponse(List<String> contents, String fileName, String zipName) throws IOException {
+	public DownloadArchiveResponseDto createSimpleLogResponse(List<String> contents, String fileName, String zipName) throws IOException {
 		PasswordFactory passwordFactory = new PasswordFactory();
 		String password = passwordFactory.createPassword(1, 1, 1, GenericConstants.SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();
@@ -64,7 +64,7 @@ public class ResponseConstructor {
 	 *         its files
 	 * @throws  IOException in case an exception related with files occurs
 	 */
-	public static DownloadArchiveResponseDto createCsvFileResponse(List<File> csvFiles, String zipName) throws IOException {
+	public DownloadArchiveResponseDto createCsvFileResponse(List<File> csvFiles, String zipName) throws IOException {
 		PasswordFactory passwordFactory = new PasswordFactory();
 		String password = passwordFactory.createPassword(1, 1, 1, GenericConstants.SPECIAL_CHARS, 1, 16);
 		FileUtilities utils = new FileUtilities();
@@ -94,7 +94,7 @@ public class ResponseConstructor {
 	 *         its files
 	 * @throws IOException in case of an IO error
 	 */
-	public static DownloadArchiveResponseDto createNotificationLogResponse(List<File> filesToAdd,
+	public DownloadArchiveResponseDto createNotificationLogResponse(List<File> filesToAdd,
 																		   List<NotificationDownloadFileData> filesNotDownloadable,
 																		   String zipName) throws IOException {
 		PasswordFactory passwordFactory = new PasswordFactory();

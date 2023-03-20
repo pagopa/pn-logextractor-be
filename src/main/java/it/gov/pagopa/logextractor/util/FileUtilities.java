@@ -17,10 +17,12 @@ import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import it.gov.pagopa.logextractor.dto.NotificationCsvBean;
 import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
+import org.springframework.stereotype.Component;
 
 /**
  * Utility class to manage the core operations for files
  */
+@Component
 public class FileUtilities {
 
 	/**
