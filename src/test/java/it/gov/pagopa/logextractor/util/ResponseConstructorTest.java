@@ -24,7 +24,7 @@ class ResponseConstructorTest {
                 new NotificationDownloadFileData("test1", "test1", "test1")
         );
 
-        DownloadArchiveResponseDto output = ResponseConstructor.createNotificationLogResponse(openSearchLogs,
+        DownloadArchiveResponseDto output = ResponseConstructor.createNotificationLogResponse(
                 filesToAdd, filesNotDownloadable, "test", "test");
         Assertions.assertNotNull(output, () -> "Output zip archive shouldn't be null");
     }

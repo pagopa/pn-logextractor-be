@@ -1,5 +1,11 @@
 package it.gov.pagopa.logextractor.util.external.opensearch;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +27,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+
+import it.gov.pagopa.logextractor.util.RefactoryUtil;
 import it.gov.pagopa.logextractor.util.SortOrders;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -65,7 +73,11 @@ public class OpenSearchApiHandler {
 				new OpenSearchSortFilter(OpensearchConstants.OS_TIMESTAMP_FIELD, SortOrders.ASC)));
 		String query = queryConstructor.createBooleanMultiSearchQuery(queryData);
 		log.info(LoggingConstants.QUERY_EXECUTION + RegExUtils.removeAll(query, "\n"));
-		return extractDocumentsFromOpensearch(query);
+		//TODO: tornare qui
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		extractDocumentsFromOpensearch(query, baos);
+		
+		return RefactoryUtil.streamToList(baos);
 	}
 	
 	/**
@@ -74,9 +86,10 @@ public class OpenSearchApiHandler {
 	 * @param iun The iun to use for the multi-search query
 	 * @param dateFrom The period start date
 	 * @param dateTo The period end date
+	 * @param out 
 	 * @return The documents list contained into the Opensearch response
 	 * */
-	public List<String> getAnonymizedLogsByIun(String iun, String dateFrom, String dateTo) {
+	public int getAnonymizedLogsByIun(String iun, String dateFrom, String dateTo, OutputStream out) {
 		ArrayList<OpenSearchQuerydata> queryData = new ArrayList<>();
 		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
@@ -87,7 +100,7 @@ public class OpenSearchApiHandler {
 				new OpenSearchSortFilter(OpensearchConstants.OS_TIMESTAMP_FIELD, SortOrders.ASC)));
 		String query = queryConstructor.createBooleanMultiSearchQuery(queryData);
 		log.info(LoggingConstants.QUERY_EXECUTION + RegExUtils.removeAll(query, "\n"));
-		return extractDocumentsFromOpensearch(query);
+		return extractDocumentsFromOpensearch(query, out);
 	}
 	
 	/**
@@ -110,7 +123,12 @@ public class OpenSearchApiHandler {
 		listOfQueryData.add(queryData);
 		String query = queryConstructor.createBooleanMultiSearchQuery(listOfQueryData);
 		log.info(LoggingConstants.QUERY_EXECUTION + RegExUtils.removeAll(query, "\n"));
-		return extractDocumentsFromOpensearch(query);
+
+		//TODO: rivedere
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		extractDocumentsFromOpensearch(query, baos);
+		
+		return RefactoryUtil.streamToList(baos);
 	}
 	
 	/**
@@ -133,22 +151,35 @@ public class OpenSearchApiHandler {
 		listOfQueryData.add(queryData);
 		String query = queryConstructor.createBooleanMultiSearchQuery(listOfQueryData);
 		log.info(LoggingConstants.QUERY_EXECUTION + RegExUtils.removeAll(query, "\n"));
-		return extractDocumentsFromOpensearch(query);
+
+		
+		//TODO: temporary code to keep old logic working
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		extractDocumentsFromOpensearch(query, baos);
+		
+		return RefactoryUtil.streamToList(baos);
 	}
 	
-	/**
-	 * Performs a search HTTP GET request to the Opensearch service and extract the documents
-	 * that satisfy the input query
-	 * @param query The search query to be sent
-	 * @return The documents list contained into the Opensearch response
-	 * */
-	private ArrayList<String> extractDocumentsFromOpensearch(String query) {
+	
+	private HttpHeaders buildHeaders() {
 		HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.setBasicAuth(opensearchUsername, opensearchPassword);
         List<MediaType> acceptedTypes = new ArrayList<>();
         acceptedTypes.add(MediaType.APPLICATION_JSON);
         requestHeaders.setAccept(acceptedTypes);
+        return requestHeaders;
+	}
+	
+	/**
+	 * Performs a search HTTP GET request to the Opensearch service and extract the documents
+	 * that satisfy the input query
+	 * @param query The search query to be sent
+	 * @param out 
+	 * @return The number of documents contained into the Opensearch response
+	 * */
+	private int extractDocumentsFromOpensearch(String query, OutputStream out) {
+		HttpHeaders requestHeaders = buildHeaders();
         HttpEntity<String> request = new HttpEntity<>(query, requestHeaders);
 		String urlTemplate = UriComponentsBuilder.fromHttpUrl(opensearchSearchUrl)
 						.queryParam(OpensearchConstants.OS_SCROLL_PARAMETER, "{scroll}")
@@ -162,7 +193,27 @@ public class OpenSearchApiHandler {
 				request,
 				String.class,
 				params).getBody();
-		return getDocumentsFromOpensearchResponse(response, new ArrayList<>());
+		//return getDocumentsFromOpensearchResponse(response, new ArrayList<>());
+        
+        int counter = 0;
+        ArrayList<String> currentDocs;
+        try {
+	        while (!( currentDocs = getDocumentsFromCurrentResponse(response)).isEmpty()){
+	        	for(String line : currentDocs) {
+	        		out.write(line.getBytes(StandardCharsets.UTF_8));
+	        		counter ++;
+	        	}
+	        	OpensearchScrollQueryData scrollQueryDto = new OpensearchScrollQueryData(
+	        			OpensearchConstants.OS_SCROLL_ID_VALIDITY_DURATION,
+	        			new JSONObject(response).getString(OpensearchConstants.OS_RESPONSE_SCROLL_ID_FIELD));
+	        	HttpEntity<OpensearchScrollQueryData> requestScroll = new HttpEntity<>(scrollQueryDto, requestHeaders);
+	        	response = client.exchange(opensearchSearchFollowupUrl,HttpMethod.GET,requestScroll,String.class).getBody();
+	        }
+        } catch (IOException e) {
+        	log.error("Error writing OpenSearch logs to stream", e);
+        	counter = -1;
+        }
+        return counter;
 	}
 
 	/**
@@ -178,12 +229,7 @@ public class OpenSearchApiHandler {
 			return documents;
 		}
 		documents.addAll(currentDocs);
-		HttpHeaders requestHeaders = new HttpHeaders();
-		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-		requestHeaders.setBasicAuth(opensearchUsername, opensearchPassword);
-		List<MediaType> acceptedTypes = new ArrayList<>();
-		acceptedTypes.add(MediaType.APPLICATION_JSON);
-		requestHeaders.setAccept(acceptedTypes);
+		HttpHeaders requestHeaders = buildHeaders();
 		OpensearchScrollQueryData scrollQueryDto = new OpensearchScrollQueryData(
 				OpensearchConstants.OS_SCROLL_ID_VALIDITY_DURATION,
 				new JSONObject(openSearchResponse).getString(OpensearchConstants.OS_RESPONSE_SCROLL_ID_FIELD));
@@ -192,7 +238,7 @@ public class OpenSearchApiHandler {
 				HttpMethod.GET,request,String.class);
 		return getDocumentsFromOpensearchResponse(response.getBody(), documents);
 	}
-
+	
 	/**
 	 * Gets the document list from an Opensearch response page
 	 * @param openSearchResponseBody The current Opensearch response

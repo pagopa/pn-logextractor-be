@@ -85,8 +85,6 @@ public class ResponseConstructor {
 	/**
 	 * Method that manages the notification logs response creation phase.
 	 * 
-	 * @param openSearchLogs the contents from OpenSearch to write in the output
-	 *                       file (.txt), contained in the output zip archive
 	 * @param filesToAdd     list, containing every notification file to add in the
 	 *                       zip archive
 	 * @param filesNotDownloadable the list of files that couldn't be downloaded during the execution
@@ -98,8 +96,7 @@ public class ResponseConstructor {
 	 *         its files
 	 * @throws IOException in case of an IO error
 	 */
-	public static DownloadArchiveResponseDto createNotificationLogResponse(List<String> openSearchLogs,
-																		   List<File> filesToAdd,
+	public static DownloadArchiveResponseDto createNotificationLogResponse(List<File> filesToAdd,
 																		   List<NotificationDownloadFileData> filesNotDownloadable,
 																		   String fileName,
 																		   String zipName) throws IOException {
@@ -110,12 +107,6 @@ public class ResponseConstructor {
 		ZipFile zipArchive = zipFactory.createZipArchive(zipName, password);
 		ZipParameters params = zipFactory.createZipParameters(true, CompressionLevel.HIGHER, EncryptionMethod.AES);
 		zipFactory.addFiles(zipArchive, params, filesToAdd);
-		if(!openSearchLogs.isEmpty()){
-			File logFile = fileUtils.getFile(fileName, GenericConstants.TXT_EXTENSION);
-			fileUtils.write(logFile, openSearchLogs);
-			zipArchive = zipFactory.addFile(zipArchive, params, logFile);
-			fileUtils.delete(logFile);
-		}
 		if(!filesNotDownloadable.isEmpty()){
 			File failureSummaryFile = fileUtils.getFile(GenericConstants.ERROR_SUMMARY_FILE_NAME, GenericConstants.TXT_EXTENSION);
 			JsonUtilities jsonUtilities = new JsonUtilities();

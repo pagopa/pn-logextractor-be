@@ -25,6 +25,7 @@ public class LogController implements LogsApi {
 				xPagopaUid, xPagopaCxType));
 	}
 
+	//TODO: Ivan: a valle restituire byte[]
 	@Override
 	public ResponseEntity<BaseResponseDto> notificationInfoLogs(@RequestHeader(value="x-pagopa-uid", required=true) String xPagopaUid,
 	   		 @RequestHeader(value="x-pagopa-cx-type", required=true) String xPagopaCxType, NotificationInfoRequestDto notificationInfoRequestDto) throws Exception {
