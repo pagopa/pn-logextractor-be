@@ -2,17 +2,19 @@ package it.gov.pagopa.logextractor.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
+
+import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
-import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.CompressionLevel;
 import net.lingala.zip4j.model.enums.EncryptionMethod;
-import org.apache.commons.io.FileUtils;
 
 /**
  * Utility class to manage the server response construction
@@ -34,19 +36,15 @@ public class ResponseConstructor {
 	 *         representation of the output zip archive and the password to access
 	 *         its files
 	 */
-	public static DownloadArchiveResponseDto createSimpleLogResponse(List<String> contents, String fileName, String zipName) throws IOException {
+	public static DownloadArchiveResponseDto createSimpleLogResponse(File file, String fileName, String zipName) throws IOException {
 		PasswordFactory passwordFactory = new PasswordFactory();
 		String password = passwordFactory.createPassword(1, 1, 1, GenericConstants.SPECIAL_CHARS, 1, 16);
-		FileUtilities utils = new FileUtilities();
-		File file = utils.getFile(fileName, GenericConstants.TXT_EXTENSION);
-		utils.write(file, contents);
 		ZipFactory zipFactory = new ZipFactory();
 		ZipFile zipArchive = zipFactory.createZipArchive(zipName, password);
 		ZipParameters params = zipFactory.createZipParameters(true, CompressionLevel.HIGHER, EncryptionMethod.AES);
 		zipArchive = zipFactory.addFile(zipArchive, params, file);
 		byte[] zipfile = zipFactory.toByteArray(zipArchive);
-		utils.delete(file);
-		utils.delete(FileUtils.getFile(zipArchive.toString()));
+		Files.delete(FileUtils.getFile(zipArchive.toString()).toPath());
 		DownloadArchiveResponseDto serviceResponse = new DownloadArchiveResponseDto();
 		serviceResponse.setPassword(password);
 		serviceResponse.setZip(zipfile);

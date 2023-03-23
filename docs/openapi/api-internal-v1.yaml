@@ -161,9 +161,10 @@ paths:
         '200':
           description: The operation has been successfully completed
           content:
-            application/json:
+            'application/octect-stream':
               schema:
-                $ref: '#/components/schemas/BaseResponseDto'
+                type: string
+                format: binary
         '400':
           description: Errors during the request validation
           content:

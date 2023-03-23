@@ -8,6 +8,10 @@ import lombok.Setter;
 @Setter
 public class DownloadArchiveResponseDto extends BaseResponseDto {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6898365412475572520L;
 	private String password;
 	private byte[] zip;
 

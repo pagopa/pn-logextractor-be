@@ -4,8 +4,16 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import java.util.List;
+
+import javax.net.ssl.HttpsURLConnection;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -14,13 +22,25 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class BeanConfiguration {
 
-	@Bean
-	public RestTemplate openSearchRestTemplate() {
-		return new RestTemplate(new SimpleClientHttpRequestWithGetBodyFactory());
+	@Bean(name = "openSearchRestTemplate")
+	@Profile("dev2")
+	public RestTemplate openSearchRestTemplateSkipSSLCheck() {
+		RestTemplate ret = new RestTemplate(new SimpleClientHttpRequestWithGetBodyFactory());
+		HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
+		return ret;
 	}
 	
 	@Bean
+	@Profile("!dev2")
+	public RestTemplate openSearchRestTemplate() {
+		RestTemplate ret = new RestTemplate(new SimpleClientHttpRequestWithGetBodyFactory());
+		return ret;
+	}
+	
+	@Bean
+	@Profile("dev2")
 	public RestTemplate simpleRestTemplate() {
+		HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
 		return new RestTemplate();
 	}
 
@@ -33,4 +53,10 @@ public class BeanConfiguration {
 		mapper.registerModule(new JavaTimeModule());
 		return mapper;
 	}
+	
+//	@Bean
+//	public List<HttpMessageConverter<?>> converters(List<HttpMessageConverter<?>> converters){
+//		converters.add(new ResourceHttpMessageConverter());
+//		return converters;
+//	}
 }

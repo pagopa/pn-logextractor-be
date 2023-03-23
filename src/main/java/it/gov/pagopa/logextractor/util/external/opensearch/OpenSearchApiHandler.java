@@ -20,6 +20,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -36,6 +37,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 /**
  * Uility class for integrations with OpenSearch service
  * */
+@Profile("!mockedOS")
 @Component
 @Slf4j
 public class OpenSearchApiHandler {
@@ -59,7 +61,7 @@ public class OpenSearchApiHandler {
 	 * @param dateTo The period end date
 	 * @return The documents list contained into the Opensearch response
 	 * */
-	public List<String> getAnonymizedLogsByUid(String uid, LocalDate dateFrom, LocalDate dateTo){
+	public int getAnonymizedLogsByUid(String uid, LocalDate dateFrom, LocalDate dateTo, OutputStream out){
 		ArrayList<OpenSearchQuerydata> queryData = new ArrayList<>();
 		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
@@ -73,11 +75,7 @@ public class OpenSearchApiHandler {
 				new OpenSearchSortFilter(OpensearchConstants.OS_TIMESTAMP_FIELD, SortOrders.ASC)));
 		String query = queryConstructor.createBooleanMultiSearchQuery(queryData);
 		log.info(LoggingConstants.QUERY_EXECUTION + RegExUtils.removeAll(query, "\n"));
-		//TODO: tornare qui
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		extractDocumentsFromOpensearch(query, baos);
-		
-		return RefactoryUtil.streamToList(baos);
+		return extractDocumentsFromOpensearch(query, out);
 	}
 	
 	/**
@@ -111,7 +109,7 @@ public class OpenSearchApiHandler {
 	 * @param dateTo The period end date
 	 * @return The documents list contained into the Opensearch response
 	 * */
-	public List<String> getAnonymizedLogsByTraceId(String traceId, LocalDate dateFrom, LocalDate dateTo){
+	public int getAnonymizedLogsByTraceId(String traceId, LocalDate dateFrom, LocalDate dateTo, OutputStream out){
 		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		log.info(LoggingConstants.QUERY_CONSTRUCTION);
@@ -124,11 +122,7 @@ public class OpenSearchApiHandler {
 		String query = queryConstructor.createBooleanMultiSearchQuery(listOfQueryData);
 		log.info(LoggingConstants.QUERY_EXECUTION + RegExUtils.removeAll(query, "\n"));
 
-		//TODO: rivedere
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		extractDocumentsFromOpensearch(query, baos);
-		
-		return RefactoryUtil.streamToList(baos);
+		return extractDocumentsFromOpensearch(query, out);
 	}
 	
 	/**
@@ -139,7 +133,7 @@ public class OpenSearchApiHandler {
 	 * @param dateTo The period end date
 	 * @return The documents list contained into the Opensearch response
 	 * */
-	public List<String> getAnonymizedSessionLogsByJti(String jti, LocalDate dateFrom, LocalDate dateTo){
+	public int getAnonymizedSessionLogsByJti(String jti, LocalDate dateFrom, LocalDate dateTo, OutputStream out){
 		HashMap<String, Object> queryParams = new HashMap<>();
 		OpenSearchQueryConstructor queryConstructor = new OpenSearchQueryConstructor();
 		log.info(LoggingConstants.QUERY_CONSTRUCTION);
@@ -152,12 +146,8 @@ public class OpenSearchApiHandler {
 		String query = queryConstructor.createBooleanMultiSearchQuery(listOfQueryData);
 		log.info(LoggingConstants.QUERY_EXECUTION + RegExUtils.removeAll(query, "\n"));
 
+		return extractDocumentsFromOpensearch(query, out);
 		
-		//TODO: temporary code to keep old logic working
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		extractDocumentsFromOpensearch(query, baos);
-		
-		return RefactoryUtil.streamToList(baos);
 	}
 	
 	
@@ -199,10 +189,17 @@ public class OpenSearchApiHandler {
         ArrayList<String> currentDocs;
         try {
 	        while (!( currentDocs = getDocumentsFromCurrentResponse(response)).isEmpty()){
+	        	boolean show=true;
 	        	for(String line : currentDocs) {
 	        		out.write(line.getBytes(StandardCharsets.UTF_8));
+	        		if (show) {
+	        			log.info("first line ... "+line);
+	        			show=false;
+	        		}
 	        		counter ++;
 	        	}
+	        	out.flush();
+	        	log.info("Fetching next page from OpenSearch...");
 	        	OpensearchScrollQueryData scrollQueryDto = new OpensearchScrollQueryData(
 	        			OpensearchConstants.OS_SCROLL_ID_VALIDITY_DURATION,
 	        			new JSONObject(response).getString(OpensearchConstants.OS_RESPONSE_SCROLL_ID_FIELD));

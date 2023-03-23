@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +52,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LogServiceImpl implements LogService {
 	
+	private static final String OS_RESULT = "OS-result";
+
 	@Autowired
 	NotificationApiHandler notificationApiHandler;
 	
@@ -70,14 +73,17 @@ public class LogServiceImpl implements LogService {
 				requestData.getDateTo(), requestData.getIun());
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
-		List<String> openSearchResponse = new ArrayList<>();
+		int docCount = 0;
+		
+		File tmp = new FileUtilities().getFile(OS_RESULT, ".txt");
+		FileOutputStream out = new FileOutputStream(tmp);
 		// use case 7
 		if (requestData.getDateFrom() != null && requestData.getDateTo() != null
 				&& requestData.getPersonId() != null && requestData.getIun() == null) {
 			log.info("Getting activities' anonymized history... ");
 			performanceMillis = System.currentTimeMillis();
-			openSearchResponse = openSearchApiHandler.getAnonymizedLogsByUid(requestData.getPersonId(),
-					requestData.getDateFrom(), requestData.getDateTo());
+			
+			docCount = openSearchApiHandler.getAnonymizedLogsByUid(requestData.getPersonId(), requestData.getDateFrom(), requestData.getDateTo(), out);
 		} else {
 			// use case 8
 			if (requestData.getIun() != null) {
@@ -89,14 +95,14 @@ public class LogServiceImpl implements LogService {
 				OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
 				String notificationEndDate = notificationStartDate.plusMonths(3).toString();
 				performanceMillis = System.currentTimeMillis();
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate, baos);
-				openSearchResponse = RefactoryUtil.streamToList(baos);
+				docCount = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate, out);
 
 			}
 		}
-		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
-		if(openSearchResponse.isEmpty()) {
+		out.flush();
+		out.close();
+		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, docCount);
+		if(docCount == 0) {
 			performanceMillis = System.currentTimeMillis();
 			BaseResponseDto response = new BaseResponseDto();
 			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
@@ -106,7 +112,8 @@ public class LogServiceImpl implements LogService {
         	return response;
 		}
 		performanceMillis = System.currentTimeMillis();
-		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(openSearchResponse, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
+		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(tmp, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
+		Files.delete(tmp.toPath());
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END,
 				(System.currentTimeMillis() - serviceStartTime));
@@ -176,10 +183,14 @@ public class LogServiceImpl implements LogService {
 				requestData.getTraceId(), requestData.getDateFrom(), requestData.getDateTo());
 		long serviceStartTime = System.currentTimeMillis();
 		log.info("Getting anonymized logs...");
-		List<String> openSearchResponse = openSearchApiHandler.getAnonymizedLogsByTraceId(requestData.getTraceId(), requestData.getDateFrom(), requestData.getDateTo());
+		File tmp = new FileUtilities().getFile(OS_RESULT, ".txt");
+		OutputStream out = new FileOutputStream(tmp);
+		int docCount = openSearchApiHandler.getAnonymizedLogsByTraceId(requestData.getTraceId(), requestData.getDateFrom(), requestData.getDateTo(), out);
 		long performanceMillis = System.currentTimeMillis() - serviceStartTime;
-		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, performanceMillis, openSearchResponse.size());
-		if(openSearchResponse.isEmpty()) {
+		out.flush();
+		out.close();
+		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, performanceMillis, docCount);
+		if(docCount == 0) {
 			performanceMillis = System.currentTimeMillis();
 			BaseResponseDto response = new BaseResponseDto();
 			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
@@ -188,8 +199,9 @@ public class LogServiceImpl implements LogService {
         	return response;
 		}
 		performanceMillis = System.currentTimeMillis();
-		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(openSearchResponse,
+		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(tmp,
 				GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
+		Files.delete(tmp.toPath());
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END, (System.currentTimeMillis() - serviceStartTime));
 		return response;
@@ -240,7 +252,7 @@ public class LogServiceImpl implements LogService {
 				filesNotDownloadable.add(currentDownloadData);
 			}
 		}
-        if(secondsToWait > 0) {
+        if(secondsToWait >= 0) {
         	log.info("Notification downloads' metadata retrieved in {} ms, physical files aren't ready yet. Constructing service response...", System.currentTimeMillis() - performanceMillis);
 			performanceMillis = System.currentTimeMillis();
 			int timeToWaitInMinutes = (int)Math.ceil(secondsToWait/60);
@@ -256,17 +268,18 @@ public class LogServiceImpl implements LogService {
         	log.info("Notification downloads' metadata retrieved in {} ms, getting physical files... ", System.currentTimeMillis() - performanceMillis);
         	performanceMillis = System.currentTimeMillis();
         	for(NotificationDownloadFileData currentDownloadableFile : downloadableFiles) {
-        		byte[] externalFile = notificationApiHandler.getFile(currentDownloadableFile.getDownloadUrl());
         		File downloadedFile = utils.getFile(currentDownloadableFile.getFileCategory()
 						+ "-" + currentDownloadableFile.getKey(), GenericConstants.PDF_EXTENSION);
-        		FileUtils.writeByteArrayToFile(downloadedFile, externalFile);
-        		filesToAdd.add(downloadedFile);
+        		if (notificationApiHandler.downloadToFile(currentDownloadableFile.getDownloadUrl(), downloadedFile)>0) {
+        			filesToAdd.add(downloadedFile);
+        		}
         	}
         	log.info("Physical files retrieved in {} ms", System.currentTimeMillis() - performanceMillis);
         	
-        	File tmp = new FileUtilities().getFile("OS-result", "txt");
+        	File tmp = new FileUtilities().getFile(OS_RESULT, ".txt");
         	OutputStream out = new FileOutputStream(tmp);
         	int docsNumber = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate, out);
+        	out.flush();
         	out.close();
     		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, docsNumber);
 			performanceMillis = System.currentTimeMillis();
@@ -287,9 +300,12 @@ public class LogServiceImpl implements LogService {
 				requestData.getTicketNumber(), requestData.getTaxId(), requestData.getDateFrom(),
 				requestData.getDateTo(), requestData.getIun(), requestData.getRecipientType());
 		long serviceStartTime = System.currentTimeMillis();
-		List<String> openSearchResponse;
+		int docCount=0;
 		long performanceMillis = 0;
-		List<String> deanonimizedOpenSearchResponse = new ArrayList<>();
+		File deanonimizedOpenSearchResponse = null;
+    	File tmp = new FileUtilities().getFile(OS_RESULT, ".txt");
+    	OutputStream out = new FileOutputStream(tmp);
+
 		//use case 3
 		if (requestData.getDateFrom() != null && requestData.getDateTo() != null && requestData.getTaxId() != null
 				&& requestData.getRecipientType() != null
@@ -298,11 +314,13 @@ public class LogServiceImpl implements LogService {
 			String internalId = deanonimizationApiHandler.getUniqueIdentifierForPerson(requestData.getRecipientType(), requestData.getTaxId());
 			log.info("Service response: internalId={} retrieved in {} ms", internalId, System.currentTimeMillis() - serviceStartTime);
 			performanceMillis = System.currentTimeMillis();
-			openSearchResponse = openSearchApiHandler.getAnonymizedLogsByUid(internalId, requestData.getDateFrom(), requestData.getDateTo());
+			docCount = openSearchApiHandler.getAnonymizedLogsByUid(internalId, requestData.getDateFrom(), requestData.getDateTo(), out);
 			log.info(LoggingConstants.QEURY_EXECUTION_COMPLETED_TIME_DEANONIMIZE_DOCS,
-					System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
+					System.currentTimeMillis() - performanceMillis, docCount);
+			out.flush();
+			out.close();
 			performanceMillis = System.currentTimeMillis();
-			deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, requestData.getRecipientType());
+			deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(tmp, requestData.getRecipientType());
 		} else {
 			if (requestData.getIun() != null) {
 				//use case 4
@@ -312,31 +330,27 @@ public class LogServiceImpl implements LogService {
 				OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
 				String notificationEndDate = notificationStartDate.plusMonths(3).toString();
 				performanceMillis = System.currentTimeMillis();
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate, baos);
-				openSearchResponse = RefactoryUtil.streamToList(baos);
-				
+	        	docCount = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate, out);
+				out.flush();out.close();
 				log.info(LoggingConstants.QEURY_EXECUTION_COMPLETED_TIME_DEANONIMIZE_DOCS,
-						System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
+						System.currentTimeMillis() - performanceMillis, docCount);
 				performanceMillis = System.currentTimeMillis();
-				deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, RecipientTypes.PF);
+				deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(tmp, RecipientTypes.PF);
 			}
 		}
+		Files.delete(tmp.toPath());
 		log.info("Deanonimization completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
-		if(deanonimizedOpenSearchResponse.isEmpty()) {
-			performanceMillis = System.currentTimeMillis();
-			BaseResponseDto response = new BaseResponseDto();
-			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
-			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-			log.info("Deanonimized logs retrieve process - END in {} ms",
-					(System.currentTimeMillis() - serviceStartTime));
-			return response;
-		}
+		BaseResponseDto response = null;
 		performanceMillis = System.currentTimeMillis();
-		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(deanonimizedOpenSearchResponse, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
+		if(docCount == 0) {
+			response = new BaseResponseDto();
+			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
+		}else {
+			response = ResponseConstructor.createSimpleLogResponse(deanonimizedOpenSearchResponse, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
+		}
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-		log.info("deanonimized logs retrieve process - END in {} ms",
-				(System.currentTimeMillis() - serviceStartTime));
+		log.info("deanonimized logs retrieve process - END in {} ms", (System.currentTimeMillis() - serviceStartTime));
+		Files.delete(deanonimizedOpenSearchResponse.toPath());
 		return response;
 	}
 	
@@ -349,27 +363,28 @@ public class LogServiceImpl implements LogService {
 				requestData.getTicketNumber(), requestData.getJti(), requestData.getDateFrom(),
 				requestData.getDateTo());
 		long serviceStartTime = System.currentTimeMillis();
-		long performanceMillis = 0;
-		List<String> openSearchResponse;
+		File openSearchResponse = new FileUtilities().getFile(OS_RESULT, ".txt");
+		int docCount = 0;
 		
 		log.info("Getting session activities' anonymized history... ");
-		performanceMillis = System.currentTimeMillis();
-		openSearchResponse = openSearchApiHandler.getAnonymizedSessionLogsByJti(requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
+		long performanceMillis = System.currentTimeMillis();
+    	File tmp = new FileUtilities().getFile(OS_RESULT, ".txt");
+    	OutputStream out = new FileOutputStream(tmp);
 
-		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
+		docCount = openSearchApiHandler.getAnonymizedSessionLogsByJti(requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo(), out);
+
+		out.flush();
+		out.close();
+		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, docCount);
 		performanceMillis = System.currentTimeMillis();
-		if(openSearchResponse.isEmpty()) {
-			BaseResponseDto response = new BaseResponseDto();
+		BaseResponseDto response = new BaseResponseDto();
+		if(docCount == 0) {
 			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
-			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-        	log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END,
-					(System.currentTimeMillis() - serviceStartTime));
-        	return response;
+		}else {
+			response = ResponseConstructor.createSimpleLogResponse(openSearchResponse, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
 		}
-		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(openSearchResponse, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-		log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END,
-				(System.currentTimeMillis() - serviceStartTime));
+		log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END, (System.currentTimeMillis() - serviceStartTime));
 		return response;
 	}
 	
@@ -382,31 +397,30 @@ public class LogServiceImpl implements LogService {
 				requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
-		List<String> openSearchResponse;
-		List<String> deanonimizedOpenSearchResponse;
-		
+		File deanonimizedOpenSearchResponse;
+		File openSearchResponse = new FileUtilities().getFile(OS_RESULT, ".txt");
+		FileOutputStream out = new FileOutputStream(openSearchResponse);
+		int docCount = 0;
+
 		log.info("Getting session activities' deanonimized history... ");
 		performanceMillis = System.currentTimeMillis();
-		openSearchResponse = openSearchApiHandler.getAnonymizedSessionLogsByJti(requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
+		docCount = openSearchApiHandler.getAnonymizedSessionLogsByJti(requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo(), out);
 
 		log.info("Query execution completed in {} ms, retrieved {} documents, deanonimizing results...",
-				System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
+				System.currentTimeMillis() - performanceMillis, docCount);
 		deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, RecipientTypes.PF);
 
 		log.info("Deanonimization completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
 		performanceMillis = System.currentTimeMillis();
-		if(deanonimizedOpenSearchResponse.isEmpty()) {
-			BaseResponseDto response = new BaseResponseDto();
+		BaseResponseDto response = new BaseResponseDto();;
+		if(docCount == 0) {
 			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
-			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-			log.info(LoggingConstants.DEANONIMIZED_RETRIEVE_PROCESS_END,
-					(System.currentTimeMillis() - serviceStartTime));
-			return response;
+		}else {
+			response = ResponseConstructor.createSimpleLogResponse(deanonimizedOpenSearchResponse, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
 		}
-		DownloadArchiveResponseDto response = ResponseConstructor.createSimpleLogResponse(deanonimizedOpenSearchResponse, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-		log.info(LoggingConstants.DEANONIMIZED_RETRIEVE_PROCESS_END,
-				(System.currentTimeMillis() - serviceStartTime));
+		log.info(LoggingConstants.DEANONIMIZED_RETRIEVE_PROCESS_END, (System.currentTimeMillis() - serviceStartTime));
+		Files.delete(deanonimizedOpenSearchResponse.toPath());
 		return response;
 	}
 	
