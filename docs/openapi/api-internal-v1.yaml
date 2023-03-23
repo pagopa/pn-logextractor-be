@@ -37,13 +37,13 @@ paths:
         - 'log-extract-read'
       parameters:
         - in: header
-          name: x-pagopa-uid
+          name: x-pagopa-pn-uid
           schema:
             type: string
             pattern: '^[A-Za-z0-9-]*$'
           required: true
         - in: header
-          name: x-pagopa-cx-type
+          name: x-pagopa-pn-cx-type
           schema:
             type: string
             pattern: '^[A-Za-z]*$'
@@ -86,13 +86,13 @@ paths:
         - 'log-extract-read'
       parameters:
         - in: header
-          name: x-pagopa-uid
+          name: x-pagopa-pn-uid
           schema:
             type: string
             pattern: '^[A-Za-z0-9-]*$'
           required: true
         - in: header
-          name: x-pagopa-cx-type
+          name: x-pagopa-pn-cx-type
           schema:
             type: string
             pattern: '^[A-Za-z]*$'
@@ -135,13 +135,13 @@ paths:
         - 'log-extract-read'
       parameters:
         - in: header
-          name: x-pagopa-uid
+          name: x-pagopa-pn-uid
           schema:
             type: string
             pattern: '^[A-Za-z0-9-]*$'
           required: true
         - in: header
-          name: x-pagopa-cx-type
+          name: x-pagopa-pn-cx-type
           schema:
             type: string
             pattern: '^[A-Za-z]*$'
@@ -184,13 +184,13 @@ paths:
         - 'log-extract-read'
       parameters:
         - in: header
-          name: x-pagopa-uid
+          name: x-pagopa-pn-uid
           schema:
             type: string
             pattern: '^[A-Za-z0-9-]*$'
           required: true
         - in: header
-          name: x-pagopa-cx-type
+          name: x-pagopa-pn-cx-type
           schema:
             type: string
             pattern: '^[A-Za-z]*$'
@@ -234,13 +234,13 @@ paths:
         - 'log-extract-read'
       parameters:
         - in: header
-          name: x-pagopa-uid
+          name: x-pagopa-pn-uid
           schema:
             type: string
             pattern: '^[A-Za-z0-9-]*$'
           required: true
         - in: header
-          name: x-pagopa-cx-type
+          name: x-pagopa-pn-cx-type
           schema:
             type: string
             pattern: '^[A-Za-z]*$'
@@ -283,13 +283,13 @@ paths:
         - 'log-extract-read'
       parameters:
         - in: header
-          name: x-pagopa-uid
+          name: x-pagopa-pn-uid
           schema:
             type: string
             pattern: '^[A-Za-z0-9-]*$'
           required: true
         - in: header
-          name: x-pagopa-cx-type
+          name: x-pagopa-pn-cx-type
           schema:
             type: string
             pattern: '^[A-Za-z]*$'
@@ -332,13 +332,13 @@ paths:
         - 'log-extract-read'
       parameters:
         - in: header
-          name: x-pagopa-uid
+          name: x-pagopa-pn-uid
           schema:
             type: string
             pattern: '^[A-Za-z0-9-]*$'
           required: true
         - in: header
-          name: x-pagopa-cx-type
+          name: x-pagopa-pn-cx-type
           schema:
             type: string
             pattern: '^[A-Za-z]*$'
@@ -383,13 +383,13 @@ paths:
         - 'log-downtime-read'
       parameters:
         - in: header
-          name: x-pagopa-uid
+          name: x-pagopa-pn-uid
           schema:
             type: string
             pattern: '^[A-Za-z0-9-]*$'
           required: true
         - in: header
-          name: x-pagopa-cx-type
+          name: x-pagopa-pn-cx-type
           schema:
             type: string
             pattern: '^[A-Za-z]*$'
@@ -420,13 +420,13 @@ paths:
         - 'log-downtime-wite'
       parameters:
         - in: header
-          name: x-pagopa-uid
+          name: x-pagopa-pn-uid
           schema:
             type: string
             pattern: '^[A-Za-z0-9-]*$'
           required: true
         - in: header
-          name: x-pagopa-cx-type
+          name: x-pagopa-pn-cx-type
           schema:
             type: string
             pattern: '^[A-Za-z]*$'
