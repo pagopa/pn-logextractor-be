@@ -38,8 +38,14 @@ public class BeanConfiguration {
 	}
 	
 	@Bean
-	@Profile("dev2")
+	@Profile("!dev2")
 	public RestTemplate simpleRestTemplate() {
+		return new RestTemplate();
+	}
+	
+	@Bean(name="simpleRestTemplate")
+	@Profile("dev2")
+	public RestTemplate simpleRestTemplateSkipChecks() {
 		HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
 		return new RestTemplate();
 	}
