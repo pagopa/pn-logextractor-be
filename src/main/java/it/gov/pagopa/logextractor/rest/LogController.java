@@ -56,7 +56,7 @@ public class LogController implements LogsApi {
 	//TODO: Capire con Marco il desiderata e lo status code da opeani 400/500
 	@ExceptionHandler(value = CustomException.class)
 	public ResponseEntity<BaseResponseDto> handleCustomException(CustomException e){
-		return ResponseEntity.status(400).body(e.getDto());
+		return ResponseEntity.status(200).body(e.getDto());
 	}
 	
 	@Override
