@@ -252,7 +252,7 @@ public class LogServiceImpl implements LogService {
 				filesNotDownloadable.add(currentDownloadData);
 			}
 		}
-        if(secondsToWait >= 0) {
+        if(secondsToWait > 0) {
         	log.info("Notification downloads' metadata retrieved in {} ms, physical files aren't ready yet. Constructing service response...", System.currentTimeMillis() - performanceMillis);
 			performanceMillis = System.currentTimeMillis();
 			int timeToWaitInMinutes = (int)Math.ceil(secondsToWait/60);
