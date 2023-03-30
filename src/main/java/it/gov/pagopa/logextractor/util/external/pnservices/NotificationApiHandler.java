@@ -1,6 +1,5 @@
 package it.gov.pagopa.logextractor.util.external.pnservices;
 
-import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import it.gov.pagopa.logextractor.util.constant.ExternalServiceConstants;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -162,23 +160,7 @@ public class NotificationApiHandler {
 		HttpEntity<?> entity = new HttpEntity<>(requestHeaders);
 		return client.exchange(url, HttpMethod.GET, entity, FileDownloadMetadataResponseDto.class).getBody();
 	}
-	
-	/**
-	 * Performs a GET HTTP request to obtain a physical file represented as a byte array
-	 * @param url The URL to make the request to
-	 * @return A byte array representation of a file
-	 */
-	public byte[] getFile(String url) {
-		try {
-			URL urlToFileDownload = new URL(url);
-            return IOUtils.toByteArray(urlToFileDownload);
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        } finally {
-            IOUtils.closeQuietly();
-        }
-	}
-	
+
 	/**
 	 * Performs a GET HTTP request to get the notification history
 	 * @param iun The notification IUN

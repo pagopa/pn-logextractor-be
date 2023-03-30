@@ -123,7 +123,7 @@ class MockLogControllerTest extends AbstractMock {
 		mockPersonsLogResponse(jsonDocSearchPF);
 		mockTaxCodeForPerson();
 		MockHttpServletResponse response = mvc.perform(post(sessionUrl).accept(APPLICATION_JSON_UTF8)
-				.headers(getHeaders()).content(getMockSessionLogsRequestDto(true))
+				.headers(getHeaders()).content(getMockSessionLogsRequestDto(false))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("password");
@@ -134,7 +134,7 @@ class MockLogControllerTest extends AbstractMock {
 		mockPersonsLogResponse(jsonDocSearchPF);
 		mockTaxCodeForPerson();
 		MockHttpServletResponse response = mvc.perform(post(sessionUrl).accept(APPLICATION_JSON_UTF8)
-				.headers(getHeaders()).content(getMockSessionLogsRequestDto(false))
+				.headers(getHeaders()).content(getMockSessionLogsRequestDto(true))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("password");
@@ -176,26 +176,6 @@ class MockLogControllerTest extends AbstractMock {
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("message");
 	}
-
-//	@Test
-//	void test_CheckMissingUIAttributes() throws Exception {
-//		mockMissingUniqueIdentifierForPerson();
-//		MockHttpServletResponse response = mvc
-//				.perform(post(notificationUrl).accept(APPLICATION_JSON_UTF8).header(HeaderConstants.PAGO_PA_UID, fakeHeader)
-//						.content(getMockMonthlyNotificationsRequestDto()).contentType(APPLICATION_JSON_UTF8))
-//				.andReturn().getResponse();
-//		assertThat(response.getStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
-//	}
-
-//	@Test
-//	void test_CheckAuthError() throws Exception {
-//		mockUniqueIdentifierForPerson();
-//		MockHttpServletResponse response = mvc
-//				.perform(post(notificationUrl).accept(APPLICATION_JSON_UTF8)
-//						.content(getMockMonthlyNotificationsRequestDto()).contentType(APPLICATION_JSON_UTF8))
-//				.andReturn().getResponse();
-//		assertThat(response.getStatus()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
-//	}
 
 	void test_getProcesses(LocalDate dateFrom, LocalDate dateTo, String traceId) throws Exception {
 		mockPersonsLogResponse(jsonDocSearchPF);
