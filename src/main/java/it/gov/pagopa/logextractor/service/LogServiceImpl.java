@@ -62,7 +62,9 @@ public class LogServiceImpl implements LogService {
 	
 	@Autowired
 	DeanonimizationApiHandler deanonimizationApiHandler;
-
+	@Autowired
+	ThreadLocalOutputStreamService threadLocalService;
+	
 	@Override
 	public BaseResponseDto getAnonymizedPersonLogs(PersonLogsRequestDto requestData,
 												   String xPagopaHelpdUid,
@@ -75,6 +77,7 @@ public class LogServiceImpl implements LogService {
 		long performanceMillis = 0;
 		int docCount = 0;
 		
+//		OutputStream os = threadLocalService.get();
 		File tmp = new FileUtilities().getFile(OS_RESULT, ".txt");
 		FileOutputStream out = new FileOutputStream(tmp);
 		// use case 7

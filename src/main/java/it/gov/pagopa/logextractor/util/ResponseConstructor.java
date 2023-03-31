@@ -20,6 +20,8 @@ import net.lingala.zip4j.model.enums.EncryptionMethod;
  * Utility class to manage the server response construction
  */
 public class ResponseConstructor {
+	
+	final static CompressionLevel compressionLevel = CompressionLevel.NO_COMPRESSION;
 
 	private ResponseConstructor(){}
 	
@@ -41,13 +43,11 @@ public class ResponseConstructor {
 		String password = passwordFactory.createPassword(1, 1, 1, GenericConstants.SPECIAL_CHARS, 1, 16);
 		ZipFactory zipFactory = new ZipFactory();
 		ZipFile zipArchive = zipFactory.createZipArchive(zipName, password);
-		ZipParameters params = zipFactory.createZipParameters(true, CompressionLevel.HIGHER, EncryptionMethod.AES);
+		ZipParameters params = zipFactory.createZipParameters(true, compressionLevel, EncryptionMethod.AES);
 		zipArchive = zipFactory.addFile(zipArchive, params, file);
-		byte[] zipfile = zipFactory.toByteArray(zipArchive);
-		Files.delete(FileUtils.getFile(zipArchive.toString()).toPath());
 		DownloadArchiveResponseDto serviceResponse = new DownloadArchiveResponseDto();
 		serviceResponse.setPassword(password);
-		serviceResponse.setZip(zipfile);
+		serviceResponse.setZipFile(FileUtils.getFile(zipArchive.toString()));
 		serviceResponse.setMessage(ResponseConstants.SUCCESS_RESPONSE_MESSAGE);
 		return serviceResponse;
 	}
@@ -68,14 +68,12 @@ public class ResponseConstructor {
 		FileUtilities utils = new FileUtilities();
 		ZipFactory zipFactory = new ZipFactory();
 		ZipFile zipArchive = zipFactory.createZipArchive(zipName, password);
-		ZipParameters params = zipFactory.createZipParameters(true, CompressionLevel.HIGHER, EncryptionMethod.AES);
+		ZipParameters params = zipFactory.createZipParameters(true, compressionLevel, EncryptionMethod.AES);
 		zipArchive = zipFactory.addFiles(zipArchive, params, csvFiles);
-		byte[] zipfile = zipFactory.toByteArray(zipArchive);
 		utils.delete(csvFiles);
-		utils.delete(FileUtils.getFile(zipArchive.toString()));
 		DownloadArchiveResponseDto serviceResponse = new DownloadArchiveResponseDto();
 		serviceResponse.setPassword(password);
-		serviceResponse.setZip(zipfile);
+		serviceResponse.setZipFile(FileUtils.getFile(zipArchive.toString()));
 		serviceResponse.setMessage(ResponseConstants.SUCCESS_RESPONSE_MESSAGE);
 		return serviceResponse;
 	}
@@ -103,7 +101,7 @@ public class ResponseConstructor {
 		FileUtilities fileUtils = new FileUtilities();
 		ZipFactory zipFactory = new ZipFactory();
 		ZipFile zipArchive = zipFactory.createZipArchive(zipName, password);
-		ZipParameters params = zipFactory.createZipParameters(true, CompressionLevel.HIGHER, EncryptionMethod.AES);
+		ZipParameters params = zipFactory.createZipParameters(true, compressionLevel , EncryptionMethod.AES);
 		zipFactory.addFiles(zipArchive, params, filesToAdd);
 		if(!filesNotDownloadable.isEmpty()){
 			File failureSummaryFile = fileUtils.getFile(GenericConstants.ERROR_SUMMARY_FILE_NAME, GenericConstants.TXT_EXTENSION);
@@ -113,12 +111,11 @@ public class ResponseConstructor {
 			zipArchive = zipFactory.addFile(zipArchive, params, failureSummaryFile);
 			fileUtils.delete(failureSummaryFile);
 		}
-		byte[] outputZipFile = zipFactory.toByteArray(zipArchive);
-		fileUtils.delete(FileUtils.getFile(zipArchive.toString()));
+		
 		fileUtils.delete(filesToAdd);
 		DownloadArchiveResponseDto serviceResponse = new DownloadArchiveResponseDto();
 		serviceResponse.setPassword(password);
-		serviceResponse.setZip(outputZipFile);
+		serviceResponse.setZipFile(FileUtils.getFile(zipArchive.toString()));
 		serviceResponse.setMessage(ResponseConstants.SUCCESS_RESPONSE_MESSAGE);
 		return serviceResponse;
 	}
