@@ -18,7 +18,7 @@ public interface LogService {
 	 *         its files
 	 * @throws IOException in case of an IO error
 	 */
-	BaseResponseDto getAnonymizedPersonLogs(PersonLogsRequestDto requestData,
+	void getAnonymizedPersonLogs(PersonLogsRequestDto requestData,
 											String xPagopaHelpdUid,
 											String xPagopaCxType) throws IOException;
 	
@@ -32,7 +32,7 @@ public interface LogService {
 	 * @throws CsvRequiredFieldEmptyException in case of any required field is missing
 	 * @throws LogExtractorException in case of a business logic error
 	 */
-	BaseResponseDto getMonthlyNotifications(MonthlyNotificationsRequestDto requestData,
+	void getMonthlyNotifications(MonthlyNotificationsRequestDto requestData,
 											String xPagopaHelpdUid,
 											String xPagopaCxType) throws IOException, ParseException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException;
 	
@@ -45,7 +45,7 @@ public interface LogService {
 	 * @throws IOException in case of an IO error
 	 * @throws LogExtractorException in case of a business logic error
 	 */
-	BaseResponseDto getTraceIdLogs(TraceIdLogsRequestDto requestData,
+	void getTraceIdLogs(TraceIdLogsRequestDto requestData,
 								   String xPagopaHelpdUid,
 								   String xPagopaCxType) throws IOException, LogExtractorException;
 	
@@ -60,7 +60,7 @@ public interface LogService {
 	 * @throws IOException in case of an IO error
 	 * @throws LogExtractorException in case of a business logic error
 	 */
-	BaseResponseDto getDeanonimizedPersonLogs(PersonLogsRequestDto requestData,
+	void getDeanonimizedPersonLogs(PersonLogsRequestDto requestData,
 											  String xPagopaHelpdUid,
 											  String xPagopaCxType) throws IOException, LogExtractorException;
 	
@@ -74,13 +74,13 @@ public interface LogService {
 	 *         its files
 	 * @throws IOException in case of an IO error
 	 */
-	BaseResponseDto getNotificationInfoLogs(NotificationInfoRequestDto requestData,
+	void getNotificationInfoLogs(NotificationInfoRequestDto requestData,
 											String xPagopaHelpdUid, String xPagopaCxType) throws IOException;
 	
-	BaseResponseDto getAnonymizedSessionLogs(SessionLogsRequestDto requestData,
+	void getAnonymizedSessionLogs(SessionLogsRequestDto requestData,
 											 String xPagopaHelpdUid, String xPagopaCxType) throws IOException;
 	
-	BaseResponseDto getDeanonimizedSessionLogs(SessionLogsRequestDto requestData,
+	void getDeanonimizedSessionLogs(SessionLogsRequestDto requestData,
 											   String xPagopaHelpdUid,
 											   String xPagopaCxType) throws IOException, LogExtractorException;
 }

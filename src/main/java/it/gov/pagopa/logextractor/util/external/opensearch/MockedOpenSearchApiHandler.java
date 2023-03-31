@@ -19,7 +19,7 @@ public class MockedOpenSearchApiHandler extends OpenSearchApiHandler {
 	@Override
 	public int getAnonymizedLogsByIun(String iun, String dateFrom, String dateTo, OutputStream out) {
 		try {
-			InputStream is = new FileInputStream("c:\\tmp\\fakedata");
+			InputStream is = new FileInputStream("c:\\tmp\\test-deanonim.txt");
 			is.transferTo(out);
 			is.close();
 		} catch (Exception e) {

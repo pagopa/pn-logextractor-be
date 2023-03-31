@@ -1,18 +1,13 @@
 package it.gov.pagopa.logextractor.util.external.opensearch;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import it.gov.pagopa.logextractor.dto.OpensearchScrollQueryData;
-import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
-import it.gov.pagopa.logextractor.util.constant.OpensearchConstants;
+
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
@@ -28,11 +23,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-
-import it.gov.pagopa.logextractor.util.RefactoryUtil;
-import it.gov.pagopa.logextractor.util.SortOrders;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import it.gov.pagopa.logextractor.dto.OpensearchScrollQueryData;
+import it.gov.pagopa.logextractor.util.SortOrders;
+import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
+import it.gov.pagopa.logextractor.util.constant.OpensearchConstants;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Uility class for integrations with OpenSearch service
@@ -183,7 +180,6 @@ public class OpenSearchApiHandler {
 				request,
 				String.class,
 				params).getBody();
-		//return getDocumentsFromOpensearchResponse(response, new ArrayList<>());
         
         int counter = 0;
         ArrayList<String> currentDocs;
@@ -213,28 +209,6 @@ public class OpenSearchApiHandler {
         return counter;
 	}
 
-	/**
-	 * Recursively performs scroll HTTP GET requests to Opensearch service to get the document list page util
-	 * all the documents have been retrieved
-	 * @param openSearchResponse The opensearch response to get the documents from
-	 * @param documents The document list to be returned
-	 * @return The documents list after all the scroll iterations into the Opensearch response
-	 * */
-	private ArrayList<String> getDocumentsFromOpensearchResponse(String openSearchResponse, ArrayList<String> documents){
-		ArrayList<String> currentDocs = getDocumentsFromCurrentResponse(openSearchResponse);
-		if(currentDocs.isEmpty()){
-			return documents;
-		}
-		documents.addAll(currentDocs);
-		HttpHeaders requestHeaders = buildHeaders();
-		OpensearchScrollQueryData scrollQueryDto = new OpensearchScrollQueryData(
-				OpensearchConstants.OS_SCROLL_ID_VALIDITY_DURATION,
-				new JSONObject(openSearchResponse).getString(OpensearchConstants.OS_RESPONSE_SCROLL_ID_FIELD));
-		HttpEntity<OpensearchScrollQueryData> request = new HttpEntity<>(scrollQueryDto, requestHeaders);
-		ResponseEntity<String> response = client.exchange(opensearchSearchFollowupUrl,
-				HttpMethod.GET,request,String.class);
-		return getDocumentsFromOpensearchResponse(response.getBody(), documents);
-	}
 	
 	/**
 	 * Gets the document list from an Opensearch response page

@@ -3,12 +3,11 @@ package it.gov.pagopa.logextractor.util.external.pnservices;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.util.ArrayList;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
@@ -35,7 +34,6 @@ import it.gov.pagopa.logextractor.dto.response.SelfCarePaDataResponseDto;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
-import it.gov.pagopa.logextractor.service.LogServiceImpl;
 import it.gov.pagopa.logextractor.util.FileUtilities;
 import it.gov.pagopa.logextractor.util.JsonUtilities;
 import it.gov.pagopa.logextractor.util.constant.ExternalServiceConstants;
@@ -178,8 +176,7 @@ public class DeanonimizationApiHandler {
 	 * @throws LogExtractorException if the external service response is "null", null or blank
 	 * @throws JsonProcessingException 
 	 */
-	public File deanonimizeDocuments(File anonymizedDocuments, RecipientTypes recipientType) throws LogExtractorException, JsonProcessingException {
-		File deanonimazedFile = new FileUtilities().getFile("deanonimized", "txt");
+	public void deanonimizeDocuments(File anonymizedDocuments, RecipientTypes recipientType, OutputStream out) throws LogExtractorException, JsonProcessingException {
 		ObjectMapper mapper = new ObjectMapper();
 		JsonUtilities jsonUtils = new JsonUtilities();
 		Map<String, String> keyValues = new HashMap<>();
@@ -187,7 +184,8 @@ public class DeanonimizationApiHandler {
 		BufferedWriter wr = null;
 		try {
 			br = new BufferedReader(new FileReader(anonymizedDocuments));
-			wr = new BufferedWriter(new FileWriter(deanonimazedFile));
+			wr = new BufferedWriter(new OutputStreamWriter(out));
+			
 			String currentDocument;
 			while ((currentDocument = br.readLine()) != null) {
 					JsonNode root = mapper.readTree(currentDocument);
@@ -210,6 +208,8 @@ public class DeanonimizationApiHandler {
 					}
 					wr.write(jsonUtils.replaceValues(currentDocument, keyValues));
 					wr.newLine();
+					wr.flush();
+					currentDocument=null;
 			}
 		} catch (Exception e) {
 			log.error("Error reading {}", anonymizedDocuments.getName(), e);
@@ -217,11 +217,7 @@ public class DeanonimizationApiHandler {
 			if (br!=null) {
 				IOUtils.closeQuietly(br);
 			}
-			if (wr != null) {
-				IOUtils.closeQuietly(wr);
-			}
 		}
 		
-		return  deanonimazedFile;
 	}
 }

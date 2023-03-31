@@ -14,7 +14,7 @@ public class CustomException extends RuntimeException{
 	private static final long serialVersionUID = -2607661026693609625L;
 	private BaseResponseDto dto;
 
-	public CustomException(BaseResponseDto dto) {
-		this.dto = dto;
+	public CustomException(String msg) {
+		super(msg);
 	}
 }
