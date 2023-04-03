@@ -9,6 +9,14 @@ Parameters:
     Type: String
     Description: Name of the project
 
+  CognitoTriggerFunctionName:
+    Type: String
+    Description: Cognito trigger function name
+
+  CognitoLogsS3: 
+    Type: String
+    Description: Cognito logs bucket
+    
 Resources:
   DistributionLogBucket:
     Type: "AWS::S3::Bucket"
@@ -24,6 +32,8 @@ Resources:
         AllowAdminCreateUserOnly: true
       AutoVerifiedAttributes:
         - email
+      LambdaConfig:
+        PostAuthentication: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${CognitoTriggerFunctionName}"        
       Policies:
         PasswordPolicy:
           MinimumLength: 16
@@ -59,6 +69,89 @@ Resources:
         - ALLOW_USER_SRP_AUTH
         - ALLOW_REFRESH_TOKEN_AUTH
       UserPoolId: !Ref UserPool
+
+  CognitoUserManagementRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS:
+                - !Ref AWS::AccountId
+            Action:
+              - "sts:AssumeRole"
+      Description: Role to manage users in a cognito user pool.
+      Path: /
+      Policies: 
+        - PolicyName: AllowCognitoManagement
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Sid: CognitoUserManagement
+              Effect: Allow
+              Action:
+                - cognito-idp:AdminDeleteUser
+                - cognito-idp:DeleteGroup
+                - cognito-idp:AdminDeleteUserAttributes
+                - cognito-idp:AdminCreateUser
+                - cognito-idp:CreateGroup
+                - cognito-idp:AdminSetUserSettings
+                - cognito-idp:AdminAddUserToGroup
+                - cognito-idp:AdminUpdateUserAttributes
+                - cognito-idp:AdminGetUser
+                - cognito-idp:AdminEnableUser
+                - cognito-idp:AdminDisableUser
+                - cognito-idp:AdminRemoveUserFromGroup
+                - cognito-idp:AdminListGroupsForUser
+                - cognito-idp:AdminInitiateAuth
+                - cognito-idp:DeleteUserAttributes
+                - cognito-idp:GetUser
+                - cognito-idp:UpdateUserAttributes
+                - cognito-idp:DescribeUserPool
+                - cognito-idp:GetGroup
+                - cognito-idp:ListGroups
+                - cognito-idp:ListUsers
+                - cognito-idp:ListUsersInGroup
+                - cognito-idp:SignUp
+                - cognito-idp:ListUserImportJobs
+              Resource: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPool}"
+            - Sid: UserPoolActions
+              Effect: Allow
+              Action:
+                - cognito-idp:ListUserPools
+              Resource: '*'
+            - Sid: IamRoles
+              Effect: Allow
+              Action:
+                - iam:ListRoles
+                - iam:PassRole
+              Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/*"
+      RoleName: CognitoUserRole
+
+  LambdaResourcePolicy:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref CognitoTriggerFunctionName
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPool}"
+
+  S3BucketPolicy:  
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket: !Ref CognitoLogsS3
+      PolicyDocument: 
+        Version: '2012-10-17'
+        Statement:
+          - Sid: DenyObjectLockChanges
+            Action:
+              - s3:GetBucketObjectLockConfiguration
+            Effect: Deny
+            Resource: !Sub "arn:aws:s3:::${CognitoLogsS3}"
+            Principal: 
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:role/CognitoUserRole"
 
 Outputs:
   CloudFrontLogBucketDomainName:
