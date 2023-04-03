@@ -42,7 +42,7 @@ Resources:
               Mode: GOVERNANCE
               Days: 1
           - DefaultRetention:
-              Mode: COMPLIANCE
+              Mode: GOVERNANCE
               Years: !Ref LogRetentionPeriod
       ObjectLockEnabled: true
       PublicAccessBlockConfiguration: 
