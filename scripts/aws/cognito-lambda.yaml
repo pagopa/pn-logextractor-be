@@ -95,7 +95,7 @@ Resources:
                   - logs:CreateLogGroup
                   - logs:PutLogEvents
                 Resource:
-                - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${CognitoTriggerLambda}:*"
+                - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ProjectName}-post-auth-cognito-trigger:*"
               - Sid: S3PutObject
                 Effect: Allow
                 Action: 
