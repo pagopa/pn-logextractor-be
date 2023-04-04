@@ -1,0 +1,119 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: |
+  CloudFormation definition of Log Extractor system (support)
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Name of the project
+
+  LogRetentionPeriod:
+    Description: Number of years to protect S3 objects. Set to 0 to disable object lock.
+    Type: Number
+    Default: 5
+
+  LambdaS3Bucket:
+    Description: The S3 bucket name containing the S3 file.
+    Type: String
+
+  LambdaS3Path:
+    Description: The S3 bucket name containing the S3 file.
+    Type: String
+
+Conditions:
+  isDevEnv: !Equals [!Ref LogRetentionPeriod, 0]
+
+Resources:
+
+  CognitoLogsS3:
+    Type: AWS::S3::Bucket
+    Properties: 
+      BucketEncryption: 
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: !Sub ${ProjectName}-cognito-logs-bucket
+      ObjectLockConfiguration: 
+        ObjectLockEnabled: Enabled 
+        Rule: !If 
+          - isDevEnv
+          - DefaultRetention:
+              Mode: GOVERNANCE
+              Days: 1
+          - DefaultRetention:
+              Mode: GOVERNANCE
+              Years: !Ref LogRetentionPeriod
+      ObjectLockEnabled: true
+      PublicAccessBlockConfiguration: 
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration: 
+        Status: Enabled
+
+  CognitoTriggerLambda:
+    Type: AWS::Lambda::Function
+    Properties: 
+      FunctionName: !Sub ${ProjectName}-post-auth-cognito-trigger
+      Code: 
+        S3Bucket: !Ref LambdaS3Bucket
+        S3Key: !Ref LambdaS3Path
+      Description: Cognito Post Confirmation Lambda Trigger.
+      Environment:
+        Variables:
+          BucketName: !Ref CognitoLogsS3
+      Handler: CognitoLogsLambda.handler
+      Role: !Sub "arn:aws:iam::${AWS::AccountId}:role/cognito-logs-role"
+      Runtime: nodejs18.x
+      Timeout: 30
+
+  CognitoLambdaRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Description: Lambda execution role.
+      Path: /
+      Policies: 
+        - PolicyName: cognito-logs-policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: LogGroup
+                Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:CreateLogGroup
+                  - logs:PutLogEvents
+                Resource:
+                - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ProjectName}-post-auth-cognito-trigger:*"
+              - Sid: S3PutObject
+                Effect: Allow
+                Action: 
+                  - s3:PutObject
+                Resource: !Sub "arn:aws:s3:::${ProjectName}-cognito-logs-bucket/*"
+              - Sid: S3ListBuckets
+                Effect: Allow
+                Action:
+                  - S3:ListBucket
+                Resource: !Sub "arn:aws:s3:::${ProjectName}-cognito-logs-bucket"
+      RoleName: cognito-logs-role
+
+  LambdaTriggerLogGroup:
+    Type: "AWS::Logs::LogGroup"
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/lambda/${CognitoTriggerLambda}"
+
+Outputs:
+  CognitoTriggerFunctionName:
+    Value: !Ref CognitoTriggerLambda
