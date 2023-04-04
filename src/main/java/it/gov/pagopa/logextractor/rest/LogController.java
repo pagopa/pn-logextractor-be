@@ -59,10 +59,10 @@ public class LogController implements LogsApi {
 		return null;
 	}
 
-	//TODO: Capire con Marco il desiderata e lo status code da opeani 400/500
+	//TODO: Capire con Marco il desiderata e lo status code da openapi 400/500
 	@ExceptionHandler(value = CustomException.class)
 	public ResponseEntity<BaseResponseDto> handleCustomException(CustomException e){
-		return ResponseEntity.status(200).body(e.getDto());
+		return ResponseEntity.status(e.getCode()).body(e.getDto());
 	}
 	
 	@Override

@@ -77,7 +77,13 @@ public class DeanonimizationApiHandler {
 	public String getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId) throws LogExtractorException {
 		String url = String.format(getUniqueIdURL, recipientType.getValue());
 		HttpEntity<String> request =  new HttpEntity<>(taxId);
-		String response = client.postForObject(url, request, String.class);
+		String response="";
+		try {
+			response = client.postForObject(url, request, String.class);
+		}catch(Exception err) {
+			log.error("cannot connect to {}",url);
+			throw err;
+		}
 		if(StringUtils.isBlank(response) || "null".equalsIgnoreCase(response)) {
 			throw new LogExtractorException("Anonymized tax id is null");
 		}

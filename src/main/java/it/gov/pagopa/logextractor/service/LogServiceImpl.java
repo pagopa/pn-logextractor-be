@@ -24,7 +24,6 @@ import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDto;
 import it.gov.pagopa.logextractor.exception.CustomException;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
-import it.gov.pagopa.logextractor.pn_logextractor_be.model.BaseResponseDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.MonthlyNotificationsRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.NotificationInfoRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.PersonLogsRequestDto;
@@ -100,7 +99,7 @@ public class LogServiceImpl implements LogService {
 		threadLocalService.closeEntry();
 		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, docCount);
 		if(docCount == 0) {
-			throw new CustomException(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
+			throw new CustomException(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE, 400);
 		}
 		performanceMillis = System.currentTimeMillis();
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
@@ -127,7 +126,7 @@ public class LogServiceImpl implements LogService {
 		List<NotificationData> notifications = notificationApiHandler.getNotificationsByMonthsPeriod(requestData.getReferenceMonth(), requestData.getEndMonth(), encodedPublicAuthorityName);
 		log.info("{} notifications retrieved in {} ms, constructing service response...", notifications.size(), System.currentTimeMillis() - performanceMillis);
 		if(notifications.isEmpty()) {
-			throw new CustomException(ResponseConstants.NO_NOTIFICATION_FOUND_MESSAGE);
+			throw new CustomException(ResponseConstants.NO_NOTIFICATION_FOUND_MESSAGE, 400);
 		}
 		performanceMillis = System.currentTimeMillis();
 		int numberOfFiles = (int)Math.ceil(((double)notifications.size())/ GenericConstants.CSV_FILE_MAX_ROWS);
@@ -168,7 +167,7 @@ public class LogServiceImpl implements LogService {
 		long performanceMillis = System.currentTimeMillis() - serviceStartTime;
 		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, performanceMillis, docCount);
 		if(docCount == 0) {
-			throw new CustomException(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
+			throw new CustomException(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE, 400);
 		}
 		performanceMillis = System.currentTimeMillis();
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
@@ -301,7 +300,7 @@ public class LogServiceImpl implements LogService {
 		log.info("Deanonimization completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
 		log.info("deanonimized logs retrieve process - END in {} ms", (System.currentTimeMillis() - serviceStartTime));
 		if(docCount == 0) {
-			throw new CustomException(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
+			throw new CustomException(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE, 400);
 		}
 	}
 	
@@ -325,7 +324,7 @@ public class LogServiceImpl implements LogService {
 		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, docCount);
 		performanceMillis = System.currentTimeMillis();
 		if(docCount == 0) {
-			throw new CustomException (ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
+			throw new CustomException (ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE, 400);
 		}
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END, (System.currentTimeMillis() - serviceStartTime));
@@ -358,7 +357,7 @@ public class LogServiceImpl implements LogService {
 		log.info("Deanonimization completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
 		performanceMillis = System.currentTimeMillis();
 		if(docCount == 0) {
-			throw new CustomException(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
+			throw new CustomException(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE, 400);
 		}
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info(LoggingConstants.DEANONIMIZED_RETRIEVE_PROCESS_END, (System.currentTimeMillis() - serviceStartTime));
