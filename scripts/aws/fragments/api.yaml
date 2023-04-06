@@ -314,8 +314,8 @@ Resources:
         PassthroughBehavior: WHEN_NO_MATCH
         RequestParameters:
           integration.request.path.proxy: method.request.path.proxy
-          integration.request.header.x-pagopa-uid: context.authorizer.claims.sub
-          integration.request.header.x-pagopa-cx-type: "'BO'"
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.claims.sub
+          integration.request.header.x-pagopa-pn-cx-type: "'BO'"
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/notifications/info"
       OperationName: Proxy to ECS microservices
@@ -361,8 +361,8 @@ Resources:
         PassthroughBehavior: WHEN_NO_MATCH
         RequestParameters:
           integration.request.path.proxy: method.request.path.proxy
-          integration.request.header.x-pagopa-uid: context.authorizer.claims.sub
-          integration.request.header.x-pagopa-cx-type: "'BO'"
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.claims.sub
+          integration.request.header.x-pagopa-pn-cx-type: "'BO'"
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/notifications/monthly"
       OperationName: Proxy to ECS microservices
@@ -408,8 +408,8 @@ Resources:
         PassthroughBehavior: WHEN_NO_MATCH
         RequestParameters:
           integration.request.path.proxy: method.request.path.proxy
-          integration.request.header.x-pagopa-uid: context.authorizer.claims.sub
-          integration.request.header.x-pagopa-cx-type: "'BO'"
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.claims.sub
+          integration.request.header.x-pagopa-pn-cx-type: "'BO'"
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/persons"
       OperationName: Proxy to ECS microservices
@@ -455,8 +455,8 @@ Resources:
         PassthroughBehavior: WHEN_NO_MATCH
         RequestParameters:
           integration.request.path.proxy: method.request.path.proxy
-          integration.request.header.x-pagopa-uid: context.authorizer.claims.sub
-          integration.request.header.x-pagopa-cx-type: "'BO'"
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.claims.sub
+          integration.request.header.x-pagopa-pn-cx-type: "'BO'"
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/processes"
       OperationName: Proxy to ECS microservices
@@ -502,8 +502,8 @@ Resources:
         PassthroughBehavior: WHEN_NO_MATCH
         RequestParameters:
           integration.request.path.proxy: method.request.path.proxy
-          integration.request.header.x-pagopa-uid: context.authorizer.claims.sub
-          integration.request.header.x-pagopa-cx-type: "'BO'"
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.claims.sub
+          integration.request.header.x-pagopa-pn-cx-type: "'BO'"
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/sessions"
       OperationName: Proxy to ECS microservices
@@ -549,8 +549,8 @@ Resources:
         PassthroughBehavior: WHEN_NO_MATCH
         RequestParameters:
           integration.request.path.proxy: method.request.path.proxy
-          integration.request.header.x-pagopa-uid: context.authorizer.claims.sub
-          integration.request.header.x-pagopa-cx-type: "'BO'"
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.claims.sub
+          integration.request.header.x-pagopa-pn-cx-type: "'BO'"
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/persons/v1/person-id"
       OperationName: Proxy to ECS microservices
@@ -596,8 +596,8 @@ Resources:
         PassthroughBehavior: WHEN_NO_MATCH
         RequestParameters:
           integration.request.path.proxy: method.request.path.proxy
-          integration.request.header.x-pagopa-uid: context.authorizer.claims.sub
-          integration.request.header.x-pagopa-cx-type: "'BO'"
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.claims.sub
+          integration.request.header.x-pagopa-pn-cx-type: "'BO'"
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/persons/v1/tax-id"
       OperationName: Proxy to ECS microservices
@@ -643,8 +643,8 @@ Resources:
         PassthroughBehavior: WHEN_NO_MATCH
         RequestParameters:
           integration.request.path.proxy: method.request.path.proxy
-          integration.request.header.x-pagopa-uid: context.authorizer.claims.sub
-          integration.request.header.x-pagopa-cx-type: "'BO'"
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.claims.sub
+          integration.request.header.x-pagopa-pn-cx-type: "'BO'"
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/downtime/v1/status"
       OperationName: Proxy to ECS microservices
@@ -690,8 +690,8 @@ Resources:
         PassthroughBehavior: WHEN_NO_MATCH
         RequestParameters:
           integration.request.path.proxy: method.request.path.proxy
-          integration.request.header.x-pagopa-uid: context.authorizer.claims.sub
-          integration.request.header.x-pagopa-cx-type: "'BO'"
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.claims.sub
+          integration.request.header.x-pagopa-pn-cx-type: "'BO'"
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/downtime/v1/events"
       OperationName: Proxy to ECS microservices

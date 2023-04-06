@@ -25,6 +25,7 @@ import it.gov.pagopa.logextractor.service.ThreadLocalOutputStreamService;
 @CrossOrigin(allowedHeaders = "password,content-disposition",exposedHeaders = "password,content-disposition")
 public class LogController implements LogsApi {
 
+
 	@Autowired
 	LogService logService;
 	
@@ -42,7 +43,7 @@ public class LogController implements LogsApi {
 			threadLocalService.remove();
 		}
 	}
-	
+
 	@Override
 	public ResponseEntity<Resource> personActivityLogs(@RequestHeader(value="x-pagopa-uid", required=true) String xPagopaUid,
    		 @RequestHeader(value="x-pagopa-cx-type", required=true) String xPagopaCxType, PersonLogsRequestDto personLogsRequestDto
@@ -59,7 +60,6 @@ public class LogController implements LogsApi {
 		return null;
 	}
 
-	//TODO: Capire con Marco il desiderata e lo status code da openapi 400/500
 	@ExceptionHandler(value = CustomException.class)
 	public ResponseEntity<BaseResponseDto> handleCustomException(CustomException e){
 		return ResponseEntity.status(e.getCode()).body(e.getDto());

@@ -15,12 +15,13 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -36,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
  * */
 @Profile("!mockedOS")
 @Component
+@Scope(scopeName = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Slf4j
 public class OpenSearchApiHandler {
 	@Autowired
@@ -49,6 +51,29 @@ public class OpenSearchApiHandler {
 	String opensearchUsername;
 	@Value("${external.opensearch.basicauth.password}")
 	String opensearchPassword;
+	
+	
+	private List<OpenSearchApiObserver> observers;
+	private int docCounter=0;
+
+	public void setObserver(OpenSearchApiObserver o) {
+		synchronized (observers){
+			if (this.observers != null) {
+				this.observers.clear();
+			}
+		}
+		addObserver(o);
+	}
+	
+	public void addObserver(OpenSearchApiObserver o) {
+		synchronized (observers){
+			if (this.observers == null) {
+				this.observers = new ArrayList<>();
+			}
+		}
+		
+		this.observers.add(o);
+	}
 	
 	/**
 	 * Construct and executes a multi-search query searching for document
@@ -225,8 +250,10 @@ public class OpenSearchApiHandler {
 					JSONArray opensearchEnrichedDoc = documentData.getJSONArray("hits");
 					for (int hitIndex = 0; hitIndex < opensearchEnrichedDoc.length(); hitIndex++) {
 						if (!opensearchEnrichedDoc.getJSONObject(hitIndex).isNull("_source")) {
-							documents.add(
-									opensearchEnrichedDoc.getJSONObject(hitIndex).getJSONObject("_source").toString());
+							String doc = opensearchEnrichedDoc.getJSONObject(hitIndex).getJSONObject("_source").toString();
+							docCounter++;
+							documents.add(doc);
+							this.observers.parallelStream().forEach(o -> o.notify(doc, docCounter));
 						}
 					}
 				}

@@ -4,6 +4,6 @@ package it.gov.pagopa.logextractor.util;
  */
 public class HeaderConstants {
     private HeaderConstants(){}
-    public static final String PAGO_PA_UID = "x-pagopa-uid";
-    public static final String PAGO_PA_CXTYPE = "x-pagopa-cx-type";
+    public static final String PAGO_PA_UID = "x-pagopa-pn-uid";
+    public static final String PAGO_PA_CXTYPE = "x-pagopa-pn-cx-type";
 }

@@ -4,14 +4,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.springframework.stereotype.Component;
 
 import com.opencsv.bean.HeaderColumnNameMappingStrategy;
 import com.opencsv.bean.StatefulBeanToCsv;
@@ -26,6 +26,7 @@ import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 /**
  * Utility class to manage the core operations for files
  */
+@Component
 public class FileUtilities {
 
 	/**
@@ -34,8 +35,20 @@ public class FileUtilities {
 	 * @param extension the file extension
 	 * @return a new {@link File} instance of a file with the given name
 	 * */
-	public File getFile(String name, String extension) {
+	public File getFileWithRandomName(String name, String extension) {
 		return FileUtils.getFile(GenericConstants.EXPORT_FOLDER + name + "-" +  new RandomUtils().generateRandomAlphaNumericString() + extension);
+	}
+
+	/**
+	 * Create a new file with the given name and the given extension
+	 * @param name the name of the file to retrieve
+	 * @param extension the file extension
+	 * @return a new {@link File} instance of a file with the given name
+	 * */
+	public File getFile(String name, String extension, String url) throws IOException {
+		File downloadedFile = FileUtils.getFile(GenericConstants.EXPORT_FOLDER + name + extension);
+		FileUtils.copyURLToFile(new URL(url), downloadedFile);
+		return downloadedFile;
 	}
 	
 	/**
@@ -150,5 +163,17 @@ public class FileUtilities {
 			csvNotifications.add(toCsv(notification));
 		}
 		return csvNotifications;
+	}
+
+	/**
+	 * Write open search logs data to a txt file
+	 * @param openSearchLogs the list of {@link String} the contents from OpenSearch to write in the output file
+	 * @param fileName the name of file
+	 * @return a new {@link File} instance of a file with the given name and content
+	 * */
+	public File writeTxt(List<String> openSearchLogs, String fileName) throws IOException {
+		File logFile = getFileWithRandomName(fileName, GenericConstants.TXT_EXTENSION);
+		write(logFile, openSearchLogs);
+		return logFile;
 	}
 }

@@ -33,7 +33,6 @@ import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationsGeneralDataResponseDto;
-import it.gov.pagopa.logextractor.service.LogServiceImpl;
 import it.gov.pagopa.logextractor.util.constant.ExternalServiceConstants;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 import lombok.extern.slf4j.Slf4j;
