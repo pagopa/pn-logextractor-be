@@ -134,17 +134,21 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	protected ResponseEntity<Problem> handleHttpServerErrorException(HttpClientErrorException ex) {
 		log.error(ExceptionUtils.getStackTrace(ex));
 		
-		if (ex.getStatusCode() == HttpStatus.CONFLICT) {
-			Problem problemResponse = createProblem(HttpStatus.INTERNAL_SERVER_ERROR,
-					ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_ENGLISH_MESSAGE,
-					ex.getMessage());
-			return ResponseEntity.internalServerError().body(problemResponse);
-		}
-		
 		Problem problemResponse = createProblem(HttpStatus.INTERNAL_SERVER_ERROR,
 				ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_ENGLISH_MESSAGE,
 				ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
 		return ResponseEntity.internalServerError().body(problemResponse);
+	}
+	
+	@ExceptionHandler(LogExtractorIntegrationException.class)
+	protected ResponseEntity<Problem> handleLogExtractorIntegrationException(LogExtractorIntegrationException ex) {
+		log.error(ExceptionUtils.getStackTrace(ex));
+		
+		Problem problemResponse = createProblem(HttpStatus.INTERNAL_SERVER_ERROR,
+				ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_ENGLISH_MESSAGE,
+				ex.getMessage());
+		return ResponseEntity.internalServerError().body(problemResponse);
+
 	}
 
 	private Problem createProblem(HttpStatus responseCode, String titleMessage, String detailMessage){

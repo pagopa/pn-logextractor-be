@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
@@ -22,6 +24,14 @@ public class BeanConfiguration {
 	@Bean
 	public RestTemplate simpleRestTemplate() {
 		return new RestTemplate();
+	}
+	
+	@Bean
+	public RestTemplate downtimeRestTemplate() {
+		RestTemplate restTemplate = new RestTemplateBuilder()
+										.errorHandler(new DowntimeRestTemplateErrorHandler())
+										.build();
+		return restTemplate;
 	}
 
 	@Bean
