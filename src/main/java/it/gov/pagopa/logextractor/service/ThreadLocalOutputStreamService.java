@@ -1,6 +1,7 @@
 package it.gov.pagopa.logextractor.service;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -61,6 +62,20 @@ public class ThreadLocalOutputStreamService {
 		}
 
 		get().putNextEntry(zipParameters);
+	}
+	
+	/**
+	 * Add a new entry with given content then close the entry
+	 * @param name
+	 * @param content
+	 * @throws IOException
+	 */
+	public void addEntry(String name, String content) throws IOException{
+		addEntry(name);
+		OutputStreamWriter ow = new OutputStreamWriter(this.get());
+		ow.write(content);
+		ow.flush();
+		closeEntry();		
 	}
 	
 	public void closeEntry() throws IOException {

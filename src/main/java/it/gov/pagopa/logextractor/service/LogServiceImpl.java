@@ -295,13 +295,8 @@ public class LogServiceImpl implements LogService {
 			deanonimizationApiHandler.deanonimizeDocuments(tmp, requestData.getRecipientType(), threadLocalService.get());
 			threadLocalService.closeEntry();
 
-			//TODO: need refactor!
 			if (s3.getFileName()!=null) {
-				threadLocalService.addEntry(s3.getFileName());
-				OutputStreamWriter ow = new OutputStreamWriter(threadLocalService.get());
-				ow.write(s3.getFileContent());
-				ow.flush();
-				threadLocalService.closeEntry();
+				threadLocalService.addEntry(s3.getFileName(),s3.getFileContent());
 			}
 		} else {
 			if (requestData.getIun() != null) {
@@ -383,14 +378,10 @@ public class LogServiceImpl implements LogService {
 		deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, RecipientTypes.PF, threadLocalService.get());
 		threadLocalService.closeEntry();
 		
-		//TODO: need refactor!
 		if (s3.getFileName()!=null) {
-			threadLocalService.addEntry(s3.getFileName());
-			OutputStreamWriter ow = new OutputStreamWriter(threadLocalService.get());
-			ow.write(s3.getFileContent());
-			ow.flush();
-			threadLocalService.closeEntry();
+			threadLocalService.addEntry(s3.getFileName(),s3.getFileContent());
 		}
+
 		Files.delete(openSearchResponse.toPath());
 		log.info("Deanonimization completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
 		performanceMillis = System.currentTimeMillis();
