@@ -4,11 +4,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -36,7 +38,6 @@ import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
 import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandler;
-import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiObserver;
 import it.gov.pagopa.logextractor.util.external.opensearch.S3DocumentDownloader;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
@@ -51,7 +52,7 @@ import net.lingala.zip4j.io.outputstream.ZipOutputStream;
 @Slf4j
 public class LogServiceImpl implements LogService {
 	
-	private static final String OS_RESULT = "OS-result";
+	private static final String OS_RESULT = "dati";
 
 	@Autowired
 	NotificationApiHandler notificationApiHandler;
@@ -64,8 +65,13 @@ public class LogServiceImpl implements LogService {
 	@Autowired
 	ThreadLocalOutputStreamService threadLocalService;
 
-	@Value("${external.s3.saml.assertion.downloadUrl}")
-	String downloadFileUrl;
+	@Value("${external.s3.saml.assertion.region}")
+	String s3Region;
+	@Value("${external.s3.saml.assertion.bucket}")
+	String s3Bucket;
+	@Value("${external.s3.saml.assertion.awsprofile}")
+	String awsProfile;
+	
 
 	@Autowired
 	FileUtilities fileUtils;
@@ -83,7 +89,7 @@ public class LogServiceImpl implements LogService {
 		int docCount = 0;
 		
 		ZipOutputStream zos = threadLocalService.get();
-		threadLocalService.addEntry(OS_RESULT+".txt");
+		threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
 		// use case 7
 		if (requestData.getDateFrom() != null && requestData.getDateTo() != null
 				&& requestData.getPersonId() != null && requestData.getIun() == null) {
@@ -169,7 +175,7 @@ public class LogServiceImpl implements LogService {
 		log.info("Getting anonymized logs...");
 		
 		OutputStream out = threadLocalService.get();
-		threadLocalService.addEntry(OS_RESULT+".txt");
+		threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
 		int docCount = openSearchApiHandler.getAnonymizedLogsByTraceId(requestData.getTraceId(), requestData.getDateFrom(), requestData.getDateTo(), out);
 		threadLocalService.closeEntry();
 		long performanceMillis = System.currentTimeMillis() - serviceStartTime;
@@ -245,7 +251,7 @@ public class LogServiceImpl implements LogService {
         	log.info("Physical files retrieved in {} ms", System.currentTimeMillis() - performanceMillis);
         	
         	OutputStream out = threadLocalService.get();
-        	threadLocalService.addEntry(OS_RESULT+".txt");
+        	threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
         	int docsNumber = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate, out);
         	threadLocalService.closeEntry();
     		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, docsNumber);
@@ -266,8 +272,8 @@ public class LogServiceImpl implements LogService {
 		long serviceStartTime = System.currentTimeMillis();
 		int docCount=0;
 		long performanceMillis = 0;
-    	File tmp = fileUtils.getFileWithRandomName(OS_RESULT, ".txt");
-    	OutputStream out = new FileOutputStream(tmp);
+    	File tmp = fileUtils.getFileWithRandomName(OS_RESULT, GenericConstants.TXT_EXTENSION);
+    	OutputStream tmpOutStream = new FileOutputStream(tmp);
 
 		//use case 3
 		if (requestData.getDateFrom() != null && requestData.getDateTo() != null && requestData.getTaxId() != null
@@ -278,17 +284,25 @@ public class LogServiceImpl implements LogService {
 			log.info("Service response: internalId={} retrieved in {} ms", internalId, System.currentTimeMillis() - serviceStartTime);
 			performanceMillis = System.currentTimeMillis();
 			
-			OpenSearchApiObserver s3 = new S3DocumentDownloader(downloadFileUrl, threadLocalService);
+			S3DocumentDownloader s3 = new S3DocumentDownloader(awsProfile, s3Region, s3Bucket);
 			openSearchApiHandler.setObserver(s3);
-			docCount = openSearchApiHandler.getAnonymizedLogsByUid(internalId, requestData.getDateFrom(), requestData.getDateTo(), out);
+			docCount = openSearchApiHandler.getAnonymizedLogsByUid(internalId, requestData.getDateFrom(), requestData.getDateTo(), tmpOutStream);
 			log.info(LoggingConstants.QEURY_EXECUTION_COMPLETED_TIME_DEANONIMIZE_DOCS, System.currentTimeMillis() - performanceMillis, docCount);
-			out.flush();
-			out.close();
+			tmpOutStream.flush();
+			tmpOutStream.close();
 			performanceMillis = System.currentTimeMillis();
-			threadLocalService.addEntry(OS_RESULT+".txt");
+			threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
 			deanonimizationApiHandler.deanonimizeDocuments(tmp, requestData.getRecipientType(), threadLocalService.get());
 			threadLocalService.closeEntry();
 
+			//TODO: need refactor!
+			if (s3.getFileName()!=null) {
+				threadLocalService.addEntry(s3.getFileName());
+				OutputStreamWriter ow = new OutputStreamWriter(threadLocalService.get());
+				ow.write(s3.getFileContent());
+				ow.flush();
+				threadLocalService.closeEntry();
+			}
 		} else {
 			if (requestData.getIun() != null) {
 				//use case 4
@@ -298,12 +312,12 @@ public class LogServiceImpl implements LogService {
 				OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
 				String notificationEndDate = notificationStartDate.plusMonths(3).toString();
 				performanceMillis = System.currentTimeMillis();
-	        	docCount = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate, out);
-				out.flush();out.close();
+	        	docCount = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate, tmpOutStream);
+				tmpOutStream.flush();tmpOutStream.close();
 				log.info(LoggingConstants.QEURY_EXECUTION_COMPLETED_TIME_DEANONIMIZE_DOCS,
 						System.currentTimeMillis() - performanceMillis, docCount);
 				performanceMillis = System.currentTimeMillis();
-				threadLocalService.addEntry(OS_RESULT+".txt");
+				threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
 				deanonimizationApiHandler.deanonimizeDocuments(tmp, RecipientTypes.PF, threadLocalService.get());
 				threadLocalService.closeEntry();
 			}
@@ -330,7 +344,7 @@ public class LogServiceImpl implements LogService {
 		log.info("Getting session activities' anonymized history... ");
 		long performanceMillis = System.currentTimeMillis();
 		
-		threadLocalService.addEntry(OS_RESULT+ ".txt");
+		threadLocalService.addEntry(OS_RESULT+ GenericConstants.TXT_EXTENSION);
 		docCount = openSearchApiHandler.getAnonymizedSessionLogsByJti(requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo(), threadLocalService.get());
 		threadLocalService.closeEntry();
 		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, docCount);
@@ -351,22 +365,32 @@ public class LogServiceImpl implements LogService {
 				requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
-		File openSearchResponse = new FileUtilities().getFileWithRandomName(OS_RESULT, ".txt");
-		FileOutputStream out = new FileOutputStream(openSearchResponse);
+		File openSearchResponse = new FileUtilities().getFileWithRandomName(OS_RESULT, GenericConstants.TXT_EXTENSION);
+		FileOutputStream tmpOutStream = new FileOutputStream(openSearchResponse);
 		int docCount = 0;
 
 		log.info("Getting session activities' deanonimized history... ");
 		performanceMillis = System.currentTimeMillis();
-		S3DocumentDownloader s3 = new S3DocumentDownloader(downloadFileUrl, threadLocalService);
+		S3DocumentDownloader s3 = new S3DocumentDownloader(awsProfile, s3Region, s3Bucket);
 		openSearchApiHandler.setObserver(s3);
-		docCount = openSearchApiHandler.getAnonymizedSessionLogsByJti(requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo(), out);
+		docCount = openSearchApiHandler.getAnonymizedSessionLogsByJti(requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo(), tmpOutStream);
 
 		log.info("Query execution completed in {} ms, retrieved {} documents, deanonimizing results...",
 				System.currentTimeMillis() - performanceMillis, docCount);
-		
-		threadLocalService.addEntry(OS_RESULT+".txt");
+		tmpOutStream.flush();
+		IOUtils.closeQuietly(tmpOutStream);
+		threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
 		deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, RecipientTypes.PF, threadLocalService.get());
 		threadLocalService.closeEntry();
+		
+		//TODO: need refactor!
+		if (s3.getFileName()!=null) {
+			threadLocalService.addEntry(s3.getFileName());
+			OutputStreamWriter ow = new OutputStreamWriter(threadLocalService.get());
+			ow.write(s3.getFileContent());
+			ow.flush();
+			threadLocalService.closeEntry();
+		}
 		Files.delete(openSearchResponse.toPath());
 		log.info("Deanonimization completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
 		performanceMillis = System.currentTimeMillis();

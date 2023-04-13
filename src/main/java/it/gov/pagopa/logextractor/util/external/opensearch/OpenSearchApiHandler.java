@@ -53,7 +53,7 @@ public class OpenSearchApiHandler {
 	String opensearchPassword;
 	
 	
-	private List<OpenSearchApiObserver> observers;
+	private List<OpenSearchApiObserver> observers = new ArrayList<>();
 	private int docCounter=0;
 
 	public void setObserver(OpenSearchApiObserver o) {
@@ -213,6 +213,7 @@ public class OpenSearchApiHandler {
 	        	boolean show=true;
 	        	for(String line : currentDocs) {
 	        		out.write(line.getBytes(StandardCharsets.UTF_8));
+	        		out.write("\n".getBytes(StandardCharsets.UTF_8));
 	        		if (show) {
 	        			log.info("first line ... "+line);
 	        			show=false;
@@ -253,12 +254,18 @@ public class OpenSearchApiHandler {
 							String doc = opensearchEnrichedDoc.getJSONObject(hitIndex).getJSONObject("_source").toString();
 							docCounter++;
 							documents.add(doc);
-							this.observers.parallelStream().forEach(o -> o.notify(doc, docCounter));
+							getObservers().parallelStream().forEach(o -> o.notify(doc, docCounter));
+								
 						}
 					}
 				}
 			}
 		}
 		return documents;
+	}
+		
+
+	private List<OpenSearchApiObserver> getObservers() {
+		return observers!=null ? observers : new ArrayList<>();
 	}
 }

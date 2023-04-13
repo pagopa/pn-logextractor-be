@@ -188,8 +188,10 @@ public class DeanonimizationApiHandler {
 		Map<String, String> keyValues = new HashMap<>();
 		BufferedReader br = null;
 		BufferedWriter wr = null;
+		FileReader fr = null;
 		try {
-			br = new BufferedReader(new FileReader(anonymizedDocuments));
+			fr = new FileReader(anonymizedDocuments);
+			br = new BufferedReader(fr);
 			wr = new BufferedWriter(new OutputStreamWriter(out));
 			
 			String currentDocument;
@@ -222,6 +224,9 @@ public class DeanonimizationApiHandler {
 		} finally {
 			if (br!=null) {
 				IOUtils.closeQuietly(br);
+			}
+			if (fr != null) {
+				IOUtils.closeQuietly(fr);
 			}
 		}
 		
