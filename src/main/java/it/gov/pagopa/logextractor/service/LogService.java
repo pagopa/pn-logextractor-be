@@ -2,10 +2,13 @@ package it.gov.pagopa.logextractor.service;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.List;
+
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.*;
+import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
 
 public interface LogService {
 	
@@ -69,12 +72,10 @@ public interface LogService {
 	 * OpenSearch logs, legal fact metadata document, attached to the notification
 	 * documents and payment documents
 	 * @param requestData the input data of type {@link NotificationInfoRequestDto}
-	 * @return {@link BaseResponseDto} containing a byte array
-	 *         representation of the output zip archive and the password to access
-	 *         its files
+	 * @return List<NotificationDownloadFileData>
 	 * @throws IOException in case of an IO error
 	 */
-	void getNotificationInfoLogs(NotificationInfoRequestDto requestData,
+	List<NotificationDownloadFileData> getNotificationInfoLogs(NotificationInfoRequestDto requestData,
 											String xPagopaHelpdUid, String xPagopaCxType) throws IOException;
 	
 	void getAnonymizedSessionLogs(SessionLogsRequestDto requestData,

@@ -1,5 +1,7 @@
 package it.gov.pagopa.logextractor.rest;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,7 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.SessionLogsRequestDto
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.TraceIdLogsRequestDto;
 import it.gov.pagopa.logextractor.service.LogService;
 import it.gov.pagopa.logextractor.service.ThreadLocalOutputStreamService;
+import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
 
 @RestController
 @CrossOrigin(allowedHeaders = "password,content-disposition",exposedHeaders = "password,content-disposition")
@@ -69,7 +72,7 @@ public class LogController implements LogsApi {
 	public ResponseEntity<Resource> notificationInfoLogs(@RequestHeader(value="x-pagopa-uid", required=true) String xPagopaUid,
 	   		 @RequestHeader(value="x-pagopa-cx-type", required=true) String xPagopaCxType, NotificationInfoRequestDto notificationInfoRequestDto) throws Exception {
 		this.threadLocalService.initialize(httpServletResponse, notificationInfoRequestDto.getTicketNumber());
-		logService.getNotificationInfoLogs(notificationInfoRequestDto,xPagopaUid, xPagopaCxType);
+		List<NotificationDownloadFileData> problems = logService.getNotificationInfoLogs(notificationInfoRequestDto,xPagopaUid, xPagopaCxType);
 		handleResponse();
 		return null;
 	}

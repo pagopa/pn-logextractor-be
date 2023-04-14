@@ -189,7 +189,7 @@ public class LogServiceImpl implements LogService {
 	}
 	
 	@Override
-	public void getNotificationInfoLogs(NotificationInfoRequestDto requestData,
+	public List<NotificationDownloadFileData> getNotificationInfoLogs(NotificationInfoRequestDto requestData,
 												   String xPagopaHelpdUid,
 												   String xPagopaCxType) throws IOException {
 		log.info("Notification data retrieve process - START - user={}, userType={}, ticketNumber={}, iun={}",
@@ -260,6 +260,7 @@ public class LogServiceImpl implements LogService {
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 			log.info("Notification data retrieve process - END in {} ms",(System.currentTimeMillis() - serviceStartTime));
         }
+        return filesNotDownloadable;
 	}
 		
 	public void getDeanonimizedPersonLogs(PersonLogsRequestDto requestData,
