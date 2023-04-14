@@ -99,7 +99,7 @@ class MockDowntimeControllerTest extends AbstractMock {
 	}
 
 	void test_CheckAddStatusChange(PnFunctionalityStatus pnFunctionalityStatus) throws Exception {
-		mockAddStatusChangeEvent(client);
+		mockAddStatusChangeEvent(downtimeClient);
 		MockHttpServletResponse response = mvc.perform(post(eventsUrl).accept(APPLICATION_JSON_UTF8)
 				.headers(getHeaders()).content(getMockPnStatusUpdateEventRequestDto(pnFunctionalityStatus))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
@@ -107,5 +107,6 @@ class MockDowntimeControllerTest extends AbstractMock {
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
 		assertThat(response.getContentAsString()).contains("message");
 	}
-
+	
+	
 }
