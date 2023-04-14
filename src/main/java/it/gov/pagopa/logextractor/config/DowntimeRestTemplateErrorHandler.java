@@ -32,10 +32,10 @@ public class DowntimeRestTemplateErrorHandler implements ResponseErrorHandler {
 
   @Override
   public void handleError(ClientHttpResponse response) throws IOException {
-    if (response.getStatusCode().series() == HttpStatus.Series.SERVER_ERROR) {
+    if (response.getStatusCode().is5xxServerError()) {
       throw new LogExtractorIntegrationException(
           ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_ENGLISH_MESSAGE);
-    } else if (response.getStatusCode().series() == HttpStatus.Series.CLIENT_ERROR) {
+    } else if (response.getStatusCode().is4xxClientError()) {
       if (response.getStatusCode() == HttpStatus.CONFLICT) {
         String responseBody = StreamUtils.copyToString(response.getBody(), StandardCharsets.UTF_8);
         ObjectMapper objectMapper = new ObjectMapper();
