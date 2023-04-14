@@ -75,7 +75,7 @@ public interface LogService {
 	 * @return List<NotificationDownloadFileData>
 	 * @throws IOException in case of an IO error
 	 */
-	List<NotificationDownloadFileData> getNotificationInfoLogs(NotificationInfoRequestDto requestData,
+	void getNotificationInfoLogs(NotificationInfoRequestDto requestData,
 											String xPagopaHelpdUid, String xPagopaCxType) throws IOException;
 	
 	void getAnonymizedSessionLogs(SessionLogsRequestDto requestData,

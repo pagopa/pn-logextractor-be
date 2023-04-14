@@ -1,5 +1,6 @@
 package it.gov.pagopa.logextractor.service;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -34,6 +35,7 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.SessionLogsRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.TraceIdLogsRequestDto;
 import it.gov.pagopa.logextractor.util.FileUtilities;
+import it.gov.pagopa.logextractor.util.JsonUtilities;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
 import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
@@ -189,7 +191,7 @@ public class LogServiceImpl implements LogService {
 	}
 	
 	@Override
-	public List<NotificationDownloadFileData> getNotificationInfoLogs(NotificationInfoRequestDto requestData,
+	public void getNotificationInfoLogs(NotificationInfoRequestDto requestData,
 												   String xPagopaHelpdUid,
 												   String xPagopaCxType) throws IOException {
 		log.info("Notification data retrieve process - START - user={}, userType={}, ticketNumber={}, iun={}",
@@ -260,6 +262,16 @@ public class LogServiceImpl implements LogService {
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 			log.info("Notification data retrieve process - END in {} ms",(System.currentTimeMillis() - serviceStartTime));
         }
+        
+        if(!filesNotDownloadable.isEmpty()){
+        	threadLocalService.addEntry(GenericConstants.ERROR_SUMMARY_FILE_NAME+".txt");
+			JsonUtilities jsonUtilities = new JsonUtilities();
+			String failsToString = jsonUtilities.toString(jsonUtilities.toJson(filesNotDownloadable));
+			OutputStreamWriter osw = new OutputStreamWriter(threadLocalService.get());
+			osw.write(failsToString);
+			osw.flush();
+			threadLocalService.closeEntry();
+		}
         return filesNotDownloadable;
 	}
 		

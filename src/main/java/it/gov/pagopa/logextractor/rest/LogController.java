@@ -72,7 +72,8 @@ public class LogController implements LogsApi {
 	public ResponseEntity<Resource> notificationInfoLogs(@RequestHeader(value="x-pagopa-uid", required=true) String xPagopaUid,
 	   		 @RequestHeader(value="x-pagopa-cx-type", required=true) String xPagopaCxType, NotificationInfoRequestDto notificationInfoRequestDto) throws Exception {
 		this.threadLocalService.initialize(httpServletResponse, notificationInfoRequestDto.getTicketNumber());
-		List<NotificationDownloadFileData> problems = logService.getNotificationInfoLogs(notificationInfoRequestDto,xPagopaUid, xPagopaCxType);
+		logService.getNotificationInfoLogs(notificationInfoRequestDto,xPagopaUid, xPagopaCxType);
+		
 		handleResponse();
 		return null;
 	}
