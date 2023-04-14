@@ -2,13 +2,17 @@ package it.gov.pagopa.logextractor.service;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.List;
 
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
+
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
-import it.gov.pagopa.logextractor.pn_logextractor_be.model.*;
-import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.BaseResponseDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.MonthlyNotificationsRequestDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.NotificationInfoRequestDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.PersonLogsRequestDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.SessionLogsRequestDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.TraceIdLogsRequestDto;
 
 public interface LogService {
 	
@@ -16,9 +20,6 @@ public interface LogService {
 	 * Service method that retrieves the anonymized logs related to a person's activities history in a period
 	 * or to a notification's activities history within 3 months from its legal start date
 	 * @param requestData the input data of type {@link PersonLogsRequestDto}
-	 * @return {@link BaseResponseDto} containing a byte array
-	 *         representation of the output zip archive and the password to access
-	 *         its files
 	 * @throws IOException in case of an IO error
 	 */
 	void getAnonymizedPersonLogs(PersonLogsRequestDto requestData,

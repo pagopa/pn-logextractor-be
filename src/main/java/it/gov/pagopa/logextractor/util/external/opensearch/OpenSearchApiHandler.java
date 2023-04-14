@@ -81,7 +81,7 @@ public class OpenSearchApiHandler {
 	 * @param uid The uid to use for the multi-search query
 	 * @param dateFrom The period start date
 	 * @param dateTo The period end date
-	 * @return The documents list contained into the Opensearch response
+	 * @return The number of documents contained into the Opensearch response
 	 * */
 	public int getAnonymizedLogsByUid(String uid, LocalDate dateFrom, LocalDate dateTo, OutputStream out){
 		ArrayList<OpenSearchQuerydata> queryData = new ArrayList<>();

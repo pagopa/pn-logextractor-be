@@ -1,7 +1,5 @@
 package it.gov.pagopa.logextractor.rest;
 
-import java.util.List;
-
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +20,6 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.SessionLogsRequestDto
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.TraceIdLogsRequestDto;
 import it.gov.pagopa.logextractor.service.LogService;
 import it.gov.pagopa.logextractor.service.ThreadLocalOutputStreamService;
-import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
 
 @RestController
 @CrossOrigin(allowedHeaders = "password,content-disposition",exposedHeaders = "password,content-disposition")

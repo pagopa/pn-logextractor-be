@@ -7,11 +7,14 @@ import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDto;
+import it.gov.pagopa.logextractor.exception.CustomException;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.*;
 import it.gov.pagopa.logextractor.service.LogService;
 import it.gov.pagopa.logextractor.service.LogServiceImpl;
+import it.gov.pagopa.logextractor.service.ThreadLocalOutputStreamService;
 import it.gov.pagopa.logextractor.util.FileUtilities;
+import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
@@ -23,7 +26,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.mockito.Mockito;
+import org.mockito.internal.stubbing.answers.Returns;
+import org.mockito.stubbing.Answer;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -31,6 +38,9 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipOutputStream;
+
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -44,6 +54,9 @@ class LogServiceImplTest {
 
     @Mock
     OpenSearchApiHandler openSearchApiHandler;
+    
+    @Mock
+    ThreadLocalOutputStreamService threadLocalOutputStreamService;
 
     @Mock
     NotificationApiHandler notificationApiHandler;
@@ -56,7 +69,7 @@ class LogServiceImplTest {
 
     @BeforeEach
     public void setUp() {
-        ReflectionTestUtils.setField(service, "downloadFileUrl", "http://localhost:3001/%s");
+//        ReflectionTestUtils.setField(service, "downloadFileUrl", "http://localhost:3001/%s");
     }
 
 //    @Test
@@ -77,23 +90,27 @@ class LogServiceImplTest {
 //                "test", "test");
 //        assertEquals(zipArchive, response.getZip());
 //    }
-//
-//    @Test
-//    @DisplayName("Extraction by uid with anonymization empty response")
-//    void testGetAnonymizedPersonLogs_whenProvidedDataIsValid_returnsEmptyResponse() throws IOException {
-//        PersonLogsRequestDto dto = new PersonLogsRequestDto();
-//        dto.setTicketNumber("inc123");
-//        dto.setDateFrom(LocalDate.now());
-//        dto.setDateTo(LocalDate.now());
-//        dto.setPersonId("test");
-//        dto.setIun(null);
-//        Mockito.when(openSearchApiHandler.getAnonymizedLogsByUid(Mockito.anyString(), Mockito.any(), Mockito.any()))
-//                .thenReturn(List.of());
-//        genericResponse = service.getAnonymizedPersonLogs(dto, "test", "test");
-//        assertEquals("Nessun documento trovato per i dati inseriti",
-//                service.getAnonymizedPersonLogs(dto, "test", "test").getMessage());
-//    }
-//
+
+    @Test
+    @DisplayName("Extraction by uid with anonymization empty response")
+    void testGetAnonymizedPersonLogs_whenProvidedDataIsValid_returnsEmptyResponse() throws IOException {
+        PersonLogsRequestDto dto = new PersonLogsRequestDto();
+        dto.setTicketNumber("inc123");
+        dto.setDateFrom(LocalDate.now());
+        dto.setDateTo(LocalDate.now());
+        dto.setPersonId("test");
+        dto.setIun(null);
+
+		Mockito.when(threadLocalOutputStreamService.get()).thenReturn(new net.lingala.zip4j.io.outputstream.ZipOutputStream(new ByteArrayOutputStream()) );
+        Mockito.when(openSearchApiHandler.getAnonymizedLogsByUid(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any()))
+                .thenReturn(0);
+        
+        assertThatExceptionOfType(CustomException.class).isThrownBy(() -> { 
+        	service.getAnonymizedPersonLogs(dto, "test", "test");
+        })
+        .withMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE); 
+    }
+
 //    @Test
 //    @DisplayName("Extraction by iun with anonymization")
 //    void testGetAnonymizedPersonLogs_whenProvidedDataIsValid_returnsZipArchiveWithIunLogs() throws IOException {
