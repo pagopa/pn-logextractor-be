@@ -272,7 +272,6 @@ public class LogServiceImpl implements LogService {
 			osw.flush();
 			threadLocalService.closeEntry();
 		}
-        return filesNotDownloadable;
 	}
 		
 	public void getDeanonimizedPersonLogs(PersonLogsRequestDto requestData,

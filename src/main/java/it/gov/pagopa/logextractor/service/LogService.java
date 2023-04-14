@@ -28,7 +28,6 @@ public interface LogService {
 	/**
 	 * Service method that retrieves informations about the notifications sent by a public authority in a specific month
 	 * @param requestData the input data of type {@link MonthlyNotificationsRequestDto}
-	 * @return A byte array representation of the output zip archive and the password to access its files
 	 * @throws IOException in case of an IO error
 	 * @throws ParseException in case of a parse error
 	 * @throws CsvDataTypeMismatchException in case csv data types are mismatching during the csv file writing process
@@ -42,9 +41,6 @@ public interface LogService {
 	/**
 	 * Service method that retrieves the anonymized logs belonging to the same process within a period
 	 * @param requestData the input data of type {@link TraceIdLogsRequestDto}
-	 * @return {@link BaseResponseDto} containing a byte array
-	 *         representation of the output zip archive and the password to access
-	 *         its files
 	 * @throws IOException in case of an IO error
 	 * @throws LogExtractorException in case of a business logic error
 	 */
@@ -57,9 +53,6 @@ public interface LogService {
 	 * or to a notification's activities history within 3 months from its legal start date
 	 * @param requestData the input data of type {@link PersonLogsRequestDto}
 	 * @param xPagopaHelpdUid 
-	 * @return {@link BaseResponseDto} containing a byte array
-	 *         representation of the output zip archive and the password to access
-	 *         its files
 	 * @throws IOException in case of an IO error
 	 * @throws LogExtractorException in case of a business logic error
 	 */
@@ -72,7 +65,6 @@ public interface LogService {
 	 * OpenSearch logs, legal fact metadata document, attached to the notification
 	 * documents and payment documents
 	 * @param requestData the input data of type {@link NotificationInfoRequestDto}
-	 * @return List<NotificationDownloadFileData>
 	 * @throws IOException in case of an IO error
 	 */
 	void getNotificationInfoLogs(NotificationInfoRequestDto requestData,
