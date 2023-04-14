@@ -46,6 +46,11 @@ class DowntimeRestTemplateErrorHandlerTest {
     problem.setTitle(
         "Conflict in request. Requested resource in conflict with the current state of the server.");
     problem.setErrors(List.of(problemError));
+  }
+
+  @Test
+  @DisplayName("4xx error is intercepted")
+  void testHasError_whenResponseIs4xx_thenReturnTrue() throws IOException {
     response = new ClientHttpResponse() {
       @Override
       public HttpStatus getStatusCode() throws IOException {
@@ -64,7 +69,6 @@ class DowntimeRestTemplateErrorHandlerTest {
 
       @Override
       public void close() {
-
       }
 
       @Override
@@ -78,17 +82,156 @@ class DowntimeRestTemplateErrorHandlerTest {
         return null;
       }
     };
+    Assertions.assertTrue(downtimeRestTemplateErrorHandler.hasError(response));
   }
 
   @Test
-  @DisplayName("Error is intercepted")
-  void testHasError_whenResponseIsError_thenReturnTrue() throws IOException {
+  @DisplayName("5xx error is intercepted")
+  void testHasError_whenResponseIs5xx_thenReturnTrue() throws IOException {
+    response = new ClientHttpResponse() {
+      @Override
+      public HttpStatus getStatusCode() throws IOException {
+        return HttpStatus.INTERNAL_SERVER_ERROR;
+      }
+
+      @Override
+      public int getRawStatusCode() throws IOException {
+        return 500;
+      }
+
+      @Override
+      public String getStatusText() throws IOException {
+        return null;
+      }
+
+      @Override
+      public void close() {
+      }
+
+      @Override
+      public InputStream getBody() throws IOException {
+        return IOUtils.toInputStream(simpleObjectMapper.writeValueAsString(problem),
+            Charset.defaultCharset());
+      }
+
+      @Override
+      public HttpHeaders getHeaders() {
+        return null;
+      }
+    };
     Assertions.assertTrue(downtimeRestTemplateErrorHandler.hasError(response));
   }
 
   @Test
   @DisplayName("409 error response is intercepted and an integration exception is thrown")
   void testHandleError_whenResponseIs409_thenThrowsIntegrationException() throws IOException {
+    response = new ClientHttpResponse() {
+      @Override
+      public HttpStatus getStatusCode() throws IOException {
+        return HttpStatus.CONFLICT;
+      }
+
+      @Override
+      public int getRawStatusCode() throws IOException {
+        return 409;
+      }
+
+      @Override
+      public String getStatusText() throws IOException {
+        return null;
+      }
+
+      @Override
+      public void close() {
+      }
+
+      @Override
+      public InputStream getBody() throws IOException {
+        return IOUtils.toInputStream(simpleObjectMapper.writeValueAsString(problem),
+            Charset.defaultCharset());
+      }
+
+      @Override
+      public HttpHeaders getHeaders() {
+        return null;
+      }
+    };
+    Assertions.assertThrows(IOException.class,
+        () -> downtimeRestTemplateErrorHandler.handleError(response));
+  }
+
+  @Test
+  @DisplayName("500 error response is intercepted and an integration exception is thrown")
+  void testHandleError_whenResponseIs500_thenThrowsIntegrationException() throws IOException {
+    response = new ClientHttpResponse() {
+      @Override
+      public HttpStatus getStatusCode() throws IOException {
+        return HttpStatus.INTERNAL_SERVER_ERROR;
+      }
+
+      @Override
+      public int getRawStatusCode() throws IOException {
+        return 500;
+      }
+
+      @Override
+      public String getStatusText() throws IOException {
+        return null;
+      }
+
+      @Override
+      public void close() {
+      }
+
+      @Override
+      public InputStream getBody() throws IOException {
+        return IOUtils.toInputStream(simpleObjectMapper.writeValueAsString(problem),
+            Charset.defaultCharset());
+      }
+
+      @Override
+      public HttpHeaders getHeaders() {
+        return null;
+      }
+    };
+    Assertions.assertThrows(IOException.class,
+        () -> downtimeRestTemplateErrorHandler.handleError(response));
+  }
+
+  @Test
+  @DisplayName("4xx error response is intercepted and an integration exception is thrown")
+  void testHandleError_whenResponseIs4xx_thenThrowsIntegrationException() throws IOException {
+    response = new ClientHttpResponse() {
+      @Override
+      public HttpStatus getStatusCode() throws IOException {
+        return HttpStatus.NOT_ACCEPTABLE;
+      }
+
+      @Override
+      public int getRawStatusCode() throws IOException {
+        return 406;
+      }
+
+      @Override
+      public String getStatusText() throws IOException {
+        return null;
+      }
+
+      @Override
+      public void close() {
+      }
+
+      @Override
+      public InputStream getBody() throws IOException {
+        return IOUtils.toInputStream(simpleObjectMapper.writeValueAsString(problem),
+            Charset.defaultCharset());
+      }
+
+      @Override
+      public HttpHeaders getHeaders() {
+        return null;
+      }
+    };
     Assertions.assertThrows(IOException.class,
         () -> downtimeRestTemplateErrorHandler.handleError(response));
   }
