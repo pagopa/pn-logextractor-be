@@ -266,7 +266,7 @@ Resources:
         ContainerEnvEntry20: !Sub 'S3_DOWNLOAD_URL=${SamlAssertionDownloadUrl}'
         ContainerSecret1: !Sub 'BASIC_AUTH_USERNAME=${OpenSearchSecretArn}:username:AWSCURRENT:'
         ContainerSecret2: !Sub 'BASIC_AUTH_PASSWORD=${OpenSearchSecretArn}:password:AWSCURRENT:'
-        MappedPaths: '/logextractor/*'
+        MappedPaths: '/persons/*,/logs/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
         VpcId: !Ref VpcId
@@ -312,16 +312,33 @@ Resources:
                 - !Sub "${SamlAssertionBucketArn}/*"
             - !Ref AWS::NoValue
 
-  LogextractorBeApiGatewayBo:
+  LogextractorBePersonApiGatewayBo:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-expose-service.yaml"
       Parameters:
-        MicroServiceUniqueName: !Sub '${ProjectName}-logextractor-be-bo'
+        MicroServiceUniqueName: !Sub '${ProjectName}-logextractor-be-persons'
         IntendedUsage: BACKOFFICE
         DnsName: !Ref BoApiDnsName
         ProjectName: !Ref ProjectName
-        ServiceApiPath: 'logextractor'
+        ServiceApiPath: 'persons'
+        NetworkLoadBalancerLink: !Ref NetworkLoadBalancerLink
+        ApplicationLoadBalancerDomain: !Ref ApplicationLoadBalancerDomain
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+        CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
+        OpenApiBucketName: !Ref MicroserviceBucketName
+        OpenApiBucketKey: !Sub ${MicroserviceBucketBaseKey}/docs/openapi/api-internal-v1.yaml
+
+  LogextractorBeLogApiGatewayBo:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-expose-service.yaml"
+      Parameters:
+        MicroServiceUniqueName: !Sub '${ProjectName}-logextractor-be-logs'
+        IntendedUsage: BACKOFFICE
+        DnsName: !Ref BoApiDnsName
+        ProjectName: !Ref ProjectName
+        ServiceApiPath: 'logs'
         NetworkLoadBalancerLink: !Ref NetworkLoadBalancerLink
         ApplicationLoadBalancerDomain: !Ref ApplicationLoadBalancerDomain
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
