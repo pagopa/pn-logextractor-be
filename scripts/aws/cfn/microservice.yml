@@ -270,7 +270,7 @@ Resources:
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
         VpcId: !Ref VpcId
-        HealthCheckPath: /healthcheck
+        HealthCheckPath: /status
         EcsDefaultSecurityGroup: !Ref ElasticacheSecurityGroup
         LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
