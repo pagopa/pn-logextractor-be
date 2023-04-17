@@ -70,7 +70,7 @@ public class LogServiceImpl implements LogService {
 	String s3Region;
 	@Value("${external.s3.saml.assertion.bucket}")
 	String s3Bucket;
-	@Value("${external.s3.saml.assertion.awsprofile}")
+	@Value("${external.s3.saml.assertion.awsprofile:}")
 	String awsProfile;
 	
 
