@@ -7,7 +7,6 @@ import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
-import it.gov.pagopa.logextractor.pn_logextractor_be.model.BaseResponseDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.MonthlyNotificationsRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.NotificationInfoRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.PersonLogsRequestDto;
