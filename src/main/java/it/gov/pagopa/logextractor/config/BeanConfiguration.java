@@ -2,6 +2,7 @@ package it.gov.pagopa.logextractor.config;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -14,7 +15,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
  * Configuration class for defining the custom context beans
- * */
+ */
 @Configuration
 public class BeanConfiguration {
 
@@ -25,25 +26,30 @@ public class BeanConfiguration {
 		HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
 		return ret;
 	}
-	
+
 	@Bean
 	@Profile("!dev2")
 	public RestTemplate openSearchRestTemplate() {
 		RestTemplate ret = new RestTemplate(new SimpleClientHttpRequestWithGetBodyFactory());
 		return ret;
 	}
-	
+
 	@Bean
 	@Profile("!dev2")
 	public RestTemplate simpleRestTemplate() {
 		return new RestTemplate();
 	}
-	
-	@Bean(name="simpleRestTemplate")
+
+	@Bean(name = "simpleRestTemplate")
 	@Profile("dev2")
 	public RestTemplate simpleRestTemplateSkipChecks() {
 		HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
 		return new RestTemplate();
+	}
+
+	@Bean
+	public RestTemplate downtimeRestTemplate() {
+		return new RestTemplateBuilder().errorHandler(new DowntimeRestTemplateErrorHandler()).build();
 	}
 
 	@Bean
@@ -55,10 +61,4 @@ public class BeanConfiguration {
 		mapper.registerModule(new JavaTimeModule());
 		return mapper;
 	}
-	
-//	@Bean
-//	public List<HttpMessageConverter<?>> converters(List<HttpMessageConverter<?>> converters){
-//		converters.add(new ResourceHttpMessageConverter());
-//		return converters;
-//	}
 }

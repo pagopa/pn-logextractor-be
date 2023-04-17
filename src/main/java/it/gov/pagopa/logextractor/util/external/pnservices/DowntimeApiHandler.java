@@ -23,7 +23,7 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusUpdateEventRe
 public class DowntimeApiHandler {
 
     @Autowired
-    @Qualifier("simpleRestTemplate")
+    @Qualifier("downtimeRestTemplate")
     RestTemplate client;
 
     @Value("${external.downtime.status.url}")

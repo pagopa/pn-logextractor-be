@@ -7,7 +7,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.gov.pagopa.logextractor.exception.CustomException;
@@ -45,16 +44,14 @@ public class LogController implements LogsApi {
 	}
 
 	@Override
-	public ResponseEntity<Resource> personActivityLogs(@RequestHeader(value="x-pagopa-uid", required=true) String xPagopaUid,
-   		 @RequestHeader(value="x-pagopa-cx-type", required=true) String xPagopaCxType, PersonLogsRequestDto personLogsRequestDto
-   		 ) throws Exception {
+	public ResponseEntity<Resource> personActivityLogs(String xPagopaPnUid, String xPagopaPnCxType, PersonLogsRequestDto personLogsRequestDto) throws Exception {
 		
 		this.threadLocalService.initialize(httpServletResponse, personLogsRequestDto.getTicketNumber());
 		
 		if (Boolean.TRUE.equals(personLogsRequestDto.getDeanonimization())) {
-			logService.getDeanonimizedPersonLogs(personLogsRequestDto, xPagopaUid, xPagopaCxType);
+			logService.getDeanonimizedPersonLogs(personLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
 		}else {
-			logService.getAnonymizedPersonLogs(personLogsRequestDto, xPagopaUid, xPagopaCxType); 
+			logService.getAnonymizedPersonLogs(personLogsRequestDto, xPagopaPnUid, xPagopaPnCxType); 
 		}
 		handleResponse();
 		return null;
@@ -64,43 +61,39 @@ public class LogController implements LogsApi {
 	public ResponseEntity<BaseResponseDto> handleCustomException(CustomException e){
 		return ResponseEntity.status(e.getCode()).body(e.getDto());
 	}
-	
+
 	@Override
-	public ResponseEntity<Resource> notificationInfoLogs(@RequestHeader(value="x-pagopa-uid", required=true) String xPagopaUid,
-	   		 @RequestHeader(value="x-pagopa-cx-type", required=true) String xPagopaCxType, NotificationInfoRequestDto notificationInfoRequestDto) throws Exception {
+	public ResponseEntity<Resource> notificationInfoLogs(String xPagopaPnUid, String xPagopaPnCxType, NotificationInfoRequestDto notificationInfoRequestDto) throws Exception {
 		this.threadLocalService.initialize(httpServletResponse, notificationInfoRequestDto.getTicketNumber());
-		logService.getNotificationInfoLogs(notificationInfoRequestDto,xPagopaUid, xPagopaCxType);
+		logService.getNotificationInfoLogs(notificationInfoRequestDto,xPagopaPnUid, xPagopaPnCxType);
 		
 		handleResponse();
 		return null;
 	}
 
 	@Override
-	public ResponseEntity<Resource> notificationsInMonth(@RequestHeader(value="x-pagopa-uid", required=true) String xPagopaUid,
-	   		 @RequestHeader(value="x-pagopa-cx-type", required=true) String xPagopaCxType, MonthlyNotificationsRequestDto monthlyNotificationsRequestDto) throws Exception {
+	public ResponseEntity<Resource> notificationsInMonth(String xPagopaPnUid, String xPagopaPnCxType, MonthlyNotificationsRequestDto monthlyNotificationsRequestDto) throws Exception {
 		this.threadLocalService.initialize(httpServletResponse, monthlyNotificationsRequestDto.getTicketNumber());
-		logService.getMonthlyNotifications(monthlyNotificationsRequestDto, xPagopaUid, xPagopaCxType);
+		logService.getMonthlyNotifications(monthlyNotificationsRequestDto, xPagopaPnUid, xPagopaPnCxType);
 		handleResponse();
 		return null;
 	}
 
 	@Override
-	public ResponseEntity<Resource> processLogs(@RequestHeader(value="x-pagopa-uid", required=true) String xPagopaUid,
-	   		 @RequestHeader(value="x-pagopa-cx-type", required=true) String xPagopaCxType, TraceIdLogsRequestDto traceIdLogsRequestDto) throws Exception {
+	public ResponseEntity<Resource> processLogs(String xPagopaPnUid, String xPagopaPnCxType, TraceIdLogsRequestDto traceIdLogsRequestDto) throws Exception {
 		this.threadLocalService.initialize(httpServletResponse, "processLogs");
-		logService.getTraceIdLogs(traceIdLogsRequestDto, xPagopaUid, xPagopaCxType);
+		logService.getTraceIdLogs(traceIdLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
 		handleResponse();
 		return null;
 	}
 	
 	@Override
-	public ResponseEntity<Resource> sessionLogs(@RequestHeader(value="x-pagopa-uid", required=true) String xPagopaUid,
-	   		 @RequestHeader(value="x-pagopa-cx-type", required=true) String xPagopaCxType, SessionLogsRequestDto sessionLogsRequestDto) throws Exception {
+	public ResponseEntity<Resource> sessionLogs(String xPagopaPnUid, String xPagopaPnCxType, SessionLogsRequestDto sessionLogsRequestDto) throws Exception {
 		this.threadLocalService.initialize(httpServletResponse, sessionLogsRequestDto.getTicketNumber());
 		if (Boolean.TRUE.equals(sessionLogsRequestDto.getDeanonimization())) {
-			logService.getDeanonimizedSessionLogs(sessionLogsRequestDto, xPagopaUid, xPagopaCxType);
+			logService.getDeanonimizedSessionLogs(sessionLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
 		}else {
-			logService.getAnonymizedSessionLogs(sessionLogsRequestDto, xPagopaUid, xPagopaCxType);
+			logService.getAnonymizedSessionLogs(sessionLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
 		}
 		handleResponse();
 		return null;

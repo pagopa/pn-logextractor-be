@@ -257,7 +257,6 @@ public class LogServiceImpl implements LogService {
         	threadLocalService.closeEntry();
     		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, docsNumber);
 			performanceMillis = System.currentTimeMillis();
-
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 			log.info("Notification data retrieve process - END in {} ms",(System.currentTimeMillis() - serviceStartTime));
         }
@@ -399,7 +398,6 @@ public class LogServiceImpl implements LogService {
 		if(docCount == 0) {
 			throw new CustomException(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE, 400);
 		}
-		
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info(LoggingConstants.DEANONIMIZED_RETRIEVE_PROCESS_END, (System.currentTimeMillis() - serviceStartTime));
 	}

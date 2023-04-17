@@ -74,7 +74,9 @@ public abstract class AbstractMock {
 	@MockBean
 	@Qualifier("openSearchRestTemplate")
 	RestTemplate openClient;
-
+	@MockBean
+	@Qualifier("downtimeRestTemplate")
+	RestTemplate downtimeClient;
 	@Value("classpath:data/notification.json")
 	protected Resource mockNotification;
 	@Value("classpath:data/notification_general_data.json")
@@ -147,7 +149,7 @@ public abstract class AbstractMock {
 	}
 	
 	protected void mockAnonymizedTaxId() throws RestClientException, IOException {
-		Mockito.when(client.postForObject(Mockito.anyString(), Mockito.any(), Mockito.any(Class.class))).thenReturn("8712361940283615");
+		Mockito.when(client.postForObject(Mockito.anyString(), Mockito.any(), Mockito.eq(String.class))).thenReturn("8712361940283615");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -339,17 +341,15 @@ public abstract class AbstractMock {
 		ResponseEntity<PnStatusResponseDto> responseStatus = new ResponseEntity<>(fakePnStatusResponseDto,
 				HttpStatus.OK);
 		Mockito.when(
-				client.getForEntity(ArgumentMatchers.anyString(), ArgumentMatchers.<Class<PnStatusResponseDto>>any()))
+				downtimeClient.getForEntity(ArgumentMatchers.anyString(), ArgumentMatchers.<Class<PnStatusResponseDto>>any()))
 				.thenReturn(responseStatus);
 	}
 
-	@SuppressWarnings("unchecked")
 	protected void mockAddStatusChangeEvent(RestTemplate client) throws RestClientException, IOException {
-		String mock = "";
-		ResponseEntity<Object> response = new ResponseEntity<Object>(mock, HttpStatus.OK);
-		Mockito.when(client.getForObject(Mockito.anyString(), Mockito.any(Class.class))).thenReturn(response);
+		ResponseEntity<Void> response = ResponseEntity.ok().build();
+		Mockito.when(client.getForObject(Mockito.anyString(), Mockito.any(), Mockito.eq(Void.class))).thenReturn(response);
 	}
-
+	
 	protected static String getMockPersonLogsRequestDto(int useCase, boolean isDeanonimization)
 			throws JsonProcessingException {
 		PersonLogsRequestDto dto = new PersonLogsRequestDto();
