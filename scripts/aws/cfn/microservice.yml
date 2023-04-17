@@ -355,15 +355,19 @@ Resources:
         DashboardName: !Sub "${ProjectName}-logextractor-be"
         RestApiStageArns: !Join
           - ','
-          - - !GetAtt LogextractorBeApiGatewayBo.Outputs.RestApiStageArn
+          - - !GetAtt LogextractorBeLogApiGatewayBo.Outputs.RestApiStageArn
+            - !GetAtt LogextractorBePersonApiGatewayBo.Outputs.RestApiStageArn
         RestApiNames: !Join
           - ','
-          - - !GetAtt LogextractorBeApiGatewayBo.Outputs.RestApiName
+          - - !GetAtt LogextractorBeLogApiGatewayBo.Outputs.RestApiName
+            - !GetAtt LogextractorBePersonApiGatewayBo.Outputs.RestApiName
         AlarmArns: !Join
           - ','
           - - !GetAtt LogextractorBeMicroservice.Outputs.FatalLogsMetricAlarmArn
-            - !GetAtt LogextractorBeApiGatewayBo.Outputs.RestApiErrorAlarmArn
-            - !GetAtt LogextractorBeApiGatewayBo.Outputs.RestApiLatencyAlarmArn
+            - !GetAtt LogextractorBeLogApiGatewayBo.Outputs.RestApiErrorAlarmArn
+            - !GetAtt LogextractorBeLogApiGatewayBo.Outputs.RestApiLatencyAlarmArn
+            - !GetAtt LogextractorBePersonApiGatewayBo.Outputs.RestApiErrorAlarmArn
+            - !GetAtt LogextractorBePersonApiGatewayBo.Outputs.RestApiLatencyAlarmArn
         LogGroupsNames: !Join
           - ','
           - - !Sub '/aws/ecs/${ProjectName}-logextractor-be'            
