@@ -8,7 +8,7 @@ Parameters:
     Description: 'Usually pn can be pnXYZ where XYZ are the feature number, useful to create
       experimental environments without crash official development environment'
 
-  WebApiDnsName:
+  BoApiDnsName:
     Type: String
     Description: 'The DNS name used for WEB rest API.'
 
@@ -250,7 +250,7 @@ Resources:
         ContainerEnvEntry3: !Sub 'GET_SENT_NOTIFICATION_URL=${PnCoreRootPath}/delivery-private/search'
         ContainerEnvEntry4: !Sub 'GET_SENT_NOTIFICATION_DETAILS_URL=${PnCoreRootPath}/delivery-private/notifications/%s'
         ContainerEnvEntry5: !Sub 'GET_SENT_NOTIFICATION_HISTORY_URL=${PnCoreRootPath}/delivery-push-private/%s/history'
-        ContainerEnvEntry: !Sub 'GET_ENCODED_IPA_CODE_URL=${PnCoreRootPath}/ext-registry/pa/v1/activated-on-pn'
+        ContainerEnvEntry6: !Sub 'GET_ENCODED_IPA_CODE_URL=${PnCoreRootPath}/ext-registry/pa/v1/activated-on-pn'
         ContainerEnvEntry7: !Sub 'GET_PUBLIC_AUTHORITY_NAME_URL=${PnCoreRootPath}/ext-registry-private/pa/v1/activated-on-pn/%s'
         ContainerEnvEntry8: !Sub 'DOWNLOAD_FILE_URL=${DownloadFileUrl}'
         ContainerEnvEntry9: !Sub 'SAFESTORAGE_ENDPOINT=${SafeStorageEndpoint}'
@@ -319,7 +319,7 @@ Resources:
       Parameters:
         MicroServiceUniqueName: !Sub '${ProjectName}-logextractor-be-bo'
         IntendedUsage: BACKOFFICE
-        DnsName: !Ref WebApiDnsName
+        DnsName: !Ref BoApiDnsName
         ProjectName: !Ref ProjectName
         ServiceApiPath: 'logextractor'
         NetworkLoadBalancerLink: !Ref NetworkLoadBalancerLink
