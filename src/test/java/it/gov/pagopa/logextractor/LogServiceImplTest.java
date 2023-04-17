@@ -124,6 +124,7 @@ class LogServiceImplTest {
 //        dto.setDateTo(LocalDate.now());
 //        dto.setPersonId(null);
 //        dto.setIun("test-test-test-111111-a-1");
+//        
 //        zipArchiveResponse.setZip(zipArchive);
 //        Mockito.when(notificationApiHandler.getNotificationDetails(Mockito.anyString()))
 //                .thenReturn(notificationDetails);
@@ -136,20 +137,25 @@ class LogServiceImplTest {
 //        assertEquals(zipArchive, response.getZip());
 //    }
 //
-//    @Test
-//    @DisplayName("Empty extraction of monthly notification by iun")
-//    void testGetMonthlyNotifications_whenProvidedDataIsValid_returnsEmptyResponse() throws IOException, LogExtractorException, CsvRequiredFieldEmptyException, CsvDataTypeMismatchException, ParseException {
-//        MonthlyNotificationsRequestDto dto = new MonthlyNotificationsRequestDto();
-//        dto.setEndMonth(OffsetDateTime.now());
-//        dto.setReferenceMonth(OffsetDateTime.now());
-//        dto.setPublicAuthorityName("Comune di Milano");
-//        dto.setTicketNumber("inc123");
-//        Mockito.when(deanonimizationApiHandler.getPublicAuthorityId(Mockito.any())).thenReturn("test");
-//        Mockito.when(notificationApiHandler.getNotificationsByMonthsPeriod(Mockito.any(), Mockito.any(), Mockito.any()))
-//                .thenReturn(List.of());
-//        assertEquals("Nessuna notifica trovata per i dati inseriti",
-//                service.getMonthlyNotifications(dto, "test", "test").getMessage());
-//    }
+    @Test
+    @DisplayName("Empty extraction of monthly notification by iun")
+    void testGetMonthlyNotifications_whenProvidedDataIsValid_returnsEmptyResponse() throws IOException, LogExtractorException, CsvRequiredFieldEmptyException, CsvDataTypeMismatchException, ParseException {
+        MonthlyNotificationsRequestDto dto = new MonthlyNotificationsRequestDto();
+        dto.setEndMonth(OffsetDateTime.now());
+        dto.setReferenceMonth(OffsetDateTime.now());
+        dto.setPublicAuthorityName("Comune di Milano");
+        dto.setTicketNumber("inc123");
+		Mockito.when(threadLocalOutputStreamService.get()).thenReturn(new net.lingala.zip4j.io.outputstream.ZipOutputStream(new ByteArrayOutputStream()) );
+        Mockito.when(deanonimizationApiHandler.getPublicAuthorityId(Mockito.any())).thenReturn("test");
+        Mockito.when(notificationApiHandler.getNotificationsByMonthsPeriod(Mockito.any(), Mockito.any(), Mockito.any()))
+                .thenReturn(List.of());
+        Mockito.when(openSearchApiHandler.getAnonymizedLogsByUid(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any()))
+        .thenReturn(0);
+        assertThatExceptionOfType(CustomException.class).isThrownBy(() -> { 
+        	service.getMonthlyNotifications(dto, "test", "test");
+        })
+        .withMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE); 
+    }
 //
 //    @Test
 //    @DisplayName("Extraction of monthly notification by iun")
