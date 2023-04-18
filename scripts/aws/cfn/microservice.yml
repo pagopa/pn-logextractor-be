@@ -262,7 +262,7 @@ Resources:
         ContainerEnvEntry20: !Sub 'S3_DOWNLOAD_URL=${SamlAssertionDownloadUrl}'
         ContainerSecret1: !Sub 'BASIC_AUTH_USERNAME=${OpenSearchSecretArn}:username:AWSCURRENT:'
         ContainerSecret2: !Sub 'BASIC_AUTH_PASSWORD=${OpenSearchSecretArn}:password:AWSCURRENT:'
-        MappedPaths: '/persons/*,/logs/*'
+        MappedPaths: '/log-extractor/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
         VpcId: !Ref VpcId
@@ -308,33 +308,16 @@ Resources:
                 - !Sub "${SamlAssertionBucketArn}/*"
             - !Ref AWS::NoValue
 
-  LogextractorBePersonApiGatewayBo:
+  LogextractorBeApiGatewayBo:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-expose-service.yaml"
       Parameters:
-        MicroServiceUniqueName: !Sub '${ProjectName}-logextractor-be-persons'
+        MicroServiceUniqueName: !Sub '${ProjectName}-logextractor-be'
         IntendedUsage: BACKOFFICE
         DnsName: !Ref BoApiDnsName
         ProjectName: !Ref ProjectName
-        ServiceApiPath: 'persons'
-        NetworkLoadBalancerLink: !Ref NetworkLoadBalancerLink
-        ApplicationLoadBalancerDomain: !Ref ApplicationLoadBalancerDomain
-        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
-        CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
-        OpenApiBucketName: !Ref MicroserviceBucketName
-        OpenApiBucketKey: !Sub ${MicroserviceBucketBaseKey}/docs/openapi/api-internal-v1.yaml
-
-  LogextractorBeLogApiGatewayBo:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-expose-service.yaml"
-      Parameters:
-        MicroServiceUniqueName: !Sub '${ProjectName}-logextractor-be-logs'
-        IntendedUsage: BACKOFFICE
-        DnsName: !Ref BoApiDnsName
-        ProjectName: !Ref ProjectName
-        ServiceApiPath: 'logs'
+        ServiceApiPath: 'log-extractor'
         NetworkLoadBalancerLink: !Ref NetworkLoadBalancerLink
         ApplicationLoadBalancerDomain: !Ref ApplicationLoadBalancerDomain
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
@@ -351,19 +334,15 @@ Resources:
         DashboardName: !Sub "${ProjectName}-logextractor-be"
         RestApiStageArns: !Join
           - ','
-          - - !GetAtt LogextractorBeLogApiGatewayBo.Outputs.RestApiStageArn
-            - !GetAtt LogextractorBePersonApiGatewayBo.Outputs.RestApiStageArn
+          - - !GetAtt LogextractorBeApiGatewayBo.Outputs.RestApiStageArn
         RestApiNames: !Join
           - ','
-          - - !GetAtt LogextractorBeLogApiGatewayBo.Outputs.RestApiName
-            - !GetAtt LogextractorBePersonApiGatewayBo.Outputs.RestApiName
+          - - !GetAtt LogextractorBeApiGatewayBo.Outputs.RestApiName
         AlarmArns: !Join
           - ','
           - - !GetAtt LogextractorBeMicroservice.Outputs.FatalLogsMetricAlarmArn
-            - !GetAtt LogextractorBeLogApiGatewayBo.Outputs.RestApiErrorAlarmArn
-            - !GetAtt LogextractorBeLogApiGatewayBo.Outputs.RestApiLatencyAlarmArn
-            - !GetAtt LogextractorBePersonApiGatewayBo.Outputs.RestApiErrorAlarmArn
-            - !GetAtt LogextractorBePersonApiGatewayBo.Outputs.RestApiLatencyAlarmArn
+            - !GetAtt LogextractorBeApiGatewayBo.Outputs.RestApiErrorAlarmArn
+            - !GetAtt LogextractorBeApiGatewayBo.Outputs.RestApiLatencyAlarmArn
         LogGroupsNames: !Join
           - ','
           - - !Sub '/aws/ecs/${ProjectName}-logextractor-be'            
