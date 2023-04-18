@@ -1,12 +1,17 @@
 package it.gov.pagopa.logextractor.util.external.pnservices;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import it.gov.pagopa.logextractor.util.constant.ExternalServiceConstants;
-import it.gov.pagopa.logextractor.util.constant.GenericConstants;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,19 +23,24 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsDocumentData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsRecipientsData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsTimelineData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsTimelineLegalFactsData;
-import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationsGeneralDataResponseDto;
+import it.gov.pagopa.logextractor.util.constant.ExternalServiceConstants;
+import it.gov.pagopa.logextractor.util.constant.GenericConstants;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Uility class for integrations with Piattaforma Notifiche notifcations related services
  * */
+@Slf4j
 @Component
 public class NotificationApiHandler {
 	
@@ -160,7 +170,43 @@ public class NotificationApiHandler {
 		HttpEntity<?> entity = new HttpEntity<>(requestHeaders);
 		return client.exchange(url, HttpMethod.GET, entity, FileDownloadMetadataResponseDto.class).getBody();
 	}
-
+	
+	/**
+	 * Performs a GET HTTP request to obtain a physical file represented as a byte array
+	 * @param url The URL to make the request to
+	 * @return A byte array representation of a file
+	 */
+	public byte[] getFile(String url) {
+		try {
+			URL urlToFileDownload = new URL(url);
+            return IOUtils.toByteArray(urlToFileDownload);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        } finally {
+            IOUtils.closeQuietly();
+        }
+	}
+	
+	public int downloadToFile(String uri, File out) {
+		int total=0;
+		try (
+				BufferedInputStream in = new BufferedInputStream(new URL(uri).openStream());
+				FileOutputStream fileOutputStream = new FileOutputStream(out)
+			) {
+		    byte dataBuffer[] = new byte[1024];
+			int bytesRead;
+			while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
+				total += bytesRead;
+				fileOutputStream.write(dataBuffer, 0, bytesRead);
+			}
+		} catch (IOException e) {
+			total = 0;
+			log.error("Error downloading content from url {} to file {}", uri, out.getName(), e);
+		}
+		
+		return total;
+	}
+	
 	/**
 	 * Performs a GET HTTP request to get the notification history
 	 * @param iun The notification IUN

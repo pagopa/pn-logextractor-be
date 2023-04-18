@@ -1,15 +1,16 @@
 package it.gov.pagopa.logextractor.service;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.file.Files;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import it.gov.pagopa.logextractor.util.JsonUtilities;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -21,12 +22,11 @@ import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 
 import it.gov.pagopa.logextractor.dto.NotificationData;
-import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
 import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDto;
+import it.gov.pagopa.logextractor.exception.CustomException;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
-import it.gov.pagopa.logextractor.pn_logextractor_be.model.BaseResponseDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.MonthlyNotificationsRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.NotificationInfoRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.PersonLogsRequestDto;
@@ -34,15 +34,17 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.SessionLogsRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.TraceIdLogsRequestDto;
 import it.gov.pagopa.logextractor.util.FileUtilities;
-import it.gov.pagopa.logextractor.util.ResponseConstructor;
+import it.gov.pagopa.logextractor.util.JsonUtilities;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
 import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandler;
+import it.gov.pagopa.logextractor.util.external.opensearch.S3DocumentDownloader;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
 import lombok.extern.slf4j.Slf4j;
+import net.lingala.zip4j.io.outputstream.ZipOutputStream;
 
 /**
  * Implementation class of {@link LogService}
@@ -51,6 +53,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LogServiceImpl implements LogService {
 	
+	private static final String OS_RESULT = "dati";
+
 	@Autowired
 	NotificationApiHandler notificationApiHandler;
 	
@@ -59,18 +63,22 @@ public class LogServiceImpl implements LogService {
 	
 	@Autowired
 	DeanonimizationApiHandler deanonimizationApiHandler;
+	@Autowired
+	ThreadLocalOutputStreamService threadLocalService;
 
-	@Value("${external.s3.saml.assertion.downloadUrl}")
-	String downloadFileUrl;
+	@Value("${external.s3.saml.assertion.region}")
+	String s3Region;
+	@Value("${external.s3.saml.assertion.bucket}")
+	String s3Bucket;
+	@Value("${external.s3.saml.assertion.awsprofile:}")
+	String awsProfile;
+	
 
 	@Autowired
 	FileUtilities fileUtils;
 
-	@Autowired
-	ResponseConstructor constructor;
-
 	@Override
-	public BaseResponseDto getAnonymizedPersonLogs(PersonLogsRequestDto requestData,
+	public void getAnonymizedPersonLogs(PersonLogsRequestDto requestData,
 												   String xPagopaHelpdUid,
 												   String xPagopaCxType) throws IOException {
 		log.info("Anonymized logs retrieve process - START - user={}, userType={}, ticketNumber={}, " +
@@ -79,14 +87,17 @@ public class LogServiceImpl implements LogService {
 				requestData.getDateTo(), requestData.getIun());
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
-		List<String> openSearchResponse = new ArrayList<>();
+		int docCount = 0;
+		
+		ZipOutputStream zos = threadLocalService.get();
+		threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
 		// use case 7
 		if (requestData.getDateFrom() != null && requestData.getDateTo() != null
 				&& requestData.getPersonId() != null && requestData.getIun() == null) {
 			log.info("Getting activities' anonymized history... ");
 			performanceMillis = System.currentTimeMillis();
-			openSearchResponse = openSearchApiHandler.getAnonymizedLogsByUid(requestData.getPersonId(),
-					requestData.getDateFrom(), requestData.getDateTo());
+			
+			docCount = openSearchApiHandler.getAnonymizedLogsByUid(requestData.getPersonId(), requestData.getDateFrom(), requestData.getDateTo(), zos);
 		} else {
 			// use case 8
 			if (requestData.getIun() != null) {
@@ -98,29 +109,21 @@ public class LogServiceImpl implements LogService {
 				OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
 				String notificationEndDate = notificationStartDate.plusMonths(3).toString();
 				performanceMillis = System.currentTimeMillis();
-				openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate);
+				docCount = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate, zos);
 			}
 		}
-		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
-		if(openSearchResponse.isEmpty()) {
-			performanceMillis = System.currentTimeMillis();
-			BaseResponseDto response = new BaseResponseDto();
-			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
-			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-        	log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END,
-					(System.currentTimeMillis() - serviceStartTime));
-        	return response;
+		threadLocalService.closeEntry();
+		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, docCount);
+		if(docCount == 0) {
+			throw new CustomException(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE, 204);
 		}
 		performanceMillis = System.currentTimeMillis();
-		DownloadArchiveResponseDto response = constructor.createSimpleLogResponse(openSearchResponse, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-		log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END,
-				(System.currentTimeMillis() - serviceStartTime));
-		return response;
+		log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END, (System.currentTimeMillis() - serviceStartTime));
 	}
 
 	@Override
-	public BaseResponseDto getMonthlyNotifications(MonthlyNotificationsRequestDto requestData,
+	public void getMonthlyNotifications(MonthlyNotificationsRequestDto requestData,
 												   String xPagopaHelpdUid,
 												   String xPagopaCxType) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException {
 		log.info("Monthly notifications retrieve process - START - user={}," +
@@ -128,7 +131,6 @@ public class LogServiceImpl implements LogService {
 				xPagopaHelpdUid, xPagopaCxType, requestData.getTicketNumber(), requestData.getReferenceMonth(),
 				requestData.getEndMonth(), requestData.getPublicAuthorityName());
 		long serviceStartTime = System.currentTimeMillis();
-		List<File> csvFiles = new ArrayList<>();
 		log.info("Getting public authority id...");
 		long performanceMillis = System.currentTimeMillis();
 		String encodedPublicAuthorityName = deanonimizationApiHandler.getPublicAuthorityId(requestData.getPublicAuthorityName());
@@ -139,13 +141,7 @@ public class LogServiceImpl implements LogService {
 		List<NotificationData> notifications = notificationApiHandler.getNotificationsByMonthsPeriod(requestData.getReferenceMonth(), requestData.getEndMonth(), encodedPublicAuthorityName);
 		log.info("{} notifications retrieved in {} ms, constructing service response...", notifications.size(), System.currentTimeMillis() - performanceMillis);
 		if(notifications.isEmpty()) {
-			performanceMillis = System.currentTimeMillis();
-			BaseResponseDto response = new BaseResponseDto();
-			response.setMessage(ResponseConstants.NO_NOTIFICATION_FOUND_MESSAGE);
-			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-        	log.info("Monthly notifications retrieve process - END in {} ms",
-					(System.currentTimeMillis() - serviceStartTime));
-        	return response;
+			throw new CustomException(ResponseConstants.NO_NOTIFICATION_FOUND_MESSAGE, 204);
 		}
 		performanceMillis = System.currentTimeMillis();
 		int numberOfFiles = (int)Math.ceil(((double)notifications.size())/ GenericConstants.CSV_FILE_MAX_ROWS);
@@ -160,20 +156,17 @@ public class LogServiceImpl implements LogService {
 						notificationPlaceholder+ GenericConstants.CSV_FILE_MAX_ROWS);
 				notificationPlaceholder += GenericConstants.CSV_FILE_MAX_ROWS;
 			}
-			File file = fileUtils.getFileWithRandomName(GenericConstants.NOTIFICATION_CSV_FILE_NAME, GenericConstants.CSV_EXTENSION);
-			fileUtils.writeCsv(file, fileUtils.toCsv(notificationsPartition));
-			csvFiles.add(file);
+			threadLocalService.addEntry(GenericConstants.NOTIFICATION_CSV_FILE_NAME+GenericConstants.CSV_EXTENSION);
+			fileUtils.writeCsv(fileUtils.toCsv(notificationsPartition), threadLocalService.get());
+			threadLocalService.closeEntry();
 			numberOfFiles--;
 		}
-		DownloadArchiveResponseDto response = constructor.createCsvFileResponse(csvFiles, GenericConstants.ZIP_ARCHIVE_NAME);
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-		log.info("Monthly notifications retrieve process - END in {} ms",
-				(System.currentTimeMillis() - serviceStartTime));
-		return response;
+		log.info("Monthly notifications retrieve process - END in {} ms", (System.currentTimeMillis() - serviceStartTime));
 	}
 	
 	@Override
-	public BaseResponseDto getTraceIdLogs(TraceIdLogsRequestDto requestData,
+	public void getTraceIdLogs(TraceIdLogsRequestDto requestData,
 										  String xPagopaHelpdUid,
 										  String xPagopaCxType) throws IOException {
 		log.info("Anonymized logs retrieve process - START - user={}, userType={}," +
@@ -181,27 +174,23 @@ public class LogServiceImpl implements LogService {
 				requestData.getTraceId(), requestData.getDateFrom(), requestData.getDateTo());
 		long serviceStartTime = System.currentTimeMillis();
 		log.info("Getting anonymized logs...");
-		List<String> openSearchResponse = openSearchApiHandler.getAnonymizedLogsByTraceId(requestData.getTraceId(), requestData.getDateFrom(), requestData.getDateTo());
+		
+		OutputStream out = threadLocalService.get();
+		threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
+		int docCount = openSearchApiHandler.getAnonymizedLogsByTraceId(requestData.getTraceId(), requestData.getDateFrom(), requestData.getDateTo(), out);
+		threadLocalService.closeEntry();
 		long performanceMillis = System.currentTimeMillis() - serviceStartTime;
-		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, performanceMillis, openSearchResponse.size());
-		if(openSearchResponse.isEmpty()) {
-			performanceMillis = System.currentTimeMillis();
-			BaseResponseDto response = new BaseResponseDto();
-			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
-			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-        	log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END, performanceMillis);
-        	return response;
+		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, performanceMillis, docCount);
+		if(docCount == 0) {
+			throw new CustomException(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE, 204);
 		}
 		performanceMillis = System.currentTimeMillis();
-		DownloadArchiveResponseDto response = constructor.createSimpleLogResponse(openSearchResponse,
-				GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END, (System.currentTimeMillis() - serviceStartTime));
-		return response;
 	}
 	
 	@Override
-	public BaseResponseDto getNotificationInfoLogs(NotificationInfoRequestDto requestData,
+	public void getNotificationInfoLogs(NotificationInfoRequestDto requestData,
 												   String xPagopaHelpdUid,
 												   String xPagopaCxType) throws IOException {
 		log.info("Notification data retrieve process - START - user={}, userType={}, ticketNumber={}, iun={}",
@@ -246,41 +235,44 @@ public class LogServiceImpl implements LogService {
 		}
         if(secondsToWait > 0) {
         	log.info("Notification downloads' metadata retrieved in {} ms, physical files aren't ready yet. Constructing service response...", System.currentTimeMillis() - performanceMillis);
-			performanceMillis = System.currentTimeMillis();
-			int timeToWaitInMinutes = (int)Math.ceil(secondsToWait/60);
-			BaseResponseDto response = new BaseResponseDto();
-			response.setMessage(ResponseConstants.OPERATION_CANNOT_BE_COMPLETED_MESSAGE + timeToWaitInMinutes +
-					(timeToWaitInMinutes > 1 ? GenericConstants.MINUTES_LABEL : GenericConstants.MINUTE_LABEL));
-			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-			log.info("Notification data retrieve process - END in {} ms",
-					(System.currentTimeMillis() - serviceStartTime));
-        	return response;
+        	int timeToWaitInMinutes = (int)Math.ceil(secondsToWait/60);
+			throw new CustomException(ResponseConstants.OPERATION_CANNOT_BE_COMPLETED_MESSAGE + timeToWaitInMinutes +
+					(timeToWaitInMinutes > 1 ? GenericConstants.MINUTES_LABEL : GenericConstants.MINUTE_LABEL), 503);
         }
         else {
         	log.info("Notification downloads' metadata retrieved in {} ms, getting physical files... ", System.currentTimeMillis() - performanceMillis);
         	performanceMillis = System.currentTimeMillis();
         	for(NotificationDownloadFileData currentDownloadableFile : downloadableFiles) {
-				filesToAdd.add(fileUtils.getFile(currentDownloadableFile.getFileCategory()
-						+ "-" + currentDownloadableFile.getKey(), GenericConstants.PDF_EXTENSION, currentDownloadableFile.getDownloadUrl()));
+        		File downloadedFile = fileUtils.getFileWithRandomName(currentDownloadableFile.getFileCategory()
+						+ "-" + currentDownloadableFile.getKey(), GenericConstants.PDF_EXTENSION);
+        		if (notificationApiHandler.downloadToFile(currentDownloadableFile.getDownloadUrl(), downloadedFile)>0) {
+        			filesToAdd.add(downloadedFile);
+        		}
         	}
         	log.info("Physical files retrieved in {} ms", System.currentTimeMillis() - performanceMillis);
-        	List<String> openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate);
-    		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
+        	
+        	OutputStream out = threadLocalService.get();
+        	threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
+        	int docsNumber = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate, out);
+        	threadLocalService.closeEntry();
+    		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, docsNumber);
 			performanceMillis = System.currentTimeMillis();
-			if(!openSearchResponse.isEmpty()){
-				File logFile = fileUtils.writeTxt(openSearchResponse, GenericConstants.LOG_FILE_NAME);
-				filesToAdd.add(logFile);
-			}
-
-			DownloadArchiveResponseDto response = constructor.createNotificationLogResponse(filesToAdd, filesNotDownloadable, GenericConstants.ZIP_ARCHIVE_NAME);
 			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-			log.info("Notification data retrieve process - END in {} ms",
-					(System.currentTimeMillis() - serviceStartTime));
-    		return response;
+			log.info("Notification data retrieve process - END in {} ms",(System.currentTimeMillis() - serviceStartTime));
         }
+        
+        if(!filesNotDownloadable.isEmpty()){
+        	threadLocalService.addEntry(GenericConstants.ERROR_SUMMARY_FILE_NAME+".txt");
+			JsonUtilities jsonUtilities = new JsonUtilities();
+			String failsToString = jsonUtilities.toString(jsonUtilities.toJson(filesNotDownloadable));
+			OutputStreamWriter osw = new OutputStreamWriter(threadLocalService.get());
+			osw.write(failsToString);
+			osw.flush();
+			threadLocalService.closeEntry();
+		}
 	}
 		
-	public BaseResponseDto getDeanonimizedPersonLogs(PersonLogsRequestDto requestData,
+	public void getDeanonimizedPersonLogs(PersonLogsRequestDto requestData,
 													 String xPagopaHelpdUid,
 													 String xPagopaCxType) throws IOException, LogExtractorException {
 		log.info("Deanonimized logs retrieve process - START - user={}, userType={}, ticketNumber={}, taxId={}, " +
@@ -288,9 +280,11 @@ public class LogServiceImpl implements LogService {
 				requestData.getTicketNumber(), requestData.getTaxId(), requestData.getDateFrom(),
 				requestData.getDateTo(), requestData.getIun(), requestData.getRecipientType());
 		long serviceStartTime = System.currentTimeMillis();
-		List<String> openSearchResponse;
+		int docCount=0;
 		long performanceMillis = 0;
-		List<String> deanonimizedOpenSearchResponse = new ArrayList<>();
+    	File tmp = fileUtils.getFileWithRandomName(OS_RESULT, GenericConstants.TXT_EXTENSION);
+    	OutputStream tmpOutStream = new FileOutputStream(tmp);
+
 		//use case 3
 		if (requestData.getDateFrom() != null && requestData.getDateTo() != null && requestData.getTaxId() != null
 				&& requestData.getRecipientType() != null
@@ -299,33 +293,21 @@ public class LogServiceImpl implements LogService {
 			String internalId = deanonimizationApiHandler.getUniqueIdentifierForPerson(requestData.getRecipientType(), requestData.getTaxId());
 			log.info("Service response: internalId={} retrieved in {} ms", internalId, System.currentTimeMillis() - serviceStartTime);
 			performanceMillis = System.currentTimeMillis();
-			openSearchResponse = openSearchApiHandler.getAnonymizedLogsByUid(internalId, requestData.getDateFrom(), requestData.getDateTo());
-			log.info(LoggingConstants.QEURY_EXECUTION_COMPLETED_TIME_DEANONIMIZE_DOCS,
-					System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
+			
+			S3DocumentDownloader s3 = new S3DocumentDownloader(awsProfile, s3Region, s3Bucket);
+			openSearchApiHandler.setObserver(s3);
+			docCount = openSearchApiHandler.getAnonymizedLogsByUid(internalId, requestData.getDateFrom(), requestData.getDateTo(), tmpOutStream);
+			log.info(LoggingConstants.QEURY_EXECUTION_COMPLETED_TIME_DEANONIMIZE_DOCS, System.currentTimeMillis() - performanceMillis, docCount);
+			tmpOutStream.flush();
+			tmpOutStream.close();
 			performanceMillis = System.currentTimeMillis();
-			deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, requestData.getRecipientType());
-			if(!deanonimizedOpenSearchResponse.isEmpty()) {
-				JsonUtilities jsonUtils = new JsonUtilities();
-				List<File> filesToAdd = new ArrayList<>();
-				String date = jsonUtils.getValue(openSearchResponse.get(0), "@timestamp");
-				if(StringUtils.isNotBlank(date)) {
-					String name = String.format("%s-%s", jsonUtils.getValue(openSearchResponse.get(0), "jti"),
-							LocalDateTime.parse(date, DateTimeFormatter.ISO_OFFSET_DATE_TIME).toLocalDate().toString());
-					String downloadUrl = String.format(downloadFileUrl, name);
-					log.info("Retrieving SAML assertion from s3 bucket... ");
-					performanceMillis = System.currentTimeMillis();
-					File assertion = fileUtils.getFile(name, GenericConstants.JSON_EXTENSION, downloadUrl);
-					if(assertion != null) {
-						filesToAdd.add(assertion);
-						log.info("SAML assertion from s3 bucket retrieved in {} ms, constructing service response...",
-								System.currentTimeMillis() - performanceMillis);
-					}
-				}
-				File logFile = fileUtils.writeTxt(deanonimizedOpenSearchResponse, GenericConstants.LOG_FILE_NAME);
-				filesToAdd.add(logFile);
-				return constructor.createNotificationLogResponse(filesToAdd, new ArrayList<>(), GenericConstants.ZIP_ARCHIVE_NAME);
-			}
+			threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
+			deanonimizationApiHandler.deanonimizeDocuments(tmp, requestData.getRecipientType(), threadLocalService.get());
+			threadLocalService.closeEntry();
 
+			if (s3.getFileName()!=null) {
+				threadLocalService.addEntry(s3.getFileName(),s3.getFileContent());
+			}
 		} else {
 			if (requestData.getIun() != null) {
 				//use case 4
@@ -335,33 +317,26 @@ public class LogServiceImpl implements LogService {
 				OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
 				String notificationEndDate = notificationStartDate.plusMonths(3).toString();
 				performanceMillis = System.currentTimeMillis();
-				openSearchResponse = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate);
+	        	docCount = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate, tmpOutStream);
+				tmpOutStream.flush();tmpOutStream.close();
 				log.info(LoggingConstants.QEURY_EXECUTION_COMPLETED_TIME_DEANONIMIZE_DOCS,
-						System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
+						System.currentTimeMillis() - performanceMillis, docCount);
 				performanceMillis = System.currentTimeMillis();
-				deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, RecipientTypes.PF);
+				threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
+				deanonimizationApiHandler.deanonimizeDocuments(tmp, RecipientTypes.PF, threadLocalService.get());
+				threadLocalService.closeEntry();
 			}
 		}
+		Files.delete(tmp.toPath());
 		log.info("Deanonimization completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
-		if(deanonimizedOpenSearchResponse.isEmpty()) {
-			performanceMillis = System.currentTimeMillis();
-			BaseResponseDto response = new BaseResponseDto();
-			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
-			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-			log.info("Deanonimized logs retrieve process - END in {} ms",
-					(System.currentTimeMillis() - serviceStartTime));
-			return response;
+		log.info("deanonimized logs retrieve process - END in {} ms", (System.currentTimeMillis() - serviceStartTime));
+		if(docCount == 0) {
+			throw new CustomException(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE, 204);
 		}
-		performanceMillis = System.currentTimeMillis();
-		DownloadArchiveResponseDto response = constructor.createSimpleLogResponse(deanonimizedOpenSearchResponse, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
-		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-		log.info("deanonimized logs retrieve process - END in {} ms",
-				(System.currentTimeMillis() - serviceStartTime));
-		return response;
 	}
 	
 	@Override
-	public BaseResponseDto getAnonymizedSessionLogs(SessionLogsRequestDto requestData,
+	public void getAnonymizedSessionLogs(SessionLogsRequestDto requestData,
 													String xPagopaHelpdUid,
 													String xPagopaCxType) throws IOException {
 		log.info("Anonymized session logs retrieve process - START - user={}, userType={}," +
@@ -369,75 +344,62 @@ public class LogServiceImpl implements LogService {
 				requestData.getTicketNumber(), requestData.getJti(), requestData.getDateFrom(),
 				requestData.getDateTo());
 		long serviceStartTime = System.currentTimeMillis();
-		List<String> openSearchResponse;
+		int docCount = 0;
 		
 		log.info("Getting session activities' anonymized history... ");
 		long performanceMillis = System.currentTimeMillis();
-		openSearchResponse = openSearchApiHandler.getAnonymizedSessionLogsByJti(requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
-
-		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
+		
+		threadLocalService.addEntry(OS_RESULT+ GenericConstants.TXT_EXTENSION);
+		docCount = openSearchApiHandler.getAnonymizedSessionLogsByJti(requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo(), threadLocalService.get());
+		threadLocalService.closeEntry();
+		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis, docCount);
 		performanceMillis = System.currentTimeMillis();
-		if(openSearchResponse.isEmpty()) {
-			BaseResponseDto response = new BaseResponseDto();
-			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
-			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-        	log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END,
-					(System.currentTimeMillis() - serviceStartTime));
-        	return response;
+		if(docCount == 0) {
+			throw new CustomException (ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE, 204);
 		}
-		DownloadArchiveResponseDto response = constructor.createSimpleLogResponse(openSearchResponse, GenericConstants.LOG_FILE_NAME, GenericConstants.ZIP_ARCHIVE_NAME);
-
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-		log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END,
-				(System.currentTimeMillis() - serviceStartTime));
-		return response;
+		log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END, (System.currentTimeMillis() - serviceStartTime));
 	}
 	
 	@Override
-	public BaseResponseDto getDeanonimizedSessionLogs(SessionLogsRequestDto requestData,
+	public void getDeanonimizedSessionLogs(SessionLogsRequestDto requestData,
 													  String xPagopaHelpdUid,
 													  String xPagopaCxType) throws IOException, LogExtractorException {
 		log.info("Deanonimized session logs retrieve process - START - user={}, userType={}, ticketNumber={}, " +
 				"jti={}, startDate={}, endDate={}", xPagopaHelpdUid, xPagopaCxType, requestData.getTicketNumber(),
 				requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
 		long serviceStartTime = System.currentTimeMillis();
-		List<String> openSearchResponse;
-		List<String> deanonimizedOpenSearchResponse;
+		long performanceMillis = 0;
+		File openSearchResponse = new FileUtilities().getFileWithRandomName(OS_RESULT, GenericConstants.TXT_EXTENSION);
+		FileOutputStream tmpOutStream = new FileOutputStream(openSearchResponse);
+		int docCount = 0;
+
 		log.info("Getting session activities' deanonimized history... ");
-		long performanceMillis = System.currentTimeMillis();
-		openSearchResponse = openSearchApiHandler.getAnonymizedSessionLogsByJti(requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
-		log.info("Query execution completed in {} ms, retrieved {} documents, deanonimizing results...",
-				System.currentTimeMillis() - performanceMillis, openSearchResponse.size());
-		deanonimizedOpenSearchResponse = deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, RecipientTypes.PF);
-		log.info("Deanonimization completed in {} ms", System.currentTimeMillis() - performanceMillis);
 		performanceMillis = System.currentTimeMillis();
-		if(deanonimizedOpenSearchResponse.isEmpty()) {
-			BaseResponseDto response = new BaseResponseDto();
-			response.setMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE);
-			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-			log.info(LoggingConstants.DEANONIMIZED_RETRIEVE_PROCESS_END,
-					(System.currentTimeMillis() - serviceStartTime));
-			return response;
+		S3DocumentDownloader s3 = new S3DocumentDownloader(awsProfile, s3Region, s3Bucket);
+		openSearchApiHandler.setObserver(s3);
+		docCount = openSearchApiHandler.getAnonymizedSessionLogsByJti(requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo(), tmpOutStream);
+
+		log.info("Query execution completed in {} ms, retrieved {} documents, deanonimizing results...",
+				System.currentTimeMillis() - performanceMillis, docCount);
+		tmpOutStream.flush();
+		IOUtils.closeQuietly(tmpOutStream);
+		threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
+		deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, RecipientTypes.PF, threadLocalService.get());
+		threadLocalService.closeEntry();
+		
+		if (s3.getFileName()!=null) {
+			threadLocalService.addEntry(s3.getFileName(),s3.getFileContent());
 		}
-		JsonUtilities jsonUtils = new JsonUtilities();
-		String date = jsonUtils.getValue(openSearchResponse.get(0), "@timestamp");
-		List<File> filesToAdd = new ArrayList<>();
-		if(StringUtils.isNotBlank(date)){
-			String name = String.format("%s-%s", jsonUtils.getValue(openSearchResponse.get(0), "jti"),
-					LocalDateTime.parse(date, DateTimeFormatter.ISO_OFFSET_DATE_TIME).toLocalDate().toString());
-			String downloadUrl = String.format(downloadFileUrl, name);
-			log.info("Retrieving SAML assertion from s3 bucket... ");
-			performanceMillis = System.currentTimeMillis();
-			filesToAdd.add(fileUtils.getFile(name, GenericConstants.JSON_EXTENSION, downloadUrl));
-			log.info("SAML assertion from s3 bucket retrieved in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
+
+		Files.delete(openSearchResponse.toPath());
+		log.info("Deanonimization completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
+		performanceMillis = System.currentTimeMillis();
+		if(docCount == 0) {
+			throw new CustomException(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE, 204);
 		}
-		File logFile = fileUtils.writeTxt(deanonimizedOpenSearchResponse, GenericConstants.LOG_FILE_NAME);
-		filesToAdd.add(logFile);
-		DownloadArchiveResponseDto response = constructor.createNotificationLogResponse(filesToAdd, new ArrayList<>(), GenericConstants.ZIP_ARCHIVE_NAME);
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
-		log.info(LoggingConstants.DEANONIMIZED_RETRIEVE_PROCESS_END,
-				(System.currentTimeMillis() - serviceStartTime));
-		return response;
+		log.info(LoggingConstants.DEANONIMIZED_RETRIEVE_PROCESS_END, (System.currentTimeMillis() - serviceStartTime));
 	}
 	
 }
