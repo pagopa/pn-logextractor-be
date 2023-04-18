@@ -59,6 +59,7 @@ public class LogController implements LogsApi {
 
 	@ExceptionHandler(value = CustomException.class)
 	public ResponseEntity<BaseResponseDto> handleCustomException(CustomException e){
+		this.threadLocalService.remove();
 		return ResponseEntity.status(e.getCode()).body(e.getDto());
 	}
 
