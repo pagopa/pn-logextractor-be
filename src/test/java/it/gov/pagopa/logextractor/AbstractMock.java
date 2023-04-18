@@ -7,7 +7,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import it.gov.pagopa.logextractor.util.FileUtilities;
+
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -56,7 +56,7 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusUpdateEventRe
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.SessionLogsRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.TraceIdLogsRequestDto;
-//import it.gov.pagopa.logextractor.util.HeaderConstants;
+import it.gov.pagopa.logextractor.util.FileUtilities;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 
 public abstract class AbstractMock {
@@ -134,8 +134,8 @@ public abstract class AbstractMock {
 	
 	protected HttpHeaders getHeaders() {
 		HttpHeaders headers = new HttpHeaders();
-//		headers.add(HeaderConstants.PAGO_PA_UID, fakeHeader);
-//		headers.add(HeaderConstants.PAGO_PA_CXTYPE, fakeHeader);
+		headers.add("x-pagopa-pn-uid", fakeHeader);
+		headers.add("x-pagopa-pn-cx-type", fakeHeader);
 		return headers;
 	}
 
