@@ -23,13 +23,13 @@ tags:
     description: Operations about a person
   - name: logs
     description: Operations about logs and extractions
-  - name: healthCheck
+  - name: status
     description: Operations about application status
   - name: downtime
     description: Operations about PN functionalities monitoring
 
 paths:
-  '/persons/v1/person-id':
+  '/log-extractor/persons/v1/person-id':
     post:
       tags:
         - persons
@@ -78,7 +78,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
-  '/persons/v1/tax-id':
+  '/log-extractor/persons/v1/tax-id':
     post:
       tags:
         - persons
@@ -127,7 +127,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
-  '/logs/v1/notifications/info':
+  '/log-extractor/logs/v1/notifications/info':
     post:
       tags:
         - logs
@@ -177,7 +177,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
-  '/logs/v1/notifications/monthly':
+  '/log-extractor/logs/v1/notifications/monthly':
     post:
       tags:
         - logs
@@ -228,7 +228,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
-  '/logs/v1/persons':
+  '/log-extractor/logs/v1/persons':
     post:
       tags:
         - logs
@@ -278,7 +278,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
-  '/logs/v1/processes':
+  '/log-extractor/logs/v1/processes':
     post:
       tags:
         - logs
@@ -328,7 +328,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
-  '/logs/v1/sessions':
+  '/log-extractor/logs/v1/sessions':
     post:
       tags:
         - logs
@@ -378,7 +378,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
-  "/downtime/v1/status":
+  "/log-extractor/downtime/v1/status":
     get:
       description: >-
         Get the PN functionalities and inefficiencies list at invocation time
@@ -415,7 +415,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
-  "/downtime/v1/events":
+  "/log-extractor/downtime/v1/events":
     post:
       description: >-
         Add a new inefficiency start or end event
@@ -463,7 +463,7 @@ paths:
   "/status":
     get:
       tags:
-        - healthCheck
+        - Status
       operationId: healthStatus
       description: Get the application status
       responses:

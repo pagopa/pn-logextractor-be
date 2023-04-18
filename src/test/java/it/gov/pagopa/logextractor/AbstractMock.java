@@ -107,17 +107,17 @@ public abstract class AbstractMock {
 
 	public static final MediaType APPLICATION_JSON_UTF8 = new MediaType(MediaType.APPLICATION_JSON.getType(),
 			MediaType.APPLICATION_JSON.getSubtype(), Charset.forName("utf8"));
-	protected final String identifierUrl = "/persons/v1/person-id";
-	protected final String taxCodeUrl = "/persons/v1/tax-id";
-	protected final String personUrl = "/logs/v1/persons";
-	protected final String sessionUrl = "/logs/v1/sessions";
-	protected final String notificationUrl = "/logs/v1/notifications/monthly";
-	protected final String notificationInfoUrl = "/logs/v1/notifications/info";
-	protected final String processesUrl = "/logs/v1/processes";
+	protected final String identifierUrl = "/log-extractor/persons/v1/person-id";
+	protected final String taxCodeUrl = "/log-extractor/persons/v1/tax-id";
+	protected final String personUrl = "/log-extractor/logs/v1/persons";
+	protected final String sessionUrl = "/log-extractor/logs/v1/sessions";
+	protected final String notificationUrl = "/log-extractor/logs/v1/notifications/monthly";
+	protected final String notificationInfoUrl = "/log-extractor/logs/v1/notifications/info";
+	protected final String processesUrl = "/log-extractor/logs/v1/processes";
 	protected final String healthcheckUrl = "/status";
 
-	protected final String statusUrl = "/downtime/v1/status";
-	protected final String eventsUrl = "/downtime/v1/events";
+	protected final String statusUrl = "/log-extractor/downtime/v1/status";
+	protected final String eventsUrl = "/log-extractor/downtime/v1/events";
 
 	protected final String fakeHeader = "Basic YWxhZGRpbjpvcGVuc2VzYW1l";
 	private static ObjectMapper mapper = new ObjectMapper();
