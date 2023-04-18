@@ -13,7 +13,6 @@ public class GenericConstants {
 	public static final String CSV_EXTENSION = ".csv";
 	public static final String ZIP_EXTENSION = ".zip";
 	public static final String JSON_EXTENSION = ".json";
-	public static final String EXPORT_FOLDER = "export/";
 	public static final String MINUTES_LABEL = " minuti";
 	public static final String MINUTE_LABEL = " minuto";
 	public static final String SAFESTORAGE_PREFIX = "safestorage://";

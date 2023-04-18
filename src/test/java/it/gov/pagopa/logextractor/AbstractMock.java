@@ -123,7 +123,7 @@ public abstract class AbstractMock {
 	private static ObjectMapper mapper = new ObjectMapper();
 
 	@Mock
-	private FileUtilities fileUtils = new FileUtilities();
+	private FileUtilities fileUtils = new FileUtilities("export/");
 
 
 	protected final String jsonDocSearchPF = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [{\"_source\":{\"_source\":\"3242342323\",\"cx_id\":\"PF-2dfc9690-a648-4462-986d-769d90752e6f\", \"@timestamp\":\"\"}}]}}";

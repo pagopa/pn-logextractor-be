@@ -62,6 +62,9 @@ public class LogServiceImpl implements LogService {
 	OpenSearchApiHandler openSearchApiHandler;
 	
 	@Autowired
+	FileUtilities fileUtilities;
+	
+	@Autowired
 	DeanonimizationApiHandler deanonimizationApiHandler;
 	@Autowired
 	ThreadLocalOutputStreamService threadLocalService;
@@ -370,7 +373,7 @@ public class LogServiceImpl implements LogService {
 				requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
-		File openSearchResponse = new FileUtilities().getFileWithRandomName(OS_RESULT, GenericConstants.TXT_EXTENSION);
+		File openSearchResponse = fileUtilities.getFileWithRandomName(OS_RESULT, GenericConstants.TXT_EXTENSION);
 		FileOutputStream tmpOutStream = new FileOutputStream(openSearchResponse);
 		int docCount = 0;
 
