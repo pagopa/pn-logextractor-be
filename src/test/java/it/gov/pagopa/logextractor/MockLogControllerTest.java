@@ -50,22 +50,22 @@ class MockLogControllerTest extends AbstractMock {
 		mockPersonsLogResponse(json);
 		mockPublicAuthorityName();
 		mockTaxCodeForPerson();
-		MockHttpServletResponse response = mvc.perform(post(personUrl).accept(APPLICATION_JSON_UTF8)
+		MockHttpServletResponse response = mvc.perform(post(personUrl)
 				.headers(getHeaders()).content(getMockPersonLogsRequestDto(useCase, isDeanonimization))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-		assertThat(response.getContentAsString()).contains("password");
+		assertThat(response.getHeaderNames()).contains("password");
 	}
 
 	void test_getPersonsLogs(int useCase, boolean isDeanonimization, String json) throws Exception {
 		// use case 3,4,7,8
 		mockPersonsLogResponse(json);
 		mockTaxCodeForPerson();
-		MockHttpServletResponse response = mvc.perform(post(personUrl).accept(APPLICATION_JSON_UTF8)
+		MockHttpServletResponse response = mvc.perform(post(personUrl)
 				.headers(getHeaders()).content(getMockPersonLogsRequestDto(useCase, isDeanonimization))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-		assertThat(response.getContentAsString()).contains("password");
+		assertThat(response.getHeaderNames()).contains("password");
 	}
 	
 	@Test
@@ -73,11 +73,10 @@ class MockLogControllerTest extends AbstractMock {
 		// use case 4 
 		mockPersonsLogResponse(jsonEmptyDocSearchPF);
 		mockTaxCodeForPerson();
-		MockHttpServletResponse response = mvc.perform(post(personUrl).accept(APPLICATION_JSON_UTF8)
+		MockHttpServletResponse response = mvc.perform(post(personUrl)
 				.headers(getHeaders()).content(getMockPersonLogsRequestDto(4, true))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-		assertThat(response.getContentAsString()).contains("Nessun documento trovato");
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
 	}
 
 	@Test
@@ -87,11 +86,11 @@ class MockLogControllerTest extends AbstractMock {
 		mockNotificationResponse();
 		mockPersonsLogUseCase6Response();
 		MockHttpServletResponse response = mvc
-				.perform(post(notificationUrl).accept(APPLICATION_JSON_UTF8).headers(getHeaders())
+				.perform(post(notificationUrl).headers(getHeaders())
 						.content(getMockMonthlyNotificationsRequestDto()).contentType(APPLICATION_JSON_UTF8))
 				.andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-		assertThat(response.getContentAsString()).contains("password");
+		assertThat(response.getHeaderNames()).contains("password");
 	}
 	
 	@Test
@@ -99,11 +98,10 @@ class MockLogControllerTest extends AbstractMock {
 		mockPublicAuthorityIdAndNotificationsBetweenMonths(true);
 		mockPersonsLogUseCase6Response();
 		MockHttpServletResponse response = mvc
-				.perform(post(notificationUrl).accept(APPLICATION_JSON_UTF8).headers(getHeaders())
+				.perform(post(notificationUrl).headers(getHeaders())
 						.content(getMockMonthlyNotificationsRequestDto()).contentType(APPLICATION_JSON_UTF8))
 				.andReturn().getResponse();
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-		assertThat(response.getContentAsString()).contains("message");
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
 	}
 	
 	@Test
@@ -111,55 +109,52 @@ class MockLogControllerTest extends AbstractMock {
 		mockPersonsLogResponse(jsonDocSearchPF);
 		mockTaxCodeForPerson();
 		MockHttpServletResponse response = mvc
-				.perform(post(personUrl).accept(APPLICATION_JSON_UTF8).headers(getHeaders())
+				.perform(post(personUrl).headers(getHeaders())
 						.content(getMockPersonLogsRequestDtoPersonIdNull()).contentType(APPLICATION_JSON_UTF8))
 				.andReturn().getResponse();
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-		assertThat(response.getContentAsString()).contains("message");
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
 	}
 	
 	@Test
 	void test_getSessionLogsOpenSearchResponseAnonymized() throws Exception {	
 		mockPersonsLogResponse(jsonDocSearchPF);
 		mockTaxCodeForPerson();
-		MockHttpServletResponse response = mvc.perform(post(sessionUrl).accept(APPLICATION_JSON_UTF8)
+		MockHttpServletResponse response = mvc.perform(post(sessionUrl)
 				.headers(getHeaders()).content(getMockSessionLogsRequestDto(false))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-		assertThat(response.getContentAsString()).contains("password");
+		assertThat(response.getHeaderNames()).contains("password");
 	}
 	
 	@Test
 	void test_getSessionLogsOpenSearchResponseDeanonymized() throws Exception {	
 		mockPersonsLogResponse(jsonDocSearchPF);
 		mockTaxCodeForPerson();
-		MockHttpServletResponse response = mvc.perform(post(sessionUrl).accept(APPLICATION_JSON_UTF8)
+		MockHttpServletResponse response = mvc.perform(post(sessionUrl)
 				.headers(getHeaders()).content(getMockSessionLogsRequestDto(true))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-		assertThat(response.getContentAsString()).contains("password");
+		assertThat(response.getHeaderNames()).contains("password");
 	}
 	
 	@Test
 	void test_getSessionLogsOpenSearchResponseAnonymizedWithEmptySearch() throws Exception {	
 		mockEmptyPersonsLogResponse(jsonDocSearchPF);
 		mockTaxCodeForPerson();
-		MockHttpServletResponse response = mvc.perform(post(sessionUrl).accept(APPLICATION_JSON_UTF8)
+		MockHttpServletResponse response = mvc.perform(post(sessionUrl)
 				.headers(getHeaders()).content(getMockSessionLogsRequestDto(false))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-		assertThat(response.getContentAsString()).contains("Nessun documento trovato per i dati inseriti");
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
 	}
 	
 	@Test
 	void test_getSessionLogsOpenSearchResponseDeanonymizedWithEmptySearch() throws Exception {	
 		mockEmptyPersonsLogResponse(jsonDocSearchPF);
 		mockTaxCodeForPerson();
-		MockHttpServletResponse response = mvc.perform(post(sessionUrl).accept(APPLICATION_JSON_UTF8)
+		MockHttpServletResponse response = mvc.perform(post(sessionUrl)
 				.headers(getHeaders()).content(getMockSessionLogsRequestDto(true))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-		assertThat(response.getContentAsString()).contains("Nessun documento trovato per i dati inseriti");
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
 	}
 
 	@Test
@@ -170,20 +165,19 @@ class MockLogControllerTest extends AbstractMock {
 		mockDocumentsByMultiSearchQuery();
 		mockPersonsLogResponse(jsonDocSearchPF);
 		MockHttpServletResponse response = mvc
-				.perform(post(notificationInfoUrl).accept(APPLICATION_JSON_UTF8).headers(getHeaders())
+				.perform(post(notificationInfoUrl).headers(getHeaders())
 						.content(getMockNotificationsRequestDto()).contentType(APPLICATION_JSON_UTF8))
 				.andReturn().getResponse();
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-		assertThat(response.getContentAsString()).contains("message");
+		assertThat(response.getStatus()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE.value());
 	}
 
 	void test_getProcesses(LocalDate dateFrom, LocalDate dateTo, String traceId) throws Exception {
 		mockPersonsLogResponse(jsonDocSearchPF);
-		MockHttpServletResponse response = mvc.perform(post(processesUrl).accept(APPLICATION_JSON_UTF8)
+		MockHttpServletResponse response = mvc.perform(post(processesUrl)
 				.headers(getHeaders()).content(getMockTraceIdLogsRequestDto(dateFrom, dateTo, traceId))
 				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-		assertThat(response.getContentAsString()).contains("password");
+		assertThat(response.getHeaderNames()).contains("password");
 	}
 
 }
