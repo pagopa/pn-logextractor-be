@@ -12,9 +12,9 @@ Parameters:
     Type: String
     Description: 'The DNS name used for WEB rest API.'
 
-  CorsAllowedDomains:
+  CorsAllowedDomain:
     Type: String
-    Description: 'Comma separated list of domains allowed to make cross origin request'
+    Description: 'Allowed domain'
 
   ContainerImageUri:
     Type: String
@@ -194,10 +194,6 @@ Parameters:
     Type: String
     Description: Elasticache security group
 
-  PnCoreRootPath:
-    Type: String
-    Description: core root path
-
   PnDataVaultRootPath:
     Type: String
     Description: data vault root path
@@ -247,11 +243,11 @@ Resources:
         ContainerImageURI: !Sub '${ContainerImageUri}'
         ContainerEnvEntry1: !Sub 'ENSURE_RECIPIENT_BY_EXTERNAL_ID_URL=${PnDataVaultRootPath}/datavault-private/v1/recipients/external/%s'
         ContainerEnvEntry2: !Sub 'GET_RECIPIENT_DENOMINATION_BY_INTERNAL_ID_URL=${PnDataVaultRootPath}/datavault-private/v1/recipients/internal'
-        ContainerEnvEntry3: !Sub 'GET_SENT_NOTIFICATION_URL=${PnCoreRootPath}/delivery-private/search'
-        ContainerEnvEntry4: !Sub 'GET_SENT_NOTIFICATION_DETAILS_URL=${PnCoreRootPath}/delivery-private/notifications/%s'
-        ContainerEnvEntry5: !Sub 'GET_SENT_NOTIFICATION_HISTORY_URL=${PnCoreRootPath}/delivery-push-private/%s/history'
-        ContainerEnvEntry6: !Sub 'GET_ENCODED_IPA_CODE_URL=${PnCoreRootPath}/ext-registry/pa/v1/activated-on-pn'
-        ContainerEnvEntry7: !Sub 'GET_PUBLIC_AUTHORITY_NAME_URL=${PnCoreRootPath}/ext-registry-private/pa/v1/activated-on-pn/%s'
+        ContainerEnvEntry3: !Sub 'GET_SENT_NOTIFICATION_URL=http://${ApplicationLoadBalancerDomain}:8080/delivery-private/search'
+        ContainerEnvEntry4: !Sub 'GET_SENT_NOTIFICATION_DETAILS_URL=http://${ApplicationLoadBalancerDomain}:8080/delivery-private/notifications/%s'
+        ContainerEnvEntry5: !Sub 'GET_SENT_NOTIFICATION_HISTORY_URL=http://${ApplicationLoadBalancerDomain}:8080/delivery-push-private/%s/history'
+        ContainerEnvEntry6: !Sub 'GET_ENCODED_IPA_CODE_URL=http://${ApplicationLoadBalancerDomain}:8080/ext-registry/pa/v1/activated-on-pn'
+        ContainerEnvEntry7: !Sub 'GET_PUBLIC_AUTHORITY_NAME_URL=http://${ApplicationLoadBalancerDomain}:8080/ext-registry-private/pa/v1/activated-on-pn/%s'
         ContainerEnvEntry8: !Sub 'DOWNLOAD_FILE_URL=${DownloadFileUrl}'
         ContainerEnvEntry9: !Sub 'SAFESTORAGE_ENDPOINT=${SafeStorageEndpoint}'
         ContainerEnvEntry10: !Sub 'SAFESTORAGE_STAGE=${SafeStorageStage}'
@@ -260,9 +256,9 @@ Resources:
         ContainerEnvEntry13: !Sub 'SEARCH_FOLLOWUP_URL=https://${OpenSearchEndpoint}/_search/scroll'
         ContainerEnvEntry14: !Sub 'ELASTICACHE_HOSTNAME=${ElasticacheEndpoint}'
         ContainerEnvEntry15: 'ELASTICACHE_PORT=6379'
-        ContainerEnvEntry17: !Sub 'ALLOWED_ORIGIN=${CorsAllowedDomains}'
-        ContainerEnvEntry18: !Sub 'DOWNTIME_EVENTS_URL=${PnCoreRootPath}/downtime-internal/v1/events'
-        ContainerEnvEntry19: !Sub 'DOWNTIME_STATUS_URL=${PnCoreRootPath}/downtime/v1/status'
+        ContainerEnvEntry17: !Sub 'ALLOWED_ORIGIN=${CorsAllowedDomain}'
+        ContainerEnvEntry18: !Sub 'DOWNTIME_EVENTS_URL=http://${ApplicationLoadBalancerDomain}:8080/downtime-internal/v1/events'
+        ContainerEnvEntry19: !Sub 'DOWNTIME_STATUS_URL=http://${ApplicationLoadBalancerDomain}:8080/downtime/v1/status'
         ContainerEnvEntry20: !Sub 'S3_DOWNLOAD_URL=${SamlAssertionDownloadUrl}'
         ContainerSecret1: !Sub 'BASIC_AUTH_USERNAME=${OpenSearchSecretArn}:username:AWSCURRENT:'
         ContainerSecret2: !Sub 'BASIC_AUTH_PASSWORD=${OpenSearchSecretArn}:password:AWSCURRENT:'
