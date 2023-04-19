@@ -7,6 +7,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.StreamUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
@@ -21,6 +23,7 @@ import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
 import it.gov.pagopa.logextractor.util.constant.ValidationConstants;
 
 @Component
+@Slf4j
 public class DowntimeRestTemplateErrorHandler implements ResponseErrorHandler {
 
   @Override
@@ -31,12 +34,13 @@ public class DowntimeRestTemplateErrorHandler implements ResponseErrorHandler {
 
   @Override
   public void handleError(ClientHttpResponse response) throws IOException {
+    String responseBody = StreamUtils.copyToString(response.getBody(), StandardCharsets.UTF_8);
+    log.error("Exception occurred when adding new downtime event:\n{}", responseBody);
     if (response.getStatusCode().is5xxServerError()) {
       throw new LogExtractorIntegrationException(
-          ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_ENGLISH_MESSAGE);
+          ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
     } else if (response.getStatusCode().is4xxClientError()) {
       if (response.getStatusCode() == HttpStatus.CONFLICT) {
-        String responseBody = StreamUtils.copyToString(response.getBody(), StandardCharsets.UTF_8);
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode = objectMapper.readTree(responseBody);
         String detail = jsonNode.get("detail").asText();
@@ -48,18 +52,22 @@ public class DowntimeRestTemplateErrorHandler implements ResponseErrorHandler {
 
         if (matcher.find()) {
           startDate = matcher.group(1);
+        }
+        detail = StringUtils.substringAfter(detail, startDate);
+        matcher = pattern.matcher(detail);
+        if (matcher.find()) {
           endDate = matcher.group(1);
         }
 
         throw new LogExtractorIntegrationException(
-            "Evento downtime già aperto per il periodo " + OffsetDateTime.parse(startDate)
-                .format(DateTimeFormatter.ISO_LOCAL_DATE) + " - " + OffsetDateTime.parse(endDate)
-                .format(DateTimeFormatter.ISO_LOCAL_DATE));
+            "Evento downtime già presente nel periodo compreso tra il giorno " + OffsetDateTime.parse(
+                startDate).format(DateTimeFormatter.ofPattern(
+                "dd/MM/yyyy 'alle' HH:mm")) + " ed il giorno " + OffsetDateTime.parse(endDate)
+                .format(DateTimeFormatter.ofPattern("dd/MM/yyyy 'alle' HH:mm")));
       } else {
         throw new LogExtractorIntegrationException(
-            ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_ENGLISH_MESSAGE);
+            ResponseConstants.GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
       }
     }
   }
-
 }
