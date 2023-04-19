@@ -1,3 +1,4 @@
+# Build image
 FROM maven:3.8.5-jdk-11 AS MAVEN_BUILD
 
 WORKDIR /pn-logextractor-build/
@@ -6,6 +7,7 @@ COPY . .
 
 RUN  mvn clean package -Dmaven.test.skip=true
 
+# Runtime image
 FROM eclipse-temurin:11-jre-alpine
 
 WORKDIR /app
