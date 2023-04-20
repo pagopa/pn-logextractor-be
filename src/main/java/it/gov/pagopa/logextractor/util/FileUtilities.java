@@ -37,6 +37,7 @@ public class FileUtilities {
 		if (!directory.exists()) {
 			directory.mkdirs();
 		}
+		this.exportFolder = directoryName;
 	}
 
 	/**

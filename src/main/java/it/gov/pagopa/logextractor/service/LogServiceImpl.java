@@ -1,10 +1,13 @@
 package it.gov.pagopa.logextractor.service;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -66,6 +69,7 @@ public class LogServiceImpl implements LogService {
 	
 	@Autowired
 	DeanonimizationApiHandler deanonimizationApiHandler;
+	
 	@Autowired
 	ThreadLocalOutputStreamService threadLocalService;
 
@@ -304,9 +308,7 @@ public class LogServiceImpl implements LogService {
 			tmpOutStream.flush();
 			tmpOutStream.close();
 			performanceMillis = System.currentTimeMillis();
-			threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
-			deanonimizationApiHandler.deanonimizeDocuments(tmp, requestData.getRecipientType(), threadLocalService.get());
-			threadLocalService.closeEntry();
+			writeDeanonimization(tmp, requestData.getRecipientType());
 
 			if (s3.getFileName()!=null) {
 				threadLocalService.addEntry(s3.getFileName(),s3.getFileContent());
@@ -321,13 +323,12 @@ public class LogServiceImpl implements LogService {
 				String notificationEndDate = notificationStartDate.plusMonths(3).toString();
 				performanceMillis = System.currentTimeMillis();
 	        	docCount = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(), notificationStartDate.toString(), notificationEndDate, tmpOutStream);
-				tmpOutStream.flush();tmpOutStream.close();
+				tmpOutStream.flush();
+				tmpOutStream.close();
 				log.info(LoggingConstants.QEURY_EXECUTION_COMPLETED_TIME_DEANONIMIZE_DOCS,
 						System.currentTimeMillis() - performanceMillis, docCount);
 				performanceMillis = System.currentTimeMillis();
-				threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
-				deanonimizationApiHandler.deanonimizeDocuments(tmp, RecipientTypes.PF, threadLocalService.get());
-				threadLocalService.closeEntry();
+				writeDeanonimization(tmp, RecipientTypes.PF);
 			}
 		}
 		Files.delete(tmp.toPath());
@@ -387,10 +388,7 @@ public class LogServiceImpl implements LogService {
 				System.currentTimeMillis() - performanceMillis, docCount);
 		tmpOutStream.flush();
 		IOUtils.closeQuietly(tmpOutStream);
-		threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
-		deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, RecipientTypes.PF, threadLocalService.get());
-		threadLocalService.closeEntry();
-		
+		writeDeanonimization(openSearchResponse, RecipientTypes.PF);
 		if (s3.getFileName()!=null) {
 			threadLocalService.addEntry(s3.getFileName(),s3.getFileContent());
 		}
@@ -404,5 +402,27 @@ public class LogServiceImpl implements LogService {
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info(LoggingConstants.DEANONIMIZED_RETRIEVE_PROCESS_END, (System.currentTimeMillis() - serviceStartTime));
 	}
-	
+
+	private boolean writeDeanonimization(File tmp, RecipientTypes type) throws IOException, LogExtractorException {
+		if (deanonimizationApiHandler.canHandleRequest()) {
+			threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
+			deanonimizationApiHandler.deanonimizeDocuments(tmp, type, threadLocalService.get());
+			threadLocalService.closeEntry();
+			return true;
+		} else {
+			log.warn("Deanonimization process skipped");
+			threadLocalService.addEntry("Deanonimizzazione abortita");
+			BufferedOutputStream bos = new BufferedOutputStream(threadLocalService.get());
+			bos.write("Processo di deanomizzazione abortita per elevato carico di richieste".getBytes(Charset.forName("UTF-8")));
+			bos.flush();
+			threadLocalService.closeEntry();
+			threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
+			FileInputStream fis = new FileInputStream(tmp);
+			IOUtils.copy(fis, threadLocalService.get());
+			fis.close();
+			threadLocalService.closeEntry();
+			return false;
+		}	
+	}
+
 }

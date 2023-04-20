@@ -34,6 +34,7 @@ import it.gov.pagopa.logextractor.exception.LogExtractorException;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import it.gov.pagopa.logextractor.util.JsonUtilities;
+import it.gov.pagopa.logextractor.util.Throttle;
 import it.gov.pagopa.logextractor.util.constant.ExternalServiceConstants;
 import it.gov.pagopa.logextractor.util.constant.OpensearchConstants;
 import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
@@ -61,7 +62,14 @@ public class DeanonimizationApiHandler {
 	
 	@Value("${external.selfcare.getEncodedIpaCode.url}")
 	String selfCareEncodedIpaCodeURL;
+	
+	private final Throttle throttle;
 
+	
+	public DeanonimizationApiHandler(@Value("${deanonimization.throttle:60}") Integer deanonimizationThrottle) {
+		this.throttle = new Throttle(deanonimizationThrottle);
+	}
+	
 	/**
 	 * Method that makes a request to Piattaforma Notifiche external service to
 	 * retrieve the unique identifier of a person, given the recipient type and tax
@@ -171,16 +179,25 @@ public class DeanonimizationApiHandler {
 		return response.getName();
 	}
 
+	public boolean canHandleRequest() {
+		return this.throttle.canHandleRequest();
+	}
+	
 	/** 
 	 * Returns the value associated with the specified key.
 	 * @param recipientType the entity's recipient type
 	 * @param anonymizedDocuments the document list containing the content to write in the output
 	 *                               file (.txt, .csv) contained in the output zip archive
-	 * @return A list representing the de-anonymized documents 
+	 * @return false if it cannot handle request, true otherwise 
 	 * @throws LogExtractorException if the external service response is "null", null or blank
 	 * @throws JsonProcessingException 
 	 */
-	public void deanonimizeDocuments(File anonymizedDocuments, RecipientTypes recipientType, OutputStream out) throws LogExtractorException, JsonProcessingException {
+	public boolean deanonimizeDocuments(File anonymizedDocuments, RecipientTypes recipientType, OutputStream out) throws LogExtractorException, JsonProcessingException {
+		
+		if (!throttle.acceptRequest()) {
+			return false;
+		}
+		
 		ObjectMapper mapper = new ObjectMapper();
 		JsonUtilities jsonUtils = new JsonUtilities();
 		Map<String, String> keyValues = new HashMap<>();
@@ -217,6 +234,7 @@ public class DeanonimizationApiHandler {
 					wr.flush();
 					currentDocument=null;
 			}
+			return true;
 		} catch (Exception e) {
 			log.error("Error reading {}", anonymizedDocuments.getName(), e);
 		} finally {
@@ -227,6 +245,7 @@ public class DeanonimizationApiHandler {
 				IOUtils.closeQuietly(fr);
 			}
 		}
+		return false;
 		
 	}
 }
