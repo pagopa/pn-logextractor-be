@@ -8,8 +8,8 @@ import java.util.Date;
  *
  */
 public class Throttle {
-	//1 minute
-	private final long INTERVAL = 60 * 1000; 
+	//1 second
+	private final long INTERVAL = 1000; 
 	private int size;
 
 	// The counter for current interval

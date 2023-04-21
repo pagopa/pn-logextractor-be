@@ -66,7 +66,7 @@ public class DeanonimizationApiHandler {
 	private final Throttle throttle;
 
 	
-	public DeanonimizationApiHandler(@Value("${deanonimization.throttle:60}") Integer deanonimizationThrottle) {
+	public DeanonimizationApiHandler(@Value("${deanonimization.throttle:10}") Integer deanonimizationThrottle) {
 		this.throttle = new Throttle(deanonimizationThrottle);
 	}
 	
