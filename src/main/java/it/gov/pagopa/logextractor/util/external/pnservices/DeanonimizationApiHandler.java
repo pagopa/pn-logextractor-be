@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +32,7 @@ import it.gov.pagopa.logextractor.dto.response.GetRecipientDenominationByInterna
 import it.gov.pagopa.logextractor.dto.response.PublicAuthorityMappingResponseDto;
 import it.gov.pagopa.logextractor.dto.response.SelfCarePaDataResponseDto;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
+import it.gov.pagopa.logextractor.exception.TimeoutException;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.GetBasicDataResponseDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import it.gov.pagopa.logextractor.util.JsonUtilities;
@@ -62,6 +64,9 @@ public class DeanonimizationApiHandler {
 	
 	@Value("${external.selfcare.getEncodedIpaCode.url}")
 	String selfCareEncodedIpaCodeURL;
+	
+	@Value("${external.denomination.timeout:5000}")
+	long timeout;
 	
 	private final Throttle throttle;
 
@@ -178,10 +183,6 @@ public class DeanonimizationApiHandler {
 		}
 		return response.getName();
 	}
-
-	public boolean canHandleRequest() {
-		return this.throttle.canHandleRequest();
-	}
 	
 	/** 
 	 * Returns the value associated with the specified key.
@@ -192,10 +193,19 @@ public class DeanonimizationApiHandler {
 	 * @throws LogExtractorException if the external service response is "null", null or blank
 	 * @throws JsonProcessingException 
 	 */
-	public boolean deanonimizeDocuments(File anonymizedDocuments, RecipientTypes recipientType, OutputStream out) throws LogExtractorException, JsonProcessingException {
+	public boolean deanonimizeDocuments(File anonymizedDocuments, RecipientTypes recipientType, OutputStream out) throws LogExtractorException, JsonProcessingException, TimeoutException {
 		
-		if (!throttle.acceptRequest()) {
-			return false;
+		long start = new Date().getTime();
+		while(!throttle.acceptRequest()) {
+			if (new Date().getTime() - start > timeout) {
+				log.warn("Timeout exceeded for Deanonimization service!");
+				throw new TimeoutException();
+			}
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				//Do nothing
+			}
 		}
 		
 		ObjectMapper mapper = new ObjectMapper();

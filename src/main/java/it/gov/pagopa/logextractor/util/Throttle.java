@@ -8,8 +8,7 @@ import java.util.Date;
  *
  */
 public class Throttle {
-	//1 second
-	private final long INTERVAL = 1000; 
+	private final long INTERVAL = 1000; //1 second
 	private int size;
 
 	// The counter for current interval
@@ -19,15 +18,6 @@ public class Throttle {
 	
 	public Throttle(int size) {
 		this.size = size;
-	}
-
-	/**
-	 * Preflight: just check if it can accept a new request
-	 * @return
-	 */
-	public boolean canHandleRequest() {
-		checkCounter();
-		return counter < size;
 	}
 
 	/**

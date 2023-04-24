@@ -1,13 +1,11 @@
 package it.gov.pagopa.logextractor.service;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -30,6 +28,7 @@ import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDto;
 import it.gov.pagopa.logextractor.exception.CustomException;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
+import it.gov.pagopa.logextractor.exception.TimeoutException;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.MonthlyNotificationsRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.NotificationInfoRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.PersonLogsRequestDto;
@@ -404,25 +403,23 @@ public class LogServiceImpl implements LogService {
 	}
 
 	private boolean writeDeanonimization(File tmp, RecipientTypes type) throws IOException, LogExtractorException {
-		if (deanonimizationApiHandler.canHandleRequest()) {
-			threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
+		
+		threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
+		try {
 			deanonimizationApiHandler.deanonimizeDocuments(tmp, type, threadLocalService.get());
-			threadLocalService.closeEntry();
-			return true;
-		} else {
+		} catch (TimeoutException e) {
+			log.error("Timeout Exceeded calling deanonimization");
 			log.warn("Deanonimization process skipped");
-			threadLocalService.addEntry("Deanonimizzazione abortita");
-			BufferedOutputStream bos = new BufferedOutputStream(threadLocalService.get());
-			bos.write("Processo di deanomizzazione abortita per elevato carico di richieste".getBytes(Charset.forName("UTF-8")));
-			bos.flush();
 			threadLocalService.closeEntry();
+			threadLocalService.addEntry("Deanonimizzazione abortita.txt", "Processo di deanomizzazione abortita per elevato carico di richieste");
 			threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
 			FileInputStream fis = new FileInputStream(tmp);
 			IOUtils.copy(fis, threadLocalService.get());
 			fis.close();
 			threadLocalService.closeEntry();
 			return false;
-		}	
+		}
+		threadLocalService.closeEntry();
+		return true;
 	}
-
 }

@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
+import it.gov.pagopa.logextractor.util.EnhancedZipOutputStream;
 import it.gov.pagopa.logextractor.util.PasswordFactory;
 import it.gov.pagopa.logextractor.util.ZipArchiverImpl;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
@@ -26,15 +27,10 @@ public class ThreadLocalOutputStreamService {
 	@AllArgsConstructor
 	class ZipInfo{
 		String password;
-		ZipOutputStream zos;
+		EnhancedZipOutputStream zos;
 		ZipArchiverImpl zip;
 	}
 	private static ThreadLocal<ZipInfo> local = new ThreadLocal<>();
-	
-	/*
-	 * 		
-
-	 */
 	
 	public void initialize(HttpServletResponse httpServletResponse, String attachmentName) throws IOException {
 		PasswordFactory passwordFactory = new PasswordFactory();
@@ -44,7 +40,7 @@ public class ThreadLocalOutputStreamService {
 		httpServletResponse.addHeader(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s.zip", attachmentName));
 		httpServletResponse.addHeader("password", password);
 		httpServletResponse.addHeader("Content-Type",MediaType.APPLICATION_OCTET_STREAM_VALUE);
-		ZipOutputStream zos = zip.createArchiveStream(httpServletResponse.getOutputStream());
+		EnhancedZipOutputStream zos = zip.createArchiveStream(httpServletResponse.getOutputStream());
 		local.set(new ZipInfo(password, zos, zip));
 	}
 	
