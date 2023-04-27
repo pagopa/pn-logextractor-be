@@ -11,6 +11,7 @@ import java.util.List;
 
 import it.gov.pagopa.logextractor.util.JsonUtilities;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -274,6 +275,8 @@ public class LogServiceImpl implements LogService {
           secondsToWait = downloadMetaData.getDownload().getRetryAfter();
         }
       } catch (HttpServerErrorException | HttpClientErrorException ex) {
+        log.error("Exception occurred when getting file metadata for download. Exception:\n{}",
+            ExceptionUtils.getStackTrace(ex));
         filesNotDownloadable.add(currentDownloadData);
       }
     }
