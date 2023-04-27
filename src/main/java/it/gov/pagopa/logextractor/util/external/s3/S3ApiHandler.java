@@ -26,8 +26,8 @@ public class S3ApiHandler {
 
   public File getFile(String fileName, String extension)
       throws IOException, LogExtractorException {
-    log.info("Getting assertion file... fileName={}, extension={}", fileName, extension);
-    S3Object s3object = s3Client.getObject(bucketName, fileName);
+    log.info("Getting assertion file... file={}", fileName + extension);
+    S3Object s3object = s3Client.getObject(bucketName, fileName + extension);
     if (s3object == null) {
       throw new LogExtractorException("No assertion file in S3 bucket");
     }
