@@ -1,8 +1,25 @@
 package it.gov.pagopa.logextractor;
 
-import com.amazonaws.services.s3.AmazonS3;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.springframework.boot.test.context.SpringBootTest;
+
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
+
 import it.gov.pagopa.logextractor.dto.FileDownloadInfo;
 import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
@@ -10,7 +27,13 @@ import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDto;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
-import it.gov.pagopa.logextractor.pn_logextractor_be.model.*;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.BaseResponseDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.MonthlyNotificationsRequestDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.NotificationInfoRequestDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.PersonLogsRequestDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.SessionLogsRequestDto;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.TraceIdLogsRequestDto;
 import it.gov.pagopa.logextractor.service.LogService;
 import it.gov.pagopa.logextractor.service.LogServiceImpl;
 import it.gov.pagopa.logextractor.util.FileUtilities;
@@ -20,21 +43,6 @@ import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHan
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
 import it.gov.pagopa.logextractor.util.external.s3.S3ApiHandler;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.mockito.Mockito;
-import java.io.File;
-import java.io.IOException;
-import java.text.ParseException;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class LogServiceImplTest {

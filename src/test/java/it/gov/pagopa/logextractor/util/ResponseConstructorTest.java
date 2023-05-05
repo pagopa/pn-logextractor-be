@@ -4,17 +4,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import it.gov.pagopa.logextractor.util.constant.GenericConstants;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
-import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import it.gov.pagopa.logextractor.dto.response.DownloadArchiveResponseDto;
+import it.gov.pagopa.logextractor.util.constant.GenericConstants;
+import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
 
 @SpringBootTest
 class ResponseConstructorTest {
