@@ -38,11 +38,11 @@ class DowntimeRestTemplateErrorHandlerTest {
     problemError = new ProblemError();
     problem = new Problem();
     problemError.setDetail(
-        "Downtime already open, startDate(GMT/UTC) " + "{} = 2023-04-10T14:06:47.327Z, endDate(GMT/UTC) {} = 2023-04-10T17:06:47.327Z");
+        "Downtime already open, startDate(GMT/UTC) " + "{} = 2023-04-10T14:06Z, endDate(GMT/UTC) {} = 2023-04-10T17:06Z");
     problemError.setCode("409 CONFLICT");
     problem.setStatus(409);
     problem.setDetail(
-        "Downtime already open, startDate(GMT/UTC) " + "{} = 2023-04-10T14:06:47.327Z, endDate(GMT/UTC) {} = 2023-04-10T17:06:47.327Z");
+        "Downtime already open, startDate(GMT/UTC) " + "{} = 2023-04-10T14:06Z, endDate(GMT/UTC) {} = 2023-04-10T17:06Z");
     problem.setTitle(
         "Conflict in request. Requested resource in conflict with the current state of the server.");
     problem.setErrors(List.of(problemError));
