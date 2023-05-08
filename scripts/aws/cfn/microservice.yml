@@ -260,9 +260,10 @@ Resources:
         ContainerEnvEntry18: !Sub 'DOWNTIME_EVENTS_URL=http://${ApplicationLoadBalancerDomain}:8080/downtime-internal/v1/events'
         ContainerEnvEntry19: !Sub 'DOWNTIME_STATUS_URL=http://${ApplicationLoadBalancerDomain}:8080/downtime/v1/status'
         ContainerEnvEntry20: !Sub 'S3_DOWNLOAD_URL=${SamlAssertionDownloadUrl}'
-        ContainerSecret1: !Sub 'BASIC_AUTH_USERNAME=${OpenSearchSecretArn}:username:AWSCURRENT:'
-        ContainerSecret2: !Sub 'BASIC_AUTH_PASSWORD=${OpenSearchSecretArn}:password:AWSCURRENT:'
+        ContainerSecret1: !Sub 'BASIC_AUTH_USERNAME=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-opensearch-logextractor:username:AWSCURRENT:'
+        ContainerSecret2: !Sub 'BASIC_AUTH_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-opensearch-logextractor:password:AWSCURRENT:'
         MappedPaths: '/log-extractor/*'
+        MicroServiceSecretPrefix: pn-opensearch-logextractor
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
         VpcId: !Ref VpcId
@@ -281,12 +282,6 @@ Resources:
       PolicyDocument:
         Version: 2012-10-17
         Statement:
-          - Effect: Allow
-            Action:
-              - secretsmanager:GetSecretValue
-              - kms:Decrypt
-            Resource:
-              - !Ref OpenSearchSecretArn
           - Fn::If:
             - HasSamlAssertionKmsKeyArn
             - Effect: Allow
