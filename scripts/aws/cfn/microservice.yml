@@ -178,10 +178,6 @@ Parameters:
     Default: ''
     Description: Saml assertion bucket arn
 
-  OpenSearchSecretArn:
-    Type: String
-    Description: OpenSearch readonly secret ARN
-
   OpenSearchEndpoint:
     Type: String
     Description: opensearch cluster endpoint
