@@ -7,6 +7,7 @@
     "SafeStorageCxId": "pn-delivery-push",
     "SamlAssertionBucketKeyArn": "",
     "SamlAssertionBucketArn": "",
+    "SamlAssertionBucketName": "",
     "SamlAssertionDownloadUrl": "",
     "DownloadFileUrl": "http://%s:8080/%ssafe-storage/v1/files/%s",
     "CorsAllowedDomain": "https://helpdesk.svil.notifichedigitali.it"
