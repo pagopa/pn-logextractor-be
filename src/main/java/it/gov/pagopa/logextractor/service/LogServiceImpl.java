@@ -242,9 +242,7 @@ public class LogServiceImpl implements LogService {
 						.getDownloadMetadata(currentDownloadData.getKey());
 				currentDownloadData.setDownloadUrl(downloadMetaData.getDownload().getUrl());
 				downloadableFiles.add(currentDownloadData);
-				if (null != downloadMetaData.getDownload() && null == downloadMetaData.getDownload().getUrl()
-						&& null != downloadMetaData.getDownload().getRetryAfter()
-						&& secondsToWait < downloadMetaData.getDownload().getRetryAfter()) {
+				if ( secondsToWait < getRetryAfter(downloadMetaData)) {
 					secondsToWait = downloadMetaData.getDownload().getRetryAfter();
 				}
 			} catch (HttpServerErrorException | HttpClientErrorException ex) {
@@ -298,6 +296,15 @@ public class LogServiceImpl implements LogService {
 		}
 	}
 
+	private Integer getRetryAfter(FileDownloadMetadataResponseDto downloadMetaData) {
+		if (downloadMetaData == null || downloadMetaData.getDownload() == null) {
+			return 0;
+		}else {
+			Integer ret = downloadMetaData.getDownload().getRetryAfter();
+			return ret==null?0:ret;
+		}
+	}
+	
 	public void getDeanonimizedPersonLogs(PersonLogsRequestDto requestData, String xPagopaHelpdUid,
 			String xPagopaCxType) throws IOException, LogExtractorException {
 		log.info(
@@ -310,57 +317,57 @@ public class LogServiceImpl implements LogService {
 		int docCount = 0;
 		long performanceMillis = 0;
 		File tmp = fileUtils.getFileWithRandomName(OS_RESULT, GenericConstants.TXT_EXTENSION);
-		OutputStream tmpOutStream = new FileOutputStream(tmp);
-
-		// use case 3
-		if (requestData.getDateFrom() != null && requestData.getDateTo() != null && requestData.getTaxId() != null
-				&& requestData.getRecipientType() != null && requestData.getIun() == null) {
-			log.info("Getting internal id...");
-			String internalId = deanonimizationApiHandler.getUniqueIdentifierForPerson(requestData.getRecipientType(),
-					requestData.getTaxId());
-			log.info("Service response: internalId={} retrieved in {} ms", internalId,
-					System.currentTimeMillis() - serviceStartTime);
-			performanceMillis = System.currentTimeMillis();
-
-			S3DocumentDownloader s3 = new S3DocumentDownloader(awsProfile, s3Region, s3Bucket);
-			openSearchApiHandler.setObserver(s3);
-			docCount = openSearchApiHandler.getAnonymizedLogsByUid(internalId, requestData.getDateFrom(),
-					requestData.getDateTo(), tmpOutStream);
-			log.info(LoggingConstants.QEURY_EXECUTION_COMPLETED_TIME_DEANONIMIZE_DOCS,
-					System.currentTimeMillis() - performanceMillis, docCount);
-			tmpOutStream.flush();
-			tmpOutStream.close();
-			performanceMillis = System.currentTimeMillis();
-			threadLocalService.addEntry(OS_RESULT + GenericConstants.TXT_EXTENSION);
-			deanonimizationApiHandler.deanonimizeDocuments(tmp, requestData.getRecipientType(),
-					threadLocalService.get());
-			threadLocalService.closeEntry();
-
-			if (s3.getFileName() != null) {
-				threadLocalService.addEntry(s3.getFileName(), s3.getFileContent());
-			}
-		} else {
-			if (requestData.getIun() != null) {
-				// use case 4
-				log.info(LoggingConstants.GET_NOTIFICATION_DETAILS);
-				NotificationDetailsResponseDto notificationDetails = notificationApiHandler
-						.getNotificationDetails(requestData.getIun());
-				log.info("Service response: notificationDetails={} retrieved in {} ms",
-						new ObjectMapper().writer().writeValueAsString(notificationDetails),
+		
+		try (OutputStream tmpOutStream = new FileOutputStream(tmp)){
+	
+			// use case 3
+			if (requestData.getDateFrom() != null && requestData.getDateTo() != null && requestData.getTaxId() != null
+					&& requestData.getRecipientType() != null && requestData.getIun() == null) {
+				log.info("Getting internal id...");
+				String internalId = deanonimizationApiHandler.getUniqueIdentifierForPerson(requestData.getRecipientType(),
+						requestData.getTaxId());
+				log.info("Service response: internalId={} retrieved in {} ms", internalId,
 						System.currentTimeMillis() - serviceStartTime);
-				OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
-				String notificationEndDate = notificationStartDate.plusMonths(3).toString();
 				performanceMillis = System.currentTimeMillis();
-				docCount = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(),
-						notificationStartDate.toString(), notificationEndDate, tmpOutStream);
-				tmpOutStream.flush();
-				tmpOutStream.close();
+	
+				S3DocumentDownloader s3 = new S3DocumentDownloader(awsProfile, s3Region, s3Bucket);
+				openSearchApiHandler.setObserver(s3);
+				docCount = openSearchApiHandler.getAnonymizedLogsByUid(internalId, requestData.getDateFrom(),
+						requestData.getDateTo(), tmpOutStream);
 				log.info(LoggingConstants.QEURY_EXECUTION_COMPLETED_TIME_DEANONIMIZE_DOCS,
 						System.currentTimeMillis() - performanceMillis, docCount);
+				tmpOutStream.flush();
 				performanceMillis = System.currentTimeMillis();
 				threadLocalService.addEntry(OS_RESULT + GenericConstants.TXT_EXTENSION);
-				deanonimizationApiHandler.deanonimizeDocuments(tmp, RecipientTypes.PF, threadLocalService.get());
+				deanonimizationApiHandler.deanonimizeDocuments(tmp, requestData.getRecipientType(),
+						threadLocalService.get());
 				threadLocalService.closeEntry();
+	
+				if (s3.getFileName() != null) {
+					threadLocalService.addEntry(s3.getFileName(), s3.getFileContent());
+				}
+			} else {
+				if (requestData.getIun() != null) {
+					// use case 4
+					log.info(LoggingConstants.GET_NOTIFICATION_DETAILS);
+					NotificationDetailsResponseDto notificationDetails = notificationApiHandler
+							.getNotificationDetails(requestData.getIun());
+					log.info("Service response: notificationDetails={} retrieved in {} ms",
+							new ObjectMapper().writer().writeValueAsString(notificationDetails),
+							System.currentTimeMillis() - serviceStartTime);
+					OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
+					String notificationEndDate = notificationStartDate.plusMonths(3).toString();
+					performanceMillis = System.currentTimeMillis();
+					docCount = openSearchApiHandler.getAnonymizedLogsByIun(requestData.getIun(),
+							notificationStartDate.toString(), notificationEndDate, tmpOutStream);
+					tmpOutStream.flush();
+					log.info(LoggingConstants.QEURY_EXECUTION_COMPLETED_TIME_DEANONIMIZE_DOCS,
+							System.currentTimeMillis() - performanceMillis, docCount);
+					performanceMillis = System.currentTimeMillis();
+					threadLocalService.addEntry(OS_RESULT + GenericConstants.TXT_EXTENSION);
+					deanonimizationApiHandler.deanonimizeDocuments(tmp, RecipientTypes.PF, threadLocalService.get());
+					threadLocalService.closeEntry();
+				}
 			}
 		}
 		Files.delete(tmp.toPath());
