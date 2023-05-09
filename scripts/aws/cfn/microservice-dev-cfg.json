@@ -1,0 +1,14 @@
+{
+  "Parameters" : {
+    "PnDataVaultRootPath": "http://alb.confidential.pn.internal:8080",
+    "SafeStorageEndpoint": "alb.confidential.pn.internal",
+    "SafeStorageStage": "",
+    "SafeStorageCxId": "pn-delivery-push",
+    "SamlAssertionBucketKeyArn": "arn:aws:kms:eu-south-1:089813480515:key/a0d3c625-499b-4788-9b33-8e725864bfea",
+    "SamlAssertionBucketArn": "arn:aws:s3:::spidhub-dev-hublogin-1toyy-samlassertionlogbucket-rbdwuvk3lc6p",
+    "SamlAssertionBucketName": "spidhub-dev-hublogin-1toyy-samlassertionlogbucket-rbdwuvk3lc6p",
+    "SamlAssertionDownloadUrl": "s3://spidhub-dev-hublogin-1toyy-samlassertionlogbucket-rbdwuvk3lc6p/%s",
+    "DownloadFileUrl": "http://%s:8080/%ssafe-storage/v1/files/%s",
+    "CorsAllowedDomain": "https://helpdesk.dev.notifichedigitali.it"
+  }
+}

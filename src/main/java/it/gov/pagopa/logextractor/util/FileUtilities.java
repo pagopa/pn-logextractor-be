@@ -2,22 +2,26 @@ package it.gov.pagopa.logextractor.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import com.opencsv.bean.HeaderColumnNameMappingStrategy;
+
 import org.apache.commons.io.FileUtils;
+import org.springframework.stereotype.Component;
+
+import com.opencsv.bean.HeaderColumnNameMappingStrategy;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
+
 import it.gov.pagopa.logextractor.dto.NotificationCsvBean;
 import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
-import org.springframework.stereotype.Component;
 
 /**
  * Utility class to manage the core operations for files
@@ -89,27 +93,38 @@ public class FileUtilities {
 		}
 	}
 	
-	/**
-	 * Write notification data to a csv file
-	 * @param file the file where to write the content into
-	 * @param notifications the list of notifications
-	 * @throws IOException in case of an I/O error
-	 * @throws CsvDataTypeMismatchException If a field of the beans is annotated improperly or an unsupported data type is supposed to be written
-	 * @throws CsvRequiredFieldEmptyException If a field is marked as required,but the source is null
-	 * */
-	public void writeCsv(File file, List<NotificationCsvBean> notifications) throws CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, IOException {
-		if (!file.getParentFile().exists()) {
-			file.getParentFile().mkdirs();
-		}
+//	/**
+//	 * Write notification data to a csv file
+//	 * @param file the file where to write the content into
+//	 * @param notifications the list of notifications
+//	 * @throws IOException in case of an I/O error
+//	 * @throws CsvDataTypeMismatchException If a field of the beans is annotated improperly or an unsupported data type is supposed to be written
+//	 * @throws CsvRequiredFieldEmptyException If a field is marked as required,but the source is null
+//	 * */
+//	public void writeCsv(File file, List<NotificationCsvBean> notifications) throws CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, IOException {
+//		if (!file.getParentFile().exists()) {
+//			file.getParentFile().mkdirs();
+//		}
+//		HeaderColumnNameMappingStrategy<NotificationCsvBean> strategy = new HeaderColumnNameMappingStrategy<>();
+//		strategy.setType(NotificationCsvBean.class);
+//		Path outputPath = Path.of(file.getPath());
+//		try (var writer = Files.newBufferedWriter(outputPath)) {
+//			StatefulBeanToCsv<NotificationCsvBean> csv = new StatefulBeanToCsvBuilder<NotificationCsvBean>(writer)
+//					.withMappingStrategy(strategy)
+//					.build();
+//			csv.write(notifications);
+//		}
+//	}
+	
+	public void writeCsv(List<NotificationCsvBean> notifications, OutputStream out
+			) throws CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, IOException {
 		HeaderColumnNameMappingStrategy<NotificationCsvBean> strategy = new HeaderColumnNameMappingStrategy<>();
 		strategy.setType(NotificationCsvBean.class);
-		Path outputPath = Path.of(file.getPath());
-		try (var writer = Files.newBufferedWriter(outputPath)) {
-			StatefulBeanToCsv<NotificationCsvBean> csv = new StatefulBeanToCsvBuilder<NotificationCsvBean>(writer)
-					.withMappingStrategy(strategy)
-					.build();
-			csv.write(notifications);
-		}
+		OutputStreamWriter writer = new OutputStreamWriter(out);
+		StatefulBeanToCsv<NotificationCsvBean> csv = new StatefulBeanToCsvBuilder<NotificationCsvBean>(writer)
+				.withMappingStrategy(strategy)
+				.build();
+		csv.write(notifications);
 	}
 	
 	/**

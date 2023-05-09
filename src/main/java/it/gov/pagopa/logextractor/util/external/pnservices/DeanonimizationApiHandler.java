@@ -1,10 +1,15 @@
 package it.gov.pagopa.logextractor.util.external.pnservices;
 
-import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -32,10 +37,12 @@ import it.gov.pagopa.logextractor.util.JsonUtilities;
 import it.gov.pagopa.logextractor.util.constant.ExternalServiceConstants;
 import it.gov.pagopa.logextractor.util.constant.OpensearchConstants;
 import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Uility class for integrations with Piattaforma Notifiche de-anonymization service
  * */
+@Slf4j
 @Component
 public class DeanonimizationApiHandler {
 
@@ -68,7 +75,13 @@ public class DeanonimizationApiHandler {
 	public String getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId) throws LogExtractorException {
 		String url = String.format(getUniqueIdURL, recipientType.getValue());
 		HttpEntity<String> request =  new HttpEntity<>(taxId);
-		String response = client.postForObject(url, request, String.class);
+		String response="";
+		try {
+			response = client.postForObject(url, request, String.class);
+		}catch(Exception err) {
+			log.error("cannot connect to {}",url);
+			throw err;
+		}
 		if(StringUtils.isBlank(response) || "null".equalsIgnoreCase(response)) {
 			throw new LogExtractorException("Anonymized tax id is null");
 		}
@@ -167,34 +180,53 @@ public class DeanonimizationApiHandler {
 	 * @throws LogExtractorException if the external service response is "null", null or blank
 	 * @throws JsonProcessingException 
 	 */
-	public List<String> deanonimizeDocuments(List<String> anonymizedDocuments, RecipientTypes recipientType) throws LogExtractorException, JsonProcessingException {
-		ArrayList<String> deanonymizedDocuments = new ArrayList<>();
+	public void deanonimizeDocuments(File anonymizedDocuments, RecipientTypes recipientType, OutputStream out) throws LogExtractorException, JsonProcessingException {
 		ObjectMapper mapper = new ObjectMapper();
 		JsonUtilities jsonUtils = new JsonUtilities();
 		Map<String, String> keyValues = new HashMap<>();
-		for(String currentDocument : anonymizedDocuments) {
-				JsonNode root = mapper.readTree(currentDocument);
-				JsonNode uid = root.get(OpensearchConstants.OS_UID_FIELD);
-				JsonNode cxId = root.get(OpensearchConstants.OS_CX_ID_FIELD);
-
-				if (uid != null && !uid.asText().startsWith("APIKEY-")) {
-					GetBasicDataResponseDto taxCodeDto = getTaxCodeForPerson(
-							recipientType.toString() + "-" + uid.asText());
-					keyValues.put(OpensearchConstants.OS_UID_FIELD, taxCodeDto.getData());
-				}
-				if (cxId != null) {
-					String deanonimizedIdentifier = null;
-					if (cxId.asText().startsWith("PF-") || cxId.asText().startsWith("PG-")) {
-						deanonimizedIdentifier = getTaxCodeForPerson(cxId.asText()).getData();
-					} else if (cxId.asText().startsWith("PA-")) {
-						deanonimizedIdentifier = getPublicAuthorityName(cxId.asText());
+		BufferedReader br = null;
+		BufferedWriter wr = null;
+		FileReader fr = null;
+		try {
+			fr = new FileReader(anonymizedDocuments);
+			br = new BufferedReader(fr);
+			wr = new BufferedWriter(new OutputStreamWriter(out));
+			
+			String currentDocument;
+			while ((currentDocument = br.readLine()) != null) {
+					JsonNode root = mapper.readTree(currentDocument);
+					JsonNode uid = root.get(OpensearchConstants.OS_UID_FIELD);
+					JsonNode cxId = root.get(OpensearchConstants.OS_CX_ID_FIELD);
+	
+					if (uid != null && !uid.asText().startsWith("APIKEY-")) {
+						GetBasicDataResponseDto taxCodeDto = getTaxCodeForPerson(
+								recipientType.toString() + "-" + uid.asText());
+						keyValues.put(OpensearchConstants.OS_UID_FIELD, taxCodeDto.getData());
 					}
-					keyValues.put(OpensearchConstants.OS_CX_ID_FIELD, deanonimizedIdentifier);
-				}
-				currentDocument = jsonUtils.replaceValues(currentDocument, keyValues);
-				deanonymizedDocuments.add(currentDocument);
+					if (cxId != null) {
+						String deanonimizedIdentifier = null;
+						if (cxId.asText().startsWith("PF-") || cxId.asText().startsWith("PG-")) {
+							deanonimizedIdentifier = getTaxCodeForPerson(cxId.asText()).getData();
+						} else if (cxId.asText().startsWith("PA-")) {
+							deanonimizedIdentifier = getPublicAuthorityName(cxId.asText());
+						}
+						keyValues.put(OpensearchConstants.OS_CX_ID_FIELD, deanonimizedIdentifier);
+					}
+					wr.write(jsonUtils.replaceValues(currentDocument, keyValues));
+					wr.newLine();
+					wr.flush();
+					currentDocument=null;
+			}
+		} catch (Exception e) {
+			log.error("Error reading {}", anonymizedDocuments.getName(), e);
+		} finally {
+			if (br!=null) {
+				IOUtils.closeQuietly(br);
+			}
+			if (fr != null) {
+				IOUtils.closeQuietly(fr);
+			}
 		}
 		
-		return  deanonymizedDocuments;
 	}
 }

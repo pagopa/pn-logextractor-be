@@ -1,0 +1,15 @@
+{
+  "Parameters" : {
+    "OpenSearchSecretArn":"arn:aws:secretsmanager:eu-south-1:830192246553:secret:pn-opensearch-logextractor-UnMgU1",
+    "PnDataVaultRootPath": "http://alb.confidential.pn.internal:8080",
+    "SafeStorageEndpoint": "alb.confidential.pn.internal",
+    "SafeStorageStage": "",
+    "SafeStorageCxId": "pn-delivery-push",
+    "SamlAssertionBucketKeyArn": "",
+    "SamlAssertionBucketArn": "",
+    "SamlAssertionBucketName": "",
+    "SamlAssertionDownloadUrl": "",
+    "DownloadFileUrl": "http://%s:8080/%ssafe-storage/v1/files/%s",
+    "CorsAllowedDomain": "https://helpdesk.svil.notifichedigitali.it"
+  }
+}
