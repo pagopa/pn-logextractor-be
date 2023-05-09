@@ -43,7 +43,6 @@ import it.gov.pagopa.logextractor.util.external.opensearch.S3DocumentDownloader;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
-import it.gov.pagopa.logextractor.util.external.s3.S3ApiHandler;
 import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.io.outputstream.ZipOutputStream;
 
@@ -74,8 +73,6 @@ public class LogServiceImpl implements LogService {
 	@Autowired
 	ThreadLocalOutputStreamService threadLocalService;
 	
-	@Autowired
-	S3ApiHandler s3ApiHandler;
 	@Autowired
 	FileUtilities fileUtils;
 

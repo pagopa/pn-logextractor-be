@@ -45,7 +45,6 @@ import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
-import it.gov.pagopa.logextractor.util.external.s3.S3ApiHandler;
 
 @SpringBootTest
 class LogServiceImplTest {
@@ -65,8 +64,6 @@ class LogServiceImplTest {
 	@Mock
 	NotificationApiHandler notificationApiHandler;
 
-	@Mock
-	S3ApiHandler s3ApiHandler;
 	@InjectMocks
 	LogService service = new LogServiceImpl();
 
