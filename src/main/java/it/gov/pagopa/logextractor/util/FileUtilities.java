@@ -29,7 +29,7 @@ import it.gov.pagopa.logextractor.util.constant.GenericConstants;
  */
 @Component
 public class FileUtilities {
-	@Value("${export.folder}")
+	@Value("${export.folder:/tmp}")
 	String exportFolder;
 	
 	/**
