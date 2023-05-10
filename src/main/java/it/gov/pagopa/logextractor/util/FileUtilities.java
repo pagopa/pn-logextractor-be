@@ -29,6 +29,9 @@ import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 @Component
 public class FileUtilities {
 
+	private String getExportFolder () {
+		return GenericConstants.EXPORT_FOLDER .endsWith(File.separator)?GenericConstants.EXPORT_FOLDER:GenericConstants.EXPORT_FOLDER+File.separator;
+	}
 	/**
 	 * Create a new file with the given name plus a random alphanumeric string and the given extension
 	 * @param name the name of the file to retrieve
@@ -36,7 +39,7 @@ public class FileUtilities {
 	 * @return a new {@link File} instance of a file with the given name
 	 * */
 	public File getFileWithRandomName(String name, String extension) {
-		return FileUtils.getFile(GenericConstants.EXPORT_FOLDER + name + "-" +  new RandomUtils().generateRandomAlphaNumericString() + extension);
+		return FileUtils.getFile(getExportFolder() + name + "-" +  new RandomUtils().generateRandomAlphaNumericString() + extension);
 	}
 
 	/**
@@ -46,7 +49,7 @@ public class FileUtilities {
 	 * @return a new {@link File} instance of a file with the given name
 	 * */
 	public File getFile(String name, String extension, String url) throws IOException {
-		File downloadedFile = FileUtils.getFile(GenericConstants.EXPORT_FOLDER + name + extension);
+		File downloadedFile = FileUtils.getFile(getExportFolder() + name + extension);
 		FileUtils.copyURLToFile(new URL(url), downloadedFile);
 		return downloadedFile;
 	}
