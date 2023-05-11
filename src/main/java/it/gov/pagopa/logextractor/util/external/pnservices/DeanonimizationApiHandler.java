@@ -73,6 +73,7 @@ public class DeanonimizationApiHandler {
 	 */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 	public String getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId) throws LogExtractorException {
+		log.debug("Calling getUniqueIdentifierForPerson for {}", taxId);
 		String url = String.format(getUniqueIdURL, recipientType.getValue());
 		HttpEntity<String> request =  new HttpEntity<>(taxId);
 		String response="";
@@ -98,6 +99,7 @@ public class DeanonimizationApiHandler {
 	 */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 	public GetBasicDataResponseDto getTaxCodeForPerson(String personId) throws LogExtractorException {
+		log.debug("Calling getTaxCodeForPerson for {}", personId);
 		HttpHeaders headers = new HttpHeaders();
 		headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 		HttpEntity<?> entity = new HttpEntity<>(headers);
@@ -132,6 +134,7 @@ public class DeanonimizationApiHandler {
 	 * */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 	public String getPublicAuthorityId(String publicAuthorityName) throws LogExtractorException {
+		log.debug("Calling getPublicAuthorityId for {}", publicAuthorityName);
 		HttpHeaders headers = new HttpHeaders();
 		headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 		HttpEntity<?> entity = new HttpEntity<>(headers);
@@ -163,6 +166,7 @@ public class DeanonimizationApiHandler {
 	 * */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 	public String getPublicAuthorityName(String publicAuthorityId) throws LogExtractorException {
+		log.debug("Calling getPublicAuthorityName for {}", publicAuthorityId);
 		String url = String.format(getPublicAuthorityNameURL, publicAuthorityId);
 		SelfCarePaDataResponseDto response = client.getForEntity(url, SelfCarePaDataResponseDto.class).getBody();		
 		if(response == null || StringUtils.isBlank(response.getName()) || "null".equalsIgnoreCase(response.getName())) {
@@ -214,7 +218,7 @@ public class DeanonimizationApiHandler {
 					}
 					wr.write(jsonUtils.replaceValues(currentDocument, keyValues));
 					wr.newLine();
-					//wr.flush(); //Crash su AWS?
+					wr.flush();
 					currentDocument=null;
 			}
 		} catch (Exception e) {
