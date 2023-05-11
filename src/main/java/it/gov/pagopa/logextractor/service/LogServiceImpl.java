@@ -41,6 +41,7 @@ import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandler;
 import it.gov.pagopa.logextractor.util.external.opensearch.S3DocumentDownloader;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
+import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationService;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
 import lombok.extern.slf4j.Slf4j;
@@ -69,7 +70,8 @@ public class LogServiceImpl implements LogService {
 	OpenSearchApiHandler openSearchApiHandler;
 	
 	@Autowired
-	DeanonimizationApiHandler deanonimizationApiHandler;
+	DeanonimizationService deanonimizationService;
+	
 	@Autowired
 	ThreadLocalOutputStreamService threadLocalService;
 	
@@ -137,8 +139,7 @@ public class LogServiceImpl implements LogService {
 		long serviceStartTime = System.currentTimeMillis();
 		log.info("Getting public authority id...");
 		long performanceMillis = System.currentTimeMillis();
-		String encodedPublicAuthorityName = deanonimizationApiHandler
-				.getPublicAuthorityId(requestData.getPublicAuthorityName());
+		String encodedPublicAuthorityName = deanonimizationService.getPublicAuthorityId(requestData.getPublicAuthorityName());
 		log.info(
 				"Public authority id retrieved in {} ms, getting notifications, publicAuthority={}, startDate={}, "
 						+ "endDate={}",
@@ -324,7 +325,7 @@ public class LogServiceImpl implements LogService {
 			if (requestData.getDateFrom() != null && requestData.getDateTo() != null && requestData.getTaxId() != null
 					&& requestData.getRecipientType() != null && requestData.getIun() == null) {
 				log.info("Getting internal id...");
-				String internalId = deanonimizationApiHandler.getUniqueIdentifierForPerson(requestData.getRecipientType(),
+				String internalId = deanonimizationService.getUniqueIdentifierForPerson(requestData.getRecipientType(),
 						requestData.getTaxId());
 				log.info("Service response: internalId={} retrieved in {} ms", internalId,
 						System.currentTimeMillis() - serviceStartTime);
@@ -339,7 +340,7 @@ public class LogServiceImpl implements LogService {
 				tmpOutStream.flush();
 				performanceMillis = System.currentTimeMillis();
 				threadLocalService.addEntry(OS_RESULT + GenericConstants.TXT_EXTENSION);
-				deanonimizationApiHandler.deanonimizeDocuments(tmp, requestData.getRecipientType(),
+				deanonimizationService.deanonimizeDocuments(tmp, requestData.getRecipientType(),
 						threadLocalService.get());
 				threadLocalService.closeEntry();
 	
@@ -365,7 +366,7 @@ public class LogServiceImpl implements LogService {
 							System.currentTimeMillis() - performanceMillis, docCount);
 					performanceMillis = System.currentTimeMillis();
 					threadLocalService.addEntry(OS_RESULT + GenericConstants.TXT_EXTENSION);
-					deanonimizationApiHandler.deanonimizeDocuments(tmp, RecipientTypes.PF, threadLocalService.get());
+					deanonimizationService.deanonimizeDocuments(tmp, RecipientTypes.PF, threadLocalService.get());
 					threadLocalService.closeEntry();
 				}
 			}
@@ -431,7 +432,7 @@ public class LogServiceImpl implements LogService {
 		tmpOutStream.flush();
 		IOUtils.closeQuietly(tmpOutStream);
 		threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
-		deanonimizationApiHandler.deanonimizeDocuments(openSearchResponse, RecipientTypes.PF, threadLocalService.get());
+		deanonimizationService.deanonimizeDocuments(openSearchResponse, RecipientTypes.PF, threadLocalService.get());
 		threadLocalService.closeEntry();
 		
 		if (s3.getFileName()!=null) {
