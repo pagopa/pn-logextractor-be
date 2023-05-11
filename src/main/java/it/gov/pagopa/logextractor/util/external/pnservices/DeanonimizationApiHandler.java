@@ -214,14 +214,11 @@ public class DeanonimizationApiHandler {
 					}
 					wr.write(jsonUtils.replaceValues(currentDocument, keyValues));
 					wr.newLine();
-					wr.flush();
+					//wr.flush(); //Crash su AWS?
 					currentDocument=null;
 			}
 		} catch (Exception e) {
-			log.error("IR:"+e.getMessage());
-			for(StackTraceElement st:e.getStackTrace()) {
-				log.error("IR:"+st.getClassName()+":"+st.getLineNumber());
-			}
+			log.error("IR-"+e.getMessage());
 			log.error("Error reading {}", anonymizedDocuments.getName(), e);
 		} finally {
 			if (br!=null) {
