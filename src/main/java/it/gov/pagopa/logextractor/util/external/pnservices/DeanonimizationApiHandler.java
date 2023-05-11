@@ -73,7 +73,7 @@ public class DeanonimizationApiHandler {
 	 */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 	public String getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId) throws LogExtractorException {
-		log.debug("Calling getUniqueIdentifierForPerson for {}", taxId);
+		log.info("Calling getUniqueIdentifierForPerson for {}", taxId);
 		String url = String.format(getUniqueIdURL, recipientType.getValue());
 		HttpEntity<String> request =  new HttpEntity<>(taxId);
 		String response="";
@@ -99,7 +99,7 @@ public class DeanonimizationApiHandler {
 	 */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 	public GetBasicDataResponseDto getTaxCodeForPerson(String personId) throws LogExtractorException {
-		log.debug("Calling getTaxCodeForPerson for {}", personId);
+		log.info("Calling getTaxCodeForPerson for {}", personId);
 		HttpHeaders headers = new HttpHeaders();
 		headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 		HttpEntity<?> entity = new HttpEntity<>(headers);
@@ -134,7 +134,7 @@ public class DeanonimizationApiHandler {
 	 * */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 	public String getPublicAuthorityId(String publicAuthorityName) throws LogExtractorException {
-		log.debug("Calling getPublicAuthorityId for {}", publicAuthorityName);
+		log.info("Calling getPublicAuthorityId for {}", publicAuthorityName);
 		HttpHeaders headers = new HttpHeaders();
 		headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 		HttpEntity<?> entity = new HttpEntity<>(headers);
@@ -166,7 +166,7 @@ public class DeanonimizationApiHandler {
 	 * */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 	public String getPublicAuthorityName(String publicAuthorityId) throws LogExtractorException {
-		log.debug("Calling getPublicAuthorityName for {}", publicAuthorityId);
+		log.info("Calling getPublicAuthorityName for {}", publicAuthorityId);
 		String url = String.format(getPublicAuthorityNameURL, publicAuthorityId);
 		SelfCarePaDataResponseDto response = client.getForEntity(url, SelfCarePaDataResponseDto.class).getBody();		
 		if(response == null || StringUtils.isBlank(response.getName()) || "null".equalsIgnoreCase(response.getName())) {
@@ -202,6 +202,8 @@ public class DeanonimizationApiHandler {
 					JsonNode uid = root.get(OpensearchConstants.OS_UID_FIELD);
 					JsonNode cxId = root.get(OpensearchConstants.OS_CX_ID_FIELD);
 	
+					log.info("deanonimize doc with uid: {} and cxId: {}", uid, cxId);
+					
 					if (uid != null && !uid.asText().startsWith("APIKEY-")) {
 						GetBasicDataResponseDto taxCodeDto = getTaxCodeForPerson(
 								recipientType.toString() + "-" + uid.asText());
