@@ -1,10 +1,8 @@
 package it.gov.pagopa.logextractor;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -43,6 +41,7 @@ import it.gov.pagopa.logextractor.util.FileUtilities;
 import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
+import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationService;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
 
@@ -54,10 +53,12 @@ class LogServiceImplTest {
 
 	@Mock
 	DeanonimizationApiHandler deanonimizationApiHandler;
+	@Mock
+	DeanonimizationService deanonimizationService;
 
 	@Mock
 	OpenSearchApiHandler openSearchApiHandler;
-
+	
 	@Mock
 	ThreadLocalOutputStreamService threadLocalOutputStreamService;
 
