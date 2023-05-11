@@ -42,11 +42,11 @@ public class S3DocumentDownloader implements OpenSearchApiObserver {
 	public void notify(String document, int numDoc) {
 		if (numDoc != 1) return;
 		
-		
 		JsonUtilities jsonUtils = new JsonUtilities();
 		String date = jsonUtils.getValue(document, "@timestamp");
-		if(StringUtils.isNotBlank(date)) {
-			String name = String.format("%s-%s.json", jsonUtils.getValue(document, "jti"),
+		String jti = jsonUtils.getValue(document, "jti");
+		if(StringUtils.isNotBlank(date) && StringUtils.isNotBlank(jti)) {
+			String name = String.format("%s-%s.json", jti,
 					LocalDateTime.parse(date, DateTimeFormatter.ISO_OFFSET_DATE_TIME).toLocalDate().toString());
 
 			this.fileInfo.name=name;
