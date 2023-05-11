@@ -202,6 +202,8 @@ public class DeanonimizationApiHandler {
 					JsonNode uid = root.get(OpensearchConstants.OS_UID_FIELD);
 					JsonNode cxId = root.get(OpensearchConstants.OS_CX_ID_FIELD);
 	
+					log.info("deanonimize doc with uid: {} and cxId: {}", uid, cxId);
+					
 					if (uid != null && !uid.asText().startsWith("APIKEY-")) {
 						GetBasicDataResponseDto taxCodeDto = getTaxCodeForPerson(
 								recipientType.toString() + "-" + uid.asText());
