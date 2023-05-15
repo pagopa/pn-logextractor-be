@@ -7,7 +7,7 @@
         <groupId>it.pagopa.pn</groupId>
         <artifactId>pn-parent</artifactId>
         <version>2.0.0</version>
-        <relativePath>../pn-parent</relativePath>
+        <relativePath/>
 	</parent>
 	<groupId>it.gov.pagopa.logextractor</groupId>
 	<artifactId>pn-logextractor-be</artifactId>
