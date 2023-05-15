@@ -4,10 +4,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>it.pagopa.pn</groupId>
-		<artifactId>pn-parent</artifactId>
-		<version>2.0.1-SNAPSHOT</version>
-		<relativePath/>
+        <groupId>it.pagopa.pn</groupId>
+        <artifactId>pn-parent</artifactId>
+        <version>2.0.0</version>
+        <relativePath>../pn-parent</relativePath>
 	</parent>
 	<groupId>it.gov.pagopa.logextractor</groupId>
 	<artifactId>pn-logextractor-be</artifactId>
