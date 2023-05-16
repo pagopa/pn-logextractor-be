@@ -10,6 +10,8 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -306,6 +308,7 @@ public class LogServiceImpl implements LogService {
 		}
 	}
 	
+	
 	public void getDeanonimizedPersonLogs(PersonLogsRequestDto requestData, String xPagopaHelpdUid,
 			String xPagopaCxType) throws IOException, LogExtractorException {
 		log.info(
@@ -319,6 +322,8 @@ public class LogServiceImpl implements LogService {
 		threadLocalService.get().write("Solo per non far morire lo stream".getBytes());
 		threadLocalService.closeEntry();
 		threadLocalService.get().flush();
+		threadLocalService.flushResponseOutputStream();
+		
 		long serviceStartTime = System.currentTimeMillis();
 		int docCount = 0;
 		long performanceMillis = 0;

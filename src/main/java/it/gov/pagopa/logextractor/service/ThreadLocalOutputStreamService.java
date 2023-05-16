@@ -1,6 +1,7 @@
 package it.gov.pagopa.logextractor.service;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
 import javax.servlet.http.HttpServletResponse;
@@ -28,6 +29,7 @@ public class ThreadLocalOutputStreamService {
 		String password;
 		ZipOutputStream zos;
 		ZipArchiverImpl zip;
+		OutputStream respOutputStream;
 	}
 	private static ThreadLocal<ZipInfo> local = new ThreadLocal<>();
 	
@@ -44,8 +46,9 @@ public class ThreadLocalOutputStreamService {
 		httpServletResponse.addHeader(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s.zip", attachmentName));
 		httpServletResponse.addHeader("password", password);
 		httpServletResponse.addHeader("Content-Type",MediaType.APPLICATION_OCTET_STREAM_VALUE);
-		ZipOutputStream zos = zip.createArchiveStream(httpServletResponse.getOutputStream());
-		local.set(new ZipInfo(password, zos, zip));
+		OutputStream respOutputStream = httpServletResponse.getOutputStream();
+		ZipOutputStream zos = zip.createArchiveStream(respOutputStream);
+		local.set(new ZipInfo(password, zos, zip,respOutputStream));
 	}
 	
 	public ZipOutputStream get() {
@@ -87,5 +90,13 @@ public class ThreadLocalOutputStreamService {
 	}
 	public void remove() {
 		local.remove();
+	}
+	
+	public void flushResponseOutputStream() {
+		try {
+			local.get().getRespOutputStream().flush();
+		} catch (IOException e) {
+			throw new RuntimeException("Error flushing response output stream",e);
+		}
 	}
 }
