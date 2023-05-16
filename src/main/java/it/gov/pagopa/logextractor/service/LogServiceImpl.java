@@ -317,7 +317,7 @@ public class LogServiceImpl implements LogService {
 		long serviceStartTime = System.currentTimeMillis();
 		int docCount = 0;
 		long performanceMillis = 0;
-		File tmp = fileUtils.getFileWithRandomName(OS_RESULT, GenericConstants.TXT_EXTENSION);
+//		File tmp = fileUtils.getFileWithRandomName(OS_RESULT, GenericConstants.TXT_EXTENSION);
 		
 		try (OutputStream tmpOutStream = OutputStream.nullOutputStream()){
 	
@@ -421,8 +421,8 @@ public class LogServiceImpl implements LogService {
 				requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo());
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = 0;
-		File openSearchResponse = new FileUtilities().getFileWithRandomName(OS_RESULT, GenericConstants.TXT_EXTENSION);
-		FileOutputStream tmpOutStream = new FileOutputStream(openSearchResponse);
+//		File openSearchResponse = new FileUtilities().getFileWithRandomName(OS_RESULT, GenericConstants.TXT_EXTENSION);
+//		FileOutputStream tmpOutStream = new FileOutputStream(openSearchResponse);
 		int docCount = 0;
 
 		log.info("Getting session activities' deanonimized history... ");
@@ -431,12 +431,12 @@ public class LogServiceImpl implements LogService {
 		openSearchApiHandler.setObserver(s3);
 		openSearchApiHandler.addObserver(new DeanonimizationService(deanonimizationApiHandler, threadLocalService.get(), RecipientTypes.PF));
 		threadLocalService.addEntry(OS_RESULT+GenericConstants.TXT_EXTENSION);
-		docCount = openSearchApiHandler.getAnonymizedSessionLogsByJti(requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo(), tmpOutStream);
+		docCount = openSearchApiHandler.getAnonymizedSessionLogsByJti(requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo(), OutputStream.nullOutputStream());
 
 		log.info("Query execution completed in {} ms, retrieved {} documents, deanonimizing results...",
 				System.currentTimeMillis() - performanceMillis, docCount);
-		tmpOutStream.flush();
-		IOUtils.closeQuietly(tmpOutStream);
+//		tmpOutStream.flush();
+//		IOUtils.closeQuietly(tmpOutStream);
 //		deanonimizationService.deanonimizeDocuments(openSearchResponse, RecipientTypes.PF, threadLocalService.get());
 		threadLocalService.closeEntry();
 		
@@ -444,7 +444,7 @@ public class LogServiceImpl implements LogService {
 			threadLocalService.addEntry(s3.getFileName(),s3.getFileContent());
 		}
 
-		Files.delete(openSearchResponse.toPath());
+//		Files.delete(openSearchResponse.toPath());
 		log.info("Deanonimization completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
 		performanceMillis = System.currentTimeMillis();
 		if(docCount == 0) {
