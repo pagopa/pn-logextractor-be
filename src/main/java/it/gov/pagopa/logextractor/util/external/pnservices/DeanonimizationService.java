@@ -2,16 +2,14 @@ package it.gov.pagopa.logextractor.util.external.pnservices;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,14 +20,22 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.GetBasicDataResponseD
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import it.gov.pagopa.logextractor.util.JsonUtilities;
 import it.gov.pagopa.logextractor.util.constant.OpensearchConstants;
+import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiObserver;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Service
-public class DeanonimizationService {
+public class DeanonimizationService implements OpenSearchApiObserver {
 
-	@Autowired
-	DeanonimizationApiHandler apiHandler;
+	private DeanonimizationApiHandler apiHandler;
+	private OutputStream outStream;
+	private RecipientTypes recipientType;
+	
+	public DeanonimizationService(DeanonimizationApiHandler apiHandler, OutputStream out, RecipientTypes recipientType) {
+		this.apiHandler=apiHandler;
+		this.outStream=out;
+		this.recipientType=recipientType;
+	}
+
 	
 	/** 
 	 * Returns the value associated with the specified key.
@@ -40,7 +46,7 @@ public class DeanonimizationService {
 	 * @throws LogExtractorException if the external service response is "null", null or blank
 	 * @throws JsonProcessingException 
 	 */
-	public void deanonimizeDocuments(File anonymizedDocuments, RecipientTypes recipientType, OutputStream out) throws LogExtractorException, JsonProcessingException {
+	private void deanonimizeDocuments(String anonymizedDocuments, RecipientTypes recipientType, OutputStream out) throws LogExtractorException, JsonProcessingException {
 		ObjectMapper mapper = new ObjectMapper();
 		JsonUtilities jsonUtils = new JsonUtilities();
 		Map<String, String> keyValues = new HashMap<>();
@@ -48,8 +54,7 @@ public class DeanonimizationService {
 		BufferedWriter wr = null;
 		FileReader fr = null;
 		try {
-			fr = new FileReader(anonymizedDocuments);
-			br = new BufferedReader(fr);
+			br = new BufferedReader(new StringReader(anonymizedDocuments));
 			wr = new BufferedWriter(new OutputStreamWriter(out));
 			
 			String currentDocument;
@@ -82,7 +87,7 @@ public class DeanonimizationService {
 			}
 		} catch (Exception e) {
 			log.error("IR-"+e.getMessage());
-			log.error("Error reading {}", anonymizedDocuments.getName(), e);
+			log.error("Error reading {}", anonymizedDocuments, e);
 		} finally {
 			if (br!=null) {
 				IOUtils.closeQuietly(br);
@@ -100,5 +105,14 @@ public class DeanonimizationService {
 	
 	public String getPublicAuthorityId(String publicAuthorityName) throws LogExtractorException {
 		return apiHandler.getPublicAuthorityId(publicAuthorityName);
+	}
+
+	@Override
+	public void notify(String document, int numDoc) {
+		try {
+			deanonimizeDocuments(document, recipientType, outStream);
+		} catch (JsonProcessingException | LogExtractorException e) {
+			log.error("Error during deanonimization process",e);
+		}
 	}
 }

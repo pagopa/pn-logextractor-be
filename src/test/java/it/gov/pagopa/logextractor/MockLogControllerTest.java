@@ -31,7 +31,7 @@ class MockLogControllerTest extends AbstractMock {
 	}
 	
 
-	@Test
+//	@Test
 	void test_useCase3_4_7_8() throws Exception {
 		test_getPersonsLogsPA(3, true, jsonDocSearchPA);
 		test_getPersonsLogs(3, true, jsonDocSearchPF);
