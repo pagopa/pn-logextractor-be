@@ -63,7 +63,7 @@ public class DeanonimizationService implements OpenSearchApiObserver {
 					JsonNode uid = root.get(OpensearchConstants.OS_UID_FIELD);
 					JsonNode cxId = root.get(OpensearchConstants.OS_CX_ID_FIELD);
 	
-					log.info("deanonimize doc with uid: {} and cxId: {}", uid, cxId);
+					//log.info("deanonimize doc with uid: {} and cxId: {}", uid, cxId);
 					
 					
 					if (uid != null && !uid.asText().startsWith("APIKEY-")) {
@@ -110,6 +110,7 @@ public class DeanonimizationService implements OpenSearchApiObserver {
 	@Override
 	public void notify(String document, int numDoc) {
 		try {
+			log.info("deanonimizing document "+numDoc);
 			deanonimizeDocuments(document, recipientType, outStream);
 		} catch (JsonProcessingException | LogExtractorException e) {
 			log.error("Error during deanonimization process",e);
