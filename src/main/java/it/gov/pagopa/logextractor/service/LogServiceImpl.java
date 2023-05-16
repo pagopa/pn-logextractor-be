@@ -318,7 +318,7 @@ public class LogServiceImpl implements LogService {
 				requestData.getDateFrom(), requestData.getDateTo(), requestData.getIun(),
 				requestData.getRecipientType());
 		
-		threadLocalService.addEntry("fakeEntry");
+		threadLocalService.addEntry("leggimi.txt");
 		threadLocalService.get().write("Solo per non far morire lo stream".getBytes());
 		threadLocalService.closeEntry();
 		threadLocalService.get().flush();
