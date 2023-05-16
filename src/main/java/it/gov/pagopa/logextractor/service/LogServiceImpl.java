@@ -314,6 +314,11 @@ public class LogServiceImpl implements LogService {
 				xPagopaHelpdUid, xPagopaCxType, requestData.getTicketNumber(), requestData.getTaxId(),
 				requestData.getDateFrom(), requestData.getDateTo(), requestData.getIun(),
 				requestData.getRecipientType());
+		
+		threadLocalService.addEntry("fakeEntry");
+		threadLocalService.get().write("Solo per non far morire lo stream".getBytes());
+		threadLocalService.closeEntry();
+		threadLocalService.get().flush();
 		long serviceStartTime = System.currentTimeMillis();
 		int docCount = 0;
 		long performanceMillis = 0;
