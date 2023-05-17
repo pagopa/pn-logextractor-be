@@ -422,7 +422,7 @@ paths:
       tags:
         - downtime
       x-api-permissions:
-        - 'log-downtime-wite'
+        - 'log-downtime-write'
       parameters:
         - in: header
           name: x-pagopa-pn-uid
