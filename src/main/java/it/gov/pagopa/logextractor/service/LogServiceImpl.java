@@ -343,11 +343,11 @@ public class LogServiceImpl implements LogService {
 	
 				S3DocumentDownloader s3 = new S3DocumentDownloader(awsProfile, s3Region, s3Bucket);
 				openSearchApiHandler.setObserver(s3);
-				openSearchApiHandler.addObserver(new DeanonimizationService(deanonimizationApiHandler, threadLocalService.get(), requestData.getRecipientType()));
+				//openSearchApiHandler.addObserver(new DeanonimizationService(deanonimizationApiHandler, threadLocalService.get(), requestData.getRecipientType()));
 				
 				threadLocalService.addEntry(OS_RESULT + GenericConstants.TXT_EXTENSION);
 				docCount = openSearchApiHandler.getAnonymizedLogsByUid(internalId, requestData.getDateFrom(),
-						requestData.getDateTo(), tmpOutStream);
+						requestData.getDateTo(),threadLocalService.get());// tmpOutStream);
 				log.info(LoggingConstants.QEURY_EXECUTION_COMPLETED_TIME_DEANONIMIZE_DOCS,
 						System.currentTimeMillis() - performanceMillis, docCount);
 				tmpOutStream.flush();

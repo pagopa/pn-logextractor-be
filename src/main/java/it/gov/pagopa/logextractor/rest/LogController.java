@@ -48,11 +48,11 @@ public class LogController implements LogsApi {
 		
 		this.threadLocalService.initialize(httpServletResponse, personLogsRequestDto.getTicketNumber());
 		
-//		if (Boolean.TRUE.equals(personLogsRequestDto.getDeanonimization())) {
-//			logService.getDeanonimizedPersonLogs(personLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
-//		}else {
+		if (Boolean.TRUE.equals(personLogsRequestDto.getDeanonimization())) {
+			logService.getDeanonimizedPersonLogs(personLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
+		}else {
 			logService.getAnonymizedPersonLogs(personLogsRequestDto, xPagopaPnUid, xPagopaPnCxType); 
-//		}
+		}
 		handleResponse();
 		return null;
 	}
@@ -91,11 +91,11 @@ public class LogController implements LogsApi {
 	@Override
 	public ResponseEntity<Resource> sessionLogs(String xPagopaPnUid, String xPagopaPnCxType, SessionLogsRequestDto sessionLogsRequestDto) throws Exception {
 		this.threadLocalService.initialize(httpServletResponse, sessionLogsRequestDto.getTicketNumber());
-//		if (Boolean.TRUE.equals(sessionLogsRequestDto.getDeanonimization())) {
-//			logService.getDeanonimizedSessionLogs(sessionLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
-//		}else {
+		if (Boolean.TRUE.equals(sessionLogsRequestDto.getDeanonimization())) {
+			logService.getDeanonimizedSessionLogs(sessionLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
+		}else {
 			logService.getAnonymizedSessionLogs(sessionLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
-//		}
+		}
 		handleResponse();
 		return null;
 	}
