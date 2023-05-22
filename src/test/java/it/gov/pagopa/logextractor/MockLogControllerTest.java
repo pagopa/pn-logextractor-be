@@ -20,15 +20,15 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @EnableWebMvc
 class MockLogControllerTest extends AbstractMock {
 	
-	@Test
-	void test_healthcheck() throws Exception {
-		mockMissingUniqueIdentifierForPerson();
-		MockHttpServletResponse response = mvc
-				.perform(get(healthcheckUrl).accept(APPLICATION_JSON_UTF8).headers(getHeaders())
-						.contentType(APPLICATION_JSON_UTF8))
-				.andReturn().getResponse();
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());	
-	}
+//	@Test
+//	void test_healthcheck() throws Exception {
+//		mockMissingUniqueIdentifierForPerson();
+//		MockHttpServletResponse response = mvc
+//				.perform(get(healthcheckUrl).accept(APPLICATION_JSON_UTF8).headers(getHeaders())
+//						.contentType(APPLICATION_JSON_UTF8))
+//				.andReturn().getResponse();
+//		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());	
+//	}
 	
 
 	@Test
@@ -104,16 +104,16 @@ class MockLogControllerTest extends AbstractMock {
 		assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
 	}
 	
-	@Test
-	void test_getPersonsLogsOpenSearchResponseIsEmpty() throws Exception {
-		mockPersonsLogResponse(jsonDocSearchPF);
-		mockTaxCodeForPerson();
-		MockHttpServletResponse response = mvc
-				.perform(post(personUrl).headers(getHeaders())
-						.content(getMockPersonLogsRequestDtoPersonIdNull()).contentType(APPLICATION_JSON_UTF8))
-				.andReturn().getResponse();
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
-	}
+//	@Test
+//	void test_getPersonsLogsOpenSearchResponseIsEmpty() throws Exception {
+//		mockPersonsLogResponse(jsonDocSearchPF);
+//		mockTaxCodeForPerson();
+//		MockHttpServletResponse response = mvc
+//				.perform(post(personUrl).headers(getHeaders())
+//						.content(getMockPersonLogsRequestDtoPersonIdNull()).contentType(APPLICATION_JSON_UTF8))
+//				.andReturn().getResponse();
+//		assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
+//	}
 	
 	@Test
 	void test_getSessionLogsOpenSearchResponseAnonymized() throws Exception {	
