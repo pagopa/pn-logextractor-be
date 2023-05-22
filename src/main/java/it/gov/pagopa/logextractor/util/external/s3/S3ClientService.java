@@ -9,7 +9,6 @@ import java.time.Instant;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 
 import com.amazonaws.AmazonServiceException;
@@ -25,7 +24,6 @@ import com.amazonaws.services.s3.model.S3Object;
 import lombok.extern.slf4j.Slf4j;
 //import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkClientException;
-import software.amazon.awssdk.http.SdkHttpMethod;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
@@ -36,7 +34,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 @Slf4j
 public class S3ClientService {
 
-	@Value("${bucketName}")
+	@Value("${bucketName:logextractor-bucket}")
 	String bucketName;
 
 	@Value("${external.s3.saml.assertion.awsprofile:}")
@@ -145,7 +143,12 @@ public class S3ClientService {
 	public String downloadUrl(String objectKey) {
 
 		try {
-			AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(clientRegion)
+			AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
+			if (StringUtils.isNotBlank(awsProfile)) {
+				builder = builder.withCredentials(new ProfileCredentialsProvider(awsProfile));
+			}
+			
+			AmazonS3 s3Client = builder.withRegion(clientRegion)
 					.withCredentials(new ProfileCredentialsProvider()).build();
 
 			// Set the presigned URL to expire after one hour.
@@ -162,23 +165,22 @@ public class S3ClientService {
 
 			System.out.println("Pre-Signed URL for download: " + url.toString());
 			return url.toString();
-		} catch (AmazonServiceException e) {
-			// The call was transmitted successfully, but Amazon S3 couldn't process
-			// it, so it returned an error response.
-			e.printStackTrace();
-		} catch (SdkClientException e) {
-			// Amazon S3 couldn't be contacted for a response, or the client
-			// couldn't parse the response from Amazon S3.
-			e.printStackTrace();
+		} catch (Exception e) {
+			log.error("Error getting downloadURL from S3", e);
 		}
 		return null;
 	}
 
 	public S3Object getObject(String key) {
 		Regions bucketRegion = Regions.EU_WEST_3;
-		AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-				.withCredentials(new DefaultAWSCredentialsProviderChain()).withRegion(bucketRegion).build();
-
+		AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
+		if (StringUtils.isNotBlank(awsProfile)) {
+			builder = builder.withCredentials(new ProfileCredentialsProvider(awsProfile));
+		}
+		
+		AmazonS3 s3Client = builder.withRegion(clientRegion)
+				.withCredentials(new ProfileCredentialsProvider()).build();
+		
 		log.info("Retrieving SAML assertion from s3 bucket... ");
 		long performanceMillis = System.currentTimeMillis();
 		S3Object object = s3Client.getObject(new GetObjectRequest(bucketName, key));
