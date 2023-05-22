@@ -4,9 +4,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.gov.pagopa.logextractor.exception.CustomException;
@@ -19,6 +21,8 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.SessionLogsRequestDto
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.TraceIdLogsRequestDto;
 import it.gov.pagopa.logextractor.service.LogService;
 import it.gov.pagopa.logextractor.service.ThreadLocalOutputStreamService;
+import it.gov.pagopa.logextractor.util.RandomUtils;
+import it.gov.pagopa.logextractor.util.external.s3.S3ClientService;
 
 @RestController
 @CrossOrigin(allowedHeaders = "password,content-disposition",exposedHeaders = "password,content-disposition")
@@ -27,6 +31,9 @@ public class LogController implements LogsApi {
 
 	@Autowired
 	LogService logService;
+	
+	@Autowired
+	S3ClientService s3ClientService;
 	
 	@Autowired
 	private HttpServletResponse httpServletResponse;
@@ -44,17 +51,29 @@ public class LogController implements LogsApi {
 	}
 
 	@Override
-	public ResponseEntity<Resource> personActivityLogs(String xPagopaPnUid, String xPagopaPnCxType, PersonLogsRequestDto personLogsRequestDto) throws Exception {
+	public ResponseEntity<BaseResponseDto> currentProcessStatus(String xPagopaPnUid, String xPagopaPnCxType, @RequestParam ("key") String key)
+			throws Exception {
+		s3ClientService.downloadUrl(key);
+		return LogsApi.super.currentProcessStatus(xPagopaPnUid, xPagopaPnCxType, key);
+	}
+
+	@Override
+	public ResponseEntity<BaseResponseDto> personActivityLogs(String xPagopaPnUid, String xPagopaPnCxType, PersonLogsRequestDto personLogsRequestDto) throws Exception {
 		
-		this.threadLocalService.initialize(httpServletResponse, personLogsRequestDto.getTicketNumber());
+		String key = personLogsRequestDto.getTicketNumber()+"-"+(new RandomUtils().generateRandomAlphaNumericString())+".zip";
+		s3ClientService.signBucket( key );
+		BaseResponseDto dto = new BaseResponseDto();
+		dto.setMessage(key);
+		ResponseEntity<BaseResponseDto> ret = ResponseEntity.status(HttpStatus.OK).body(dto);
+		this.threadLocalService.initialize(httpServletResponse, key);
 		
 		if (Boolean.TRUE.equals(personLogsRequestDto.getDeanonimization())) {
 			logService.getDeanonimizedPersonLogs(personLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
 		}else {
 			logService.getAnonymizedPersonLogs(personLogsRequestDto, xPagopaPnUid, xPagopaPnCxType); 
 		}
-		handleResponse();
-		return null;
+//		handleResponse();
+		return ret;
 	}
 
 	@ExceptionHandler(value = CustomException.class)

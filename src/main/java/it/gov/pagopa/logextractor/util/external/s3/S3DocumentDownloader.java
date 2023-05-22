@@ -1,4 +1,4 @@
-package it.gov.pagopa.logextractor.util.external.opensearch;
+package it.gov.pagopa.logextractor.util.external.s3;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -15,6 +15,7 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 
 import it.gov.pagopa.logextractor.util.JsonUtilities;
+import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiObserver;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

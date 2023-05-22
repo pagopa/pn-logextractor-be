@@ -13,6 +13,7 @@ import java.util.List;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -27,6 +28,7 @@ import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDto;
 import it.gov.pagopa.logextractor.exception.CustomException;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.BaseResponseDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.MonthlyNotificationsRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.NotificationInfoRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.PersonLogsRequestDto;
@@ -39,11 +41,12 @@ import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
 import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandler;
-import it.gov.pagopa.logextractor.util.external.opensearch.S3DocumentDownloader;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationService;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
+import it.gov.pagopa.logextractor.util.external.s3.S3ClientService;
+import it.gov.pagopa.logextractor.util.external.s3.S3DocumentDownloader;
 import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.io.outputstream.ZipOutputStream;
 
@@ -77,6 +80,9 @@ public class LogServiceImpl implements LogService {
 	
 	@Autowired
 	FileUtilities fileUtils;
+	
+	@Autowired 
+	S3ClientService s3ClientService;
 
 	@Override
 	public void getAnonymizedPersonLogs(PersonLogsRequestDto requestData, String xPagopaHelpdUid, String xPagopaCxType)
@@ -306,6 +312,7 @@ public class LogServiceImpl implements LogService {
 		}
 	}
 	
+	@Async
 	public void getDeanonimizedPersonLogs(PersonLogsRequestDto requestData, String xPagopaHelpdUid,
 			String xPagopaCxType) throws IOException, LogExtractorException {
 		log.info(
@@ -447,5 +454,17 @@ public class LogServiceImpl implements LogService {
 		}
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info(LoggingConstants.DEANONIMIZED_RETRIEVE_PROCESS_END, (System.currentTimeMillis() - serviceStartTime));
+	}
+	
+	
+	public BaseResponseDto getCurrentProcessStatus(String key) {
+		BaseResponseDto ret = new BaseResponseDto();
+		try{
+			s3ClientService.getObject(key);
+			ret.setMessage(s3ClientService.downloadUrl(key));
+		}catch(Exception err) {
+			ret.setMessage("NotReady");
+		}
+		return ret;
 	}
 }

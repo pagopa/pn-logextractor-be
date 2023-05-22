@@ -3,6 +3,8 @@ package it.gov.pagopa.logextractor.service;
 import java.io.IOException;
 import java.text.ParseException;
 
+import org.springframework.scheduling.annotation.Async;
+
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 
@@ -56,6 +58,7 @@ public interface LogService {
 	 * @throws IOException in case of an IO error
 	 * @throws LogExtractorException in case of a business logic error
 	 */
+	@Async
 	void getDeanonimizedPersonLogs(PersonLogsRequestDto requestData,
 											  String xPagopaHelpdUid,
 											  String xPagopaCxType) throws IOException, LogExtractorException;
