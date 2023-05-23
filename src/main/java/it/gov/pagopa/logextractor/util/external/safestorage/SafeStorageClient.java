@@ -29,7 +29,7 @@ public class SafeStorageClient {
 	@Value("${external.safeStorage.downloadFile.url}")
 	String downloadFileURL;
 	
-	@Value("${external.safeStorage.baseUrl}")
+	@Value("${external.safeStorage.baseUrl:}")
 	String safeStorageBaseUrl;
 	
 	@Value("${external.safeStorage.downloadFile.stage}")

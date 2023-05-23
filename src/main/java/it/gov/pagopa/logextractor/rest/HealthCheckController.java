@@ -17,32 +17,32 @@ import it.gov.pagopa.logextractor.util.external.safestorage.SafeStorageCreateFil
 @RestController
 public class HealthCheckController implements StatusApi {
 
-	@Autowired
-	SafeStorageClient safeStorageClient;
+//	@Autowired
+//	SafeStorageClient safeStorageClient;
 	
-	@Autowired
-	S3ClientService s3ClientService;
+//	@Autowired
+//	S3ClientService s3ClientService;
 	
 	@Override
 	public ResponseEntity<Void> healthStatus() throws Exception{
 		return ResponseEntity.ok().build();
 	}
 	
-	private void safeStuff() throws Exception{
-		byte[] zip = IOUtils.toByteArray(new FileInputStream("c:\\tmp\\signedreq.zip"));
-		SafeStorageCreateFileResponse createResp = safeStorageClient.createFle(zip);
-		
-		safeStorageClient.uploadToSafeStorage(createResp, zip);
-		try {
-			Thread.currentThread().sleep(5000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		String downloadUrl = safeStorageClient.getDownloadUrl(createResp.getKey());
-		System.out.println("Download URL "+downloadUrl);
-		
-	}
+//	private void safeStuff() throws Exception{
+//		byte[] zip = IOUtils.toByteArray(new FileInputStream("c:\\tmp\\signedreq.zip"));
+//		SafeStorageCreateFileResponse createResp = safeStorageClient.createFle(zip);
+//		
+//		safeStorageClient.uploadToSafeStorage(createResp, zip);
+//		try {
+//			Thread.currentThread().sleep(5000);
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		String downloadUrl = safeStorageClient.getDownloadUrl(createResp.getKey());
+//		System.out.println("Download URL "+downloadUrl);
+//		
+//	}
 	
 //	private void s3Stuff() {
 //		String key="prova"+ new Date().getTime()+".txt";
