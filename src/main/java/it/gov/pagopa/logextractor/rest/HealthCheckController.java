@@ -25,7 +25,6 @@ public class HealthCheckController implements StatusApi {
 	
 	@Override
 	public ResponseEntity<Void> healthStatus() throws Exception{
-		s3Stuff();
 		return ResponseEntity.ok().build();
 	}
 	
@@ -45,14 +44,14 @@ public class HealthCheckController implements StatusApi {
 		
 	}
 	
-	private void s3Stuff() {
-		String key="prova"+ new Date().getTime()+".txt";
-//		URL url = s3ClientService.signedUrlForUpload();
-//		s3ClientService.upload(url, key);
-		s3ClientService.signBucket(key);
-		String url = s3ClientService.downloadUrl(key);
-//		
-		System.out.println("(signed) Download url: "+url);
-	}
+//	private void s3Stuff() {
+//		String key="prova"+ new Date().getTime()+".txt";
+////		URL url = s3ClientService.signedUrlForUpload();
+////		s3ClientService.upload(url, key);
+//		s3ClientService.signBucket(key);
+//		String url = s3ClientService.downloadUrl(key);
+////		
+//		System.out.println("(signed) Download url: "+url);
+//	}
 }
 

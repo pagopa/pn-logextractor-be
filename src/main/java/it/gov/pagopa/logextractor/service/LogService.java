@@ -21,9 +21,11 @@ public interface LogService {
 	 * Service method that retrieves the anonymized logs related to a person's activities history in a period
 	 * or to a notification's activities history within 3 months from its legal start date
 	 * @param requestData the input data of type {@link PersonLogsRequestDto}
+	 * @return 
 	 * @throws IOException in case of an IO error
 	 */
-	void getAnonymizedPersonLogs(PersonLogsRequestDto requestData,
+	@Async
+	String getAnonymizedPersonLogs(String key, String pass, PersonLogsRequestDto requestData,
 											String xPagopaHelpdUid,
 											String xPagopaCxType) throws IOException;
 	
@@ -55,11 +57,12 @@ public interface LogService {
 	 * or to a notification's activities history within 3 months from its legal start date
 	 * @param requestData the input data of type {@link PersonLogsRequestDto}
 	 * @param xPagopaHelpdUid 
+	 * @return 
 	 * @throws IOException in case of an IO error
 	 * @throws LogExtractorException in case of a business logic error
 	 */
 	@Async
-	void getDeanonimizedPersonLogs(PersonLogsRequestDto requestData,
+	String getDeanonimizedPersonLogs(String key, String zipPassword, PersonLogsRequestDto requestData,
 											  String xPagopaHelpdUid,
 											  String xPagopaCxType) throws IOException, LogExtractorException;
 	

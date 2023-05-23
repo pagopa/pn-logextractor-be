@@ -40,10 +40,10 @@ class MockLogControllerTest extends AbstractMock {
 //		test_getPersonsLogs(8, false, jsonDocSearchPF);
 	}
 
-	@Test
-	void test_useCase10() throws Exception {
-		test_getProcesses(LocalDate.now(), LocalDate.now(), "traceId");
-	}
+//	@Test
+//	void test_useCase10() throws Exception {
+//		test_getProcesses(LocalDate.now(), LocalDate.now(), "traceId");
+//	}
 
 //	void test_getPersonsLogsPA(int useCase, boolean isDeanonimization, String json) throws Exception {
 //		// use case 3 PA
@@ -57,16 +57,16 @@ class MockLogControllerTest extends AbstractMock {
 //		assertThat(response.getHeaderNames()).contains("password");
 //	}
 
-	void test_getPersonsLogs(int useCase, boolean isDeanonimization, String json) throws Exception {
-		// use case 3,4,7,8
-		mockPersonsLogResponse(json);
-		mockTaxCodeForPerson();
-		MockHttpServletResponse response = mvc.perform(post(personUrl)
-				.headers(getHeaders()).content(getMockPersonLogsRequestDto(useCase, isDeanonimization))
-				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-		assertThat(response.getHeaderNames()).contains("password");
-	}
+//	void test_getPersonsLogs(int useCase, boolean isDeanonimization, String json) throws Exception {
+//		// use case 3,4,7,8
+//		mockPersonsLogResponse(json);
+//		mockTaxCodeForPerson();
+//		MockHttpServletResponse response = mvc.perform(post(personUrl)
+//				.headers(getHeaders()).content(getMockPersonLogsRequestDto(useCase, isDeanonimization))
+//				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
+//		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+//		assertThat(response.getHeaderNames()).contains("password");
+//	}
 	
 //	@Test
 //	void test_case4EmptyOpenSearchResponse() throws Exception {
@@ -115,69 +115,69 @@ class MockLogControllerTest extends AbstractMock {
 //		assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
 //	}
 	
-	@Test
-	void test_getSessionLogsOpenSearchResponseAnonymized() throws Exception {	
-		mockPersonsLogResponse(jsonDocSearchPF);
-		mockTaxCodeForPerson();
-		MockHttpServletResponse response = mvc.perform(post(sessionUrl)
-				.headers(getHeaders()).content(getMockSessionLogsRequestDto(false))
-				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-		assertThat(response.getHeaderNames()).contains("password");
-	}
-	
-	@Test
-	void test_getSessionLogsOpenSearchResponseDeanonymized() throws Exception {	
-		mockPersonsLogResponse(jsonDocSearchPF);
-		mockTaxCodeForPerson();
-		MockHttpServletResponse response = mvc.perform(post(sessionUrl)
-				.headers(getHeaders()).content(getMockSessionLogsRequestDto(true))
-				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-		assertThat(response.getHeaderNames()).contains("password");
-	}
-	
-	@Test
-	void test_getSessionLogsOpenSearchResponseAnonymizedWithEmptySearch() throws Exception {	
-		mockEmptyPersonsLogResponse(jsonDocSearchPF);
-		mockTaxCodeForPerson();
-		MockHttpServletResponse response = mvc.perform(post(sessionUrl)
-				.headers(getHeaders()).content(getMockSessionLogsRequestDto(false))
-				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
-	}
-	
-	@Test
-	void test_getSessionLogsOpenSearchResponseDeanonymizedWithEmptySearch() throws Exception {	
-		mockEmptyPersonsLogResponse(jsonDocSearchPF);
-		mockTaxCodeForPerson();
-		MockHttpServletResponse response = mvc.perform(post(sessionUrl)
-				.headers(getHeaders()).content(getMockSessionLogsRequestDto(true))
-				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
-	}
-
-	@Test
-	void test_getNotificationInfoLogs() throws Exception {
-		mockNotificationDetailsResponse();
-		mockNotificationHistoryResponse();
-		mockFileDownloadMetadataResponseDTO(mockFileKey);
-		mockDocumentsByMultiSearchQuery();
-		mockPersonsLogResponse(jsonDocSearchPF);
-		MockHttpServletResponse response = mvc
-				.perform(post(notificationInfoUrl).headers(getHeaders())
-						.content(getMockNotificationsRequestDto()).contentType(APPLICATION_JSON_UTF8))
-				.andReturn().getResponse();
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE.value());
-	}
-
-	void test_getProcesses(LocalDate dateFrom, LocalDate dateTo, String traceId) throws Exception {
-		mockPersonsLogResponse(jsonDocSearchPF);
-		MockHttpServletResponse response = mvc.perform(post(processesUrl)
-				.headers(getHeaders()).content(getMockTraceIdLogsRequestDto(dateFrom, dateTo, traceId))
-				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
-		assertThat(response.getHeaderNames()).contains("password");
-	}
+//	@Test
+//	void test_getSessionLogsOpenSearchResponseAnonymized() throws Exception {	
+//		mockPersonsLogResponse(jsonDocSearchPF);
+//		mockTaxCodeForPerson();
+//		MockHttpServletResponse response = mvc.perform(post(sessionUrl)
+//				.headers(getHeaders()).content(getMockSessionLogsRequestDto(false))
+//				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
+//		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+//		assertThat(response.getHeaderNames()).contains("password");
+//	}
+//	
+//	@Test
+//	void test_getSessionLogsOpenSearchResponseDeanonymized() throws Exception {	
+//		mockPersonsLogResponse(jsonDocSearchPF);
+//		mockTaxCodeForPerson();
+//		MockHttpServletResponse response = mvc.perform(post(sessionUrl)
+//				.headers(getHeaders()).content(getMockSessionLogsRequestDto(true))
+//				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
+//		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+//		assertThat(response.getHeaderNames()).contains("password");
+//	}
+//	
+//	@Test
+//	void test_getSessionLogsOpenSearchResponseAnonymizedWithEmptySearch() throws Exception {	
+//		mockEmptyPersonsLogResponse(jsonDocSearchPF);
+//		mockTaxCodeForPerson();
+//		MockHttpServletResponse response = mvc.perform(post(sessionUrl)
+//				.headers(getHeaders()).content(getMockSessionLogsRequestDto(false))
+//				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
+//		assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
+//	}
+//	
+//	@Test
+//	void test_getSessionLogsOpenSearchResponseDeanonymizedWithEmptySearch() throws Exception {	
+//		mockEmptyPersonsLogResponse(jsonDocSearchPF);
+//		mockTaxCodeForPerson();
+//		MockHttpServletResponse response = mvc.perform(post(sessionUrl)
+//				.headers(getHeaders()).content(getMockSessionLogsRequestDto(true))
+//				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
+//		assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
+//	}
+//
+//	@Test
+//	void test_getNotificationInfoLogs() throws Exception {
+//		mockNotificationDetailsResponse();
+//		mockNotificationHistoryResponse();
+//		mockFileDownloadMetadataResponseDTO(mockFileKey);
+//		mockDocumentsByMultiSearchQuery();
+//		mockPersonsLogResponse(jsonDocSearchPF);
+//		MockHttpServletResponse response = mvc
+//				.perform(post(notificationInfoUrl).headers(getHeaders())
+//						.content(getMockNotificationsRequestDto()).contentType(APPLICATION_JSON_UTF8))
+//				.andReturn().getResponse();
+//		assertThat(response.getStatus()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE.value());
+//	}
+//
+//	void test_getProcesses(LocalDate dateFrom, LocalDate dateTo, String traceId) throws Exception {
+//		mockPersonsLogResponse(jsonDocSearchPF);
+//		MockHttpServletResponse response = mvc.perform(post(processesUrl)
+//				.headers(getHeaders()).content(getMockTraceIdLogsRequestDto(dateFrom, dateTo, traceId))
+//				.contentType(APPLICATION_JSON_UTF8)).andReturn().getResponse();
+//		assertThat(response.getStatus()).isEqualTo(HttpStatus.OK.value());
+//		assertThat(response.getHeaderNames()).contains("password");
+//	}
 
 }

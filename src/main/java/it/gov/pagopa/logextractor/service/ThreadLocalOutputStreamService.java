@@ -5,6 +5,7 @@ import java.io.OutputStreamWriter;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 import it.gov.pagopa.logextractor.util.PasswordFactory;
 import it.gov.pagopa.logextractor.util.ZipArchiverImpl;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
+import it.gov.pagopa.logextractor.util.external.s3.S3ClientService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import net.lingala.zip4j.io.outputstream.ZipOutputStream;
@@ -21,21 +23,16 @@ import net.lingala.zip4j.model.enums.EncryptionMethod;
 
 @Component
 public class ThreadLocalOutputStreamService {
+	
 
-	@Data
-	@AllArgsConstructor
-	class ZipInfo{
-		String password;
-		ZipOutputStream zos;
-		ZipArchiverImpl zip;
-	}
 	private static ThreadLocal<ZipInfo> local = new ThreadLocal<>();
 	
 	/*
 	 * 		
 
 	 */
-	
+
+	@Deprecated
 	public void initialize(HttpServletResponse httpServletResponse, String attachmentName) throws IOException {
 		PasswordFactory passwordFactory = new PasswordFactory();
 		String password = passwordFactory.createPassword(1, 1, 1, GenericConstants.SPECIAL_CHARS, 1, 16);
@@ -45,8 +42,9 @@ public class ThreadLocalOutputStreamService {
 		httpServletResponse.addHeader("password", password);
 		httpServletResponse.addHeader("Content-Type",MediaType.APPLICATION_OCTET_STREAM_VALUE);
 		ZipOutputStream zos = zip.createArchiveStream(httpServletResponse.getOutputStream());
-		local.set(new ZipInfo(password, zos, zip));
+		local.set(new ZipInfo(password, zos, zip, null, null));
 	}
+	
 	
 	public ZipOutputStream get() {
 		return local.get().getZos();
