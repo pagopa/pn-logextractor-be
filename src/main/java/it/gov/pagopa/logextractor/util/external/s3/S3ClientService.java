@@ -18,6 +18,7 @@ import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -211,8 +212,7 @@ public class S3ClientService {
 				builder = builder.withCredentials(new ProfileCredentialsProvider(awsProfile));
 			}
 		    
-			AmazonS3 s3Client = builder.withRegion(clientRegion)
-					.withCredentials(new ProfileCredentialsProvider()).build();
+			AmazonS3 s3Client = builder.withRegion(clientRegion).build();
 			ObjectMetadata metadata = new ObjectMetadata();
 			PutObjectRequest por = new PutObjectRequest(bucketName,
 	                keyName,
@@ -309,6 +309,7 @@ public class S3ClientService {
 	}
 
 	public S3Object getObject(String key) {
+		S3Object object = null;
 		Regions bucketRegion = Regions.EU_WEST_3;
 		AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
 		if (StringUtils.isNotBlank(awsProfile)) {
@@ -320,7 +321,17 @@ public class S3ClientService {
 		
 		log.info("Retrieving SAML assertion from s3 bucket... ");
 		long performanceMillis = System.currentTimeMillis();
-		S3Object object = s3Client.getObject(new GetObjectRequest(bucketName, key));
+		try {
+			object = s3Client.getObject(new GetObjectRequest(bucketName, key));
+		}catch(AmazonS3Exception err) {
+			if (err.getErrorCode().equals("NoSuchKey")){
+				//Do nothing
+				log.debug("download url not ready for key {}",key);
+			}else {
+				throw err;
+			}
+			
+		}
 		return object;
 	}
 
