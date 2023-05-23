@@ -212,7 +212,8 @@ public class S3ClientService {
 				builder = builder.withCredentials(new ProfileCredentialsProvider(awsProfile));
 			}
 		    
-			AmazonS3 s3Client = builder.withRegion(clientRegion).build();
+			AmazonS3 s3Client = builder.withRegion(clientRegion)
+					.build();
 			ObjectMetadata metadata = new ObjectMetadata();
 			PutObjectRequest por = new PutObjectRequest(bucketName,
 	                keyName,
@@ -280,28 +281,29 @@ public class S3ClientService {
 	public String downloadUrl(String objectKey) {
 
 		try {
-			getObject(objectKey);
-			AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
-			if (StringUtils.isNotBlank(awsProfile)) {
-				builder = builder.withCredentials(new ProfileCredentialsProvider(awsProfile));
+			if (getObject(objectKey)!=null) {
+				AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
+				if (StringUtils.isNotBlank(awsProfile)) {
+					builder = builder.withCredentials(new ProfileCredentialsProvider(awsProfile));
+				}
+				
+				AmazonS3 s3Client = builder.withRegion(clientRegion).build();
+	
+				// Set the presigned URL to expire after one hour.
+				java.util.Date expiration = new java.util.Date();
+				long expTimeMillis = Instant.now().toEpochMilli();
+				expTimeMillis += 1000 * 60 * 60;
+				expiration.setTime(expTimeMillis);
+	
+				// Generate the presigned URL.
+				log.info("Generating pre-signed URL for download.");
+				GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucketName,
+						objectKey).withMethod(com.amazonaws.HttpMethod.GET).withExpiration(expiration);
+				URL url = s3Client.generatePresignedUrl(generatePresignedUrlRequest);
+	
+				log.info("Pre-Signed URL for download: " + url.toString());
+				return url.toString();
 			}
-			
-			AmazonS3 s3Client = builder.withRegion(clientRegion).build();
-
-			// Set the presigned URL to expire after one hour.
-			java.util.Date expiration = new java.util.Date();
-			long expTimeMillis = Instant.now().toEpochMilli();
-			expTimeMillis += 1000 * 60 * 60;
-			expiration.setTime(expTimeMillis);
-
-			// Generate the presigned URL.
-			log.info("Generating pre-signed URL for download.");
-			GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucketName,
-					objectKey).withMethod(com.amazonaws.HttpMethod.GET).withExpiration(expiration);
-			URL url = s3Client.generatePresignedUrl(generatePresignedUrlRequest);
-
-			System.out.println("Pre-Signed URL for download: " + url.toString());
-			return url.toString();
 		} catch (Exception e) {
 			log.error("Error getting downloadURL from S3", e);
 		}
