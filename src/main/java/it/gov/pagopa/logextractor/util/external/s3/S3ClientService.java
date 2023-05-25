@@ -31,16 +31,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class S3ClientService {
 
-	@Value("${bucketName:logextractor-bucket}")
+	@Value("${bucket.name:logextractor-bucket}")
 	String bucketName;
 
 	@Value("${external.s3.saml.assertion.awsprofile:}")
 	String awsProfile;
-
+	
+	@Value("${external.s3.saml.assertion.region:eu-south-1}")
+	String bucketRegion;
 	
 	private static String CONTENT_TYPE = "application/zip";
 	
-	Regions clientRegion = Regions.EU_WEST_3;
+//	Regions clientRegion = Regions.EU_WEST_3;
 /*
 	public void signBucket(String keyName) {
 		S3Presigner presigner = S3Presigner.builder().region(software.amazon.awssdk.regions.Region.EU_WEST_3)
@@ -164,8 +166,8 @@ public class S3ClientService {
 				builder = builder.withCredentials(new ProfileCredentialsProvider(awsProfile));
 			}
 			
-			AmazonS3 s3Client = builder.withRegion(clientRegion)
-					.withCredentials(new ProfileCredentialsProvider()).build();
+			
+			AmazonS3 s3Client = builder.withRegion(bucketRegion).build();
 
 			PutObjectRequest por = new PutObjectRequest(bucketName,
 	                keyName,
@@ -212,7 +214,7 @@ public class S3ClientService {
 				builder = builder.withCredentials(new ProfileCredentialsProvider(awsProfile));
 			}
 		    
-			AmazonS3 s3Client = builder.withRegion(clientRegion)
+			AmazonS3 s3Client = builder.withRegion(bucketRegion)
 					.build();
 			ObjectMetadata metadata = new ObjectMetadata();
 			PutObjectRequest por = new PutObjectRequest(bucketName,
@@ -287,7 +289,7 @@ public class S3ClientService {
 					builder = builder.withCredentials(new ProfileCredentialsProvider(awsProfile));
 				}
 				
-				AmazonS3 s3Client = builder.withRegion(clientRegion).build();
+				AmazonS3 s3Client = builder.withRegion(bucketRegion).build();
 	
 				// Set the presigned URL to expire after one hour.
 				java.util.Date expiration = new java.util.Date();
@@ -312,13 +314,12 @@ public class S3ClientService {
 
 	public S3Object getObject(String key) {
 		S3Object object = null;
-		Regions bucketRegion = Regions.EU_WEST_3;
 		AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
 		if (StringUtils.isNotBlank(awsProfile)) {
 			builder = builder.withCredentials(new ProfileCredentialsProvider(awsProfile));
 		}
 		
-		AmazonS3 s3Client = builder.withRegion(clientRegion)
+		AmazonS3 s3Client = builder.withRegion(bucketRegion)
 				.withCredentials(new ProfileCredentialsProvider()).build();
 		
 		log.info("Retrieving SAML assertion from s3 bucket... ");

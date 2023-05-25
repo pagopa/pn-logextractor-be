@@ -214,6 +214,10 @@ Parameters:
     Type: String
     Description: safe storage cx id
   
+  TmpBucketName:
+    Type: String
+    Description: temporary storage name
+    
 Conditions:
   HasSamlAssertionKmsKeyArn: !Not [ !Equals [ !Ref SamlAssertionBucketKeyArn, '' ] ]
   HasSamlAssertionBucketArn: !Not [ !Equals [ !Ref SamlAssertionBucketArn, '' ] ]
@@ -261,6 +265,7 @@ Resources:
         ContainerEnvEntry19: !Sub 'DOWNTIME_STATUS_URL=http://${ApplicationLoadBalancerDomain}:8080/downtime/v1/status'
         ContainerEnvEntry20: !Sub 'S3_DOWNLOAD_URL=${SamlAssertionDownloadUrl}'
         ContainerEnvEntry21: !Sub 'S3_BUCKET_NAME=${SamlAssertionBucketName}'
+        ContainerEnvEntry22: !Sub 'BUCKET_NAME=${TmpBucketName}' 
         ContainerSecret1: !Sub 'BASIC_AUTH_USERNAME=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-opensearch-logextractor:username:AWSCURRENT:'
         ContainerSecret2: !Sub 'BASIC_AUTH_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-opensearch-logextractor:password:AWSCURRENT:'
         MappedPaths: '/log-extractor/*'
@@ -275,6 +280,7 @@ Resources:
         AlbSecurityGroup: !Ref AlbSecurityGroup
         TaskRoleManagedPolicyArn: !Ref LogextractorBeMicroserviceTaskManagedPolicy
         EcsLogGroup: !Ref EcsLogGroup
+        
 
   # Grant operational rights to PN-Downtime-Logs microservice
   LogextractorBeMicroserviceTaskManagedPolicy:
