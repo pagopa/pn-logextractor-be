@@ -42,7 +42,6 @@ Resources:
 
   TemporaryLogExtractionBucket:
     Type: AWS::S3::Bucket
-    DependsOn: PnSsQueuePolicyGestoreBucketInvoke 
     Properties:
       BucketName: !Sub 'pn-logextractor-temporary-${EnvironmentType}'
       AccessControl: 'Private'
