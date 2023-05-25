@@ -309,6 +309,12 @@ Resources:
               Resource:
                 - !Sub "${SamlAssertionBucketArn}/*"
             - !Ref AWS::NoValue
+          - Effect: Allow
+            Action:
+              - "s3:*"
+            Resource:
+              - !Sub "${TmpBucketName}/*"
+
 
   LogextractorBeApiGatewayBo:
     Type: AWS::CloudFormation::Stack
