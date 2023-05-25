@@ -5,6 +5,8 @@ import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;
 import org.passay.PasswordGenerator;
 
+import it.gov.pagopa.logextractor.util.constant.GenericConstants;
+
 /**
  * Factory class to manage the core operations for passwords
  */
@@ -21,7 +23,7 @@ public class PasswordFactory {
 	 * @param length the password length
 	 * @return the random generated password with the given specifications
 	 * */
-	public String createPassword(int numberOfLowerChars, int numberOfUpperChars, int numberOfDigits, 
+	public static String createPassword(int numberOfLowerChars, int numberOfUpperChars, int numberOfDigits, 
 									String specialCharList, int numberOfSpecialChars, int length) {
 		CharacterRule lowerCaseRule = new CharacterRule(EnglishCharacterData.LowerCase);
         lowerCaseRule.setNumberOfCharacters(numberOfLowerChars);
@@ -33,13 +35,17 @@ public class PasswordFactory {
 	    splCharRule.setNumberOfCharacters(numberOfSpecialChars);
 	    return new PasswordGenerator().generatePassword(length, splCharRule, lowerCaseRule, upperCaseRule, digitRule);
 	}
-	
+
+	public static String createPassword() {
+		return createPassword(1, 1, 1, GenericConstants.SPECIAL_CHARS, 1, 16);
+	}
+
 	/**
 	 * Generates a special chars CharacterData instance from the input string containing the list of special chars
 	 * @param specialCharList the list of special chars
 	 * @return a new {@link CharacterData} instance
 	 * */
-	private CharacterData specialChars(String specialCharList) {
+	private static CharacterData specialChars(String specialCharList) {
 		return new CharacterData() {
 			
 			@Override

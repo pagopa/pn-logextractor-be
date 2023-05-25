@@ -12,17 +12,10 @@ import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Profile;
-import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -30,29 +23,20 @@ import it.gov.pagopa.logextractor.dto.OpensearchScrollQueryData;
 import it.gov.pagopa.logextractor.util.SortOrders;
 import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
 import it.gov.pagopa.logextractor.util.constant.OpensearchConstants;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Uility class for integrations with OpenSearch service
  * */
-@Profile("!mockedOS")
-@Component
-@Scope(scopeName = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @Slf4j
+@AllArgsConstructor
 public class OpenSearchApiHandler {
-	@Autowired
-	@Qualifier("openSearchRestTemplate")
-	RestTemplate client;
-	@Value("${external.opensearch.search.url}")
-	String opensearchSearchUrl;
-	@Value("${external.opensearch.search.followup.url}")
-	String opensearchSearchFollowupUrl;
-	@Value("${external.opensearch.basicauth.username}")
-	String opensearchUsername;
-	@Value("${external.opensearch.basicauth.password}")
-	String opensearchPassword;
-	
-	
+	private RestTemplate client;
+	private String opensearchSearchUrl;
+	private String opensearchSearchFollowupUrl;
+	private String opensearchUsername;
+	private String opensearchPassword;
 	private List<OpenSearchApiObserver> observers = new ArrayList<>();
 	private int docCounter=0;
 
