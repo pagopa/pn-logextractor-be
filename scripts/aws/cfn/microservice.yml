@@ -217,6 +217,10 @@ Parameters:
   TmpBucketName:
     Type: String
     Description: temporary storage name
+
+  TmpBucketArn:
+    Type: String
+    Description: temporary storage arn
     
 Conditions:
   HasSamlAssertionKmsKeyArn: !Not [ !Equals [ !Ref SamlAssertionBucketKeyArn, '' ] ]
@@ -313,7 +317,7 @@ Resources:
             Action:
               - "s3:*"
             Resource:
-              - !Sub "${TmpBucketName}/*"
+              - !Sub "${TmpBucketArn}/*"
 
 
   LogextractorBeApiGatewayBo:

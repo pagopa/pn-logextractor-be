@@ -90,3 +90,6 @@ Outputs:
   TmpBucketName:
     Value: !Sub 'pn-logextractor-temporary-${EnvironmentType}'
 
+  TmpBucketArn:
+    Value: !GetAtt TemporaryLogExtractionBucket.Arn
+
