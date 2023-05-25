@@ -308,6 +308,11 @@ Resources:
                 - "s3:Get*"
               Resource:
                 - !Sub "${SamlAssertionBucketArn}/*"
+            - Effect: Allow
+              Action:
+                - "s3:*"
+              Resource:
+                - !Sub "${TmpBucketName}/*"
             - !Ref AWS::NoValue
 
   LogextractorBeApiGatewayBo:
