@@ -56,8 +56,7 @@ public class S3DocumentDownloader implements OpenSearchApiObserver {
 				if (StringUtils.isNotBlank(profile)) {
 					builder = builder.withCredentials(new ProfileCredentialsProvider(profile));
 				}
-				AmazonS3 amazonS3Client = builder//.defaultClient();
-					//.standard()
+				AmazonS3 amazonS3Client = builder
 					.withRegion(region)
 //					.withCredentials(
 //                        new AWSStaticCredentialsProvider(

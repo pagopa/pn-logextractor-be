@@ -1,6 +1,5 @@
 package it.gov.pagopa.logextractor.service;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -20,7 +19,6 @@ import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDto;
 import it.gov.pagopa.logextractor.exception.CustomException;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.NotificationInfoRequestDto;
-import it.gov.pagopa.logextractor.util.FileUtilities;
 import it.gov.pagopa.logextractor.util.JsonUtilities;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
@@ -37,9 +35,6 @@ public class NotificationLogService {
 	@Autowired
 	private ZipService zipService;
 	
-	@Autowired
-	private FileUtilities fileUtils;
-	
 	@Autowired 
 	private S3ClientService s3ClientService;
 
@@ -54,97 +49,100 @@ public class NotificationLogService {
 		log.info("Notification data retrieve process - START - user={}, userType={}, ticketNumber={}, iun={}",
 				xPagopaHelpdUid, xPagopaCxType, requestData.getTicketNumber(), requestData.getIun());
 		ZipInfo zipInfo = zipService.createZip(key, zipPassword, s3ClientService.uploadStream(key));
-		ArrayList<NotificationDownloadFileData> downloadableFiles = new ArrayList<>();
-		long serviceStartTime = System.currentTimeMillis();
-		double secondsToWait = 0;
-		ObjectMapper mapper = new ObjectMapper();
-		ArrayList<File> filesToAdd = new ArrayList<>();
-		log.info(LoggingConstants.GET_NOTIFICATION_DETAILS);
-		NotificationDetailsResponseDto notificationDetails = notificationApiHandler
-				.getNotificationDetails(requestData.getIun());
-		OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
-		String notificationEndDate = notificationStartDate.plusMonths(3).toString();
-		log.info("Service response: notificationDetails={} retrieved in {} ms, getting history data...",
-				mapper.writer().writeValueAsString(notificationDetails), System.currentTimeMillis() - serviceStartTime);
-		NotificationHistoryResponseDto notificationHistory = notificationApiHandler.getNotificationHistory(
-				requestData.getIun(), notificationDetails.getRecipients().size(), notificationStartDate.toString());
-		log.info("Service response: notificationHistory={} retrieved in {} ms, getting legal facts' keys...",
-				mapper.writer().writeValueAsString(notificationHistory), System.currentTimeMillis() - serviceStartTime);
-		long performanceMillis = System.currentTimeMillis();
-		ArrayList<NotificationDownloadFileData> downloadFileData = new ArrayList<>(
-				notificationApiHandler.getLegalFactFileDownloadData(notificationHistory));
-		log.info("Legal facts' keys retrieved in {} ms, getting notification documents' keys...",
-				System.currentTimeMillis() - performanceMillis);
-		performanceMillis = System.currentTimeMillis();
-		downloadFileData.addAll(notificationApiHandler.getNotificationDocumentFileDownloadData(notificationDetails));
-		log.info("Notification documents' keys retrieved in {} ms, getting payment documents' keys...",
-				System.currentTimeMillis() - performanceMillis);
-		performanceMillis = System.currentTimeMillis();
-		downloadFileData.addAll(notificationApiHandler.getPaymentFilesDownloadData(notificationDetails));
-		log.info("Notification payment' keys retrieved in {} ms, getting downloads' metadata...",
-				System.currentTimeMillis() - performanceMillis);
-		performanceMillis = System.currentTimeMillis();
-		List<NotificationDownloadFileData> filesNotDownloadable = new ArrayList<>();
-		for (NotificationDownloadFileData currentDownloadData : downloadFileData) {
-			try {
-				FileDownloadMetadataResponseDto downloadMetaData = notificationApiHandler
-						.getDownloadMetadata(currentDownloadData.getKey());
-				currentDownloadData.setDownloadUrl(downloadMetaData.getDownload().getUrl());
-				downloadableFiles.add(currentDownloadData);
-				if ( secondsToWait < getRetryAfter(downloadMetaData)) {
-					secondsToWait = downloadMetaData.getDownload().getRetryAfter();
-				}
-			} catch (HttpServerErrorException | HttpClientErrorException ex) {
-				filesNotDownloadable.add(currentDownloadData);
-			}
-		}
-		if (secondsToWait > 0) {
-			log.info(
-					"Notification downloads' metadata retrieved in {} ms, physical files aren't ready yet. Constructing service response...",
-					System.currentTimeMillis() - performanceMillis);
-			int timeToWaitInMinutes = (int) Math.ceil(secondsToWait / 60);
-			throw new CustomException(ResponseConstants.OPERATION_CANNOT_BE_COMPLETED_MESSAGE + timeToWaitInMinutes
-					+ (timeToWaitInMinutes > 1 ? GenericConstants.MINUTES_LABEL : GenericConstants.MINUTE_LABEL), 503);
-		} else {
-			log.info("Notification downloads' metadata retrieved in {} ms, getting physical files... ",
+		try {
+			ArrayList<NotificationDownloadFileData> downloadableFiles = new ArrayList<>();
+			long serviceStartTime = System.currentTimeMillis();
+			double secondsToWait = 0;
+			ObjectMapper mapper = new ObjectMapper();
+			log.info(LoggingConstants.GET_NOTIFICATION_DETAILS);
+			NotificationDetailsResponseDto notificationDetails = notificationApiHandler
+					.getNotificationDetails(requestData.getIun());
+			OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
+			String notificationEndDate = notificationStartDate.plusMonths(3).toString();
+			log.info("Service response: notificationDetails={} retrieved in {} ms, getting history data...",
+					mapper.writer().writeValueAsString(notificationDetails), System.currentTimeMillis() - serviceStartTime);
+			NotificationHistoryResponseDto notificationHistory = notificationApiHandler.getNotificationHistory(
+					requestData.getIun(), notificationDetails.getRecipients().size(), notificationStartDate.toString());
+			log.info("Service response: notificationHistory={} retrieved in {} ms, getting legal facts' keys...",
+					mapper.writer().writeValueAsString(notificationHistory), System.currentTimeMillis() - serviceStartTime);
+			long performanceMillis = System.currentTimeMillis();
+			ArrayList<NotificationDownloadFileData> downloadFileData = new ArrayList<>(
+					notificationApiHandler.getLegalFactFileDownloadData(notificationHistory));
+			log.info("Legal facts' keys retrieved in {} ms, getting notification documents' keys...",
 					System.currentTimeMillis() - performanceMillis);
 			performanceMillis = System.currentTimeMillis();
-			for (NotificationDownloadFileData currentDownloadableFile : downloadableFiles) {
-				String notifName = 
-						currentDownloadableFile.getFileCategory() + "-" + currentDownloadableFile.getKey()+
-						GenericConstants.PDF_EXTENSION;
-				zipService.addEntry(zipInfo, notifName);
-				if (notificationApiHandler.downloadToStream(currentDownloadableFile.getDownloadUrl(),
-						zipInfo.getZos()) > 0) {
-					log.error("Cannot download notification {}",notifName);
+			downloadFileData.addAll(notificationApiHandler.getNotificationDocumentFileDownloadData(notificationDetails));
+			log.info("Notification documents' keys retrieved in {} ms, getting payment documents' keys...",
+					System.currentTimeMillis() - performanceMillis);
+			performanceMillis = System.currentTimeMillis();
+			downloadFileData.addAll(notificationApiHandler.getPaymentFilesDownloadData(notificationDetails));
+			log.info("Notification payment' keys retrieved in {} ms, getting downloads' metadata...",
+					System.currentTimeMillis() - performanceMillis);
+			performanceMillis = System.currentTimeMillis();
+			List<NotificationDownloadFileData> filesNotDownloadable = new ArrayList<>();
+			for (NotificationDownloadFileData currentDownloadData : downloadFileData) {
+				try {
+					FileDownloadMetadataResponseDto downloadMetaData = notificationApiHandler
+							.getDownloadMetadata(currentDownloadData.getKey());
+					currentDownloadData.setDownloadUrl(downloadMetaData.getDownload().getUrl());
+					downloadableFiles.add(currentDownloadData);
+					if ( secondsToWait < getRetryAfter(downloadMetaData)) {
+						secondsToWait = downloadMetaData.getDownload().getRetryAfter();
+					}
+				} catch (HttpServerErrorException | HttpClientErrorException ex) {
+					filesNotDownloadable.add(currentDownloadData);
 				}
+			}
+			if (secondsToWait > 0) {
+				log.info(
+						"Notification downloads' metadata retrieved in {} ms, physical files aren't ready yet. Constructing service response...",
+						System.currentTimeMillis() - performanceMillis);
+				int timeToWaitInMinutes = (int) Math.ceil(secondsToWait / 60);
+				throw new CustomException(ResponseConstants.OPERATION_CANNOT_BE_COMPLETED_MESSAGE + timeToWaitInMinutes
+						+ (timeToWaitInMinutes > 1 ? GenericConstants.MINUTES_LABEL : GenericConstants.MINUTE_LABEL), 503);
+			} else {
+				log.info("Notification downloads' metadata retrieved in {} ms, getting physical files... ",
+						System.currentTimeMillis() - performanceMillis);
+				performanceMillis = System.currentTimeMillis();
+				for (NotificationDownloadFileData currentDownloadableFile : downloadableFiles) {
+					String notifName = 
+							currentDownloadableFile.getFileCategory() + "-" + currentDownloadableFile.getKey()+
+							GenericConstants.PDF_EXTENSION;
+					zipService.addEntry(zipInfo, notifName);
+					if (notificationApiHandler.downloadToStream(currentDownloadableFile.getDownloadUrl(),
+							zipInfo.getZos()) > 0) {
+						log.error("Cannot download notification {}",notifName);
+					}
+					zipService.closeEntry(zipInfo);
+				}
+				log.info("Physical files retrieved in {} ms", System.currentTimeMillis() - performanceMillis);
+	
+				
+				OutputStream out = zipInfo.getZos();
+				zipService.addEntry(zipInfo, "dati.txt");
+				int docsNumber = openSearchApiHandlerFactory.getOpenSearchApiHanlder().getAnonymizedLogsByIun(requestData.getIun(),
+						notificationStartDate.toString(), notificationEndDate, out);
+				zipService.closeEntry(zipInfo);
+				log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis,
+						docsNumber);
+				performanceMillis = System.currentTimeMillis();
+				log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME,
+						System.currentTimeMillis() - performanceMillis);
+				log.info("Notification data retrieve process - END in {} ms",
+						(System.currentTimeMillis() - serviceStartTime));
+			}
+			if (!filesNotDownloadable.isEmpty()) {
+				zipService.addEntry(zipInfo, GenericConstants.ERROR_SUMMARY_FILE_NAME + ".txt");
+				JsonUtilities jsonUtilities = new JsonUtilities();
+				String failsToString = jsonUtilities.toString(jsonUtilities.toJson(filesNotDownloadable));
+				OutputStreamWriter osw = new OutputStreamWriter(zipInfo.getZos());
+				osw.write(failsToString);
+				osw.flush();
 				zipService.closeEntry(zipInfo);
 			}
-			log.info("Physical files retrieved in {} ms", System.currentTimeMillis() - performanceMillis);
-
-			
-			OutputStream out = zipInfo.getZos();
-			zipService.addEntry(zipInfo, "dati.txt");
-			int docsNumber = openSearchApiHandlerFactory.getOpenSearchApiHanlder().getAnonymizedLogsByIun(requestData.getIun(),
-					notificationStartDate.toString(), notificationEndDate, out);
-			zipService.closeEntry(zipInfo);
-			log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis,
-					docsNumber);
-			performanceMillis = System.currentTimeMillis();
-			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME,
-					System.currentTimeMillis() - performanceMillis);
-			log.info("Notification data retrieve process - END in {} ms",
-					(System.currentTimeMillis() - serviceStartTime));
-		}
-
-		if (!filesNotDownloadable.isEmpty()) {
-			zipService.addEntry(zipInfo, GenericConstants.ERROR_SUMMARY_FILE_NAME + ".txt");
-			JsonUtilities jsonUtilities = new JsonUtilities();
-			String failsToString = jsonUtilities.toString(jsonUtilities.toJson(filesNotDownloadable));
-			OutputStreamWriter osw = new OutputStreamWriter(zipInfo.getZos());
-			osw.write(failsToString);
-			osw.flush();
-			zipService.closeEntry(zipInfo);
+		}catch(Exception err) {
+			log.error("Error processing NotificationLog Request", err);
+			zipService.addEntry(zipInfo, "error.txt", err.getMessage());
 		}
 		zipService.close(zipInfo);
 	}
