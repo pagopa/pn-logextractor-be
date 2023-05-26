@@ -2,8 +2,10 @@ package it.gov.pagopa.logextractor.util.external.pnservices;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -187,21 +189,30 @@ public class NotificationApiHandler {
         }
 	}
 	
+	@Deprecated
 	public int downloadToFile(String uri, File out) {
+		try {
+			return downloadToStream( uri, new FileOutputStream(out));
+		} catch (FileNotFoundException e) {
+			log.error("Error downloading file", e);
+			return 0;
+		}
+	}
+	
+	public int downloadToStream(String uri, OutputStream out) {
 		int total=0;
 		try (
 				BufferedInputStream in = new BufferedInputStream(new URL(uri).openStream());
-				FileOutputStream fileOutputStream = new FileOutputStream(out)
 			) {
 		    byte dataBuffer[] = new byte[1024];
 			int bytesRead;
 			while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
 				total += bytesRead;
-				fileOutputStream.write(dataBuffer, 0, bytesRead);
+				out.write(dataBuffer, 0, bytesRead);
 			}
 		} catch (IOException e) {
 			total = 0;
-			log.error("Error downloading content from url {} to file {}", uri, out.getName(), e);
+			log.error("Error downloading content from url {} to stream", uri, e);
 		}
 		
 		return total;

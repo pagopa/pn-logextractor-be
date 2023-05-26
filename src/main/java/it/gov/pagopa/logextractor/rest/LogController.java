@@ -66,7 +66,6 @@ public class LogController implements LogsApi {
 	public ResponseEntity<BaseResponseDto> personActivityLogs(String xPagopaPnUid, String xPagopaPnCxType, PersonLogsRequestDto personLogsRequestDto) throws Exception {
 		
 		String key = personLogsRequestDto.getTicketNumber()+"-"+(new RandomUtils().generateRandomAlphaNumericString())+".zip";
-		//s3ClientService.signBucket( key );
 		BaseResponseDto dto = new BaseResponseDto();
 		dto.setMessage(key);
 		ResponseEntity<BaseResponseDto> ret = ResponseEntity.status(HttpStatus.OK).body(dto);
@@ -89,12 +88,19 @@ public class LogController implements LogsApi {
 	}
 
 	@Override
-	public ResponseEntity<Resource> notificationInfoLogs(String xPagopaPnUid, String xPagopaPnCxType, NotificationInfoRequestDto notificationInfoRequestDto) throws Exception {
-//		this.threadLocalService.initialize(httpServletResponse, notificationInfoRequestDto.getTicketNumber());
-		logService.getNotificationInfoLogs(notificationInfoRequestDto,xPagopaPnUid, xPagopaPnCxType);
+	public ResponseEntity<BaseResponseDto> notificationInfoLogs(String xPagopaPnUid, String xPagopaPnCxType, NotificationInfoRequestDto notificationInfoRequestDto) throws Exception {
 		
-		handleResponse();
-		return null;
+		String key = notificationInfoRequestDto.getTicketNumber()+"-"+(new RandomUtils().generateRandomAlphaNumericString())+".zip";
+		BaseResponseDto dto = new BaseResponseDto();
+		dto.setMessage(key);
+		ResponseEntity<BaseResponseDto> ret = ResponseEntity.status(HttpStatus.OK).body(dto);
+
+		String zipPassword=PasswordFactory.createPassword();
+		logService.getNotificationInfoLogs(key, zipPassword,notificationInfoRequestDto,xPagopaPnUid, xPagopaPnCxType);
+		httpServletResponse.addHeader("Access-Control-Expose-Headers", "password,content-disposition");
+		httpServletResponse.addHeader("password", zipPassword);
+		return ret;
+
 	}
 
 	@Override

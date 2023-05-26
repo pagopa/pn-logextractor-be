@@ -69,6 +69,11 @@ public class ZipService {
 		ow.flush();
 		closeEntry(zipInfo);		
 	}
+	public void addEntry(ZipInfo zipInfo,String name, byte[] content) throws IOException{
+		addEntry(zipInfo, name);
+		zipInfo.getZos().write(content);
+		closeEntry(zipInfo);		
+	}
 	
 	
 	public void closeEntry(ZipInfo zipInfo) throws IOException {

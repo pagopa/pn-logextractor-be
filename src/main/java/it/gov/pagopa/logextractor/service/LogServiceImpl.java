@@ -4,10 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
@@ -15,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
@@ -25,7 +21,6 @@ import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
-import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDto;
 import it.gov.pagopa.logextractor.exception.CustomException;
 import it.gov.pagopa.logextractor.exception.LogExtractorException;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.BaseResponseDto;
@@ -36,14 +31,12 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.SessionLogsRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.TraceIdLogsRequestDto;
 import it.gov.pagopa.logextractor.util.FileUtilities;
-import it.gov.pagopa.logextractor.util.JsonUtilities;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
 import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandlerFactory;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationService;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
-import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
 import it.gov.pagopa.logextractor.util.external.s3.S3ClientService;
 import it.gov.pagopa.logextractor.util.external.s3.S3DocumentDownloader;
 import lombok.extern.slf4j.Slf4j;
@@ -85,6 +78,10 @@ public class LogServiceImpl implements LogService {
 	@Autowired 
 	S3ClientService s3ClientService;
 
+	@Autowired 
+	NotificationLogService notificationLogService;
+
+	
 	@Override
 	@Async
 	public String getAnonymizedPersonLogs(String key, String pass, PersonLogsRequestDto requestData, String xPagopaHelpdUid, String xPagopaCxType)
@@ -210,113 +207,18 @@ public class LogServiceImpl implements LogService {
 		log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END, (System.currentTimeMillis() - serviceStartTime));
 	}
 
+	
+	
 	@Override
-	public void getNotificationInfoLogs(NotificationInfoRequestDto requestData, String xPagopaHelpdUid,
+	@Async
+	public void getNotificationInfoLogs(String key, String zipPassword, NotificationInfoRequestDto requestData, String xPagopaHelpdUid,
 			String xPagopaCxType) throws IOException {
-		log.info("Notification data retrieve process - START - user={}, userType={}, ticketNumber={}, iun={}",
-				xPagopaHelpdUid, xPagopaCxType, requestData.getTicketNumber(), requestData.getIun());
-		ArrayList<NotificationDownloadFileData> downloadableFiles = new ArrayList<>();
-		long serviceStartTime = System.currentTimeMillis();
-		double secondsToWait = 0;
-		ObjectMapper mapper = new ObjectMapper();
-		ArrayList<File> filesToAdd = new ArrayList<>();
-		log.info(LoggingConstants.GET_NOTIFICATION_DETAILS);
-		NotificationDetailsResponseDto notificationDetails = notificationApiHandler
-				.getNotificationDetails(requestData.getIun());
-		OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
-		String notificationEndDate = notificationStartDate.plusMonths(3).toString();
-		log.info("Service response: notificationDetails={} retrieved in {} ms, getting history data...",
-				mapper.writer().writeValueAsString(notificationDetails), System.currentTimeMillis() - serviceStartTime);
-		NotificationHistoryResponseDto notificationHistory = notificationApiHandler.getNotificationHistory(
-				requestData.getIun(), notificationDetails.getRecipients().size(), notificationStartDate.toString());
-		log.info("Service response: notificationHistory={} retrieved in {} ms, getting legal facts' keys...",
-				mapper.writer().writeValueAsString(notificationHistory), System.currentTimeMillis() - serviceStartTime);
-		long performanceMillis = System.currentTimeMillis();
-		ArrayList<NotificationDownloadFileData> downloadFileData = new ArrayList<>(
-				notificationApiHandler.getLegalFactFileDownloadData(notificationHistory));
-		log.info("Legal facts' keys retrieved in {} ms, getting notification documents' keys...",
-				System.currentTimeMillis() - performanceMillis);
-		performanceMillis = System.currentTimeMillis();
-		downloadFileData.addAll(notificationApiHandler.getNotificationDocumentFileDownloadData(notificationDetails));
-		log.info("Notification documents' keys retrieved in {} ms, getting payment documents' keys...",
-				System.currentTimeMillis() - performanceMillis);
-		performanceMillis = System.currentTimeMillis();
-		downloadFileData.addAll(notificationApiHandler.getPaymentFilesDownloadData(notificationDetails));
-		log.info("Notification payment' keys retrieved in {} ms, getting downloads' metadata...",
-				System.currentTimeMillis() - performanceMillis);
-		performanceMillis = System.currentTimeMillis();
-		List<NotificationDownloadFileData> filesNotDownloadable = new ArrayList<>();
-		for (NotificationDownloadFileData currentDownloadData : downloadFileData) {
-			try {
-				FileDownloadMetadataResponseDto downloadMetaData = notificationApiHandler
-						.getDownloadMetadata(currentDownloadData.getKey());
-				currentDownloadData.setDownloadUrl(downloadMetaData.getDownload().getUrl());
-				downloadableFiles.add(currentDownloadData);
-				if ( secondsToWait < getRetryAfter(downloadMetaData)) {
-					secondsToWait = downloadMetaData.getDownload().getRetryAfter();
-				}
-			} catch (HttpServerErrorException | HttpClientErrorException ex) {
-				filesNotDownloadable.add(currentDownloadData);
-			}
-		}
-		if (secondsToWait > 0) {
-			log.info(
-					"Notification downloads' metadata retrieved in {} ms, physical files aren't ready yet. Constructing service response...",
-					System.currentTimeMillis() - performanceMillis);
-			int timeToWaitInMinutes = (int) Math.ceil(secondsToWait / 60);
-			throw new CustomException(ResponseConstants.OPERATION_CANNOT_BE_COMPLETED_MESSAGE + timeToWaitInMinutes
-					+ (timeToWaitInMinutes > 1 ? GenericConstants.MINUTES_LABEL : GenericConstants.MINUTE_LABEL), 503);
-		} else {
-			log.info("Notification downloads' metadata retrieved in {} ms, getting physical files... ",
-					System.currentTimeMillis() - performanceMillis);
-			performanceMillis = System.currentTimeMillis();
-			for (NotificationDownloadFileData currentDownloadableFile : downloadableFiles) {
-				File downloadedFile = fileUtils.getFileWithRandomName(
-						currentDownloadableFile.getFileCategory() + "-" + currentDownloadableFile.getKey(),
-						GenericConstants.PDF_EXTENSION);
-				if (notificationApiHandler.downloadToFile(currentDownloadableFile.getDownloadUrl(),
-						downloadedFile) > 0) {
-					filesToAdd.add(downloadedFile);
-				}
-			}
-			log.info("Physical files retrieved in {} ms", System.currentTimeMillis() - performanceMillis);
-
-			OutputStream out = threadLocalService.get();
-			threadLocalService.addEntry(OS_RESULT + GenericConstants.TXT_EXTENSION);
-			int docsNumber = openSearchApiHandlerFactory.getOpenSearchApiHanlder().getAnonymizedLogsByIun(requestData.getIun(),
-					notificationStartDate.toString(), notificationEndDate, out);
-			threadLocalService.closeEntry();
-			log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis,
-					docsNumber);
-			performanceMillis = System.currentTimeMillis();
-			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME,
-					System.currentTimeMillis() - performanceMillis);
-			log.info("Notification data retrieve process - END in {} ms",
-					(System.currentTimeMillis() - serviceStartTime));
-		}
-
-		if (!filesNotDownloadable.isEmpty()) {
-			threadLocalService.addEntry(GenericConstants.ERROR_SUMMARY_FILE_NAME + ".txt");
-			JsonUtilities jsonUtilities = new JsonUtilities();
-			String failsToString = jsonUtilities.toString(jsonUtilities.toJson(filesNotDownloadable));
-			OutputStreamWriter osw = new OutputStreamWriter(threadLocalService.get());
-			osw.write(failsToString);
-			osw.flush();
-			threadLocalService.closeEntry();
-		}
+		notificationLogService.getNotificationInfoLogs(key, zipPassword, requestData, xPagopaHelpdUid, xPagopaCxType);
 	}
 
-	private Integer getRetryAfter(FileDownloadMetadataResponseDto downloadMetaData) {
-		if (downloadMetaData == null || downloadMetaData.getDownload() == null) {
-			return 0;
-		}else {
-			Integer ret = downloadMetaData.getDownload().getRetryAfter();
-			return ret==null?0:ret;
-		}
-	}
 	
 	@Async
-	public String getDeanonimizedPersonLogs(String key, String zipPassword, PersonLogsRequestDto requestData, String xPagopaHelpdUid,
+	public void getDeanonimizedPersonLogs(String key, String zipPassword, PersonLogsRequestDto requestData, String xPagopaHelpdUid,
 			String xPagopaCxType) throws IOException, LogExtractorException {
 		log.info(
 				"Deanonimized logs retrieve process - START - user={}, userType={}, ticketNumber={}, taxId={}, "
@@ -392,7 +294,6 @@ public class LogServiceImpl implements LogService {
 			throw new CustomException(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE, 204);
 		}
 		
-		return zipInfo.getPassword();
 	}
 
 	@Override

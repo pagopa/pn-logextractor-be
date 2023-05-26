@@ -177,45 +177,45 @@ class LogServiceImplTest {
 //        .withMessage(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE); 
 //    }
 
-	@Test
-  @DisplayName("Notification data extraction by iun with files not ready to be downloaded")
-  void testGetNotificationInfoLogs_whenProvidedDataIsValid_returnsTimeToWait() throws IOException {
-    NotificationInfoRequestDto dto = new NotificationInfoRequestDto();
-    dto.setIun("test-test-test-111111-a-1");
-    dto.setTicketNumber("inc123");
-    NotificationDetailsResponseDto notificationDetails = new NotificationDetailsResponseDto();
-    notificationDetails.setDocuments(new ArrayList<>());
-    notificationDetails.setRecipients(new ArrayList<>());
-    notificationDetails.setSentAt(OffsetDateTime.now().toString());
-    NotificationHistoryResponseDto notificationHistoryResponseDto = new NotificationHistoryResponseDto();
-    notificationHistoryResponseDto.setTimeline(new ArrayList<>());
-    ArrayList<NotificationDownloadFileData> downloadFileDataArrayList = new ArrayList<>(
-        List.of(new NotificationDownloadFileData("test", "test", "test")));
-    FileDownloadMetadataResponseDto fileDownloadMetadataResponseDto = new FileDownloadMetadataResponseDto();
-    FileDownloadInfo fileDownloadInfo = new FileDownloadInfo();
-    fileDownloadInfo.setUrl(null);
-    fileDownloadInfo.setRetryAfter(60);
-    fileDownloadMetadataResponseDto.setDownload(fileDownloadInfo);
-
-    Mockito.when(notificationApiHandler.getNotificationDetails(Mockito.anyString()))
-        .thenReturn(notificationDetails);
-    Mockito.when(notificationApiHandler.getNotificationHistory(Mockito.any(), Mockito.anyInt(),
-            Mockito.any()))
-        .thenReturn(notificationHistoryResponseDto);
-    Mockito.when(notificationApiHandler.getLegalFactFileDownloadData(Mockito.any()))
-        .thenReturn(downloadFileDataArrayList);
-    Mockito.when(notificationApiHandler.getNotificationDocumentFileDownloadData(Mockito.any()))
-        .thenReturn(downloadFileDataArrayList);
-    Mockito.when(notificationApiHandler.getPaymentFilesDownloadData(Mockito.any()))
-        .thenReturn(downloadFileDataArrayList);
-    Mockito.when(notificationApiHandler.getDownloadMetadata(Mockito.any()))
-        .thenReturn(fileDownloadMetadataResponseDto);
-
-	assertThatExceptionOfType(CustomException.class).isThrownBy(() -> { 
-        	service.getNotificationInfoLogs(dto, "test", "test");
-        })
-        .withMessage(ResponseConstants.OPERATION_CANNOT_BE_COMPLETED_MESSAGE+"1 minuto"); 
-    }
+//	@Test
+//  @DisplayName("Notification data extraction by iun with files not ready to be downloaded")
+//  void testGetNotificationInfoLogs_whenProvidedDataIsValid_returnsTimeToWait() throws IOException {
+//    NotificationInfoRequestDto dto = new NotificationInfoRequestDto();
+//    dto.setIun("test-test-test-111111-a-1");
+//    dto.setTicketNumber("inc123");
+//    NotificationDetailsResponseDto notificationDetails = new NotificationDetailsResponseDto();
+//    notificationDetails.setDocuments(new ArrayList<>());
+//    notificationDetails.setRecipients(new ArrayList<>());
+//    notificationDetails.setSentAt(OffsetDateTime.now().toString());
+//    NotificationHistoryResponseDto notificationHistoryResponseDto = new NotificationHistoryResponseDto();
+//    notificationHistoryResponseDto.setTimeline(new ArrayList<>());
+//    ArrayList<NotificationDownloadFileData> downloadFileDataArrayList = new ArrayList<>(
+//        List.of(new NotificationDownloadFileData("test", "test", "test")));
+//    FileDownloadMetadataResponseDto fileDownloadMetadataResponseDto = new FileDownloadMetadataResponseDto();
+//    FileDownloadInfo fileDownloadInfo = new FileDownloadInfo();
+//    fileDownloadInfo.setUrl(null);
+//    fileDownloadInfo.setRetryAfter(60);
+//    fileDownloadMetadataResponseDto.setDownload(fileDownloadInfo);
+//
+//    Mockito.when(notificationApiHandler.getNotificationDetails(Mockito.anyString()))
+//        .thenReturn(notificationDetails);
+//    Mockito.when(notificationApiHandler.getNotificationHistory(Mockito.any(), Mockito.anyInt(),
+//            Mockito.any()))
+//        .thenReturn(notificationHistoryResponseDto);
+//    Mockito.when(notificationApiHandler.getLegalFactFileDownloadData(Mockito.any()))
+//        .thenReturn(downloadFileDataArrayList);
+//    Mockito.when(notificationApiHandler.getNotificationDocumentFileDownloadData(Mockito.any()))
+//        .thenReturn(downloadFileDataArrayList);
+//    Mockito.when(notificationApiHandler.getPaymentFilesDownloadData(Mockito.any()))
+//        .thenReturn(downloadFileDataArrayList);
+//    Mockito.when(notificationApiHandler.getDownloadMetadata(Mockito.any()))
+//        .thenReturn(fileDownloadMetadataResponseDto);
+//
+//	assertThatExceptionOfType(CustomException.class).isThrownBy(() -> { 
+//        	service.getNotificationInfoLogs(dto, "test", "test");
+//        })
+//        .withMessage(ResponseConstants.OPERATION_CANNOT_BE_COMPLETED_MESSAGE+"1 minuto"); 
+//    }
 
 //	@Test
 //	@DisplayName("Extraction by uid with de-anonymization empty response")
