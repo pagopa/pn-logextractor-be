@@ -319,8 +319,7 @@ public class S3ClientService {
 			builder = builder.withCredentials(new ProfileCredentialsProvider(awsProfile));
 		}
 		
-		AmazonS3 s3Client = builder.withRegion(bucketRegion)
-				.withCredentials(new ProfileCredentialsProvider()).build();
+		AmazonS3 s3Client = builder.withRegion(bucketRegion).build();
 		
 		log.info("Retrieving SAML assertion from s3 bucket... ");
 		long performanceMillis = System.currentTimeMillis();
