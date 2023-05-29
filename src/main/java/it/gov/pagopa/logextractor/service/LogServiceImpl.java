@@ -93,36 +93,41 @@ public class LogServiceImpl implements LogService {
 		int docCount = 0;
 
 		ZipInfo zipInfo = zipService.createZip(key, pass, s3ClientService.uploadStream(key));
-		zipService.addEntry(zipInfo, OS_RESULT + GenericConstants.TXT_EXTENSION);
-		// use case 7
-		if (requestData.getDateFrom() != null && requestData.getDateTo() != null && requestData.getPersonId() != null
-				&& requestData.getIun() == null) {
-			log.info("Getting activities' anonymized history... ");
-			performanceMillis = System.currentTimeMillis();
-
-			docCount = openSearchApiHandlerFactory.getOpenSearchApiHanlder().getAnonymizedLogsByUid(requestData.getPersonId(), requestData.getDateFrom(),
-					requestData.getDateTo(), zipInfo.getZos());
-		} else {
-			// use case 8
-			if (requestData.getIun() != null) {
-				log.info(LoggingConstants.GET_NOTIFICATION_DETAILS);
-				NotificationDetailsResponseDto notificationDetails = notificationApiHandler
-						.getNotificationDetails(requestData.getIun());
-				log.info("Service response: notificationDetails={} retrieved in {} ms",
-						new ObjectMapper().writer().writeValueAsString(notificationDetails),
-						System.currentTimeMillis() - serviceStartTime);
-				OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
-				String notificationEndDate = notificationStartDate.plusMonths(3).toString();
+		try {
+			zipService.addEntry(zipInfo, OS_RESULT + GenericConstants.TXT_EXTENSION);
+			// use case 7
+			if (requestData.getDateFrom() != null && requestData.getDateTo() != null && requestData.getPersonId() != null
+					&& requestData.getIun() == null) {
+				log.info("Getting activities' anonymized history... ");
 				performanceMillis = System.currentTimeMillis();
-				docCount = openSearchApiHandlerFactory.getOpenSearchApiHanlder().getAnonymizedLogsByIun(requestData.getIun(),
-						notificationStartDate.toString(), notificationEndDate, zipInfo.getZos());
+	
+				docCount = openSearchApiHandlerFactory.getOpenSearchApiHanlder().getAnonymizedLogsByUid(requestData.getPersonId(), requestData.getDateFrom(),
+						requestData.getDateTo(), zipInfo.getZos());
+			} else {
+				// use case 8
+				if (requestData.getIun() != null) {
+					log.info(LoggingConstants.GET_NOTIFICATION_DETAILS);
+					NotificationDetailsResponseDto notificationDetails = notificationApiHandler
+							.getNotificationDetails(requestData.getIun());
+					log.info("Service response: notificationDetails={} retrieved in {} ms",
+							new ObjectMapper().writer().writeValueAsString(notificationDetails),
+							System.currentTimeMillis() - serviceStartTime);
+					OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
+					String notificationEndDate = notificationStartDate.plusMonths(3).toString();
+					performanceMillis = System.currentTimeMillis();
+					docCount = openSearchApiHandlerFactory.getOpenSearchApiHanlder().getAnonymizedLogsByIun(requestData.getIun(),
+							notificationStartDate.toString(), notificationEndDate, zipInfo.getZos());
+				}
 			}
-		}
-		zipService.closeEntry(zipInfo);
-		log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis,
-				docCount);
-		if (docCount == 0) {
-			throw new CustomException(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE, 204);
+			zipService.closeEntry(zipInfo);
+			log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis,
+					docCount);
+			if (docCount == 0) {
+				throw new CustomException(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE, 204);
+			}
+		}catch(Exception err) {
+			log.error("Error preparing zip file", err);
+			zipService.addEntryWithContent(zipInfo, "error.txt", err.getMessage());
 		}
 		performanceMillis = System.currentTimeMillis();
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
