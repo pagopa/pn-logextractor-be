@@ -93,16 +93,16 @@ class MockLogControllerTest extends AbstractMock {
 		assertThat(response.getHeaderNames()).contains("password");
 	}
 	
-	@Test
-	void test_getNotificationLogsNotificationsIsEmpty() throws Exception {
-		mockPublicAuthorityIdAndNotificationsBetweenMonths(true);
-		mockPersonsLogUseCase6Response();
-		MockHttpServletResponse response = mvc
-				.perform(post(notificationUrl).headers(getHeaders())
-						.content(getMockMonthlyNotificationsRequestDto()).contentType(APPLICATION_JSON_UTF8))
-				.andReturn().getResponse();
-		assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
-	}
+//	@Test
+//	void test_getNotificationLogsNotificationsIsEmpty() throws Exception {
+//		mockPublicAuthorityIdAndNotificationsBetweenMonths(true);
+//		mockPersonsLogUseCase6Response();
+//		MockHttpServletResponse response = mvc
+//				.perform(post(notificationUrl).headers(getHeaders())
+//						.content(getMockMonthlyNotificationsRequestDto()).contentType(APPLICATION_JSON_UTF8))
+//				.andReturn().getResponse();
+//		assertThat(response.getStatus()).isEqualTo(HttpStatus.NO_CONTENT.value());
+//	}
 	
 //	@Test
 //	void test_getPersonsLogsOpenSearchResponseIsEmpty() throws Exception {

@@ -36,7 +36,6 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.SessionLogsRequestDto
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.TraceIdLogsRequestDto;
 import it.gov.pagopa.logextractor.service.LogService;
 import it.gov.pagopa.logextractor.service.LogServiceImpl;
-import it.gov.pagopa.logextractor.service.ThreadLocalOutputStreamService;
 import it.gov.pagopa.logextractor.util.FileUtilities;
 import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandler;
@@ -59,9 +58,6 @@ class LogServiceImplTest {
 
 	@Mock
 	OpenSearchApiHandlerFactory openSearchApiHandlerFactory;
-
-	@Mock
-	ThreadLocalOutputStreamService threadLocalOutputStreamService;
 
 	@Mock
 	NotificationApiHandler notificationApiHandler;
