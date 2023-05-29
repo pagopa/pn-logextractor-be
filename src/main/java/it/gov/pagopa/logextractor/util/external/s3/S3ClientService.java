@@ -7,13 +7,11 @@ import java.io.PipedOutputStream;
 import java.net.URL;
 import java.time.Instant;
 
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
@@ -30,26 +28,15 @@ public class S3ClientService {
 	@Value("${bucket.name:logextractor-bucket}")
 	String bucketName;
 
-	@Value("${external.s3.saml.assertion.awsprofile:}")
-	String awsProfile;
-	
-	@Value("${external.s3.saml.assertion.region:eu-south-1}")
-	String bucketRegion;
+	@Autowired
+	AmazonS3 s3Client;
 	
 	private static String CONTENT_TYPE = "application/zip";
 	
 
-
 	public void uploadFile(String keyName, File file) {
 		try {
 			log.info("Starting upload to bucket .....");
-			AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
-			if (StringUtils.isNotBlank(awsProfile)) {
-				builder = builder.withCredentials(new ProfileCredentialsProvider(awsProfile));
-			}
-			
-			
-			AmazonS3 s3Client = builder.withRegion(bucketRegion).build();
 
 			PutObjectRequest por = new PutObjectRequest(bucketName,
 	                keyName,
@@ -72,13 +59,6 @@ public class S3ClientService {
 			PipedInputStream in = new PipedInputStream();
 		    PipedOutputStream out = new PipedOutputStream(in);
 		    
-			AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
-			if (StringUtils.isNotBlank(awsProfile)) {
-				builder = builder.withCredentials(new ProfileCredentialsProvider(awsProfile));
-			}
-		    
-			AmazonS3 s3Client = builder.withRegion(bucketRegion)
-					.build();
 			ObjectMetadata metadata = new ObjectMetadata();
 			PutObjectRequest por = new PutObjectRequest(bucketName,
 	                keyName,
@@ -111,13 +91,6 @@ public class S3ClientService {
 
 		try {
 			if (getObject(objectKey)!=null) {
-				AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
-				if (StringUtils.isNotBlank(awsProfile)) {
-					builder = builder.withCredentials(new ProfileCredentialsProvider(awsProfile));
-				}
-				
-				AmazonS3 s3Client = builder.withRegion(bucketRegion).build();
-	
 				// Set the presigned URL to expire after one hour.
 				java.util.Date expiration = new java.util.Date();
 				long expTimeMillis = Instant.now().toEpochMilli();
@@ -141,12 +114,6 @@ public class S3ClientService {
 
 	public S3Object getObject(String key) {
 		S3Object object = null;
-		AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
-		if (StringUtils.isNotBlank(awsProfile)) {
-			builder = builder.withCredentials(new ProfileCredentialsProvider(awsProfile));
-		}
-		
-		AmazonS3 s3Client = builder.withRegion(bucketRegion).build();
 		
 		log.info("Retrieving SAML assertion from s3 bucket... ");
 		try {
@@ -157,7 +124,7 @@ public class S3ClientService {
 				log.debug("download url not ready for key {}",key);
 			}else {
 				if (err.getErrorCode().equals("AccessDenied")) {
-					log.error("Access denied for key: {} at bucket: {} with profile: {} in region: {}",key, bucketName, awsProfile,bucketRegion);
+					log.error("Access denied for key: {} at bucket: {} in region: {}",key, bucketName ,s3Client.getRegionName()  );
 				}
 				throw err;
 			}
