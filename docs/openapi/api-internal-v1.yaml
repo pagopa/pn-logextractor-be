@@ -211,10 +211,9 @@ paths:
         '200':
           description: The operation has been successfully completed
           content:
-            'application/octect-stream':
+            application/json:
               schema:
-                type: string
-                format: binary
+                $ref: '#/components/schemas/BaseResponseDto'
         '400':
           description: Errors during the request validation
           content:
@@ -307,13 +306,11 @@ paths:
               $ref: '#/components/schemas/TraceIdLogsRequestDto'
       responses:
         '200':
-          description: >-
-            The operation has been successfully completed
+          description: The operation has been successfully completed
           content:
-            'application/octect-stream':
+            application/json:
               schema:
-                type: string
-                format: binary
+                $ref: '#/components/schemas/BaseResponseDto'
         '400':
           description: Errors during the request validation
           content:
@@ -357,13 +354,11 @@ paths:
               $ref: '#/components/schemas/SessionLogsRequestDto'
       responses:
         '200':
-          description: >-
-            The operation has been successfully completed
+          description: The operation has been successfully completed
           content:
-            'application/octect-stream':
+            application/json:
               schema:
-                type: string
-                format: binary
+                $ref: '#/components/schemas/BaseResponseDto'
         '400':
           description: Errors during the request validation
           content:

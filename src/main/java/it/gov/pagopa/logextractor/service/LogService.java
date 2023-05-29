@@ -38,7 +38,8 @@ public interface LogService {
 	 * @throws CsvRequiredFieldEmptyException in case of any required field is missing
 	 * @throws LogExtractorException in case of a business logic error
 	 */
-	void getMonthlyNotifications(MonthlyNotificationsRequestDto requestData,
+	@Async
+	void getMonthlyNotifications(String key, String pass, MonthlyNotificationsRequestDto requestData,
 											String xPagopaHelpdUid,
 											String xPagopaCxType) throws IOException, ParseException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, LogExtractorException;
 	
@@ -48,7 +49,8 @@ public interface LogService {
 	 * @throws IOException in case of an IO error
 	 * @throws LogExtractorException in case of a business logic error
 	 */
-	void getTraceIdLogs(TraceIdLogsRequestDto requestData,
+	@Async
+	void getTraceIdLogs(String key, String zipPassword, TraceIdLogsRequestDto requestData,
 								   String xPagopaHelpdUid,
 								   String xPagopaCxType) throws IOException, LogExtractorException;
 	
@@ -77,10 +79,12 @@ public interface LogService {
 	void getNotificationInfoLogs(String key, String zipPassword,NotificationInfoRequestDto requestData,
 											String xPagopaHelpdUid, String xPagopaCxType) throws IOException;
 	
-	void getAnonymizedSessionLogs(SessionLogsRequestDto requestData,
+	@Async
+	void getAnonymizedSessionLogs(String key, String zipPassword,SessionLogsRequestDto requestData,
 											 String xPagopaHelpdUid, String xPagopaCxType) throws IOException;
 	
-	void getDeanonimizedSessionLogs(SessionLogsRequestDto requestData,
+	@Async
+	void getDeanonimizedSessionLogs(String key, String zipPassword,SessionLogsRequestDto requestData,
 											   String xPagopaHelpdUid,
 											   String xPagopaCxType) throws IOException, LogExtractorException;
 }
