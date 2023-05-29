@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -178,7 +179,7 @@ public class LogServiceImpl implements LogService {
 		}
 		}catch(Exception err) {
 			log.error("Error preparing zip file", err);
-			zipService.addEntry(zipInfo, "error.txt", err.getMessage());
+			zipService.addEntryWithContent(zipInfo, "error.txt", err.getMessage());
 		}
 		zipService.close(zipInfo);
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
@@ -211,7 +212,7 @@ public class LogServiceImpl implements LogService {
 			}
 		}catch(Exception err) {
 			log.error("Error processing NotificationLog Request", err);
-			zipService.addEntry(zipInfo, "error.txt", err.getMessage());
+			zipService.addEntryWithContent(zipInfo, "error.txt", err.getMessage());
 		}
 		zipService.close(zipInfo);		
 		log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END, (System.currentTimeMillis() - serviceStartTime));
@@ -264,8 +265,11 @@ public class LogServiceImpl implements LogService {
 						zipInfo.getZos());
 				zipService.closeEntry(zipInfo);
 	
-				if (s3.getFileName() != null) {
-					zipService.addEntry(zipInfo, s3.getFileName(), s3.getFileContent());
+				Map<String, String> assertions = s3.getFiles();
+				if (assertions.size()>0) {
+					for (String name:assertions.keySet()) {
+						zipService.addEntryWithContent(zipInfo, name, assertions.get(name));
+					}
 				} else {
 					log.warn("No SAML json for the request");
 				}
@@ -335,7 +339,7 @@ public class LogServiceImpl implements LogService {
 			}
 		}catch(Exception err) {
 			log.error("Error processing NotificationLog Request", err);
-			zipService.addEntry(zipInfo, "error.txt", err.getMessage());
+			zipService.addEntryWithContent(zipInfo, "error.txt", err.getMessage());
 		}
 		zipService.close(zipInfo);		
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
@@ -370,8 +374,13 @@ public class LogServiceImpl implements LogService {
 			deanonimizationService.deanonimizeDocuments(openSearchResponse, RecipientTypes.PF, zipInfo.getZos());
 			zipService.closeEntry(zipInfo);
 			
-			if (s3.getFileName()!=null) {
-				zipService.addEntry(zipInfo, s3.getFileName(),s3.getFileContent());
+			Map<String, String> assertions = s3.getFiles();
+			if (assertions.size()>0) {
+				for (String name:assertions.keySet()) {
+					zipService.addEntryWithContent(zipInfo, name, assertions.get(name));
+				}
+			} else {
+				log.warn("No SAML json for the request");
 			}
 	
 			Files.delete(openSearchResponse.toPath());
@@ -382,7 +391,7 @@ public class LogServiceImpl implements LogService {
 			}
 		}catch(Exception err) {
 			log.error("Error processing NotificationLog Request", err);
-			zipService.addEntry(zipInfo, "error.txt", err.getMessage());
+			zipService.addEntryWithContent(zipInfo, "error.txt", err.getMessage());
 		}
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info(LoggingConstants.DEANONIMIZED_RETRIEVE_PROCESS_END, (System.currentTimeMillis() - serviceStartTime));

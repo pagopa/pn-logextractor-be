@@ -142,7 +142,7 @@ public class NotificationLogService {
 			}
 		}catch(Exception err) {
 			log.error("Error processing NotificationLog Request", err);
-			zipService.addEntry(zipInfo, "error.txt", err.getMessage());
+			zipService.addEntryWithContent(zipInfo, "error.txt", err.getMessage());
 		}
 		zipService.close(zipInfo);
 	}

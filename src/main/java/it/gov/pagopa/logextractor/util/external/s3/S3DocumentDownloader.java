@@ -5,6 +5,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -27,7 +31,7 @@ public class S3DocumentDownloader implements OpenSearchApiObserver {
 	}
 
 	private String profile;
-	private FileInfo fileInfo;
+	private List<FileInfo> files;
 	private String region;
 	private String bucketName;
 	
@@ -36,12 +40,12 @@ public class S3DocumentDownloader implements OpenSearchApiObserver {
 		this.region = region;
 		this.bucketName = bucket;
 		
-		this.fileInfo = new FileInfo();
+		this.files = new ArrayList<>();
 	}
 
 	@Override
 	public void notify(String document, int numDoc) {
-		if (numDoc != 1) return;
+//		if (numDoc != 1) return;
 		
 		JsonUtilities jsonUtils = new JsonUtilities();
 		String date = jsonUtils.getValue(document, "@timestamp");
@@ -50,7 +54,8 @@ public class S3DocumentDownloader implements OpenSearchApiObserver {
 			String name = String.format("%s-%s.json", jti,
 					LocalDateTime.parse(date, DateTimeFormatter.ISO_OFFSET_DATE_TIME).toLocalDate().toString());
 
-			this.fileInfo.name=name;
+			FileInfo fileInfo = new FileInfo();
+			fileInfo.name=name;
 			try {
 				AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
 				if (StringUtils.isNotBlank(profile)) {
@@ -70,23 +75,25 @@ public class S3DocumentDownloader implements OpenSearchApiObserver {
 				BufferedReader br = new BufferedReader(new InputStreamReader(objectData));
 				String line = "";
 				while((line = br.readLine()) != null) {
-					this.fileInfo.content.append(line);
+					fileInfo.content.append(line);
 				}
 				objectData.close();
 				log.info("SAML assertion from s3 bucket retrieved in {} ms, constructing service response...",
 						System.currentTimeMillis() - performanceMillis);
 			}catch (Exception err) {
-				log.error("Error downloading document {} from S3 bucket", this.fileInfo.name, err);
+				log.error("Error downloading document {} from S3 bucket", fileInfo.name, err);
 			}
+			this.files.add(fileInfo);
 		}
 	}
 	
-	public String getFileContent() {
-		return fileInfo.content.toString();
+	public Map<String, String> getFiles(){
+		Map<String,String> ret = new HashMap<>();
+		
+		for(FileInfo info:files) {
+			ret.put(info.name, info.content.toString());
+		}
+		
+		return ret;
 	}
-	
-	public String getFileName() {
-		return fileInfo.name;
-	}
-
 }
