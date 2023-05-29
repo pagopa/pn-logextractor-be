@@ -129,6 +129,7 @@ public class LogServiceImpl implements LogService {
 			log.error("Error preparing zip file", err);
 			zipService.addEntryWithContent(zipInfo, "error.txt", err.getMessage());
 		}
+		zipService.close(zipInfo);
 		performanceMillis = System.currentTimeMillis();
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END, (System.currentTimeMillis() - serviceStartTime));
