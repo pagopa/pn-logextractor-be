@@ -30,16 +30,13 @@ public class S3DocumentDownloader implements OpenSearchApiObserver {
 		String name;
 	}
 
-	private String profile;
 	private List<FileInfo> files;
-	private String region;
 	private String bucketName;
+	private AmazonS3 amazonS3Client;
 	
-	public S3DocumentDownloader(String profile, String region, String bucket) {
-		this.profile = profile;
-		this.region = region;
+	public S3DocumentDownloader(AmazonS3 amazonS3Client, String bucket) {
+		this.amazonS3Client = amazonS3Client;
 		this.bucketName = bucket;
-		
 		this.files = new ArrayList<>();
 	}
 
@@ -57,18 +54,8 @@ public class S3DocumentDownloader implements OpenSearchApiObserver {
 			FileInfo fileInfo = new FileInfo();
 			fileInfo.name=name;
 			try {
-				AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
-				if (StringUtils.isNotBlank(profile)) {
-					builder = builder.withCredentials(new ProfileCredentialsProvider(profile));
-				}
-				AmazonS3 amazonS3Client = builder
-					.withRegion(region)
-//					.withCredentials(
-//                        new AWSStaticCredentialsProvider(
-//                            new BasicAWSCredentials(accessKey, accessSecret)))
-					.build();
 
-				log.info("Retrieving SAML assertion from s3 bucket... ");
+				log.info("Retrieving {} from s3 bucket {}", name, bucketName);
 				long performanceMillis = System.currentTimeMillis();
 				S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucketName, name));
 				InputStream objectData = object.getObjectContent();
@@ -78,10 +65,10 @@ public class S3DocumentDownloader implements OpenSearchApiObserver {
 					fileInfo.content.append(line);
 				}
 				objectData.close();
-				log.info("SAML assertion from s3 bucket retrieved in {} ms, constructing service response...",
+				log.info("SAML assertion from s3 bucket retrieved in {} ms",
 						System.currentTimeMillis() - performanceMillis);
 			}catch (Exception err) {
-				log.error("Error downloading document {} from S3 bucket", fileInfo.name, err);
+				log.error("Error downloading document {} from S3 bucket", name, err);
 			}
 			this.files.add(fileInfo);
 		}

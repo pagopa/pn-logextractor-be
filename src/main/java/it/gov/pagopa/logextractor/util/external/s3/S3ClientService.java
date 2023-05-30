@@ -36,14 +36,14 @@ public class S3ClientService {
 	
 	public void uploadFile(String keyName, File file) {
 		try {
-			log.info("Starting upload to bucket .....");
+			log.info("Starting upload {} to bucket {}.....", keyName, bucketName);
 
 			PutObjectRequest por = new PutObjectRequest(bucketName,
 	                keyName,
 	                file);
 			s3Client.putObject(por);
 			
-			log.info("File uploaded to bucket !");
+			log.info("File {} uploaded to bucket {} !",keyName, bucketName);
 		}catch(Exception err) {
 			log.error("Error uploading file", err);
 		}

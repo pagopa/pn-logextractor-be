@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
@@ -50,13 +51,12 @@ public class LogServiceImpl implements LogService {
 
 	private static final String OS_RESULT = "dati";
 
-	@Value("${external.s3.saml.assertion.region}")
-	String s3Region;
 	@Value("${external.s3.saml.assertion.bucket}")
 	String s3Bucket;
-	@Value("${external.s3.saml.assertion.awsprofile:}")
-	String awsProfile;
 
+	@Autowired
+	AmazonS3 s3Client;
+	
 	@Autowired
 	NotificationApiHandler notificationApiHandler;
 	
@@ -259,7 +259,7 @@ public class LogServiceImpl implements LogService {
 						System.currentTimeMillis() - serviceStartTime);
 				performanceMillis = System.currentTimeMillis();
 	
-				S3DocumentDownloader s3 = new S3DocumentDownloader(awsProfile, s3Region, s3Bucket);
+				S3DocumentDownloader s3 = new S3DocumentDownloader(s3Client, s3Bucket);
 				docCount = openSearchApiHandlerFactory.getOpenSearchApiHanlder(s3).getAnonymizedLogsByUid(internalId, requestData.getDateFrom(),
 						requestData.getDateTo(), tmpOutStream);
 				log.info(LoggingConstants.QEURY_EXECUTION_COMPLETED_TIME_DEANONIMIZE_DOCS,
@@ -369,7 +369,7 @@ public class LogServiceImpl implements LogService {
 		try {
 			log.info("Getting session activities' deanonimized history... ");
 			performanceMillis = System.currentTimeMillis();
-			S3DocumentDownloader s3 = new S3DocumentDownloader(awsProfile, s3Region, s3Bucket);
+			S3DocumentDownloader s3 = new S3DocumentDownloader(s3Client, s3Bucket);
 			docCount = openSearchApiHandlerFactory.getOpenSearchApiHanlder(s3).getAnonymizedSessionLogsByJti(requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo(), tmpOutStream);
 	
 			log.info("Query execution completed in {} ms, retrieved {} documents, deanonimizing results...",
