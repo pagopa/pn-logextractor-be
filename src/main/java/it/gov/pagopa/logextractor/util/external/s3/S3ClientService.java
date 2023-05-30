@@ -31,9 +31,9 @@ public class S3ClientService {
 	@Autowired
 	AmazonS3 s3Client;
 	
-	private static String CONTENT_TYPE = "application/zip";
+	@Autowired
+	S3DocumentUploader s3DocumentUploader;
 	
-
 	public void uploadFile(String keyName, File file) {
 		try {
 			log.info("Starting upload to bucket .....");
@@ -64,19 +64,8 @@ public class S3ClientService {
 	                keyName,
 	                in,
 	                metadata);
-			Thread thread1 = new Thread(new Runnable() {
-		        @Override
-		        public void run() {
-		            try {
-		            	s3Client.putObject(por);
-
-		            	log.info("Upload to bucket completed!");
-		            } catch(Exception err) {
-		                log.error("Error in thread upload to bucket", err);
-		            }                   
-		        }
-		    });
-			thread1.start();
+			
+			s3DocumentUploader.upload(por);
 			
 			log.info("Opened upload stream to bucket !");
 			return out;
