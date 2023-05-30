@@ -536,11 +536,15 @@ components:
       type: object
       required:
         - ticketNumber
-        - taxId
         - recipientType
       properties:
         ticketNumber:
           type: string
+        piva:
+          type: string
+          minLength: 11
+          maxLength: 11
+          pattern: '^([0-9]{11})$'
         taxId:
           type: string
           minLength: 16
