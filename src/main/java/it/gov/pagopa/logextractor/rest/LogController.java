@@ -27,7 +27,6 @@ import it.gov.pagopa.logextractor.util.external.s3.S3ClientService;
 @CrossOrigin(allowedHeaders = "password,content-disposition",exposedHeaders = "password,content-disposition")
 public class LogController implements LogsApi {
 
-
 	@Autowired
 	LogService logService;
 	
@@ -57,8 +56,7 @@ public class LogController implements LogsApi {
 
 	@Override
 	public ResponseEntity<BaseResponseDto> personActivityLogs(String xPagopaPnUid, String xPagopaPnCxType, PersonLogsRequestDto personLogsRequestDto) throws Exception {
-		
-		String key = personLogsRequestDto.getTicketNumber()+"-"+(new RandomUtils().generateRandomAlphaNumericString())+".zip";
+		String key = generateKey(personLogsRequestDto.getTicketNumber());
 		String zipPassword=PasswordFactory.createPassword();
 		if (Boolean.TRUE.equals(personLogsRequestDto.getDeanonimization())) {
 			logService.getDeanonimizedPersonLogs(key, zipPassword, personLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
@@ -75,8 +73,7 @@ public class LogController implements LogsApi {
 
 	@Override
 	public ResponseEntity<BaseResponseDto> notificationInfoLogs(String xPagopaPnUid, String xPagopaPnCxType, NotificationInfoRequestDto notificationInfoRequestDto) throws Exception {
-		
-		String key = notificationInfoRequestDto.getTicketNumber()+"-"+(new RandomUtils().generateRandomAlphaNumericString())+".zip";
+		String key = generateKey(notificationInfoRequestDto.getTicketNumber());
 		String zipPassword=PasswordFactory.createPassword();
 		logService.getNotificationInfoLogs(key, zipPassword,notificationInfoRequestDto,xPagopaPnUid, xPagopaPnCxType);
 		return prepareResponse(key, zipPassword);
@@ -84,7 +81,7 @@ public class LogController implements LogsApi {
 
 	@Override
 	public ResponseEntity<BaseResponseDto> notificationsInMonth(String xPagopaPnUid, String xPagopaPnCxType, MonthlyNotificationsRequestDto monthlyNotificationsRequestDto) throws Exception {
-		String key = monthlyNotificationsRequestDto.getTicketNumber() +"-"+(new RandomUtils().generateRandomAlphaNumericString())+".zip";
+		String key = generateKey(monthlyNotificationsRequestDto.getTicketNumber());
 		String zipPassword=PasswordFactory.createPassword();
 		logService.getMonthlyNotifications(key, zipPassword,monthlyNotificationsRequestDto, xPagopaPnUid, xPagopaPnCxType);
 		return prepareResponse(key, zipPassword);
@@ -92,7 +89,7 @@ public class LogController implements LogsApi {
 
 	@Override
 	public ResponseEntity<BaseResponseDto> processLogs(String xPagopaPnUid, String xPagopaPnCxType, TraceIdLogsRequestDto traceIdLogsRequestDto) throws Exception {
-		String key = traceIdLogsRequestDto.getTraceId() +"-"+(new RandomUtils().generateRandomAlphaNumericString())+".zip";
+		String key = generateKey(traceIdLogsRequestDto.getTraceId());
 		String zipPassword=PasswordFactory.createPassword();
 		logService.getTraceIdLogs(key, zipPassword,traceIdLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
 		return prepareResponse(key, zipPassword);
@@ -100,7 +97,7 @@ public class LogController implements LogsApi {
 	
 	@Override
 	public ResponseEntity<BaseResponseDto> sessionLogs(String xPagopaPnUid, String xPagopaPnCxType, SessionLogsRequestDto sessionLogsRequestDto) throws Exception {
-		String key = sessionLogsRequestDto.getTicketNumber() +"-"+(new RandomUtils().generateRandomAlphaNumericString())+".zip";
+		String key = generateKey(sessionLogsRequestDto.getTicketNumber());
 		String zipPassword=PasswordFactory.createPassword();
 		if (Boolean.TRUE.equals(sessionLogsRequestDto.getDeanonimization())) {
 			logService.getDeanonimizedSessionLogs(key, zipPassword,sessionLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
@@ -108,5 +105,11 @@ public class LogController implements LogsApi {
 			logService.getAnonymizedSessionLogs(key, zipPassword,sessionLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
 		}
 		return prepareResponse(key, zipPassword);
+	}
+	
+	private String generateKey(String base) {
+		String ret = base.replaceAll("[+.^:,;?=]","");
+		ret +="-"+(new RandomUtils().generateRandomAlphaNumericString())+".zip";
+		return ret;
 	}
 }
