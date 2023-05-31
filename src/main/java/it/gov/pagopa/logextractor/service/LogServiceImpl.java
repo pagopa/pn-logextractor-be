@@ -7,7 +7,6 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,7 +77,9 @@ public class LogServiceImpl implements LogService {
 	@Autowired 
 	NotificationLogService notificationLogService;
 
-	
+	@Autowired 
+	S3DocumentDownloader s3DocumentDownloader;
+
 	@Override
 	@Async
 	public String getAnonymizedPersonLogs(String key, String pass, PersonLogsRequestDto requestData, String xPagopaHelpdUid, String xPagopaCxType)
@@ -259,8 +260,8 @@ public class LogServiceImpl implements LogService {
 						System.currentTimeMillis() - serviceStartTime);
 				performanceMillis = System.currentTimeMillis();
 	
-				S3DocumentDownloader s3 = new S3DocumentDownloader(s3Client, s3Bucket);
-				docCount = openSearchApiHandlerFactory.getOpenSearchApiHanlder(s3).getAnonymizedLogsByUid(internalId, requestData.getDateFrom(),
+				FilenameCollector filenameCollector = new FilenameCollector();
+				docCount = openSearchApiHandlerFactory.getOpenSearchApiHanlder(filenameCollector).getAnonymizedLogsByUid(internalId, requestData.getDateFrom(),
 						requestData.getDateTo(), tmpOutStream);
 				log.info(LoggingConstants.QEURY_EXECUTION_COMPLETED_TIME_DEANONIMIZE_DOCS,
 						System.currentTimeMillis() - performanceMillis, docCount);
@@ -271,14 +272,7 @@ public class LogServiceImpl implements LogService {
 						zipInfo.getZos());
 				zipService.closeEntry(zipInfo);
 	
-				Map<String, String> assertions = s3.getFiles();
-				if (assertions.size()>0) {
-					for (String name:assertions.keySet()) {
-						zipService.addEntryWithContent(zipInfo, name, assertions.get(name));
-					}
-				} else {
-					log.warn("No SAML json for the request");
-				}
+				s3DocumentDownloader.downloadToZip(s3Bucket, filenameCollector.getNames(), zipInfo);
 			} else {
 				if (requestData.getIun() != null) {
 					// use case 4
@@ -369,8 +363,8 @@ public class LogServiceImpl implements LogService {
 		try {
 			log.info("Getting session activities' deanonimized history... ");
 			performanceMillis = System.currentTimeMillis();
-			S3DocumentDownloader s3 = new S3DocumentDownloader(s3Client, s3Bucket);
-			docCount = openSearchApiHandlerFactory.getOpenSearchApiHanlder(s3).getAnonymizedSessionLogsByJti(requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo(), tmpOutStream);
+			FilenameCollector filenameCollector = new FilenameCollector();
+			docCount = openSearchApiHandlerFactory.getOpenSearchApiHanlder(filenameCollector).getAnonymizedSessionLogsByJti(requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo(), tmpOutStream);
 	
 			log.info("Query execution completed in {} ms, retrieved {} documents, deanonimizing results...",
 					System.currentTimeMillis() - performanceMillis, docCount);
@@ -380,14 +374,7 @@ public class LogServiceImpl implements LogService {
 			deanonimizationService.deanonimizeDocuments(openSearchResponse, RecipientTypes.PF, zipInfo.getZos());
 			zipService.closeEntry(zipInfo);
 			
-			Map<String, String> assertions = s3.getFiles();
-			if (assertions.size()>0) {
-				for (String name:assertions.keySet()) {
-					zipService.addEntryWithContent(zipInfo, name, assertions.get(name));
-				}
-			} else {
-				log.warn("No SAML json for the request");
-			}
+			s3DocumentDownloader.downloadToZip(s3Bucket, filenameCollector.getNames(), zipInfo);
 	
 			Files.delete(openSearchResponse.toPath());
 			log.info("Deanonimization completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
