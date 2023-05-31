@@ -28,6 +28,18 @@ public class S3DocumentDownloader implements OpenSearchApiObserver {
 	private class FileInfo{
 		StringBuffer content = new StringBuffer();
 		String name;
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (obj instanceof FileInfo) {
+				FileInfo fi =((FileInfo)obj); 
+				return fi.name ==null && this.name==null? true : fi.name.equals(this.name);
+			}else {
+				return false;
+			}
+		}
+		
+		
 	}
 
 	private List<FileInfo> files;
@@ -53,24 +65,28 @@ public class S3DocumentDownloader implements OpenSearchApiObserver {
 
 			FileInfo fileInfo = new FileInfo();
 			fileInfo.name=name;
-			try {
-
-				log.info("Retrieving {} from s3 bucket {}", name, bucketName);
-				long performanceMillis = System.currentTimeMillis();
-				S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucketName, name));
-				InputStream objectData = object.getObjectContent();
-				BufferedReader br = new BufferedReader(new InputStreamReader(objectData));
-				String line = "";
-				while((line = br.readLine()) != null) {
-					fileInfo.content.append(line);
+			if (files.contains(fileInfo)) {
+				log.info("Skipped S3 request for file {}", name);
+			}else {
+				try {
+	
+					log.info("Retrieving {} from s3 bucket {}", name, bucketName);
+					long performanceMillis = System.currentTimeMillis();
+					S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucketName, name));
+					InputStream objectData = object.getObjectContent();
+					BufferedReader br = new BufferedReader(new InputStreamReader(objectData));
+					String line = "";
+					while((line = br.readLine()) != null) {
+						fileInfo.content.append(line);
+					}
+					objectData.close();
+					log.info("SAML assertion from s3 bucket retrieved in {} ms",
+							System.currentTimeMillis() - performanceMillis);
+				}catch (Exception err) {
+					log.error("Error downloading document {} from S3 bucket", name, err);
 				}
-				objectData.close();
-				log.info("SAML assertion from s3 bucket retrieved in {} ms",
-						System.currentTimeMillis() - performanceMillis);
-			}catch (Exception err) {
-				log.error("Error downloading document {} from S3 bucket", name, err);
+				this.files.add(fileInfo);
 			}
-			this.files.add(fileInfo);
 		}
 	}
 	
