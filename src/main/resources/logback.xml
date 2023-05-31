@@ -8,8 +8,8 @@
 		</encoder>
 	</appender>
 	<logger name="it.gov.pagopa" level="DEBUG" />
-	<logger name="com.amazonaws" level="DEBUG" />
-	<logger name="software.amazon" level="DEBUG" />
+	<logger name="com.amazonaws" level="INFO" />
+	<logger name="software.amazon" level="INFO" />
 	<root level="info">
 		<appender-ref ref="STDOUT" />
 	</root>
