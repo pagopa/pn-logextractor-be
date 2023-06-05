@@ -222,6 +222,10 @@ Parameters:
     Type: String
     Description: temporary storage arn
     
+  LogAlarmStrategy:
+    Type: String
+    Default: 'FATAL'
+  
 Conditions:
   HasSamlAssertionKmsKeyArn: !Not [ !Equals [ !Ref SamlAssertionBucketKeyArn, '' ] ]
   HasSamlAssertionBucketArn: !Not [ !Equals [ !Ref SamlAssertionBucketArn, '' ] ]
@@ -284,8 +288,8 @@ Resources:
         AlbSecurityGroup: !Ref AlbSecurityGroup
         TaskRoleManagedPolicyArn: !Ref LogextractorBeMicroserviceTaskManagedPolicy
         EcsLogGroup: !Ref EcsLogGroup
+        LogAlarmStrategyV1: !Ref LogAlarmStrategy
         
-
   # Grant operational rights to PN-Downtime-Logs microservice
   LogextractorBeMicroserviceTaskManagedPolicy:
     Type: AWS::IAM::ManagedPolicy
