@@ -93,7 +93,7 @@ public class LogServiceImpl implements LogService {
 		long performanceMillis = 0;
 		int docCount = 0;
 
-		ZipInfo zipInfo = zipService.createZip(key, pass, s3ClientService.uploadStream(key));
+		ZipInfo zipInfo = zipService.createZip(key, pass, s3ClientService.uploadStreamV2(key));
 		try {
 			zipService.addEntry(zipInfo, OS_RESULT + GenericConstants.TXT_EXTENSION);
 			// use case 7
@@ -147,7 +147,7 @@ public class LogServiceImpl implements LogService {
 				requestData.getEndMonth(), requestData.getPublicAuthorityName());
 		long serviceStartTime = System.currentTimeMillis();
 		log.info("Getting public authority id...");
-		ZipInfo zipInfo = zipService.createZip(key, zipPassword, s3ClientService.uploadStream(key));
+		ZipInfo zipInfo = zipService.createZip(key, zipPassword, s3ClientService.uploadStreamV2(key));
 		long performanceMillis = System.currentTimeMillis();
 
 		try {
@@ -204,7 +204,7 @@ public class LogServiceImpl implements LogService {
 		long serviceStartTime = System.currentTimeMillis();
 		log.info("Getting anonymized logs...");
 
-		ZipInfo zipInfo = zipService.createZip(key, zipPassword, s3ClientService.uploadStream(key));
+		ZipInfo zipInfo = zipService.createZip(key, zipPassword, s3ClientService.uploadStreamV2(key));
 		try {
 			zipService.addEntry(zipInfo, OS_RESULT + GenericConstants.TXT_EXTENSION);
 			int docCount = openSearchApiHandlerFactory.getOpenSearchApiHanlder().getAnonymizedLogsByTraceId(requestData.getTraceId(),
@@ -244,7 +244,7 @@ public class LogServiceImpl implements LogService {
 		int docCount = 0;
 		long performanceMillis = 0;
 		File tmp = fileUtils.getFileWithRandomName(OS_RESULT, GenericConstants.TXT_EXTENSION);
-		ZipInfo zipInfo = zipService.createZip(key, zipPassword, s3ClientService.uploadStream(key));
+		ZipInfo zipInfo = zipService.createZip(key, zipPassword, s3ClientService.uploadStreamV2(key));
 		
 		try (OutputStream tmpOutStream = new FileOutputStream(tmp)){
 	
@@ -322,7 +322,7 @@ public class LogServiceImpl implements LogService {
 
 		long serviceStartTime = System.currentTimeMillis();
 		long performanceMillis = System.currentTimeMillis();
-		ZipInfo zipInfo = zipService.createZip(key, zipPassword, s3ClientService.uploadStream(key));
+		ZipInfo zipInfo = zipService.createZip(key, zipPassword, s3ClientService.uploadStreamV2(key));
 		try {
 			int docCount = 0;
 			log.info("Getting session activities' anonymized history... ");
@@ -360,7 +360,7 @@ public class LogServiceImpl implements LogService {
 		File openSearchResponse = new FileUtilities().getFileWithRandomName(OS_RESULT, GenericConstants.TXT_EXTENSION);
 		FileOutputStream tmpOutStream = new FileOutputStream(openSearchResponse);
 		int docCount = 0;
-		ZipInfo zipInfo = zipService.createZip(key, zipPassword, s3ClientService.uploadStream(key));
+		ZipInfo zipInfo = zipService.createZip(key, zipPassword, s3ClientService.uploadStreamV2(key));
 		try {
 			log.info("Getting session activities' deanonimized history... ");
 			performanceMillis = System.currentTimeMillis();

@@ -1,5 +1,6 @@
 package it.gov.pagopa.logextractor.util.external.s3;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
@@ -74,6 +75,22 @@ public class S3ClientService {
 		}
 		return null;
 	}
+	
+	public OutputStream uploadStreamV2(String keyName) {
+		try {
+			log.info("Starting upload to bucket .....");
+			PipedInputStream in = new PipedInputStream();
+			PipedOutputStream out = new PipedOutputStream(in);
+			
+			s3DocumentUploader.uploadV2(in, bucketName, keyName);
+			
+			log.info("Opened upload stream to bucket !");
+			return out;
+		}catch(Exception err) {
+			log.error("Error uploading file", err);
+		}
+		return null;
+	}
 
 
 	public String downloadUrl(String objectKey) {
@@ -104,7 +121,7 @@ public class S3ClientService {
 	public S3Object getObject(String key) {
 		S3Object object = null;
 		
-		log.info("Retrieving SAML assertion from s3 bucket... ");
+		log.info("Retrieving object from s3 bucket with key {}", key);
 		try {
 			object = s3Client.getObject(new GetObjectRequest(bucketName, key));
 		}catch(AmazonS3Exception err) {
