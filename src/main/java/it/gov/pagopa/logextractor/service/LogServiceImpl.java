@@ -294,11 +294,11 @@ public class LogServiceImpl implements LogService {
 					zipService.closeEntry(zipInfo);
 				}
 			}
-			zipService.close(zipInfo);
 		}catch(Exception err) {
 			log.error("Error processing NotificationLog Request", err);
 			zipService.addEntryWithContent(zipInfo, "error.txt", err.getMessage());
 		}
+		zipService.close(zipInfo);
 		Files.delete(tmp.toPath());
 		log.info("Deanonimization completed in {} ms, constructing service response...",
 				System.currentTimeMillis() - performanceMillis);
@@ -387,6 +387,7 @@ public class LogServiceImpl implements LogService {
 			log.error("Error processing NotificationLog Request", err);
 			zipService.addEntryWithContent(zipInfo, "error.txt", err.getMessage());
 		}
+		zipService.close(zipInfo);;
 		log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
 		log.info(LoggingConstants.DEANONIMIZED_RETRIEVE_PROCESS_END, (System.currentTimeMillis() - serviceStartTime));
 	}
