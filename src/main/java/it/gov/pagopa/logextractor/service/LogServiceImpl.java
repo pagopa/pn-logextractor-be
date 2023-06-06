@@ -295,6 +295,9 @@ public class LogServiceImpl implements LogService {
 				}
 			}
 			zipService.close(zipInfo);
+		}catch(Exception err) {
+			log.error("Error processing NotificationLog Request", err);
+			zipService.addEntryWithContent(zipInfo, "error.txt", err.getMessage());
 		}
 		Files.delete(tmp.toPath());
 		log.info("Deanonimization completed in {} ms, constructing service response...",
