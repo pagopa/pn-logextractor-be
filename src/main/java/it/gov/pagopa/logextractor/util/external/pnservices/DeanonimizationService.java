@@ -57,23 +57,49 @@ public class DeanonimizationService {
 					JsonNode root = mapper.readTree(currentDocument);
 					JsonNode uid = root.get(OpensearchConstants.OS_UID_FIELD);
 					JsonNode cxId = root.get(OpensearchConstants.OS_CX_ID_FIELD);
+					JsonNode cxTypeNode = root.get(OpensearchConstants.OS_CX_TYPE_FIELD);
 	
+					String cxType = cxTypeNode==null ? "" : cxTypeNode.asText();
 //					log.info("deanonimize doc with uid: {} and cxId: {}", uid, cxId);
 					
+					/**
+					 * Sunto riunione del 7/6
+					  	se cx_type è PF cx_id e uid sono praticamente la stessa cosa (deanonimizzi uno e usi il valore in due punti)
+						se cx_type è PA
+						- cx_id: ignorare
+						- uid: ignorare
+						
+						se cx_type è PG
+						- cx_id: deanonimizzare
+						- uid: ignorare
+					 */
+//					if (uid != null && !uid.asText().startsWith("APIKEY-")) {
+//						GetBasicDataResponseDto taxCodeDto = apiHandler.getTaxCodeForPerson(
+//								recipientType.toString() + "-" + uid.asText());
+//						keyValues.put(OpensearchConstants.OS_UID_FIELD, taxCodeDto.getData());
+//					}
+//					if (cxId != null) {
+//						String deanonimizedIdentifier = null;
+//						if (cxId.asText().startsWith("PF-") || cxId.asText().startsWith("PG-")) {
+//							deanonimizedIdentifier = apiHandler.getTaxCodeForPerson(cxId.asText()).getData();
+//						} else if (cxId.asText().startsWith("PA-")) {
+//							deanonimizedIdentifier = apiHandler.getPublicAuthorityName(cxId.asText());
+//						}
+//						keyValues.put(OpensearchConstants.OS_CX_ID_FIELD, deanonimizedIdentifier);
+//					}
 					
-					if (uid != null && !uid.asText().startsWith("APIKEY-")) {
-						GetBasicDataResponseDto taxCodeDto = apiHandler.getTaxCodeForPerson(
-								recipientType.toString() + "-" + uid.asText());
-						keyValues.put(OpensearchConstants.OS_UID_FIELD, taxCodeDto.getData());
-					}
 					if (cxId != null) {
-						String deanonimizedIdentifier = null;
-						if (cxId.asText().startsWith("PF-") || cxId.asText().startsWith("PG-")) {
-							deanonimizedIdentifier = apiHandler.getTaxCodeForPerson(cxId.asText()).getData();
-						} else if (cxId.asText().startsWith("PA-")) {
-							deanonimizedIdentifier = apiHandler.getPublicAuthorityName(cxId.asText());
+						if (("PF".equals(cxType) || "PG".equals(cxType))) {
+							String deanonimizedIdentifier = apiHandler.getTaxCodeForPerson(cxId.asText()).getData();
+							keyValues.put(OpensearchConstants.OS_CX_ID_FIELD, deanonimizedIdentifier);
+							if ("PF".equals(cxType)) {
+								keyValues.put(OpensearchConstants.OS_UID_FIELD, deanonimizedIdentifier);
+							}
+						}else {
+							log.warn("Deanonimization skipped for cx_id: {}", cxId);
 						}
-						keyValues.put(OpensearchConstants.OS_CX_ID_FIELD, deanonimizedIdentifier);
+					}else {
+						log.warn("nothing to deanonimize");
 					}
 					wr.write(jsonUtils.replaceValues(currentDocument, keyValues));
 					wr.newLine();
