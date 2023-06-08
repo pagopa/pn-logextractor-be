@@ -1,7 +1,6 @@
 package it.gov.pagopa.logextractor.util.external.s3;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -28,6 +27,7 @@ import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
 import com.amazonaws.services.s3.transfer.model.UploadResult;
 
+import it.gov.pagopa.logextractor.exception.CustomException;
 import it.gov.pagopa.logextractor.util.FileUtilities;
 import lombok.extern.slf4j.Slf4j;
 
@@ -112,7 +112,7 @@ public class S3DocumentUploader {
 					partETags.add(uploadResult.getPartETag());
 	
 					bais.close();
-					tmpFilename.delete();
+					Files.delete(tmpFilename.toPath());
 					log.info("Uploaded part {}, size {} to bucket {} for key {}",partNumber,partSize,bucketName,key);
 					partNumber++;
 					totalSize += partSize;
@@ -124,6 +124,7 @@ public class S3DocumentUploader {
 			log.info("Upload to bucket completed with {} bytes ! result={}", totalSize, completeResult.toString());
 		} catch(Exception err) {
 			log.error("Error in thread upload to bucket", err);
+			throw new CustomException(err.getMessage());
 		}
 	}
 }

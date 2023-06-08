@@ -26,26 +26,25 @@ public class S3DocumentDownloader{
 	private ZipService zipService;
 
 	public void downloadToZip(String bucketName, Set<String> fileNames, ZipInfo zipInfo) {
-		try {
-			log.info("Starting download {} SAML assertions",fileNames.size());
-			for(String name: fileNames) {
-				log.info("Retrieving SAML {} from s3 bucket {}", name, bucketName);
+		log.info("Starting download {} documents from {}",fileNames.size(), bucketName);
+		for(String name: fileNames) {
+			try {
+				log.info("Retrieving document {} from s3 bucket {}", name, bucketName);
 				long performanceMillis = System.currentTimeMillis();
 				S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucketName, name));
 				InputStream objectData = object.getObjectContent();
 				BufferedReader br = new BufferedReader(new InputStreamReader(objectData));
 				String line = "";
-				StringBuffer content = new StringBuffer();
+				StringBuilder content = new StringBuilder();
 				while((line = br.readLine()) != null) {
 					content.append(line);
 				}
 				objectData.close();
 				zipService.addEntryWithContent(zipInfo, name, content.toString());
-				log.info("SAML assertion from s3 bucket retrieved in {} ms",
-						System.currentTimeMillis() - performanceMillis);
+				log.info("document {} retrieved in {} ms",name, System.currentTimeMillis() - performanceMillis);
+			}catch (Exception err) {
+				log.error("Error downloading document {} from S3 bucket {}",  name, bucketName, err);
 			}
-		}catch (Exception err) {
-			log.error("Error downloading document from S3 bucket",  err);
 		}
 	}
 	
