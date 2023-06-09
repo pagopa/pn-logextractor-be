@@ -90,6 +90,7 @@ public class NotificationLogService {
 						secondsToWait = downloadMetaData.getDownload().getRetryAfter();
 					}
 				} catch (HttpServerErrorException | HttpClientErrorException ex) {
+					log.warn("Cannot download notification {} for error: {}", currentDownloadData,ex.getMessage());
 					filesNotDownloadable.add(currentDownloadData);
 				}
 			}
