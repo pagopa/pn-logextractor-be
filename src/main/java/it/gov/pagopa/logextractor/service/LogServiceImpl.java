@@ -258,7 +258,7 @@ public class LogServiceImpl implements LogService {
 						System.currentTimeMillis() - serviceStartTime);
 				performanceMillis = System.currentTimeMillis();
 	
-				FilenameCollector filenameCollector = new FilenameCollector();
+				SAMLFilenameCollector filenameCollector = new SAMLFilenameCollector();
 				docCount = openSearchApiHandlerFactory.getOpenSearchApiHanlder(filenameCollector).getAnonymizedLogsByUid(internalId, requestData.getDateFrom(),
 						requestData.getDateTo(), tmpOutStream);
 				log.info(LoggingConstants.QEURY_EXECUTION_COMPLETED_TIME_DEANONIMIZE_DOCS,
@@ -364,7 +364,7 @@ public class LogServiceImpl implements LogService {
 		try {
 			log.info("Getting session activities' deanonimized history... ");
 			performanceMillis = System.currentTimeMillis();
-			FilenameCollector filenameCollector = new FilenameCollector();
+			SAMLFilenameCollector filenameCollector = new SAMLFilenameCollector();
 			docCount = openSearchApiHandlerFactory.getOpenSearchApiHanlder(filenameCollector).getAnonymizedSessionLogsByJti(requestData.getJti(), requestData.getDateFrom(), requestData.getDateTo(), tmpOutStream);
 	
 			log.info("Query execution completed in {} ms, retrieved {} documents, deanonimizing results...",
