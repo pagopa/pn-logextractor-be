@@ -23,6 +23,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -170,7 +171,12 @@ public class NotificationApiHandler {
 		acceptedTypes.add(MediaType.APPLICATION_PDF);
 		requestHeaders.setAccept(acceptedTypes);
 		HttpEntity<?> entity = new HttpEntity<>(requestHeaders);
-		return client.exchange(url, HttpMethod.GET, entity, FileDownloadMetadataResponseDto.class).getBody();
+		try {
+			return client.exchange(url, HttpMethod.GET, entity, FileDownloadMetadataResponseDto.class).getBody();
+		}catch(RestClientException rce) {
+			log.error("Error downloading resource {}", url);
+			throw rce;
+		}
 	}
 	
 	/**
