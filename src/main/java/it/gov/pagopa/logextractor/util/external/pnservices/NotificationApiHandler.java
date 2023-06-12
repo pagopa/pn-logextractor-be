@@ -165,10 +165,10 @@ public class NotificationApiHandler {
 	public FileDownloadMetadataResponseDto getDownloadMetadata(String key) {
 		String url = String.format(downloadFileURL, safeStorageEndpoint, safeStorageStage, key);
 		HttpHeaders requestHeaders = new HttpHeaders();
-		requestHeaders.setContentType(MediaType.APPLICATION_PDF);
+//		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
 		requestHeaders.set("x-pagopa-safestorage-cx-id", safeStorageCxid);
 		List<MediaType> acceptedTypes = new ArrayList<>();
-		acceptedTypes.add(MediaType.APPLICATION_PDF);
+		acceptedTypes.add(MediaType.APPLICATION_JSON);
 		requestHeaders.setAccept(acceptedTypes);
 		HttpEntity<?> entity = new HttpEntity<>(requestHeaders);
 		try {
