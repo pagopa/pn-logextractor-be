@@ -79,6 +79,9 @@ public class LogServiceImpl implements LogService {
 
 	@Autowired 
 	S3DocumentDownloader s3DocumentDownloader;
+	
+	@Autowired 
+	ObjectMapper objectMapper;
 
 	@Override
 	@Async
@@ -111,7 +114,7 @@ public class LogServiceImpl implements LogService {
 					NotificationDetailsResponseDto notificationDetails = notificationApiHandler
 							.getNotificationDetails(requestData.getIun());
 					log.info("Service response: notificationDetails={} retrieved in {} ms",
-							new ObjectMapper().writer().writeValueAsString(notificationDetails),
+							objectMapper.writer().writeValueAsString(notificationDetails),
 							System.currentTimeMillis() - serviceStartTime);
 					OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
 					String notificationEndDate = notificationStartDate.plusMonths(3).toString();

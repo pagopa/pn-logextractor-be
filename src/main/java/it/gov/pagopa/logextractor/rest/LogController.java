@@ -1,8 +1,7 @@
 package it.gov.pagopa.logextractor.rest;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -33,15 +32,13 @@ public class LogController implements LogsApi {
 	@Autowired
 	S3ClientService s3ClientService;
 	
-	@Autowired
-	private HttpServletResponse httpServletResponse;
-	
 	private  ResponseEntity<BaseResponseDto> prepareResponse(String key, String zipPassword) throws Exception {
-		httpServletResponse.addHeader("Access-Control-Expose-Headers", "password,content-disposition");
-		httpServletResponse.addHeader("password", zipPassword);
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.set("Access-Control-Expose-Headers", "password,content-disposition");
+		responseHeaders.set("password", zipPassword);
 		BaseResponseDto dto = new BaseResponseDto();
 		dto.setMessage(key);
-		return ResponseEntity.status(HttpStatus.OK).body(dto);
+		return ResponseEntity.status(HttpStatus.OK).headers(responseHeaders).body(dto);
 	}
 
 	@Override
@@ -109,7 +106,7 @@ public class LogController implements LogsApi {
 	
 	private String generateKey(String base) {
 		String ret = base.replaceAll("[+.^:,;?=]","");
-		ret +="-"+(new RandomUtils().generateRandomAlphaNumericString())+".zip";
+		ret +="-"+( RandomUtils.generateRandomAlphaNumericString())+".zip";
 		return ret;
 	}
 }
