@@ -322,6 +322,7 @@ Resources:
               - "s3:*"
             Resource:
               - !Sub "${TmpBucketArn}/*"
+              - !Sub "${TmpBucketArn}"
 
 
   LogextractorBeApiGatewayBo:

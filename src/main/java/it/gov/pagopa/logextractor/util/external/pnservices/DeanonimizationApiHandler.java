@@ -96,13 +96,18 @@ public class DeanonimizationApiHandler {
 		        .toUriString();
 		Map<String, String> params = new HashMap<>();
 		params.put("internalId", personId);
-		GetRecipientDenominationByInternalIdResponseDto[] response = client.exchange(
-				urlTemplate, 
-				HttpMethod.GET,
-				entity,
-				GetRecipientDenominationByInternalIdResponseDto[].class,
-		        params)
-				.getBody();
+		GetRecipientDenominationByInternalIdResponseDto[] response = null;
+		try {
+			response = client.exchange(
+					urlTemplate, 
+					HttpMethod.GET,
+					entity,
+					GetRecipientDenominationByInternalIdResponseDto[].class,
+			        params)
+					.getBody();
+		}catch(Exception err) {
+			log.error("Error decoding personId {}", personId, err);
+		}
 		if(response == null || response.length == 0 || response[0] == null || StringUtils.isBlank(response[0].getTaxId()) 
 				|| "null".equalsIgnoreCase(response[0].getTaxId())) {
 			throw new LogExtractorException("Anonymized tax id is null");
@@ -131,13 +136,19 @@ public class DeanonimizationApiHandler {
 		        .toUriString();
 		Map<String, String> params = new HashMap<>();
 		params.put("publicAuthorityName", publicAuthorityName);
-		PublicAuthorityMappingResponseDto[] response = client.exchange(
+		
+		PublicAuthorityMappingResponseDto[] response = null;
+		try {
+			response = client.exchange(
 				urlTemplate, 
 				HttpMethod.GET,
 				entity,
 				PublicAuthorityMappingResponseDto[].class,
 		        params)
 				.getBody();
+		}catch(Exception err) {
+			log.error("Error decoding publicAuthorityName {}", publicAuthorityName, err);
+		}
 		if(response == null || response.length == 0 || response[0] == null || StringUtils.isBlank(response[0].getId()) 
 				|| "null".equalsIgnoreCase(response[0].getId())) {
 			throw new LogExtractorException("Public authority id is null");

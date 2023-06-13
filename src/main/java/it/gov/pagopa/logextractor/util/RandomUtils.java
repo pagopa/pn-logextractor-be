@@ -9,7 +9,7 @@ public class RandomUtils {
      * Generate a random string with <local_date_time> - <random_UUID_string> format
      * @return The randomly generated string
      * */
-    public String generateRandomAlphaNumericString() {
+    public static String generateRandomAlphaNumericString() {
         return Instant.now().toEpochMilli() + "-" + UUID.randomUUID();
     }
 
@@ -17,7 +17,7 @@ public class RandomUtils {
      * Generate a random string with Root=<random_UUID_string> format
      * @return The randomly generated string representing a trace id
      * */
-    public String generateRandomTraceId() {
+    public static String generateRandomTraceId() {
         return "Root=" + UUID.randomUUID().toString().toLowerCase();
     }
 }

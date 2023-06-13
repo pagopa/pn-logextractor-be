@@ -161,10 +161,9 @@ paths:
         '200':
           description: The operation has been successfully completed
           content:
-            'application/octect-stream':
+            application/json:
               schema:
-                type: string
-                format: binary
+                $ref: '#/components/schemas/BaseResponseDto'
         '400':
           description: Errors during the request validation
           content:
@@ -212,10 +211,9 @@ paths:
         '200':
           description: The operation has been successfully completed
           content:
-            'application/octect-stream':
+            application/json:
               schema:
-                type: string
-                format: binary
+                $ref: '#/components/schemas/BaseResponseDto'
         '400':
           description: Errors during the request validation
           content:
@@ -308,13 +306,11 @@ paths:
               $ref: '#/components/schemas/TraceIdLogsRequestDto'
       responses:
         '200':
-          description: >-
-            The operation has been successfully completed
+          description: The operation has been successfully completed
           content:
-            'application/octect-stream':
+            application/json:
               schema:
-                type: string
-                format: binary
+                $ref: '#/components/schemas/BaseResponseDto'
         '400':
           description: Errors during the request validation
           content:
@@ -358,13 +354,11 @@ paths:
               $ref: '#/components/schemas/SessionLogsRequestDto'
       responses:
         '200':
-          description: >-
-            The operation has been successfully completed
+          description: The operation has been successfully completed
           content:
-            'application/octect-stream':
+            application/json:
               schema:
-                type: string
-                format: binary
+                $ref: '#/components/schemas/BaseResponseDto'
         '400':
           description: Errors during the request validation
           content:
@@ -542,11 +536,15 @@ components:
       type: object
       required:
         - ticketNumber
-        - taxId
         - recipientType
       properties:
         ticketNumber:
           type: string
+        piva:
+          type: string
+          minLength: 11
+          maxLength: 11
+          pattern: '^([0-9]{11})$'
         taxId:
           type: string
           minLength: 16

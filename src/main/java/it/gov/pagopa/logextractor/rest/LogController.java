@@ -1,9 +1,6 @@
 package it.gov.pagopa.logextractor.rest;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +18,6 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.PersonLogsRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.SessionLogsRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.TraceIdLogsRequestDto;
 import it.gov.pagopa.logextractor.service.LogService;
-import it.gov.pagopa.logextractor.service.ThreadLocalOutputStreamService;
 import it.gov.pagopa.logextractor.util.PasswordFactory;
 import it.gov.pagopa.logextractor.util.RandomUtils;
 import it.gov.pagopa.logextractor.util.external.s3.S3ClientService;
@@ -30,26 +26,19 @@ import it.gov.pagopa.logextractor.util.external.s3.S3ClientService;
 @CrossOrigin(allowedHeaders = "password,content-disposition",exposedHeaders = "password,content-disposition")
 public class LogController implements LogsApi {
 
-
 	@Autowired
 	LogService logService;
 	
 	@Autowired
 	S3ClientService s3ClientService;
 	
-	@Autowired
-	private HttpServletResponse httpServletResponse;
-	
-	@Autowired
-	ThreadLocalOutputStreamService threadLocalService;
-
-	private  void handleResponse() throws Exception {
-		try {
-			threadLocalService.get().flush();
-			threadLocalService.get().close();
-		} finally {
-			threadLocalService.remove();
-		}
+	private  ResponseEntity<BaseResponseDto> prepareResponse(String key, String zipPassword) throws Exception {
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.set("Access-Control-Expose-Headers", "password,content-disposition");
+		responseHeaders.set("password", zipPassword);
+		BaseResponseDto dto = new BaseResponseDto();
+		dto.setMessage(key);
+		return ResponseEntity.status(HttpStatus.OK).headers(responseHeaders).body(dto);
 	}
 
 	@Override
@@ -64,64 +53,60 @@ public class LogController implements LogsApi {
 
 	@Override
 	public ResponseEntity<BaseResponseDto> personActivityLogs(String xPagopaPnUid, String xPagopaPnCxType, PersonLogsRequestDto personLogsRequestDto) throws Exception {
-		
-		String key = personLogsRequestDto.getTicketNumber()+"-"+(new RandomUtils().generateRandomAlphaNumericString())+".zip";
-		//s3ClientService.signBucket( key );
-		BaseResponseDto dto = new BaseResponseDto();
-		dto.setMessage(key);
-		ResponseEntity<BaseResponseDto> ret = ResponseEntity.status(HttpStatus.OK).body(dto);
-
+		String key = generateKey(personLogsRequestDto.getTicketNumber());
 		String zipPassword=PasswordFactory.createPassword();
 		if (Boolean.TRUE.equals(personLogsRequestDto.getDeanonimization())) {
 			logService.getDeanonimizedPersonLogs(key, zipPassword, personLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
 		}else {
 			logService.getAnonymizedPersonLogs(key, zipPassword, personLogsRequestDto, xPagopaPnUid, xPagopaPnCxType); 
 		}
-		httpServletResponse.addHeader("Access-Control-Expose-Headers", "password,content-disposition");
-		httpServletResponse.addHeader("password", zipPassword);
-		return ret;
+		return prepareResponse(key, zipPassword);
 	}
 
 	@ExceptionHandler(value = CustomException.class)
 	public ResponseEntity<BaseResponseDto> handleCustomException(CustomException e){
-		this.threadLocalService.remove();
 		return ResponseEntity.status(e.getCode()).body(e.getDto());
 	}
 
 	@Override
-	public ResponseEntity<Resource> notificationInfoLogs(String xPagopaPnUid, String xPagopaPnCxType, NotificationInfoRequestDto notificationInfoRequestDto) throws Exception {
-//		this.threadLocalService.initialize(httpServletResponse, notificationInfoRequestDto.getTicketNumber());
-		logService.getNotificationInfoLogs(notificationInfoRequestDto,xPagopaPnUid, xPagopaPnCxType);
-		
-		handleResponse();
-		return null;
+	public ResponseEntity<BaseResponseDto> notificationInfoLogs(String xPagopaPnUid, String xPagopaPnCxType, NotificationInfoRequestDto notificationInfoRequestDto) throws Exception {
+		String key = generateKey(notificationInfoRequestDto.getTicketNumber());
+		String zipPassword=PasswordFactory.createPassword();
+		logService.getNotificationInfoLogs(key, zipPassword,notificationInfoRequestDto,xPagopaPnUid, xPagopaPnCxType);
+		return prepareResponse(key, zipPassword);
 	}
 
 	@Override
-	public ResponseEntity<Resource> notificationsInMonth(String xPagopaPnUid, String xPagopaPnCxType, MonthlyNotificationsRequestDto monthlyNotificationsRequestDto) throws Exception {
-		this.threadLocalService.initialize(httpServletResponse, monthlyNotificationsRequestDto.getTicketNumber());
-		logService.getMonthlyNotifications(monthlyNotificationsRequestDto, xPagopaPnUid, xPagopaPnCxType);
-		handleResponse();
-		return null;
+	public ResponseEntity<BaseResponseDto> notificationsInMonth(String xPagopaPnUid, String xPagopaPnCxType, MonthlyNotificationsRequestDto monthlyNotificationsRequestDto) throws Exception {
+		String key = generateKey(monthlyNotificationsRequestDto.getTicketNumber());
+		String zipPassword=PasswordFactory.createPassword();
+		logService.getMonthlyNotifications(key, zipPassword,monthlyNotificationsRequestDto, xPagopaPnUid, xPagopaPnCxType);
+		return prepareResponse(key, zipPassword);
 	}
 
 	@Override
-	public ResponseEntity<Resource> processLogs(String xPagopaPnUid, String xPagopaPnCxType, TraceIdLogsRequestDto traceIdLogsRequestDto) throws Exception {
-		this.threadLocalService.initialize(httpServletResponse, "processLogs");
-		logService.getTraceIdLogs(traceIdLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
-		handleResponse();
-		return null;
+	public ResponseEntity<BaseResponseDto> processLogs(String xPagopaPnUid, String xPagopaPnCxType, TraceIdLogsRequestDto traceIdLogsRequestDto) throws Exception {
+		String key = generateKey(traceIdLogsRequestDto.getTraceId());
+		String zipPassword=PasswordFactory.createPassword();
+		logService.getTraceIdLogs(key, zipPassword,traceIdLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
+		return prepareResponse(key, zipPassword);
 	}
 	
 	@Override
-	public ResponseEntity<Resource> sessionLogs(String xPagopaPnUid, String xPagopaPnCxType, SessionLogsRequestDto sessionLogsRequestDto) throws Exception {
-		this.threadLocalService.initialize(httpServletResponse, sessionLogsRequestDto.getTicketNumber());
+	public ResponseEntity<BaseResponseDto> sessionLogs(String xPagopaPnUid, String xPagopaPnCxType, SessionLogsRequestDto sessionLogsRequestDto) throws Exception {
+		String key = generateKey(sessionLogsRequestDto.getTicketNumber());
+		String zipPassword=PasswordFactory.createPassword();
 		if (Boolean.TRUE.equals(sessionLogsRequestDto.getDeanonimization())) {
-			logService.getDeanonimizedSessionLogs(sessionLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
+			logService.getDeanonimizedSessionLogs(key, zipPassword,sessionLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
 		}else {
-			logService.getAnonymizedSessionLogs(sessionLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
+			logService.getAnonymizedSessionLogs(key, zipPassword,sessionLogsRequestDto, xPagopaPnUid, xPagopaPnCxType);
 		}
-		handleResponse();
-		return null;
+		return prepareResponse(key, zipPassword);
+	}
+	
+	private String generateKey(String base) {
+		String ret = base.replaceAll("[+.^:,;?=]","");
+		ret +="-"+( RandomUtils.generateRandomAlphaNumericString())+".zip";
+		return ret;
 	}
 }

@@ -3,91 +3,49 @@ package it.gov.pagopa.logextractor.util.external.s3;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 
-import it.gov.pagopa.logextractor.util.JsonUtilities;
-import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiObserver;
+import it.gov.pagopa.logextractor.service.ZipInfo;
+import it.gov.pagopa.logextractor.service.ZipService;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class S3DocumentDownloader implements OpenSearchApiObserver {
+@Service
+public class S3DocumentDownloader{
 	
-	private class FileInfo{
-		StringBuffer content = new StringBuffer();
-		String name;
-	}
+	@Autowired
+	private AmazonS3 amazonS3Client;
+	@Autowired
+	private ZipService zipService;
 
-	private String profile;
-	private FileInfo fileInfo;
-	private String region;
-	private String bucketName;
-	
-	public S3DocumentDownloader(String profile, String region, String bucket) {
-		this.profile = profile;
-		this.region = region;
-		this.bucketName = bucket;
-		
-		this.fileInfo = new FileInfo();
-	}
-
-	@Override
-	public void notify(String document, int numDoc) {
-		if (numDoc != 1) return;
-		
-		JsonUtilities jsonUtils = new JsonUtilities();
-		String date = jsonUtils.getValue(document, "@timestamp");
-		String jti = jsonUtils.getValue(document, "jti");
-		if(StringUtils.isNotBlank(date) && StringUtils.isNotBlank(jti)) {
-			String name = String.format("%s-%s.json", jti,
-					LocalDateTime.parse(date, DateTimeFormatter.ISO_OFFSET_DATE_TIME).toLocalDate().toString());
-
-			this.fileInfo.name=name;
+	public void downloadToZip(String bucketName, Set<String> fileNames, ZipInfo zipInfo) {
+		log.info("Starting download {} documents from {}",fileNames.size(), bucketName);
+		for(String name: fileNames) {
 			try {
-				AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
-				if (StringUtils.isNotBlank(profile)) {
-					builder = builder.withCredentials(new ProfileCredentialsProvider(profile));
-				}
-				AmazonS3 amazonS3Client = builder//.defaultClient();
-					//.standard()
-					.withRegion(region)
-//					.withCredentials(
-//                        new AWSStaticCredentialsProvider(
-//                            new BasicAWSCredentials(accessKey, accessSecret)))
-					.build();
-
-				log.info("Retrieving SAML assertion from s3 bucket... ");
+				log.info("Retrieving document {} from s3 bucket {}", name, bucketName);
 				long performanceMillis = System.currentTimeMillis();
 				S3Object object = amazonS3Client.getObject(new GetObjectRequest(bucketName, name));
 				InputStream objectData = object.getObjectContent();
 				BufferedReader br = new BufferedReader(new InputStreamReader(objectData));
 				String line = "";
+				StringBuilder content = new StringBuilder();
 				while((line = br.readLine()) != null) {
-					this.fileInfo.content.append(line);
+					content.append(line);
 				}
 				objectData.close();
-				log.info("SAML assertion from s3 bucket retrieved in {} ms, constructing service response...",
-						System.currentTimeMillis() - performanceMillis);
+				zipService.addEntryWithContent(zipInfo, name, content.toString());
+				log.info("document {} retrieved in {} ms",name, System.currentTimeMillis() - performanceMillis);
 			}catch (Exception err) {
-				log.error("Error downloading document {} from S3 bucket", this.fileInfo.name, err);
+				log.error("Error downloading document {} from S3 bucket {}",  name, bucketName, err);
 			}
 		}
 	}
 	
-	public String getFileContent() {
-		return fileInfo.content.toString();
-	}
-	
-	public String getFileName() {
-		return fileInfo.name;
-	}
-
 }

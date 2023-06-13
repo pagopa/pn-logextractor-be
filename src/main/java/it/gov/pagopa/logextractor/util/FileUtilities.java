@@ -39,7 +39,7 @@ public class FileUtilities {
 	 * @return a new {@link File} instance of a file with the given name
 	 * */
 	public File getFileWithRandomName(String name, String extension) {
-		return FileUtils.getFile(getExportFolder() + name + "-" +  new RandomUtils().generateRandomAlphaNumericString() + extension);
+		return FileUtils.getFile(getExportFolder() + name + "-" +  RandomUtils.generateRandomAlphaNumericString() + extension);
 	}
 
 	/**

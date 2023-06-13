@@ -21,7 +21,7 @@ public class MDCWebFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
-			MDC.put(LoggingConstants.TRACE_ID_PLACEHOLDER, new RandomUtils().generateRandomTraceId());
+			MDC.put(LoggingConstants.TRACE_ID_PLACEHOLDER, RandomUtils.generateRandomTraceId());
             filterChain.doFilter(request, response);
 		} finally {
 			MDC.remove(LoggingConstants.TRACE_ID_PLACEHOLDER);

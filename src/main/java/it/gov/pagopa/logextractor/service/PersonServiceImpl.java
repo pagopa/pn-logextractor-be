@@ -1,5 +1,6 @@
 package it.gov.pagopa.logextractor.service;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpServerErrorException;
@@ -41,6 +42,10 @@ public class PersonServiceImpl implements PersonService {
 	public GetBasicDataResponseDto getPersonId(PersonPersonIdRequestDto requestData,
 											   String xPagopaHelpdUid,
 											   String xPagopaCxType) throws HttpServerErrorException, LogExtractorException {
+		
+		if (StringUtils.isNotBlank(requestData.getPiva())){
+			requestData.setTaxId(requestData.getPiva());
+		}
 		log.info("Internal id retrieve process - START - user={}, userType={}, ticket number={}, " +
 						"recipientType={}, taxId={}", xPagopaHelpdUid, xPagopaCxType, requestData.getTicketNumber(),
 				requestData.getRecipientType(), requestData.getTaxId());

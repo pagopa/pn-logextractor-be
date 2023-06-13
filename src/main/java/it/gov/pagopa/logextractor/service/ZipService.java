@@ -62,11 +62,16 @@ public class ZipService {
 		zipInfo.getZos().putNextEntry(zipParameters);
 	}
 	
-	public void addEntry(ZipInfo zipInfo,String name, String content) throws IOException{
+	public void addEntryWithContent(ZipInfo zipInfo,String name, String content) throws IOException{
 		addEntry(zipInfo, name);
 		OutputStreamWriter ow = new OutputStreamWriter(zipInfo.getZos());
 		ow.write(content);
 		ow.flush();
+		closeEntry(zipInfo);		
+	}
+	public void addEntry(ZipInfo zipInfo,String name, byte[] content) throws IOException{
+		addEntry(zipInfo, name);
+		zipInfo.getZos().write(content);
 		closeEntry(zipInfo);		
 	}
 	
