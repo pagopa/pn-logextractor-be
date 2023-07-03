@@ -1,13 +1,18 @@
 package it.gov.pagopa.logextractor.util.external.pnservices;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import it.gov.pagopa.logextractor.util.constant.ExternalServiceConstants;
-import it.gov.pagopa.logextractor.util.constant.GenericConstants;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,21 +23,27 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsDocumentData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsRecipientsData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsTimelineData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsTimelineLegalFactsData;
-import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationsGeneralDataResponseDto;
+import it.gov.pagopa.logextractor.util.constant.ExternalServiceConstants;
+import it.gov.pagopa.logextractor.util.constant.GenericConstants;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Uility class for integrations with Piattaforma Notifiche notifcations related services
  * */
+@Slf4j
 @Component
 public class NotificationApiHandler {
 	
@@ -154,13 +165,18 @@ public class NotificationApiHandler {
 	public FileDownloadMetadataResponseDto getDownloadMetadata(String key) {
 		String url = String.format(downloadFileURL, safeStorageEndpoint, safeStorageStage, key);
 		HttpHeaders requestHeaders = new HttpHeaders();
-		requestHeaders.setContentType(MediaType.APPLICATION_PDF);
+//		requestHeaders.setContentType(MediaType.APPLICATION_JSON);
 		requestHeaders.set("x-pagopa-safestorage-cx-id", safeStorageCxid);
 		List<MediaType> acceptedTypes = new ArrayList<>();
-		acceptedTypes.add(MediaType.APPLICATION_PDF);
+		acceptedTypes.add(MediaType.APPLICATION_JSON);
 		requestHeaders.setAccept(acceptedTypes);
 		HttpEntity<?> entity = new HttpEntity<>(requestHeaders);
-		return client.exchange(url, HttpMethod.GET, entity, FileDownloadMetadataResponseDto.class).getBody();
+		try {
+			return client.exchange(url, HttpMethod.GET, entity, FileDownloadMetadataResponseDto.class).getBody();
+		}catch(RestClientException rce) {
+			log.error("Error downloading resource {}", url);
+			throw rce;
+		}
 	}
 	
 	/**
@@ -177,6 +193,35 @@ public class NotificationApiHandler {
         } finally {
             IOUtils.closeQuietly();
         }
+	}
+	
+	@Deprecated
+	public int downloadToFile(String uri, File out) {
+		try {
+			return downloadToStream( uri, new FileOutputStream(out));
+		} catch (FileNotFoundException e) {
+			log.error("Error downloading file", e);
+			return 0;
+		}
+	}
+	
+	public int downloadToStream(String uri, OutputStream out) {
+		int total=0;
+		try (
+				BufferedInputStream in = new BufferedInputStream(new URL(uri).openStream());
+			) {
+		    byte dataBuffer[] = new byte[1024];
+			int bytesRead;
+			while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
+				total += bytesRead;
+				out.write(dataBuffer, 0, bytesRead);
+			}
+		} catch (IOException e) {
+			total = 0;
+			log.error("Error downloading content from url {} to stream", uri, e);
+		}
+		
+		return total;
 	}
 	
 	/**

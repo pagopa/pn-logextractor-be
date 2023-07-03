@@ -77,6 +77,16 @@ HelpdeskAccount=$(aws sts get-caller-identity --profile $profile | jq -r .Accoun
 
 mkdir -p $dest_dir
 
+s3_region="eu-south-1"
+if ([ $env_type = 'hotfix' ]) then ## the s3 bucket has been wrongly created in the us-east-1 region (see task PN-3889)
+  s3_region="us-east-1"
+fi
+
+
+echo "\r\n\r\n"
+echo "aws s3 sync ${profile_option} --region \"${s3_region}\" --exclude \".git/*\" --exclude \"bin/*\" . \"${bucket_url}\""
+aws s3 sync ${profile_option} --region "${s3_region}" --exclude ".git/*" --exclude "bin/*" . "${bucket_url}"
+
 echo "\r\n\r\n"
 echo "aws cloudformation ${profile_option} --region \"eu-south-1\" package --template-file \"storage.yaml\" --s3-bucket ${bucket_name} --s3-prefix \"regional\" --output-template-file \"dist/template.${environment}.packaged.yaml\" --force-upload"
 aws cloudformation ${profile_option} --region "eu-south-1" package --template-file "storage.yaml" --s3-bucket ${bucket_name} --s3-prefix "regional" --output-template-file "dist/template.${environment}.packaged.yaml" --force-upload
@@ -85,6 +95,8 @@ echo "\r\n\r\n"
 echo "source ./environments/.env.infra.${environment}"
 source ./environments/.env.infra.${environment}
 
+env
+
 aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-file "dist/template.${environment}.packaged.yaml" \
   --stack-name "pn-logextractor-storage-${environment}" \
   --capabilities "CAPABILITY_IAM" \
@@ -92,9 +104,10 @@ aws cloudformation deploy ${profile_option} --region "eu-south-1" --template-fil
   "ProjectName=${project_name}" \
   "VpcId=${VpcId}" \
   "PrivateSubnetIds=${PrivateSubnetIds}" \
-  "OpenSearchNodeType=r5.xlarge.search" \
-  "OpenSearchNodeReplicas=3" "OpenSearchEbsSize=${OpenSearchInitialStorageSize}" \
-  "OpenSearchEbsIops=0" "OpenSearchEbsType=gp2" \
+  "OpenSearchNodeType=${OpenSearchNodeType}" \
+  "OpenSearchNodeReplicas=${OpenSearchNodeReplicas}" "OpenSearchEbsSize=${OpenSearchInitialStorageSize}" \
+  "OpenSearchEbsIops=${OpenSearchEbsIops}" "OpenSearchEbsType=${OpenSearchEbsType}" \
+  "OpenSearchMasterNodeType=${OpenSearchMasterNodeType}" "OpenSearchMasterNodeInstanceNumber=${OpenSearchMasterNodeInstanceNumber}" \
   "OpenSearchMasterCredentialSecret=pn-opensearch-master"
 
 

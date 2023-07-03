@@ -3,7 +3,9 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: |
   CloudFormation definition of Log Extractor public API subsystem
 
-
+Transform:
+  - UpdateDeploymentTransform
+  
 Parameters:
   NetworkLoadBalancerDomain:
     Type: String
@@ -24,6 +26,14 @@ Parameters:
   ProjectName:
     Type: String
     Description: Name of the project
+    
+  ApiDomain:
+    Type: String
+    Description: API domain name
+
+  ServiceApiPath:
+    Type: String
+    Description: Service API Path for mapping
 
 Resources:
   CloudWatchRole:
@@ -78,7 +88,8 @@ Resources:
       ResponseType: DEFAULT_5XX
       RestApiId: !Ref PublicRestApi
 
-  PublicRestApiDeployment:
+   # Deployment
+  PublicRestApiDeploymentPnPlaceholderEpochSeconds:
     Type: "AWS::ApiGateway::Deployment"
     DependsOn:
       - PublicApiHealthCheckStatusMethod
@@ -89,7 +100,9 @@ Resources:
       - PublicApiLogsV1PersonsMethod
       - PublicApiLogsV1PersonsMethodCors      
       - PublicApiLogsV1ProcessesMethod
-      - PublicApiLogsV1ProcessesMethodCors      
+      - PublicApiLogsV1ProcessesMethodCors
+      - PublicApiLogsV1SessionsMethod
+      - PublicApiLogsV1SessionsMethodCors
       - PublicApiPersonsV1PersonIdMethod
       - PublicApiPersonsV1PersonIdMethodCors
       - PublicApiPersonsV1TaxIdMethod
@@ -97,10 +110,19 @@ Resources:
       - PublicApiDowntimeStatusMethod
       - PublicApiDowntimeStatusMethodCors      
       - PublicApiDowntimeEventsMethod
-      - PublicApiDowntimeEventsMethodCors      
+      - PublicApiDowntimeEventsMethodCors
     Properties:
       RestApiId: !Ref PublicRestApi
 
+  # Expose API to custom domain
+  APIMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      BasePath: !Ref ServiceApiPath
+      DomainName: !Ref ApiDomain
+      RestApiId: !Ref PublicRestApi
+      Stage: !Ref PublicRestApiStage
+      
   CognitoAuthorizer:
     Type: "AWS::ApiGateway::Authorizer"
     Properties:
@@ -117,7 +139,7 @@ Resources:
       AccessLogSetting:
         DestinationArn: !GetAtt PublicApiLogGroup.Arn
         Format: "{\"requestTime\":\"$context.requestTime\",\"requestId\":\"$context.requestId\",\"httpMethod\":\"$context.httpMethod\",\"path\":\"$context.path\",\"routeKey\":\"$context.routeKey\",\"status\":$context.status,\"responseLatency\":$context.responseLatency}"
-      DeploymentId: !Ref PublicRestApiDeployment
+      DeploymentId: !Ref PublicRestApiDeploymentPnPlaceholderEpochSeconds
       MethodSettings:
         - DataTraceEnabled: "false"
           HttpMethod: "*"
@@ -213,6 +235,13 @@ Resources:
       PathPart: "processes"
       RestApiId: !Ref PublicRestApi
 
+  PublicApiLogsV1SessionsResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      ParentId: !Ref PublicApiLogsV1Resource
+      PathPart: "sessions"
+      RestApiId: !Ref PublicRestApi
+
   PublicApiHealthCheckStatusResource:
     Type: "AWS::ApiGateway::Resource"
     Properties:
@@ -285,6 +314,8 @@ Resources:
         PassthroughBehavior: WHEN_NO_MATCH
         RequestParameters:
           integration.request.path.proxy: method.request.path.proxy
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.claims.sub
+          integration.request.header.x-pagopa-pn-cx-type: "'BO'"
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/notifications/info"
       OperationName: Proxy to ECS microservices
@@ -330,6 +361,8 @@ Resources:
         PassthroughBehavior: WHEN_NO_MATCH
         RequestParameters:
           integration.request.path.proxy: method.request.path.proxy
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.claims.sub
+          integration.request.header.x-pagopa-pn-cx-type: "'BO'"
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/notifications/monthly"
       OperationName: Proxy to ECS microservices
@@ -375,6 +408,8 @@ Resources:
         PassthroughBehavior: WHEN_NO_MATCH
         RequestParameters:
           integration.request.path.proxy: method.request.path.proxy
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.claims.sub
+          integration.request.header.x-pagopa-pn-cx-type: "'BO'"
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/persons"
       OperationName: Proxy to ECS microservices
@@ -420,6 +455,8 @@ Resources:
         PassthroughBehavior: WHEN_NO_MATCH
         RequestParameters:
           integration.request.path.proxy: method.request.path.proxy
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.claims.sub
+          integration.request.header.x-pagopa-pn-cx-type: "'BO'"
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/processes"
       OperationName: Proxy to ECS microservices
@@ -450,6 +487,53 @@ Resources:
       ResourceId: !Ref PublicApiLogsV1ProcessesResource
       RestApiId: !Ref PublicRestApi
 
+  PublicApiLogsV1SessionsMethod:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthorizer
+      HttpMethod: POST
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.claims.sub
+          integration.request.header.x-pagopa-pn-cx-type: "'BO'"
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/logs/v1/sessions"
+      OperationName: Proxy to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiLogsV1SessionsResource
+      RestApiId: !Ref PublicRestApi
+
+  PublicApiLogsV1SessionsMethodCors:
+    Type: "AWS::ApiGateway::Method"
+    Properties:
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionId: !Ref NetworkLoadBalancerLink
+        ConnectionType: VPC_LINK
+        IntegrationHttpMethod: ANY
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.proxy: method.request.path.proxy
+        TimeoutInMillis: 29000
+        Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/downtime/v1/events"
+      OperationName: Proxy cors to ECS microservices
+      RequestParameters:
+        method.request.path.proxy: true
+      ResourceId: !Ref PublicApiLogsV1SessionsResource
+      RestApiId: !Ref PublicRestApi
+
   PublicApiPersonsV1PersonIdMethod:
     Type: "AWS::ApiGateway::Method"
     Properties:
@@ -465,6 +549,8 @@ Resources:
         PassthroughBehavior: WHEN_NO_MATCH
         RequestParameters:
           integration.request.path.proxy: method.request.path.proxy
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.claims.sub
+          integration.request.header.x-pagopa-pn-cx-type: "'BO'"
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/persons/v1/person-id"
       OperationName: Proxy to ECS microservices
@@ -510,6 +596,8 @@ Resources:
         PassthroughBehavior: WHEN_NO_MATCH
         RequestParameters:
           integration.request.path.proxy: method.request.path.proxy
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.claims.sub
+          integration.request.header.x-pagopa-pn-cx-type: "'BO'"
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/persons/v1/tax-id"
       OperationName: Proxy to ECS microservices
@@ -555,6 +643,8 @@ Resources:
         PassthroughBehavior: WHEN_NO_MATCH
         RequestParameters:
           integration.request.path.proxy: method.request.path.proxy
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.claims.sub
+          integration.request.header.x-pagopa-pn-cx-type: "'BO'"
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/downtime/v1/status"
       OperationName: Proxy to ECS microservices
@@ -600,6 +690,8 @@ Resources:
         PassthroughBehavior: WHEN_NO_MATCH
         RequestParameters:
           integration.request.path.proxy: method.request.path.proxy
+          integration.request.header.x-pagopa-pn-uid: context.authorizer.claims.sub
+          integration.request.header.x-pagopa-pn-cx-type: "'BO'"
         TimeoutInMillis: 29000
         Uri: !Sub "http://${NetworkLoadBalancerDomain}:8080/downtime/v1/events"
       OperationName: Proxy to ECS microservices

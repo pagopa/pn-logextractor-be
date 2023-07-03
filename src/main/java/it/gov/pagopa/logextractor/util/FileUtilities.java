@@ -2,17 +2,23 @@ package it.gov.pagopa.logextractor.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import com.opencsv.bean.HeaderColumnNameMappingStrategy;
+
 import org.apache.commons.io.FileUtils;
+import org.springframework.stereotype.Component;
+
+import com.opencsv.bean.HeaderColumnNameMappingStrategy;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
+
 import it.gov.pagopa.logextractor.dto.NotificationCsvBean;
 import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
@@ -20,16 +26,32 @@ import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 /**
  * Utility class to manage the core operations for files
  */
+@Component
 public class FileUtilities {
 
+	private String getExportFolder () {
+		return GenericConstants.EXPORT_FOLDER .endsWith(File.separator)?GenericConstants.EXPORT_FOLDER:GenericConstants.EXPORT_FOLDER+File.separator;
+	}
 	/**
 	 * Create a new file with the given name plus a random alphanumeric string and the given extension
 	 * @param name the name of the file to retrieve
 	 * @param extension the file extension
 	 * @return a new {@link File} instance of a file with the given name
 	 * */
-	public File getFile(String name, String extension) {
-		return FileUtils.getFile(GenericConstants.EXPORT_FOLDER + name + "-" +  new RandomUtils().generateRandomAlphaNumericString() + extension);
+	public File getFileWithRandomName(String name, String extension) {
+		return FileUtils.getFile(getExportFolder() + name + "-" +  RandomUtils.generateRandomAlphaNumericString() + extension);
+	}
+
+	/**
+	 * Create a new file with the given name and the given extension
+	 * @param name the name of the file to retrieve
+	 * @param extension the file extension
+	 * @return a new {@link File} instance of a file with the given name
+	 * */
+	public File getFile(String name, String extension, String url) throws IOException {
+		File downloadedFile = FileUtils.getFile(getExportFolder() + name + extension);
+		FileUtils.copyURLToFile(new URL(url), downloadedFile);
+		return downloadedFile;
 	}
 	
 	/**
@@ -74,27 +96,38 @@ public class FileUtilities {
 		}
 	}
 	
-	/**
-	 * Write notification data to a csv file
-	 * @param file the file where to write the content into
-	 * @param notifications the list of notifications
-	 * @throws IOException in case of an I/O error
-	 * @throws CsvDataTypeMismatchException If a field of the beans is annotated improperly or an unsupported data type is supposed to be written
-	 * @throws CsvRequiredFieldEmptyException If a field is marked as required,but the source is null
-	 * */
-	public void writeCsv(File file, List<NotificationCsvBean> notifications) throws CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, IOException {
-		if (!file.getParentFile().exists()) {
-			file.getParentFile().mkdirs();
-		}
+//	/**
+//	 * Write notification data to a csv file
+//	 * @param file the file where to write the content into
+//	 * @param notifications the list of notifications
+//	 * @throws IOException in case of an I/O error
+//	 * @throws CsvDataTypeMismatchException If a field of the beans is annotated improperly or an unsupported data type is supposed to be written
+//	 * @throws CsvRequiredFieldEmptyException If a field is marked as required,but the source is null
+//	 * */
+//	public void writeCsv(File file, List<NotificationCsvBean> notifications) throws CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, IOException {
+//		if (!file.getParentFile().exists()) {
+//			file.getParentFile().mkdirs();
+//		}
+//		HeaderColumnNameMappingStrategy<NotificationCsvBean> strategy = new HeaderColumnNameMappingStrategy<>();
+//		strategy.setType(NotificationCsvBean.class);
+//		Path outputPath = Path.of(file.getPath());
+//		try (var writer = Files.newBufferedWriter(outputPath)) {
+//			StatefulBeanToCsv<NotificationCsvBean> csv = new StatefulBeanToCsvBuilder<NotificationCsvBean>(writer)
+//					.withMappingStrategy(strategy)
+//					.build();
+//			csv.write(notifications);
+//		}
+//	}
+	
+	public void writeCsv(List<NotificationCsvBean> notifications, OutputStream out
+			) throws CsvDataTypeMismatchException, CsvRequiredFieldEmptyException, IOException {
 		HeaderColumnNameMappingStrategy<NotificationCsvBean> strategy = new HeaderColumnNameMappingStrategy<>();
 		strategy.setType(NotificationCsvBean.class);
-		Path outputPath = Path.of(file.getPath());
-		try (var writer = Files.newBufferedWriter(outputPath)) {
-			StatefulBeanToCsv<NotificationCsvBean> csv = new StatefulBeanToCsvBuilder<NotificationCsvBean>(writer)
-					.withMappingStrategy(strategy)
-					.build();
-			csv.write(notifications);
-		}
+		OutputStreamWriter writer = new OutputStreamWriter(out);
+		StatefulBeanToCsv<NotificationCsvBean> csv = new StatefulBeanToCsvBuilder<NotificationCsvBean>(writer)
+				.withMappingStrategy(strategy)
+				.build();
+		csv.write(notifications);
 	}
 	
 	/**
@@ -133,5 +166,17 @@ public class FileUtilities {
 			csvNotifications.add(toCsv(notification));
 		}
 		return csvNotifications;
+	}
+
+	/**
+	 * Write open search logs data to a txt file
+	 * @param openSearchLogs the list of {@link String} the contents from OpenSearch to write in the output file
+	 * @param fileName the name of file
+	 * @return a new {@link File} instance of a file with the given name and content
+	 * */
+	public File writeTxt(List<String> openSearchLogs, String fileName) throws IOException {
+		File logFile = getFileWithRandomName(fileName, GenericConstants.TXT_EXTENSION);
+		write(logFile, openSearchLogs);
+		return logFile;
 	}
 }

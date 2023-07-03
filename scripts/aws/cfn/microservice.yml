@@ -1,0 +1,365 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'Example microservice deploy'
+
+Parameters:
+
+  ProjectName:
+    Type: String
+    Description: 'Usually pn can be pnXYZ where XYZ are the feature number, useful to create
+      experimental environments without crash official development environment'
+
+  BoApiDnsName:
+    Type: String
+    Description: 'The DNS name used for WEB rest API.'
+
+  CorsAllowedDomain:
+    Type: String
+    Description: 'Allowed domain'
+
+  ContainerImageUri:
+    Type: String
+    Description: 'Exact container image URI with full repository and image digest'
+
+  MicroserviceNumber:
+    Type: Number
+    Description: 'Disambiguation useful for load balancer rules'
+
+  TemplateBucketBaseUrl:
+    Type: String
+    Description: 'The S3 bucket from which to fetch the templates used by this stack.'
+
+  ECSClusterName:
+    Type: String
+    Description: 'The name of the ECS cluster where the microservice is going to be deployed'
+
+  SubnetsIds:
+    Type: String
+    Description: 'subnets ids comma separated list. Where to deploy the microservice'
+  
+  EcsDefaultSecurityGroup:
+    Type: String
+    Description: 'Default security group required by infrastructure'
+
+  ApplicationLoadBalancerListenerArn:
+    Type: String
+    Description: 'Load balancer listener where HTTP endpoints is going to be registered'
+
+  ApplicationLoadBalancerDomain:
+    Type: String
+    Description: 'Base URL of the load balancer where the service is going to be reachable'
+
+  NetworkLoadBalancerLink:
+    Type: String
+    Description: 'network load balancer link for API-GW'
+
+  AlarmSNSTopicArn:
+    Type: String
+    Description: ARN of alarm topic
+
+  Version:
+    Type: String
+    Description: 'keep track of used projects commitIds'
+
+  VpcId:
+    Type: "AWS::EC2::VPC::Id"
+    Description: Id of the VPC to deploy resources into
+    
+  LogsKinesisSourceStreamArn:
+    Type: String
+    Description: 'Kinesis stream that receive logs'
+    
+  AlbSecurityGroup:
+    Type: String
+    Description: 'Application load balancer security group'
+
+  # OpenApi Bucket params
+  MicroserviceBucketName:
+    Type: String
+    Default: ''
+    Description: 'Name of the bucket where the microservice files are copied during deploy'
+
+  MicroserviceBucketBaseKey:
+    Type: String
+    Default: ''
+    Description: 'Base key of the microservice in the s3 bucket'
+
+  # Log group parameters
+  EcsLogGroup:
+    Type: String
+    Description: 'Ecs log group name'
+
+  # Heath Check parameters
+  HealthCheckInterval:
+    Description: Seconds between two health check
+    Type: Number
+    Default: 60
+
+  HealthCheckTimeout:
+    Description: health check timeout seconds
+    Type: Number
+    Default: 15
+  
+  HealthyThresholdCount:
+    Description: |
+      The number of consecutive health checks successes required before considering 
+      an unhealthy target healthy. 
+    Type: Number
+    Default: 5
+  
+  UnhealthyThresholdCount:
+    Description: |
+      The number of consecutive health check failures required before considering a target unhealthy. 
+    Type: Number
+    Default: 2
+
+  # Instance parameters
+  # 256 (.25 vCPU) - Available memory values: 0.5GB, 1GB, 2GB
+  # 512 (.5 vCPU) - Available memory values: 1GB, 2GB, 3GB, 4GB
+  # 1024 (1 vCPU) - Available memory values: 2GB, 3GB, 4GB, 5GB, 6GB, 7GB, 8GB
+  # 2048 (2 vCPU) - Available memory values: Between 4GB and 16GB in 1GB increments
+  # 4096 (4 vCPU) - Available memory values: Between 8GB and 30GB in 1GB increments
+  CpuValue:
+    Type: Number
+    Default: 1024
+    Description: Fargate virtual CPU quantity 1024 equals one vCPU
+
+  # 0.5GB, 1GB, 2GB - Available cpu values: 256 (.25 vCPU)
+  # 1GB, 2GB, 3GB, 4GB - Available cpu values: 512 (.5 vCPU)
+  # 2GB, 3GB, 4GB, 5GB, 6GB, 7GB, 8GB - Available cpu values: 1024 (1 vCPU)
+  # Between 4GB and 16GB in 1GB increments - Available cpu values: 2048 (2 vCPU)
+  # Between 8GB and 30GB in 1GB increments - Available cpu values: 4096 (4 vCPU)
+  MemoryAmount:
+    Type: String
+    Default: 2GB
+    Description: memory amount reserved to the task pod.
+    AllowedValues: [ 2GB, 4GB, 6GB, 8GB ]
+
+  # Autoscaling parameters
+  AutoscalingCheckPeriod:
+    Default: 60
+    Type: Number
+    Description: minimum autoscaling number of tasks\
+
+  AutoscalingDataPointN:
+    Default: 1
+    Type: Number
+    Description: activate when N datapoint on M
+
+  AutoscalingDataPointM:
+    Default: 1
+    Type: Number
+    Description: activate when N datapoint on M
+
+  AutoscalingThreshold:
+    Default: 70
+    Type: String
+  
+  MinTasksNumber:
+    Default: 1
+    Type: Number
+    Description: minimum autoscaling number of tasks
+
+  MaxTasksNumber:
+    Default: 6
+    Type: Number
+    Description: maximum autoscaling number of tasks   
+  
+  SamlAssertionBucketKeyArn:
+    Type: String
+    Default: ''
+    Description: Saml assertion bucket key arn
+
+  SamlAssertionDownloadUrl:
+    Type: String
+    Description: Saml assertion download url
+
+  SamlAssertionBucketName:
+    Type: String
+    Description: Saml assertion bucket name
+
+  SamlAssertionBucketArn:
+    Type: String
+    Default: ''
+    Description: Saml assertion bucket arn
+
+  OpenSearchEndpoint:
+    Type: String
+    Description: opensearch cluster endpoint
+
+  ElasticacheEndpoint:
+    Type: String
+    Description: elasticache endpoint
+
+  ElasticacheSecurityGroup:
+    Type: String
+    Description: Elasticache security group
+
+  PnDataVaultRootPath:
+    Type: String
+    Description: data vault root path
+  
+  DownloadFileUrl:
+    Type: String
+    Description: download file url from safestorage
+
+  SafeStorageEndpoint:
+    Type: String
+    Description: safe storage endpoint
+
+  SafeStorageStage:
+    Type: String
+    Description: safe storage stage
+
+  SafeStorageCxId:
+    Type: String
+    Description: safe storage cx id
+  
+  TmpBucketName:
+    Type: String
+    Description: temporary storage name
+
+  TmpBucketArn:
+    Type: String
+    Description: temporary storage arn
+    
+  LogAlarmStrategy:
+    Type: String
+    Default: 'FATAL'
+  
+Conditions:
+  HasSamlAssertionKmsKeyArn: !Not [ !Equals [ !Ref SamlAssertionBucketKeyArn, '' ] ]
+  HasSamlAssertionBucketArn: !Not [ !Equals [ !Ref SamlAssertionBucketArn, '' ] ]
+
+Resources:
+
+  LogextractorBeMicroservice:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-service.yaml"
+      Parameters:
+        MicroServiceUniqueName: !Sub '${ProjectName}-logextractor-be'
+        CpuValue: !Ref CpuValue
+        MemoryAmount: !Ref MemoryAmount
+        HealthCheckTimeout: !Ref HealthCheckTimeout
+        HealthCheckInterval: !Ref HealthCheckInterval
+        HealthyThresholdCount: !Ref HealthyThresholdCount
+        UnhealthyThresholdCount: !Ref UnhealthyThresholdCount
+        AutoscalingStrategy: REST-API
+        AutoscalingThreshold: !Ref AutoscalingThreshold
+        AutoscalingCheckPeriod: !Ref AutoscalingCheckPeriod
+        MinTasksNumber: !Ref MinTasksNumber
+        MaxTasksNumber: !Ref MaxTasksNumber
+        AutoscalingDataPointN: !Ref AutoscalingDataPointN
+        AutoscalingDataPointM: !Ref AutoscalingDataPointM
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+        ContainerImageURI: !Sub '${ContainerImageUri}'
+        ContainerEnvEntry1: !Sub 'ENSURE_RECIPIENT_BY_EXTERNAL_ID_URL=${PnDataVaultRootPath}/datavault-private/v1/recipients/external/%s'
+        ContainerEnvEntry2: !Sub 'GET_RECIPIENT_DENOMINATION_BY_INTERNAL_ID_URL=${PnDataVaultRootPath}/datavault-private/v1/recipients/internal'
+        ContainerEnvEntry3: !Sub 'GET_SENT_NOTIFICATION_URL=http://${ApplicationLoadBalancerDomain}:8080/delivery-private/search'
+        ContainerEnvEntry4: !Sub 'GET_SENT_NOTIFICATION_DETAILS_URL=http://${ApplicationLoadBalancerDomain}:8080/delivery-private/notifications/%s'
+        ContainerEnvEntry5: !Sub 'GET_SENT_NOTIFICATION_HISTORY_URL=http://${ApplicationLoadBalancerDomain}:8080/delivery-push-private/%s/history'
+        ContainerEnvEntry6: !Sub 'GET_ENCODED_IPA_CODE_URL=http://${ApplicationLoadBalancerDomain}:8080/ext-registry/pa/v1/activated-on-pn'
+        ContainerEnvEntry7: !Sub 'GET_PUBLIC_AUTHORITY_NAME_URL=http://${ApplicationLoadBalancerDomain}:8080/ext-registry-private/pa/v1/activated-on-pn/%s'
+        ContainerEnvEntry8: !Sub 'DOWNLOAD_FILE_URL=${DownloadFileUrl}'
+        ContainerEnvEntry9: !Sub 'SAFESTORAGE_ENDPOINT=${SafeStorageEndpoint}'
+        ContainerEnvEntry10: !Sub 'SAFESTORAGE_STAGE=${SafeStorageStage}'
+        ContainerEnvEntry11: !Sub 'SAFESTORAGE_CXID=${SafeStorageCxId}'
+        ContainerEnvEntry12: !Sub 'SEARCH_URL=https://${OpenSearchEndpoint}/pn-logs/_search'
+        ContainerEnvEntry13: !Sub 'SEARCH_FOLLOWUP_URL=https://${OpenSearchEndpoint}/_search/scroll'
+        ContainerEnvEntry14: !Sub 'ELASTICACHE_HOSTNAME=${ElasticacheEndpoint}'
+        ContainerEnvEntry15: 'ELASTICACHE_PORT=6379'
+        ContainerEnvEntry17: !Sub 'ALLOWED_ORIGIN=${CorsAllowedDomain}'
+        ContainerEnvEntry18: !Sub 'DOWNTIME_EVENTS_URL=http://${ApplicationLoadBalancerDomain}:8080/downtime-internal/v1/events'
+        ContainerEnvEntry19: !Sub 'DOWNTIME_STATUS_URL=http://${ApplicationLoadBalancerDomain}:8080/downtime/v1/status'
+        ContainerEnvEntry20: !Sub 'S3_DOWNLOAD_URL=${SamlAssertionDownloadUrl}'
+        ContainerEnvEntry21: !Sub 'S3_BUCKET_NAME=${SamlAssertionBucketName}'
+        ContainerEnvEntry22: !Sub 'BUCKET_NAME=${TmpBucketName}' 
+        ContainerSecret1: !Sub 'BASIC_AUTH_USERNAME=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-opensearch-logextractor:username:AWSCURRENT:'
+        ContainerSecret2: !Sub 'BASIC_AUTH_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-opensearch-logextractor:password:AWSCURRENT:'
+        MappedPaths: '/log-extractor/*'
+        MicroServiceSecretPrefix: pn-opensearch-logextractor
+        ECSClusterName: !Ref ECSClusterName
+        Subnets: !Ref SubnetsIds
+        VpcId: !Ref VpcId
+        HealthCheckPath: /status
+        EcsDefaultSecurityGroup: !Ref ElasticacheSecurityGroup
+        LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
+        LoadbalancerRulePriority: !Ref MicroserviceNumber
+        AlbSecurityGroup: !Ref AlbSecurityGroup
+        TaskRoleManagedPolicyArn: !Ref LogextractorBeMicroserviceTaskManagedPolicy
+        EcsLogGroup: !Ref EcsLogGroup
+        LogAlarmStrategyV1: !Ref LogAlarmStrategy
+        
+  # Grant operational rights to PN-Downtime-Logs microservice
+  LogextractorBeMicroserviceTaskManagedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Fn::If:
+            - HasSamlAssertionKmsKeyArn
+            - Effect: Allow
+              Action:
+                - "kms:Encrypt"
+                - "kms:Decrypt"
+                - "kms:ReEncrypt*"
+                - "kms:GenerateDataKey*"
+                - "kms:DescribeKey"
+              Resource:
+                - !Ref SamlAssertionBucketKeyArn
+            - !Ref AWS::NoValue
+          - Fn::If:
+            - HasSamlAssertionBucketArn
+            - Effect: Allow
+              Action:
+                - "s3:Get*"
+              Resource:
+                - !Sub "${SamlAssertionBucketArn}/*"
+            - !Ref AWS::NoValue
+          - Effect: Allow
+            Action:
+              - "s3:*"
+            Resource:
+              - !Sub "${TmpBucketArn}/*"
+              - !Sub "${TmpBucketArn}"
+
+
+  LogextractorBeApiGatewayBo:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-expose-service.yaml"
+      Parameters:
+        MicroServiceUniqueName: !Sub '${ProjectName}-logextractor-be'
+        IntendedUsage: BACKOFFICE
+        DnsName: !Ref BoApiDnsName
+        ProjectName: !Ref ProjectName
+        ServiceApiPath: 'log-extractor'
+        NetworkLoadBalancerLink: !Ref NetworkLoadBalancerLink
+        ApplicationLoadBalancerDomain: !Ref ApplicationLoadBalancerDomain
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+        CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
+        OpenApiBucketName: !Ref MicroserviceBucketName
+        OpenApiBucketKey: !Sub ${MicroserviceBucketBaseKey}/docs/openapi/api-internal-v1.yaml
+
+  ## Dashboard
+  LogextractorBeMicroserviceCloudWatchDashboard:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/microservice-cloudwatch-dashboard.yaml"
+      Parameters:
+        DashboardName: !Sub "${ProjectName}-logextractor-be"
+        RestApiStageArns: !Join
+          - ','
+          - - !GetAtt LogextractorBeApiGatewayBo.Outputs.RestApiStageArn
+        RestApiNames: !Join
+          - ','
+          - - !GetAtt LogextractorBeApiGatewayBo.Outputs.RestApiName
+        AlarmArns: !Join
+          - ','
+          - - !GetAtt LogextractorBeMicroservice.Outputs.FatalLogsMetricAlarmArn
+            - !GetAtt LogextractorBeApiGatewayBo.Outputs.RestApiErrorAlarmArn
+            - !GetAtt LogextractorBeApiGatewayBo.Outputs.RestApiLatencyAlarmArn
+        LogGroupsNames: !Join
+          - ','
+          - - !Sub '/aws/ecs/${ProjectName}-logextractor-be'            

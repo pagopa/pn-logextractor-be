@@ -44,6 +44,15 @@ Parameters:
     Type: String
     Description: OpenSearch master credential secret
 
+  OpenSearchMasterNodeType:
+    Type: String
+    Default: ""
+    Description: OpenSearch Master nodes type
+  
+  OpenSearchMasterNodeInstanceNumber:
+    Type: Number
+    Description: Dedicated master nodes number for OpenSearch cluster
+
   ProjectName:
     Type: String
     Description: Name of the project
@@ -82,19 +91,13 @@ Resources:
         EngineVersion: !Ref OpenSearchEngineVersion
         InstanceReplicas: !Ref OpenSearchNodeReplicas
         InstanceType: !Ref OpenSearchNodeType
+        MasterNodeType: !Ref OpenSearchMasterNodeType
+        MasterNodeInstancesNumber: !Ref OpenSearchMasterNodeInstanceNumber
         ProjectName: !Ref ProjectName
         SubnetIds: !Join [',', !Ref PrivateSubnetIds]
         VpcId: !Ref VpcId
         MasterCredentialSecret: !Ref OpenSearchMasterCredentialSecret
       TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/opensearch.yaml
-
-  Alarms:
-    Type: "AWS::CloudFormation::Stack"
-    Properties:
-      Parameters:
-        ProjectName: !Ref ProjectName
-        OpenSearchClusterName: !GetAtt OpenSearch.Outputs.ClusterName
-      TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/alarms.yaml
 
 Outputs:
   ElasticacheEndpoint:
@@ -108,3 +111,6 @@ Outputs:
     Description: OpenSearch endpoint
     Value: !GetAtt OpenSearch.Outputs.DomainEndpoint
   
+  OpenSearchClusterName:
+    Description: OpenSearch cluster name
+    Value: !GetAtt OpenSearch.Outputs.ClusterName

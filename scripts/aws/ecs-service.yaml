@@ -12,10 +12,10 @@ Parameters:
     Type: String
     Description: ECS Cluster Name where the service is going to be deployed
 
-  AlarmSNSTopicArn:
+  AlbSecurityGroup:
     Type: String
-    Default: '-'
-    Description: 'An ARN of an SNS topic where to send alarm when DLQ contain messages'
+    Default: ''
+    Description: Security Group of ALB
 
   AdditionalMicroserviceSecurityGroup:
     Type: AWS::EC2::SecurityGroup::Id
@@ -233,9 +233,20 @@ Parameters:
     Type: String
     Default: ''
 
+  SamlAssertionBucketKeyArn:
+    Type: String
+    Default: ''
+    Description: Saml assertion bucket key arn
+
+  SamlAssertionBucketArn:
+    Type: String
+    Default: ''
+    Description: Saml assertion bucket arn
 
 Conditions:
-  HasAlarmTopic: !Not [ !Equals [ !Ref AlarmSNSTopicArn, '-' ] ]
+  HasAlbSecurityGroup: !Not [ !Equals [ !Ref AlbSecurityGroup, '' ] ]
+  HasSamlAssertionKmsKeyArn: !Not [ !Equals [ !Ref SamlAssertionBucketKeyArn, '' ] ]
+  HasSamlAssertionBucketArn: !Not [ !Equals [ !Ref SamlAssertionBucketArn, '' ] ]
 
   Env1Exist: !Not [ !Equals [!Ref ContainerEnvEntry1, '']]
   Env2Exist: !Not [ !Equals [!Ref ContainerEnvEntry2, '']]
@@ -321,16 +332,21 @@ Resources:
       GroupDescription: !Sub '${MicroServiceUniqueName}-EcsSvcSecGrp'
       VpcId: !Ref VpcId
       SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 8080
-          ToPort: 8080
-          CidrIp: 0.0.0.0/0
+        - 'Fn::If':
+          - HasAlbSecurityGroup
+          - IpProtocol: tcp
+            FromPort: 8080
+            ToPort: 8080
+            SourceSecurityGroupId: !Ref AlbSecurityGroup
+          - IpProtocol: tcp
+            FromPort: 8080
+            ToPort: 8080
+            CidrIp: 0.0.0.0/0
 
   # ECS Task
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     # Makes sure the log group is created before it is used.
-    DependsOn: LogGroup
     Properties:
       # Name of the task definition. Subsequent versions of the task definition are grouped together under this name.
       Family: !Ref MicroServiceUniqueName
@@ -602,7 +618,26 @@ Resources:
                   - kms:Decrypt
                 Resource:
                   - Fn::Sub: "arn:${AWS::Partition}:secretsmanager:*:${AWS::AccountId}:secret:*"
-
+              - Fn::If:
+                - HasSamlAssertionKmsKeyArn
+                - Effect: Allow
+                  Action:
+                    - "kms:Encrypt"
+                    - "kms:Decrypt"
+                    - "kms:ReEncrypt*"
+                    - "kms:GenerateDataKey*"
+                    - "kms:DescribeKey"
+                  Resource:
+                    - !Ref SamlAssertionBucketKeyArn
+                - !Ref AWS::NoValue
+              - Fn::If:
+                - HasSamlAssertionBucketArn
+                - Effect: Allow
+                  Action:
+                    - "s3:Get*"
+                  Resource:
+                    - !Sub "${SamlAssertionBucketArn}/*"
+                - !Ref AWS::NoValue
   # A role for the containers
   TaskRole:
     Type: AWS::IAM::Role
@@ -685,7 +720,6 @@ Resources:
 
   # CloudWatch metric to filer ERROR - FATAL lines, in Log group
   ErrorFatalLogsMetricFilter:
-    Condition: HasAlarmTopic
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref LogGroup
@@ -694,30 +728,6 @@ Resources:
         - MetricValue: 1
           MetricNamespace: "ErrorFatalLogs"
           MetricName: !Sub "${MicroServiceUniqueName}-ErrorFatalMetric"
-
-  # Create alarm
-  ErrorFatalLogsMetricAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Condition: HasAlarmTopic
-    DependsOn: ErrorFatalLogsMetricFilter
-    Properties:
-      AlarmName: !Sub "${MicroServiceUniqueName}-ErrorFatalLogs-Alarm"
-      AlarmDescription: "CloudWatch alarm for when ECS LogGroup has ERROR or FATAL line."
-      AlarmActions:
-        - !Ref AlarmSNSTopicArn
-      InsufficientDataActions:
-        - !Ref AlarmSNSTopicArn
-      OKActions:
-        - !Ref AlarmSNSTopicArn
-      DatapointsToAlarm: 1
-      MetricName: !Sub "${MicroServiceUniqueName}-ErrorFatalMetric"
-      Namespace: "ErrorFatalLogs"
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      EvaluationPeriods: 60
-      Period: 60
-      Statistic: Sum
-      Threshold: 1
-      TreatMissingData: missing
 
 Outputs:
   ServiceName:
@@ -729,3 +739,6 @@ Outputs:
   TaskRoleName:
     Description: Container execution role name, useful to attach custom policies
     Value: !Ref TaskRole
+  LogGroupName:
+    Description: Log Group Name
+    Value: !Sub '/ecs/${MicroServiceUniqueName}'

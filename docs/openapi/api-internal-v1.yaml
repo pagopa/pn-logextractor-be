@@ -23,16 +23,31 @@ tags:
     description: Operations about a person
   - name: logs
     description: Operations about logs and extractions
-  - name: healthCheck
+  - name: status
     description: Operations about application status
   - name: downtime
     description: Operations about PN functionalities monitoring
 
 paths:
-  '/persons/v1/person-id':
+  '/log-extractor/persons/v1/person-id':
     post:
       tags:
         - persons
+      x-api-permissions:
+        - 'log-extract-read'
+      parameters:
+        - in: header
+          name: x-pagopa-pn-uid
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]*$'
+          required: true
+        - in: header
+          name: x-pagopa-pn-cx-type
+          schema:
+            type: string
+            pattern: '^[A-Za-z]*$'
+          required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
       operationId: personalPersonId
@@ -63,10 +78,25 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
-  '/persons/v1/tax-id':
+  '/log-extractor/persons/v1/tax-id':
     post:
       tags:
         - persons
+      x-api-permissions:
+        - 'log-extract-read'
+      parameters:
+        - in: header
+          name: x-pagopa-pn-uid
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]*$'
+          required: true
+        - in: header
+          name: x-pagopa-pn-cx-type
+          schema:
+            type: string
+            pattern: '^[A-Za-z]*$'
+          required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
       operationId: personalTaxId
@@ -97,10 +127,25 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
-  '/logs/v1/notifications/info':
+  '/log-extractor/logs/v1/notifications/info':
     post:
       tags:
         - logs
+      x-api-permissions:
+        - 'log-extract-read'
+      parameters:
+        - in: header
+          name: x-pagopa-pn-uid
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]*$'
+          required: true
+        - in: header
+          name: x-pagopa-pn-cx-type
+          schema:
+            type: string
+            pattern: '^[A-Za-z]*$'
+          required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
       operationId: notificationInfoLogs
@@ -131,10 +176,25 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
-  '/logs/v1/notifications/monthly':
+  '/log-extractor/logs/v1/notifications/monthly':
     post:
       tags:
         - logs
+      x-api-permissions:
+        - 'log-extract-read'
+      parameters:
+        - in: header
+          name: x-pagopa-pn-uid
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]*$'
+          required: true
+        - in: header
+          name: x-pagopa-pn-cx-type
+          schema:
+            type: string
+            pattern: '^[A-Za-z]*$'
+          required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
       operationId: notificationsInMonth
@@ -166,10 +226,25 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
-  '/logs/v1/persons':
+  '/log-extractor/logs/v1/persons':
     post:
       tags:
         - logs
+      x-api-permissions:
+        - 'log-extract-read'
+      parameters:
+        - in: header
+          name: x-pagopa-pn-uid
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]*$'
+          required: true
+        - in: header
+          name: x-pagopa-pn-cx-type
+          schema:
+            type: string
+            pattern: '^[A-Za-z]*$'
+          required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
       operationId: personActivityLogs
@@ -200,10 +275,25 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
-  '/logs/v1/processes':
+  '/log-extractor/logs/v1/processes':
     post:
       tags:
         - logs
+      x-api-permissions:
+        - 'log-extract-read'
+      parameters:
+        - in: header
+          name: x-pagopa-pn-uid
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]*$'
+          required: true
+        - in: header
+          name: x-pagopa-pn-cx-type
+          schema:
+            type: string
+            pattern: '^[A-Za-z]*$'
+          required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
       operationId: processLogs
@@ -216,8 +306,7 @@ paths:
               $ref: '#/components/schemas/TraceIdLogsRequestDto'
       responses:
         '200':
-          description: >-
-            The operation has been successfully completed
+          description: The operation has been successfully completed
           content:
             application/json:
               schema:
@@ -234,12 +323,119 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
-  "/downtime/v1/status":
+  '/log-extractor/logs/v1/sessions':
+    post:
+      tags:
+        - logs
+      x-api-permissions:
+        - 'log-extract-read'
+      parameters:
+        - in: header
+          name: x-pagopa-pn-uid
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]*$'
+          required: true
+        - in: header
+          name: x-pagopa-pn-cx-type
+          schema:
+            type: string
+            pattern: '^[A-Za-z]*$'
+          required: true
+      security:                                                                # ONLY EXTERNAL
+        - bearerAuth: [ ]
+      operationId: sessionLogs
+      description: Download the logs archive related to a user session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionLogsRequestDto'
+      responses:
+        '200':
+          description: The operation has been successfully completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponseDto'
+        '400':
+          description: Errors during the request validation
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Errors during the request elaboration
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  "/log-extractor/logs/v1/status":
+    get:
+      description: >-
+        Get the status of given log process
+      tags:
+        - logs
+      x-api-permissions:
+        - 'log-extract-read'
+      parameters:
+        - in: header
+          name: x-pagopa-pn-uid
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]*$'
+          required: true
+        - in: header
+          name: x-pagopa-pn-cx-type
+          schema:
+            type: string
+            pattern: '^[A-Za-z]*$'
+          required: true
+        - in: query
+          name: key
+          schema:
+            type: string
+          required: true
+      security:                                                                # ONLY EXTERNAL
+        - bearerAuth: [ ]
+      operationId: currentProcessStatus
+      responses:
+        '200':
+          description: The operation has been successfully completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponseDto'
+        '500':
+          description: Errors during the request elaboration
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  "/log-extractor/downtime/v1/status":
     get:
       description: >-
         Get the PN functionalities and inefficiencies list at invocation time
       tags:
         - downtime
+      x-api-permissions:
+        - 'log-downtime-read'
+      parameters:
+        - in: header
+          name: x-pagopa-pn-uid
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]*$'
+          required: true
+        - in: header
+          name: x-pagopa-pn-cx-type
+          schema:
+            type: string
+            pattern: '^[A-Za-z]*$'
+          required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
       operationId: currentStatus
@@ -256,12 +452,28 @@ paths:
             application/problem+json:
               schema:
                 $ref: '#/components/schemas/Problem'
-  "/downtime/v1/events":
+
+  "/log-extractor/downtime/v1/events":
     post:
       description: >-
         Add a new inefficiency start or end event
       tags:
         - downtime
+      x-api-permissions:
+        - 'log-downtime-write'
+      parameters:
+        - in: header
+          name: x-pagopa-pn-uid
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9-]*$'
+          required: true
+        - in: header
+          name: x-pagopa-pn-cx-type
+          schema:
+            type: string
+            pattern: '^[A-Za-z]*$'
+          required: true
       security:                                                                # ONLY EXTERNAL
         - bearerAuth: [ ]
       operationId: addStatusChangeEvent
@@ -289,7 +501,7 @@ paths:
   "/status":
     get:
       tags:
-        - healthCheck
+        - Status
       operationId: healthStatus
       description: Get the application status
       responses:
@@ -297,15 +509,42 @@ paths:
           description: The application is running
 components:
   schemas:
+    SessionLogsRequestDto:
+      type: object
+      required:
+        - ticketNumber
+        - jti
+        - dateFrom
+        - dateTo
+        - deanonimization
+      properties:
+        ticketNumber:
+          type: string
+        jti:
+          type: string
+          pattern: '[\w-]+'
+          maxLength: 60
+        dateFrom:
+          type: string
+          format: date
+        dateTo:
+          type: string
+          format: date
+        deanonimization:
+          type: boolean
     PersonPersonIdRequestDto:
       type: object
       required:
         - ticketNumber
-        - taxId
         - recipientType
       properties:
         ticketNumber:
           type: string
+        piva:
+          type: string
+          minLength: 11
+          maxLength: 11
+          pattern: '^([0-9]{11})$'
         taxId:
           type: string
           minLength: 16

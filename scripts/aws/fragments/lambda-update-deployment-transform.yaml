@@ -1,0 +1,86 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  rTransformExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [lambda.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+        - PolicyName: LogsUpdateDeplymentTransform
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                Resource:
+                  - !Sub 'arn:aws:logs:*:${AWS::AccountId}:log-group:/aws/lambda/UpdateDeploymentTransform'
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - !Sub 'arn:aws:logs:*:${AWS::AccountId}:log-group:*'
+  rTransformFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: UpdateDeploymentTransform
+      Code:
+        ZipFile: |
+          import boto3
+          import copy
+          import json
+          import logging
+          import time
+
+          log = logging.getLogger()
+          log.setLevel(logging.INFO)
+
+          EPOCH_TIME = str(int(time.time()))
+
+          def process_template(event):
+              """
+              Update the Deployment name and respective references using Epoch time.
+              """
+              fragment = event['fragment']
+              serialized_template = json.dumps( fragment )
+              transformed_template = serialized_template.replace("PnPlaceholderEpochSeconds", EPOCH_TIME)
+              deserialized_template = json.loads(transformed_template)
+              return deserialized_template
+
+          def handler(event, context):
+              """
+              Returns processed template back to CloudFormation
+              """
+              log.info(json.dumps(event))
+              processed_template=process_template(event)
+              log.info('Processed template' + json.dumps(processed_template))
+
+              r = {}
+              r['requestId'] = event['requestId']
+              r['status'] = 'SUCCESS'
+              r['fragment'] = processed_template
+
+              return r
+
+      Handler: index.handler
+      Runtime: python3.9
+      Role: !GetAtt rTransformExecutionRole.Arn
+  rTransformFunctionPermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !GetAtt rTransformFunction.Arn
+      Principal: 'cloudformation.amazonaws.com'
+  rTransform:
+    Type: AWS::CloudFormation::Macro
+    Properties:
+      Name: 'UpdateDeploymentTransform'
+      Description: Generates a new API Gateway deployment using the current timestamp
+      FunctionName: !GetAtt rTransformFunction.Arn

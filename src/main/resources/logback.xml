@@ -7,6 +7,9 @@
 			<pattern>%d [%X{trace_id}] %(%-5level) - %-4relative -[%thread] - %(%logger{20}) - %msg %n</pattern>
 		</encoder>
 	</appender>
+	<logger name="it.gov.pagopa" level="DEBUG" />
+	<logger name="com.amazonaws" level="INFO" />
+	<logger name="software.amazon" level="INFO" />
 	<root level="info">
 		<appender-ref ref="STDOUT" />
 	</root>

@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -53,13 +54,16 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusResponseDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusUpdateEventRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.PnStatusUpdateEventRequestDto.SourceTypeEnum;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
+import it.gov.pagopa.logextractor.pn_logextractor_be.model.SessionLogsRequestDto;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.TraceIdLogsRequestDto;
+import it.gov.pagopa.logextractor.util.FileUtilities;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 
 public abstract class AbstractMock {
 
 	@Autowired
 	MockMvc mvc;
+
 
 	@Mock
 	NotificationApiHandler notificationApiHandler;
@@ -70,7 +74,9 @@ public abstract class AbstractMock {
 	@MockBean
 	@Qualifier("openSearchRestTemplate")
 	RestTemplate openClient;
-
+	@MockBean
+	@Qualifier("downtimeRestTemplate")
+	RestTemplate downtimeClient;
 	@Value("classpath:data/notification.json")
 	protected Resource mockNotification;
 	@Value("classpath:data/notification_general_data.json")
@@ -98,41 +104,52 @@ public abstract class AbstractMock {
 	@Value("classpath:data/activated_id.json")
 	protected Resource mockSelfCarePaData;
 
+
 	public static final MediaType APPLICATION_JSON_UTF8 = new MediaType(MediaType.APPLICATION_JSON.getType(),
 			MediaType.APPLICATION_JSON.getSubtype(), Charset.forName("utf8"));
-	protected final String identifierUrl = "/persons/v1/person-id";
-	protected final String taxCodeUrl = "/persons/v1/tax-id";
-	protected final String personUrl = "/logs/v1/persons";
-	protected final String notificationUrl = "/logs/v1/notifications/monthly";
-	protected final String notificationInfoUrl = "/logs/v1/notifications/info";
-	protected final String processesUrl = "/logs/v1/processes";
+	protected final String identifierUrl = "/log-extractor/persons/v1/person-id";
+	protected final String taxCodeUrl = "/log-extractor/persons/v1/tax-id";
+	protected final String personUrl = "/log-extractor/logs/v1/persons";
+	protected final String sessionUrl = "/log-extractor/logs/v1/sessions";
+	protected final String notificationUrl = "/log-extractor/logs/v1/notifications/monthly";
+	protected final String notificationInfoUrl = "/log-extractor/logs/v1/notifications/info";
+	protected final String processesUrl = "/log-extractor/logs/v1/processes";
 	protected final String healthcheckUrl = "/status";
 
-	protected final String statusUrl = "/downtime/v1/status";
-	protected final String eventsUrl = "/downtime/v1/events";
+	protected final String statusUrl = "/log-extractor/downtime/v1/status";
+	protected final String eventsUrl = "/log-extractor/downtime/v1/events";
 
 	protected final String fakeHeader = "Basic YWxhZGRpbjpvcGVuc2VzYW1l";
 	private static ObjectMapper mapper = new ObjectMapper();
 
-	// protected static String jsonDocSearchPF =
-	// "{\"responses\":[{\"hits\":{\"hits\":[{\"_source\":{\"_source\":\"3242342323\",
-	// \"cx_id\":\"PF-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}]}";
-	// protected static String jsonDocSearchPA =
-	// "{\"responses\":[{\"hits\":{\"hits\":[{\"_source\":{\"_source\":\"3242342323\",
-	// \"cx_id\":\"PA-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}]}";
+	@Mock
+	private FileUtilities fileUtils = new FileUtilities();
 
-	protected final String jsonDocSearchPF = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [{\"_source\":{\"_source\":\"3242342323\",\"cx_id\":\"PF-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}";
+
+	protected final String jsonDocSearchPF = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [{\"_source\":{\"_source\":\"3242342323\",\"cx_id\":\"PF-2dfc9690-a648-4462-986d-769d90752e6f\", \"@timestamp\":\"\"}}]}}";
 	protected final String jsonEmptyDocSearchPF = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : []}}";
-	protected final String jsonDocSearchPA = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [{\"_source\":{\"_source\":\"3242342323\",\"cx_id\":\"PA-2dfc9690-a648-4462-986d-769d90752e6f\"}}]}}";
+	protected final String jsonDocSearchPA = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : [{\"_source\":{\"_source\":\"3242342323\",\"cx_id\":\"PA-2dfc9690-a648-4462-986d-769d90752e6f\", \"@timestamp\":\"\"}}]}}";
 
 	protected final String scrollMockSearch = "{\"_scroll_id\":\"test\",\"hits\" : {\"hits\" : []}}";
+	
+	protected HttpHeaders getHeaders() {
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("x-pagopa-pn-uid", fakeHeader);
+		headers.add("x-pagopa-pn-cx-type", fakeHeader);
+		return headers;
+	}
 
 	@SuppressWarnings("unchecked")
+	@Deprecated
 	protected void mockUniqueIdentifierForPerson() throws RestClientException, IOException {
 		// The first return is used to simulate authentication
 		Mockito.when(client.postForObject(Mockito.anyString(), Mockito.any(), Mockito.any(Class.class))).thenReturn(
 				getStringFromResourse(authResponse), mapper.registerModule(new JavaTimeModule()).writeValueAsString(
 						EnsureRecipientByExternalIdResponseDto.builder().internalId("123").build()));
+	}
+	
+	protected void mockAnonymizedTaxId() throws RestClientException, IOException {
+		Mockito.when(client.postForObject(Mockito.anyString(), Mockito.any(), Mockito.eq(String.class))).thenReturn("8712361940283615");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -169,6 +186,22 @@ public abstract class AbstractMock {
 		ResponseEntity<Object> response = new ResponseEntity<Object>(jsonResponse, HttpStatus.OK);
 		Mockito.when(client.getForEntity(Mockito.anyString(), Mockito.any())).thenReturn(response);
 		ResponseEntity<String> responseSearch = new ResponseEntity<String>(jsonDocSearch, HttpStatus.OK);
+		Mockito.when(openClient.exchange(ArgumentMatchers.anyString(), ArgumentMatchers.any(HttpMethod.class),
+				ArgumentMatchers.any(HttpEntity.class), ArgumentMatchers.any(Class.class), ArgumentMatchers.anyMap()))
+				.thenReturn(responseSearch);
+		ResponseEntity<String> scrollResponseSearch = new ResponseEntity<String>(scrollMockSearch, HttpStatus.OK);
+		Mockito.when(openClient.exchange(ArgumentMatchers.anyString(), ArgumentMatchers.any(HttpMethod.class),
+				ArgumentMatchers.any(HttpEntity.class), ArgumentMatchers.<Class<String>>any()))
+				.thenReturn(scrollResponseSearch);
+		mockUniqueIdentifierForPerson();
+	}
+	
+	@SuppressWarnings("unchecked")
+	protected void mockEmptyPersonsLogResponse(String jsonDocSearch) throws IOException {
+		NotificationDetailsResponseDto jsonResponse = getNotificationFromResource(mockNotification);
+		ResponseEntity<Object> response = new ResponseEntity<Object>(jsonResponse, HttpStatus.OK);
+		Mockito.when(client.getForEntity(Mockito.anyString(), Mockito.any())).thenReturn(response);
+		ResponseEntity<String> responseSearch = new ResponseEntity<String>("", HttpStatus.OK);
 		Mockito.when(openClient.exchange(ArgumentMatchers.anyString(), ArgumentMatchers.any(HttpMethod.class),
 				ArgumentMatchers.any(HttpEntity.class), ArgumentMatchers.any(Class.class), ArgumentMatchers.anyMap()))
 				.thenReturn(responseSearch);
@@ -308,17 +341,15 @@ public abstract class AbstractMock {
 		ResponseEntity<PnStatusResponseDto> responseStatus = new ResponseEntity<>(fakePnStatusResponseDto,
 				HttpStatus.OK);
 		Mockito.when(
-				client.getForEntity(ArgumentMatchers.anyString(), ArgumentMatchers.<Class<PnStatusResponseDto>>any()))
+				downtimeClient.getForEntity(ArgumentMatchers.anyString(), ArgumentMatchers.<Class<PnStatusResponseDto>>any()))
 				.thenReturn(responseStatus);
 	}
 
-	@SuppressWarnings("unchecked")
 	protected void mockAddStatusChangeEvent(RestTemplate client) throws RestClientException, IOException {
-		String mock = "";
-		ResponseEntity<Object> response = new ResponseEntity<Object>(mock, HttpStatus.OK);
-		Mockito.when(client.getForObject(Mockito.anyString(), Mockito.any(Class.class))).thenReturn(response);
+		ResponseEntity<Void> response = ResponseEntity.ok().build();
+		Mockito.when(client.getForObject(Mockito.anyString(), Mockito.any(), Mockito.eq(Void.class))).thenReturn(response);
 	}
-
+	
 	protected static String getMockPersonLogsRequestDto(int useCase, boolean isDeanonimization)
 			throws JsonProcessingException {
 		PersonLogsRequestDto dto = new PersonLogsRequestDto();
@@ -344,6 +375,16 @@ public abstract class AbstractMock {
 		return mapper.registerModule(new JavaTimeModule()).writeValueAsString(dto);
 	}
 
+	protected static String getMockSessionLogsRequestDto(boolean isDeanonimization)	throws JsonProcessingException {
+		SessionLogsRequestDto dto = new SessionLogsRequestDto();
+		dto.setDateFrom(LocalDate.now());
+		dto.setDateTo(LocalDate.now());
+		dto.setDeanonimization(isDeanonimization);
+		dto.setJti("12954F907C0535ABE97F761829C6BD11");
+		dto.setTicketNumber("123");
+		return mapper.registerModule(new JavaTimeModule()).writeValueAsString(dto);
+	}
+	
 	protected static String getMockPersonLogsRequestDtoPersonIdNull() throws JsonProcessingException {
 		PersonLogsRequestDto dto = new PersonLogsRequestDto();
 		dto.setDateFrom(LocalDate.now());
@@ -451,5 +492,4 @@ public abstract class AbstractMock {
 		return mapper.registerModule(new JavaTimeModule()).readValue(resource.getInputStream(),
 				SelfCarePaDataResponseDto.class);
 	}
-
 }

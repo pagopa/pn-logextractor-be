@@ -30,7 +30,39 @@ Parameters:
     Type: "List<AWS::EC2::Subnet::Id>"
     Description: Private subnets of the given VPC
 
+  HostedZoneId:
+    Type: String
+    Description: Hosted Zone ID
+
+  ApiDomain:
+    Type: String
+    Description: Api domain name
+
+  AlternateApiDomain:
+    Description: "Alternate Domain name for the API"
+    Type: String
+    Default: ''
+
+  ApiCertificateArn:
+    Description: "ACM Api Certificate ARN"
+    Type: String
+
+Conditions:
+  HasAlternateApiDomain: !Not 
+    - !Equals
+      - !Ref AlternateApiDomain
+      - ""
+
 Resources:
+  
+  ###                       CLOUDFORMATION TRANSFORM LAMBDAS              ###
+  ###########################################################################
+
+  UpdateDeploymentTransform:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-update-deployment-transform.yaml"
+
   Backend:
     Type: "AWS::CloudFormation::Stack"
     Properties:
@@ -40,8 +72,37 @@ Resources:
         VpcId: !Ref VpcId
       TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/backend.yaml
 
+  ###            COMMON RESOURCES FOR WEB API AND DISTRIBUTIONS            ###
+  ############################################################################
+  RestApiCustomDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: 
+        Fn::If:
+          - HasAlternateApiDomain
+          - !Ref AlternateApiDomain
+          - !Ref ApiDomain 
+      RegionalCertificateArn: !Ref ApiCertificateArn
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      SecurityPolicy: TLS_1_2
+
+  Route53RecordSetGroup:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Ref ApiDomain
+      Type: A
+      HostedZoneId: !Ref HostedZoneId
+      AliasTarget:
+        DNSName: !GetAtt RestApiCustomDomain.RegionalDomainName
+        EvaluateTargetHealth: false
+        HostedZoneId: !GetAtt RestApiCustomDomain.RegionalHostedZoneId
+
   Api:
     Type: "AWS::CloudFormation::Stack"
+    DependsOn:
+      - UpdateDeploymentTransform
     Properties:
       Parameters:
         NetworkLoadBalancerDomain: !GetAtt Backend.Outputs.NlbDomain
@@ -49,6 +110,12 @@ Resources:
         LogRetentionInDays: !Ref ApiLogRetentionInDays
         NetworkLoadBalancerLink: !GetAtt Backend.Outputs.NlbLink
         ProjectName: !Ref ProjectName
+        ServiceApiPath: logextractor
+        ApiDomain: 
+          Fn::If:
+            - HasAlternateApiDomain
+            - !Ref AlternateApiDomain
+            - !Ref ApiDomain
       TemplateURL: !Sub ${TemplateBucketBaseUrl}/fragments/api.yaml
 
 Outputs:
@@ -56,7 +123,14 @@ Outputs:
     Value: !GetAtt Backend.Outputs.AlbListenerArn
   
   ApiDomain:
-    Value: !Sub ${Api.Outputs.RestApiId}.execute-api.${AWS::Region}.amazonaws.com
+    Value: 
+      Fn::If:
+        - HasAlternateApiDomain
+        - !Ref AlternateApiDomain
+        - !Ref ApiDomain
+
+  AlbSecurityGroup:
+    Value: !GetAtt Backend.Outputs.AlbSecurityGroup
 
   ApiId:
     Value: !GetAtt Api.Outputs.RestApiId

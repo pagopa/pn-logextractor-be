@@ -5,6 +5,12 @@ Compilare il file `scripts/environments/.env.infra.${ENVIRONMENT}` con i paramet
 - *VpcId*: ID della private VPC
 - *PrivateSubnetIds*: ID delle subnets della private VPC, separati da virgola
 - *OpenSearchInitialStorageSize*: Dimensione in Gig dello storage iniziale del cluster OpenSearch
+- *OpenSearchNodeType*: Tipo del nodo OpenSearch ([qui](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/supported-instance-types.html) la lista)
+- *OpenSearchNodeReplicas*: Numero di repliche che compongono il cluster
+- *OpenSearchEbsIops*: Numero di IOS supportate dal volume EBS (lasciare a zero)
+- *OpenSearchEbsType*: Tipologia di volume EBS ([qui](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html) la lista)
+- *OpenSearchMasterNodeType*: Tipo del nodo master dedicato (lasciare vuoto se non si necessita del nodo master dedicato)
+- *OpenSearchMasterNodeInstanceNumber*: Numero di nodi master dedicati (lasciare a zero se non si necessita del nodo master dedicato)
 
 Eseguire il seguente comando per assicurarsi che l'utente possa creare cluster OpenSearch sostituendo opportunamente la variabile profile. 
 
@@ -16,6 +22,9 @@ aws --profile=${PROFILE} \
 
 Creare il secret `pn-opensearch-master` con chiavi `username` e `password` da utilizzare come credenziali dell'utente master di OpenSearch. Il secret va creato nella regione `eu-south-1`.
 
+Eseguire il seguente comando dalla cartella `./scripts/aws`
+
+`./deployAlarmsTopic.sh -p ${PROFILE} -e ${ENVIRONMENT}`
 
 Eseguire il seguente comando dalla cartella `./scripts/aws`
 
@@ -75,23 +84,37 @@ Compilare il file `scripts/environments/.env.backend.${ENVIRONMENT}` con i param
 - *SafeStorageEndpoint*: hostname dell'endpoint di SafeStorage
 - *SafeStorageStage*: stage dell'endpoint di SafeStorage
 - *SafeStorageCxId*: SafeStorage CX ID
-- *CognitoGetUserEndpoint*: Default a https://cognito-idp.eu-central-1.amazonaws.com
 - *AllowedOrigin*: Dominio da impostare nel CORS delle API
 - *OpenSearchSecretArn*: Arn del secret `pn-opensearch-logextractor` 
 
-Eseguire i seguenti comando dalla cartella `./scripts/aws`
-
-`./deployBackend.sh -p ${PROFILE} -e ${ENVIRONMENT} -i ${CONTAINER_IMAGE_URL}`
+Aggiornare il file `desired-commit-ids-env.sh` sul bucket `cd-pipeline-cdartifactbucket-...` con il commit ID e l'url del container di logextractor-be:
+- pn_logextractor_be_commitId
+- pn_logextractor_be_imageUrl
 
 # Frontend
-Come pre-requisito è necessario avere installato node.js 16.x e yarn.
+Aggiornare il file `desired-commit-ids-env.sh` sul bucket `cd-pipeline-cdartifactbucket-...` con il commit ID di helpdesk-fe:
+- pn_helpdesk_fe_commitId
 
-Scaricare il progetto https://github.com/pagopa/pn-helpdesk-fe
-Posizionarsi nella root del progetto ed eseguire il comando `yarn install` 
+# Installare Pipeline Helpdesk
+Installare da cloudformation lo stack [helpdesk-only-pipeline](https://github.com/pagopa/pn-cicd/blob/main/cd-cli/cnf-templates/helpdesk-only-pipeline.yaml).
 
-Eseguire il seguente comando dalla root del progetto:
+Al termine dell'installazione della pipeline, seguire i seguenti passi:
+- nel repository  `cd-pipeline-cdartifactbucket-...` creare il file empty.zip come già fatto per l'ambiente CORE
+- nel repository  `cd-pipeline-cdartifactbucket-...` creare la cartella `config` e posizionarci un file `desired-commit-ids-env.sh` copiando questa struttura (se si è già in possesso dei nuovi commit id di logextractor-be e helpdesk-fe, aggiornarli in questo momento):
+```
+export cd_scripts_commitId=6a3ac5f41284ee3c54e2740bf89ae91b8e9ab39b
+export pn_infra_commitId=004e0275519264320e03ff437e530a8f8c28f428
 
-`./scripts/aws/uploadApplication.sh -p ${PROFILE} -e ${ENVIRONMENT}`
+export pn_logextractor_be_commitId=848b5d0cffdc316088861732586888e890ba1ac3
+export pn_logextractor_be_imageUrl=911845998067.dkr.ecr.eu-central-1.amazonaws.com/pn-logextractor-be@sha256:ecfdffabc4795aa3263b90289ed2538a7a5b7ded2cc0a590e82ac201e6f8dd41
+
+export pn_helpdesk_fe_commitId=3c7401707062dfcfbb70524c93faa9b112bf5421
+```
+
+Come valori di `cd_scripts_commitId` e `pn_infra_commitId` prendere gli ultimi commid ID dai repository [pn-cicd](https://github.com/pagopa/pn-cicd) e [pn-infra](https://github.com/pagopa/pn-infra).
+
+# Deploy Frontend e Backend
+Da Codepipeline, eseguire la pipeline `pn-env-update-pipeline`.
 
 # Test
 Creare un utente nel pool di Cognito (disponibile nella region eu-central-1) e definire anche l'attributo custom `custom:log_identifier` come un valido codice fiscale.
