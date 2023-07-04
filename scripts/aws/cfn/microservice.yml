@@ -342,6 +342,15 @@ Resources:
         OpenApiBucketName: !Ref MicroserviceBucketName
         OpenApiBucketKey: !Sub ${MicroserviceBucketBaseKey}/docs/openapi/api-internal-v1.yaml
 
+  LogextractorBeApiGatewayBoWaf:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/api-gw-waf-acl.yaml"
+      Parameters:
+        WAFName: !Sub '${ProjectName}-logextractor-be-bo'
+        IntendedUsage: BACKOFFICE
+        APIGatewayARNs: !GetAtt LogextractorBeApiGatewayBo.Outputs.APIGatewayARN
+
   ## Dashboard
   LogextractorBeMicroserviceCloudWatchDashboard:
     Type: AWS::CloudFormation::Stack
