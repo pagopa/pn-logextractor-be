@@ -6,12 +6,12 @@
 	<parent>
         <groupId>it.pagopa.pn</groupId>
         <artifactId>pn-parent</artifactId>
-        <version>2.0.0</version>
+        <version>2.1.1</version>
         <relativePath/>
 	</parent>
 	<groupId>it.gov.pagopa.logextractor</groupId>
 	<artifactId>pn-logextractor-be</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>2.0.1-SNAPSHOT</version>
 	<name>pn-logextractor-be</name>
 	<description>Microservice for log extraction</description>
 	<scm>
