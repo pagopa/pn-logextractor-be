@@ -10,10 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import it.gov.pagopa.logextractor.util.FileUtilities;
-import it.gov.pagopa.logextractor.util.PasswordFactory;
 import it.gov.pagopa.logextractor.util.ZipArchiverImpl;
-import it.gov.pagopa.logextractor.util.constant.GenericConstants;
-import it.gov.pagopa.logextractor.util.external.s3.S3ClientService;
+import it.gov.pagopa.logextractor.util.external.IStorageService;
 import net.lingala.zip4j.io.outputstream.ZipOutputStream;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.CompressionLevel;
@@ -23,7 +21,7 @@ import net.lingala.zip4j.model.enums.EncryptionMethod;
 public class ZipService {
 
 	@Autowired
-	S3ClientService s3ClientService;
+	IStorageService s3ClientService;
 	
 	@Autowired
 	FileUtilities fileUtilities;

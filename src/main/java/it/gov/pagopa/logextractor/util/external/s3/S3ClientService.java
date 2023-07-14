@@ -1,6 +1,5 @@
 package it.gov.pagopa.logextractor.util.external.s3;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
@@ -10,6 +9,7 @@ import java.time.Instant;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -20,11 +20,13 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 
+import it.gov.pagopa.logextractor.util.external.IStorageService;
 import lombok.extern.slf4j.Slf4j;
 
+@Profile("!dev2")
 @Service
 @Slf4j
-public class S3ClientService {
+public class S3ClientService implements IStorageService{
 
 	@Value("${bucket.name:logextractor-bucket}")
 	String bucketName;
@@ -53,7 +55,7 @@ public class S3ClientService {
 		
 	}
 	
-	
+	@Deprecated
 	public OutputStream uploadStream(String keyName) {
 		try {
 			log.info("Starting upload to bucket .....");
@@ -76,6 +78,7 @@ public class S3ClientService {
 		return null;
 	}
 	
+	@Override
 	public OutputStream uploadStreamV2(String keyName) {
 		try {
 			log.info("Starting upload to bucket .....");
