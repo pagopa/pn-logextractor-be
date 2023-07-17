@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import it.gov.pagopa.logextractor.exception.LogExtractorIntegrationException;
+
 public class CustomFileOutputStream extends FileOutputStream{
 
 	private String fileName;
@@ -17,7 +19,10 @@ public class CustomFileOutputStream extends FileOutputStream{
 	@Override
 	public void close() throws IOException {
 		super.close();
-		new File(fileName+".tmp").renameTo(new File(fileName));
+		boolean ret =new File(fileName+".tmp").renameTo(new File(fileName));
+		if (!ret) {
+			throw new LogExtractorIntegrationException("Failed renaming file");
+		}
 	}
 	
 
