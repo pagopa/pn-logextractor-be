@@ -9,8 +9,10 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import it.gov.pagopa.logextractor.util.external.IStorageService;
+import lombok.extern.slf4j.Slf4j;
 
 @Profile("dev2")
+@Slf4j
 @Service
 public class FileClientService implements IStorageService{
 	@Value("${localstorage.basepath:c:\\tmp\\}")
@@ -21,8 +23,7 @@ public class FileClientService implements IStorageService{
 		try {
 			return new CustomFileOutputStream(basePath+keyName);
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("Error opening outputstream on {}", basePath+keyName, e);
 			return null;
 		}
 	}
