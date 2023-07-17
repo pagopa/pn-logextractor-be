@@ -34,10 +34,10 @@ import it.gov.pagopa.logextractor.util.FileUtilities;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
 import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
+import it.gov.pagopa.logextractor.util.external.IStorageService;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandlerFactory;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationService;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
-import it.gov.pagopa.logextractor.util.external.s3.S3ClientService;
 import it.gov.pagopa.logextractor.util.external.s3.S3DocumentDownloader;
 import lombok.extern.slf4j.Slf4j;
 
@@ -72,7 +72,7 @@ public class LogServiceImpl implements LogService {
 	FileUtilities fileUtils;
 	
 	@Autowired 
-	S3ClientService s3ClientService;
+	IStorageService s3ClientService;
 
 	@Autowired 
 	NotificationLogService notificationLogService;
@@ -131,6 +131,7 @@ public class LogServiceImpl implements LogService {
 			}
 		}catch(Exception err) {
 			log.error("Error preparing zip file", err);
+			zipService.closeEntry(zipInfo);
 			zipService.addEntryWithContent(zipInfo, "error.txt", err.getMessage());
 		}
 		zipService.close(zipInfo);

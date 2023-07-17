@@ -20,7 +20,7 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.TraceIdLogsRequestDto
 import it.gov.pagopa.logextractor.service.LogService;
 import it.gov.pagopa.logextractor.util.PasswordFactory;
 import it.gov.pagopa.logextractor.util.RandomUtils;
-import it.gov.pagopa.logextractor.util.external.s3.S3ClientService;
+import it.gov.pagopa.logextractor.util.external.IStorageService;
 
 @RestController
 @CrossOrigin(allowedHeaders = "password,content-disposition",exposedHeaders = "password,content-disposition")
@@ -30,7 +30,7 @@ public class LogController implements LogsApi {
 	LogService logService;
 	
 	@Autowired
-	S3ClientService s3ClientService;
+	IStorageService s3ClientService;
 	
 	private  ResponseEntity<BaseResponseDto> prepareResponse(String key, String zipPassword) throws Exception {
 		HttpHeaders responseHeaders = new HttpHeaders();

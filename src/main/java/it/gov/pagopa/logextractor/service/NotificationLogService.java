@@ -23,10 +23,10 @@ import it.gov.pagopa.logextractor.util.JsonUtilities;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
 import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
 import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
+import it.gov.pagopa.logextractor.util.external.IStorageService;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandlerFactory;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
-import it.gov.pagopa.logextractor.util.external.s3.S3ClientService;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -36,7 +36,7 @@ public class NotificationLogService {
 	private ZipService zipService;
 	
 	@Autowired 
-	private S3ClientService s3ClientService;
+	private IStorageService s3ClientService;
 
 	@Autowired
 	private OpenSearchApiHandlerFactory openSearchApiHandlerFactory;
@@ -48,7 +48,7 @@ public class NotificationLogService {
 			String xPagopaCxType) throws IOException {
 		log.info("Notification data retrieve process - START - user={}, userType={}, ticketNumber={}, iun={}",
 				xPagopaHelpdUid, xPagopaCxType, requestData.getTicketNumber(), requestData.getIun());
-		ZipInfo zipInfo = zipService.createZip(key, zipPassword, s3ClientService.uploadStream(key));
+		ZipInfo zipInfo = zipService.createZip(key, zipPassword, s3ClientService.uploadStreamV2(key));
 		try {
 			ArrayList<NotificationDownloadFileData> downloadableFiles = new ArrayList<>();
 			long serviceStartTime = System.currentTimeMillis();
