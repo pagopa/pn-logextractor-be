@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -27,24 +26,26 @@ import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
 import com.amazonaws.services.s3.transfer.model.UploadResult;
 
+import it.gov.pagopa.logextractor.config.S3ClientBuilder;
 import it.gov.pagopa.logextractor.exception.CustomException;
 import it.gov.pagopa.logextractor.util.FileUtilities;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@AllArgsConstructor
 @Service
 public class S3DocumentUploader {
-	@Autowired
-	AmazonS3 s3Client;
 	
-	@Autowired
-	FileUtilities fileutils;
+	private final S3ClientBuilder s3ClientBuilder;
+	
+	private final FileUtilities fileutils;
 	
 	@Async
 	public void upload(PutObjectRequest por) {
 		try {
 			TransferManager tm = TransferManagerBuilder.standard()
-                    .withS3Client(s3Client)
+                    .withS3Client(s3ClientBuilder.amazonS3Client())
                     .build();
         	Upload upload = tm.upload(por);
         	UploadResult result = upload.waitForUploadResult();
@@ -56,7 +57,7 @@ public class S3DocumentUploader {
 	
 	@Async
 	public void uploadV2(InputStream is, String bucketName, String key) {
-		
+		final AmazonS3 s3Client = s3ClientBuilder.amazonS3Client();
 		final int BUFFER_SIZE = 1024*1024*5;//5MB size minima (https://docs.aws.amazon.com/AmazonS3/latest/userguide/qfacts.html)
 		try {
 			List<PartETag> partETags = new ArrayList<PartETag>();
@@ -70,8 +71,6 @@ public class S3DocumentUploader {
 			boolean finished=false;
 			tm.getConfiguration().setMultipartCopyPartSize(BUFFER_SIZE);
 			BufferedInputStream bis = new BufferedInputStream(is, BUFFER_SIZE);
-			
-			//ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			
 			long totalSize=0;
 			int partNumber = 1;
@@ -99,7 +98,6 @@ public class S3DocumentUploader {
 				fos.flush();
 				fos.close();
 				if (partSize>0) {
-//					ByteArrayInputStream bais = new ByteArrayInputStream(Files.readAllBytes(tmpFilename.toPath()));
 					FileInputStream bais = new FileInputStream(tmpFilename);
 	
 					UploadPartRequest uploadRequest = new UploadPartRequest()
@@ -127,4 +125,5 @@ public class S3DocumentUploader {
 			throw new CustomException(err.getMessage());
 		}
 	}
+	
 }
