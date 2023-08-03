@@ -20,24 +20,23 @@ import com.amazonaws.services.s3.model.S3Object;
 
 import it.gov.pagopa.logextractor.config.S3ClientBuilder;
 import it.gov.pagopa.logextractor.util.external.IStorageService;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Profile("!dev2")
 @Service
 @Slf4j
-@AllArgsConstructor
 public class S3ClientService implements IStorageService{
 
 	@Value("${bucket.name:logextractor-bucket}")
 	String bucketName;
 
-//	@Autowired
-//	AmazonS3 s3Client;
-	
 	private final S3ClientBuilder s3ClientBuilder;
 	private final S3DocumentUploader s3DocumentUploader;
 	
+	public S3ClientService(S3ClientBuilder s3ClientBuilder, S3DocumentUploader s3DocumentUploader) {
+		this.s3ClientBuilder = s3ClientBuilder;
+		this.s3DocumentUploader = s3DocumentUploader;
+	}
 	
 	public void uploadFile(String keyName, File file) {
 		try {
