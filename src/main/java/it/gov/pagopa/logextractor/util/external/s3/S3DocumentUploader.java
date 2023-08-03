@@ -18,13 +18,10 @@ import com.amazonaws.services.s3.model.CompleteMultipartUploadResult;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
 import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
 import com.amazonaws.services.s3.model.PartETag;
-import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.UploadPartRequest;
 import com.amazonaws.services.s3.model.UploadPartResult;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
-import com.amazonaws.services.s3.transfer.Upload;
-import com.amazonaws.services.s3.transfer.model.UploadResult;
 
 import it.gov.pagopa.logextractor.config.S3ClientBuilder;
 import it.gov.pagopa.logextractor.exception.CustomException;
@@ -41,19 +38,19 @@ public class S3DocumentUploader {
 	
 	private final FileUtilities fileutils;
 	
-	@Async
-	public void upload(PutObjectRequest por) {
-		try {
-			TransferManager tm = TransferManagerBuilder.standard()
-                    .withS3Client(s3ClientBuilder.amazonS3Client())
-                    .build();
-        	Upload upload = tm.upload(por);
-        	UploadResult result = upload.waitForUploadResult();
-        	log.info("Upload to bucket completed! Version: {}", result.getVersionId());
-        } catch(Exception err) {
-            log.error("Error in thread upload to bucket", err);
-        }
-	}
+//	@Async
+//	public void upload(PutObjectRequest por) {
+//		try {
+//			TransferManager tm = TransferManagerBuilder.standard()
+//                    .withS3Client(s3ClientBuilder.amazonS3Client())
+//                    .build();
+//        	Upload upload = tm.upload(por);
+//        	UploadResult result = upload.waitForUploadResult();
+//        	log.info("Upload to bucket completed! Version: {}", result.getVersionId());
+//        } catch(Exception err) {
+//            log.error("Error in thread upload to bucket", err);
+//        }
+//	}
 	
 	@Async
 	public void uploadV2(InputStream is, String bucketName, String key) {
