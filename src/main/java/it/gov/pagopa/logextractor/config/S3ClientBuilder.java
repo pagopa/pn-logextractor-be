@@ -10,6 +10,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 
 import lombok.extern.slf4j.Slf4j;
+import software.amazon.awssdk.services.s3.S3Client;
 
 
 @Slf4j
@@ -26,18 +27,25 @@ public class S3ClientBuilder {
 	@Value("${external.s3.http.max-retry:10}")
 	Integer httpMaxRetry;
 
+	//ATTENZIONE SOLO A FINI DI TEST, RIMUOVERE!!!!
+	private AmazonS3 _amazonS3=null;
+	
 	public AmazonS3 amazonS3Client() {
-		log.info("Initializing S3Cient...");
-		ClientConfiguration clientConfiguration = new ClientConfiguration().withMaxErrorRetry(httpMaxRetry).withMaxConnections(httpMaxConnections);
-
-		AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
-		if (StringUtils.isNotBlank(awsProfile)) {
-			log.info("Initializing S3Cient with profile {} and region {}",awsProfile, bucketRegion);
-			builder = builder.withCredentials(new ProfileCredentialsProvider(awsProfile));
-		} else {
-			log.info("Initializing S3Cient with no profile and region {}", bucketRegion);
+		if (_amazonS3==null) {
+			log.info("Initializing S3Cient...");
+			ClientConfiguration clientConfiguration = new ClientConfiguration().withMaxErrorRetry(httpMaxRetry).withMaxConnections(httpMaxConnections);
+			AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
+			if (StringUtils.isNotBlank(awsProfile)) {
+				log.info("Initializing S3Cient with profile {} and region {}",awsProfile, bucketRegion);
+				builder = builder.withCredentials(new ProfileCredentialsProvider(awsProfile));
+			} else {
+				log.info("Initializing S3Cient with no profile and region {}", bucketRegion);
+			}
+			
+			_amazonS3 = builder.withRegion(bucketRegion).
+					withClientConfiguration(clientConfiguration).
+					build();
 		}
-		
-		return builder.withRegion(bucketRegion).withClientConfiguration(clientConfiguration).build();
+		return _amazonS3;
 	}
 }
