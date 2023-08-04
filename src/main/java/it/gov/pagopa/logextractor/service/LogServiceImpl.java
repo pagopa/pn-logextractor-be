@@ -123,12 +123,12 @@ public class LogServiceImpl implements LogService {
 							notificationStartDate.toString(), notificationEndDate, zipInfo.getZos());
 				}
 			}
-			zipService.closeEntry(zipInfo);
 			log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis,
 					docCount);
 			if (docCount == 0) {
 				throw new CustomException(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE, 204);
 			}
+			zipService.closeEntry(zipInfo);
 		}catch(Exception err) {
 			log.error("Error preparing zip file", err);
 			zipService.closeEntry(zipInfo);
@@ -213,12 +213,12 @@ public class LogServiceImpl implements LogService {
 			zipService.addEntry(zipInfo, OS_RESULT + GenericConstants.TXT_EXTENSION);
 			int docCount = openSearchApiHandlerFactory.getOpenSearchApiHanlder().getAnonymizedLogsByTraceId(requestData.getTraceId(),
 					requestData.getDateFrom(), requestData.getDateTo(), zipInfo.getZos());
-			zipService.closeEntry(zipInfo);
 			long performanceMillis = System.currentTimeMillis() - serviceStartTime;
 			log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, performanceMillis, docCount);
 			if (docCount == 0) {
 				throw new CustomException(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE, 204);
 			}
+			zipService.closeEntry(zipInfo);
 		}catch(Exception err) {
 			log.error("Error processing NotificationLog Request", err);
 			zipService.addEntryWithContent(zipInfo, "error.txt", err.getMessage());
@@ -308,7 +308,7 @@ public class LogServiceImpl implements LogService {
 				System.currentTimeMillis() - performanceMillis);
 		log.info("deanonimized logs retrieve process - END in {} ms", (System.currentTimeMillis() - serviceStartTime));
 		if (docCount == 0) {
-			throw new CustomException(ResponseConstants.NO_DOCUMENT_FOUND_MESSAGE, 204);
+			log.error("No documents found");
 		}
 		
 	}
