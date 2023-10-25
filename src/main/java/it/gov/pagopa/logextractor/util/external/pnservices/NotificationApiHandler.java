@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -26,6 +27,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsDocumentData;
@@ -154,7 +159,21 @@ public class NotificationApiHandler {
 	 */
 	public NotificationDetailsResponseDto getNotificationDetails(String iun) {
 		String url = String.format(notificationDetailsURL, iun);
-        return client.getForEntity(url, NotificationDetailsResponseDto.class).getBody();
+		return client.getForEntity(url, NotificationDetailsResponseDto.class).getBody();
+		/*
+		String response = client.getForEntity(url, String.class).getBody();
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			return mapper.readValue(response, NotificationDetailsResponseDto.class);
+		} catch (JsonMappingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;*/
+        //return client.getForEntity(url, NotificationDetailsResponseDto.class).getBody();
 	}
 
 	/**
@@ -244,6 +263,8 @@ public class NotificationApiHandler {
 		Map<String, Object> params = new HashMap<>();
 		params.put(ExternalServiceConstants.EXT_NUM_RECIPIENTS_PARAM, numberOfRecipients);
 		params.put(ExternalServiceConstants.EXT_CREATED_AT_PARAM, createdAt);
+//		String s = client.exchange(urlTemplate, HttpMethod.GET, entity, String.class, params).getBody();
+//		log.debug(s);
 		return client.exchange(urlTemplate, HttpMethod.GET, entity, NotificationHistoryResponseDto.class, params).getBody();
 	}
 	
@@ -266,6 +287,33 @@ public class NotificationApiHandler {
 			}
 		}
 		return legalFacts;
+	}
+	
+	/**
+	 * Return AAR from timeline
+	 * @param notificationInfo
+	 * @return List<NotificationDownloadFileData>
+	 */
+	public NotificationDownloadFileData getAARFileDownloadData(NotificationHistoryResponseDto notificationInfo) {
+		ArrayList<NotificationDownloadFileData> data = new ArrayList<>();
+		if(null != notificationInfo.getTimeline()) {
+			Optional<NotificationDetailsTimelineData> timeline = notificationInfo.getTimeline().stream().findFirst();
+			
+			if (timeline.isPresent()) {
+				
+			}
+			for (NotificationDetailsTimelineData timelineObject : notificationInfo.getTimeline()) {
+				if ("AAR_GENERATION".equals(timelineObject.getCategory())
+						&&  (timelineObject.getDetails() != null 
+						&& StringUtils.isNotBlank(timelineObject.getDetails().getGeneratedAarUrl()))) {
+						return new NotificationDownloadFileData(
+								GenericConstants.AAR_FILE_NAME,
+								StringUtils.remove(timelineObject.getDetails().getGeneratedAarUrl(), GenericConstants.SAFESTORAGE_PREFIX));
+					
+				}
+			}
+		}
+		return null;
 	}
 	
 	/**

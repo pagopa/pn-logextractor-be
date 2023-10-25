@@ -70,6 +70,15 @@ public class NotificationLogService {
 					notificationApiHandler.getLegalFactFileDownloadData(notificationHistory));
 			log.info("Legal facts' keys retrieved in {} ms, getting notification documents' keys...",
 					System.currentTimeMillis() - performanceMillis);
+			
+			performanceMillis = System.currentTimeMillis();
+			NotificationDownloadFileData aar = notificationApiHandler.getAARFileDownloadData(notificationHistory);
+			log.info("AARs' keys retrieved in {} ms, getting notification documents' keys...",
+					System.currentTimeMillis() - performanceMillis);
+			if (aar!=null) {
+				downloadFileData.add(aar);
+			}
+			
 			performanceMillis = System.currentTimeMillis();
 			downloadFileData.addAll(notificationApiHandler.getNotificationDocumentFileDownloadData(notificationDetails));
 			log.info("Notification documents' keys retrieved in {} ms, getting payment documents' keys...",
