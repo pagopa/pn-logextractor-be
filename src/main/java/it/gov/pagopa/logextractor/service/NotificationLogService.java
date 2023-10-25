@@ -116,8 +116,7 @@ public class NotificationLogService {
 				performanceMillis = System.currentTimeMillis();
 				for (NotificationDownloadFileData currentDownloadableFile : downloadableFiles) {
 					String notifName = 
-							currentDownloadableFile.getFileCategory() + "-" + currentDownloadableFile.getKey()+
-							GenericConstants.PDF_EXTENSION;
+							currentDownloadableFile.getFileCategory() + "-" + currentDownloadableFile.getKey();
 					zipService.addEntry(zipInfo, notifName);
 					if (notificationApiHandler.downloadToStream(currentDownloadableFile.getDownloadUrl(),
 							zipInfo.getZos()) > 0) {
