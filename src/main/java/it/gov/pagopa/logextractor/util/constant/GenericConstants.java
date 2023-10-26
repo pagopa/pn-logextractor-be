@@ -27,4 +27,5 @@ public class GenericConstants {
 	public static final String F24_FLAT_RATE_PAYMENT_FILE_NAME = "Pagamento F24 flate rate";
 	public static final String F24_STANDARD_PAYMENT_FILE_NAME = "Pagamento F24 standard";
 	public static final String PAGOPA_FORMA_PAYMENT_FILE_NAME = "Pagamento form PagoPA";
+	public static final String AAR_FILE_NAME = "Avviso Avvenuta Ricezione";
 }
