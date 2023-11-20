@@ -11,6 +11,7 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.PersonPersonIdRequest
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.PersonTaxIdRequestDto;
 import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationApiHandler;
+import it.pagopa.pn.commons.utils.LogUtils;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -48,7 +49,7 @@ public class PersonServiceImpl implements PersonService {
 		}
 		log.info("Internal id retrieve process - START - user={}, userType={}, ticket number={}, " +
 						"recipientType={}, taxId={}", xPagopaHelpdUid, xPagopaCxType, requestData.getTicketNumber(),
-				requestData.getRecipientType(), "***********");
+				requestData.getRecipientType(), LogUtils.maskTaxId(requestData.getTaxId()));
 		long serviceStartTime = System.currentTimeMillis();
 		log.info("Getting internal id...");
 		String response =  handler.getUniqueIdentifierForPerson(requestData.getRecipientType(), requestData.getTaxId().toUpperCase());
