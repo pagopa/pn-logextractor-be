@@ -60,7 +60,7 @@ public class DeanonimizationApiHandler {
 	 */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 	public String getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId) throws LogExtractorException {
-		log.info("Calling getUniqueIdentifierForPerson for {}", taxId);
+		log.info("Calling getUniqueIdentifierForPerson for {}", "***********");
 		String url = String.format(getUniqueIdURL, recipientType.getValue());
 		HttpEntity<String> request =  new HttpEntity<>(taxId);
 		String response="";

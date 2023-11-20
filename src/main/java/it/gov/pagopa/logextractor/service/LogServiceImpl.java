@@ -241,7 +241,7 @@ public class LogServiceImpl implements LogService {
 		log.info(
 				"Deanonimized logs retrieve process - START - user={}, userType={}, ticketNumber={}, taxId={}, "
 						+ "startDate={}, endDate={}, iun={}, recipientType={}",
-				xPagopaHelpdUid, xPagopaCxType, requestData.getTicketNumber(), requestData.getTaxId(),
+				xPagopaHelpdUid, xPagopaCxType, requestData.getTicketNumber(), "************",
 				requestData.getDateFrom(), requestData.getDateTo(), requestData.getIun(),
 				requestData.getRecipientType());
 		long serviceStartTime = System.currentTimeMillis();

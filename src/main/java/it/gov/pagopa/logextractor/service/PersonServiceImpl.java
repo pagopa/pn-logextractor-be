@@ -48,7 +48,7 @@ public class PersonServiceImpl implements PersonService {
 		}
 		log.info("Internal id retrieve process - START - user={}, userType={}, ticket number={}, " +
 						"recipientType={}, taxId={}", xPagopaHelpdUid, xPagopaCxType, requestData.getTicketNumber(),
-				requestData.getRecipientType(), requestData.getTaxId());
+				requestData.getRecipientType(), "***********");
 		long serviceStartTime = System.currentTimeMillis();
 		log.info("Getting internal id...");
 		String response =  handler.getUniqueIdentifierForPerson(requestData.getRecipientType(), requestData.getTaxId().toUpperCase());
