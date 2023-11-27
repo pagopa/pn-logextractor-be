@@ -24,6 +24,7 @@ import it.gov.pagopa.logextractor.pn_logextractor_be.model.GetBasicDataResponseD
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.RecipientTypes;
 import it.gov.pagopa.logextractor.util.constant.ExternalServiceConstants;
 import it.gov.pagopa.logextractor.util.constant.ResponseConstants;
+import it.pagopa.pn.commons.utils.LogUtils;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -60,7 +61,7 @@ public class DeanonimizationApiHandler {
 	 */
 	@Cacheable(cacheNames="Cluster", cacheManager = "cacheManager10Hour")
 	public String getUniqueIdentifierForPerson(RecipientTypes recipientType, String taxId) throws LogExtractorException {
-		log.info("Calling getUniqueIdentifierForPerson for {}", taxId);
+		log.info("Calling getUniqueIdentifierForPerson for {}", LogUtils.maskTaxId(taxId));
 		String url = String.format(getUniqueIdURL, recipientType.getValue());
 		HttpEntity<String> request =  new HttpEntity<>(taxId);
 		String response="";

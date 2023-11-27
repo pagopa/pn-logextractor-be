@@ -39,6 +39,7 @@ import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandlerF
 import it.gov.pagopa.logextractor.util.external.pnservices.DeanonimizationService;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 import it.gov.pagopa.logextractor.util.external.s3.S3DocumentDownloader;
+import it.pagopa.pn.commons.utils.LogUtils;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -241,7 +242,7 @@ public class LogServiceImpl implements LogService {
 		log.info(
 				"Deanonimized logs retrieve process - START - user={}, userType={}, ticketNumber={}, taxId={}, "
 						+ "startDate={}, endDate={}, iun={}, recipientType={}",
-				xPagopaHelpdUid, xPagopaCxType, requestData.getTicketNumber(), requestData.getTaxId(),
+				xPagopaHelpdUid, xPagopaCxType, requestData.getTicketNumber(), LogUtils.maskTaxId(requestData.getTaxId()),
 				requestData.getDateFrom(), requestData.getDateTo(), requestData.getIun(),
 				requestData.getRecipientType());
 		long serviceStartTime = System.currentTimeMillis();
