@@ -11,4 +11,5 @@ import lombok.Setter;
 public class NotificationHistoryResponseDto {
 
 	private ArrayList<NotificationDetailsTimelineData> timeline;
+
 }

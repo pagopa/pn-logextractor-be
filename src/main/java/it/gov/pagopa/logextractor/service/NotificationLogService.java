@@ -61,10 +61,13 @@ public class NotificationLogService {
 			String notificationEndDate = notificationStartDate.plusMonths(3).toString();
 			log.info("Service response: notificationDetails={} retrieved in {} ms, getting history data...",
 					mapper.writer().writeValueAsString(notificationDetails), System.currentTimeMillis() - serviceStartTime);
-			NotificationHistoryResponseDto notificationHistory = notificationApiHandler.getNotificationHistory(
+			String notificationHistoryJson = notificationApiHandler.getNotificationHistory(
 					requestData.getIun(), notificationDetails.getRecipients().size(), notificationStartDate.toString());
+			NotificationHistoryResponseDto notificationHistory  = notificationApiHandler.getNotificationHistory(notificationHistoryJson);
 			log.info("Service response: notificationHistory={} retrieved in {} ms, getting legal facts' keys...",
 					mapper.writer().writeValueAsString(notificationHistory), System.currentTimeMillis() - serviceStartTime);
+			zipService.addEntry(zipInfo, GenericConstants.NOTIFICATION_HISTORY, notificationHistoryJson.getBytes());
+			
 			long performanceMillis = System.currentTimeMillis();
 			ArrayList<NotificationDownloadFileData> downloadFileData = new ArrayList<>(
 					notificationApiHandler.getLegalFactFileDownloadData(notificationHistory));
