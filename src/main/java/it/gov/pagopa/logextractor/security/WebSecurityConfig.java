@@ -47,7 +47,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 				.and()
 				.authorizeRequests()
-				.antMatchers("/","/status").permitAll();
+				.antMatchers("/").permitAll();
     }
 
 	@Bean
