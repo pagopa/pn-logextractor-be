@@ -1,38 +1,46 @@
 package it.gov.pagopa.logextractor.filter;
 
+import java.io.IOException;
 import java.util.List;
 
-import org.jetbrains.annotations.NotNull;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.server.WebFilterChain;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-import it.gov.pagopa.logextractor.service.LogServiceImpl;
-import it.pagopa.pn.commons.log.MDCWebFilter;
+import it.gov.pagopa.logextractor.util.RandomUtils;
+import it.gov.pagopa.logextractor.util.constant.LoggingConstants;
 import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Mono;
 
 /**
  * WebFilter that puts in the MDC log map a unique identifier for incoming requests.
  */
 @Component
 @Slf4j
-public class MDCTraceIdWebFilter extends MDCWebFilter {
+public class MDCTraceIdWebFilter  extends OncePerRequestFilter {
+
 	
-	public MDCTraceIdWebFilter() {
-		log.info("MDCTraceIdWebFilter initialized");
-	}
-	
-	@Override
-    public @NotNull Mono<Void> filter(@NotNull ServerWebExchange serverWebExchange, WebFilterChain webFilterChain) {
-		log.info("filtro per intercettare trace_id");
-		HttpHeaders requestHeaders = serverWebExchange.getRequest().getHeaders();
-		List<String> traceIdHeaders = requestHeaders.get("X-Amzn-Trace-Id");
-		for (String t: traceIdHeaders) {
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        try {
+    		String t = request.getHeader("X-Amzn-Trace-Id");
 			log.info("X-Amzn-Trace-Id:{}",t);
-		}
-		return super.filter(serverWebExchange, webFilterChain);
+    		t = t != null ? t : RandomUtils.generateRandomTraceId();
+			MDC.put(LoggingConstants.TRACE_ID_PLACEHOLDER, t);
+            filterChain.doFilter(request, response);
+		} finally {
+			MDC.remove(LoggingConstants.TRACE_ID_PLACEHOLDER);
+        }
+    }
+    
+	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) {
+		return "/status".equals(request.getRequestURI());
 	}
 
 
