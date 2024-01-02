@@ -27,7 +27,7 @@ public class S3ClientBuilder {
 	Integer httpMaxRetry;
 
 	public AmazonS3 amazonS3Client() {
-		log.info("Initializing S3Cient...");
+		log.info("Initializing S3Cient......");
 		ClientConfiguration clientConfiguration = new ClientConfiguration().withMaxErrorRetry(httpMaxRetry).withMaxConnections(httpMaxConnections);
 
 		AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard();
