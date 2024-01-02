@@ -20,6 +20,9 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class MDCTraceIdWebFilter extends MDCWebFilter {
 	
+	public MDCTraceIdWebFilter() {
+		log.info("MDCTraceIdWebFilter initialized");
+	}
 	
 	@Override
     public @NotNull Mono<Void> filter(@NotNull ServerWebExchange serverWebExchange, WebFilterChain webFilterChain) {
