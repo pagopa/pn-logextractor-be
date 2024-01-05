@@ -40,7 +40,7 @@ public class S3ClientService implements IStorageService{
 	
 	public void uploadFile(String keyName, File file) {
 		try {
-			log.info("Starting upload {} to bucket {}.....", keyName, bucketName);
+			log.info("Starting upload {} to bucket {}.............", keyName, bucketName);
 
 			PutObjectRequest por = new PutObjectRequest(bucketName,
 	                keyName,
