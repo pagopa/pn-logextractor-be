@@ -61,6 +61,7 @@ public class NotificationLogService {
 			String notificationEndDate = notificationStartDate.plusMonths(3).toString();
 			log.info("Service response: notificationDetails={} retrieved in {} ms, getting history data...",
 					mapper.writer().writeValueAsString(notificationDetails), System.currentTimeMillis() - serviceStartTime);
+			zipService.addEntry(zipInfo, GenericConstants.NOTIFICATION, mapper.writer().writeValueAsString(notificationDetails).getBytes()); 
 			String notificationHistoryJson = notificationApiHandler.getNotificationHistory(
 					requestData.getIun(), notificationDetails.getRecipients().size(), notificationStartDate.toString());
 			NotificationHistoryResponseDto notificationHistory  = notificationApiHandler.getNotificationHistory(notificationHistoryJson);
