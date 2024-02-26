@@ -55,13 +55,14 @@ public class NotificationLogService {
 			double secondsToWait = 0;
 			ObjectMapper mapper = new ObjectMapper();
 			log.info(LoggingConstants.GET_NOTIFICATION_DETAILS);
+			String notificationJson = notificationApiHandler.getNotificationDetailsJson(requestData.getIun());
 			NotificationDetailsResponseDto notificationDetails = notificationApiHandler
 					.getNotificationDetails(requestData.getIun());
 			OffsetDateTime notificationStartDate = OffsetDateTime.parse(notificationDetails.getSentAt());
 			String notificationEndDate = notificationStartDate.plusMonths(3).toString();
 			log.info("Service response: notificationDetails={} retrieved in {} ms, getting history data...",
-					mapper.writer().writeValueAsString(notificationDetails), System.currentTimeMillis() - serviceStartTime);
-			zipService.addEntry(zipInfo, GenericConstants.NOTIFICATION, mapper.writer().writeValueAsString(notificationDetails).getBytes()); 
+					notificationJson, System.currentTimeMillis() - serviceStartTime);
+			zipService.addEntry(zipInfo, GenericConstants.NOTIFICATION, notificationJson.getBytes()); 
 			String notificationHistoryJson = notificationApiHandler.getNotificationHistory(
 					requestData.getIun(), notificationDetails.getRecipients().size(), notificationStartDate.toString());
 			NotificationHistoryResponseDto notificationHistory  = notificationApiHandler.getNotificationHistory(notificationHistoryJson);

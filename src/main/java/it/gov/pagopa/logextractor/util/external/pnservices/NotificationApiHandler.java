@@ -27,6 +27,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -157,9 +158,24 @@ public class NotificationApiHandler {
 	 */
 	public NotificationDetailsResponseDto getNotificationDetails(String iun) {
 		String url = String.format(notificationDetailsURL, iun);
-		return client.getForEntity(url, NotificationDetailsResponseDto.class).getBody();
+		String notificationDetails = client.getForEntity(url, String.class).getBody();
+		ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		
+		NotificationDetailsResponseDto dto = null;
+		try {
+			dto = mapper.readValue(notificationDetails, NotificationDetailsResponseDto.class);
+		} catch (JsonProcessingException e) {
+			log.error("Error processing notification response", e);
+		}
+		return  dto;
 	}
 
+	public String getNotificationDetailsJson(String iun) {
+		String url = String.format(notificationDetailsURL, iun);
+		
+		return  client.getForEntity(url, String.class).getBody();
+	}
+	
 	/**
 	 * Performs a GET HTTP request to obtain the download metadata associated with the input document key
 	 * @param key The document key
