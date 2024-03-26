@@ -371,18 +371,18 @@ public class NotificationApiHandler {
 				if(null != payment.getF24flatRate()) {
 					currentRecipientPayments.add(new NotificationDownloadFileData(
 									GenericConstants.F24_FLAT_RATE_PAYMENT_FILE_NAME,
-									StringUtils.remove(payment.getF24flatRate().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
+									StringUtils.remove(payment.getF24flatRate().getAttachment().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
 				}
 				if(null != payment.getF24standard()) {
 					currentRecipientPayments.add(new NotificationDownloadFileData(
 							GenericConstants.F24_STANDARD_PAYMENT_FILE_NAME,
-							StringUtils.remove(payment.getF24standard().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
+							StringUtils.remove(payment.getF24standard().getAttachment().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
 	
 				}
-				if(null != payment.getPagoPa()) {
+				if(null != payment.getPagoPa() &&  (null != payment.getPagoPa().getAttachment())) {
 					currentRecipientPayments.add(new NotificationDownloadFileData(
 							GenericConstants.PAGOPA_FORMA_PAYMENT_FILE_NAME,
-							StringUtils.remove(payment.getPagoPa().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
+							StringUtils.remove(payment.getPagoPa().getAttachment().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
 				}
 			}
 		}
