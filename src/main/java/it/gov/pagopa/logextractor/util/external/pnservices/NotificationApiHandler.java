@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsDocumentData;
+import it.gov.pagopa.logextractor.dto.NotificationDetailsPaymentData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsRecipientsData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsTimelineData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsTimelineLegalFactsData;
@@ -365,22 +366,24 @@ public class NotificationApiHandler {
 	 * */
 	private List<NotificationDownloadFileData> getRecipientPayments(NotificationDetailsRecipientsData recipient) {
 		ArrayList<NotificationDownloadFileData> currentRecipientPayments = new ArrayList<>();
-		if(null != recipient.getPayment()) {
-			if(null != recipient.getPayment().getF24flatRate()) {
-				currentRecipientPayments.add(new NotificationDownloadFileData(
-								GenericConstants.F24_FLAT_RATE_PAYMENT_FILE_NAME,
-								StringUtils.remove(recipient.getPayment().getF24flatRate().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
-			}
-			if(null != recipient.getPayment().getF24standard()) {
-				currentRecipientPayments.add(new NotificationDownloadFileData(
-						GenericConstants.F24_STANDARD_PAYMENT_FILE_NAME,
-						StringUtils.remove(recipient.getPayment().getF24standard().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
-
-			}
-			if(null != recipient.getPayment().getPagoPaForm()) {
-				currentRecipientPayments.add(new NotificationDownloadFileData(
-						GenericConstants.PAGOPA_FORMA_PAYMENT_FILE_NAME,
-						StringUtils.remove(recipient.getPayment().getPagoPaForm().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
+		if(null != recipient.getPayments()) {
+			for (NotificationDetailsPaymentData payment: recipient.getPayments()) {
+				if(null != payment.getF24flatRate()) {
+					currentRecipientPayments.add(new NotificationDownloadFileData(
+									GenericConstants.F24_FLAT_RATE_PAYMENT_FILE_NAME,
+									StringUtils.remove(payment.getF24flatRate().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
+				}
+				if(null != payment.getF24standard()) {
+					currentRecipientPayments.add(new NotificationDownloadFileData(
+							GenericConstants.F24_STANDARD_PAYMENT_FILE_NAME,
+							StringUtils.remove(payment.getF24standard().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
+	
+				}
+				if(null != payment.getPagoPa()) {
+					currentRecipientPayments.add(new NotificationDownloadFileData(
+							GenericConstants.PAGOPA_FORMA_PAYMENT_FILE_NAME,
+							StringUtils.remove(payment.getPagoPa().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
+				}
 			}
 		}
 		return currentRecipientPayments;
