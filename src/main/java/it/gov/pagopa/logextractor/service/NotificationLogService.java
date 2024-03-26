@@ -124,7 +124,7 @@ public class NotificationLogService {
 							currentDownloadableFile.getFileCategory() + "-" + currentDownloadableFile.getKey();
 					zipService.addEntry(zipInfo, notifName);
 					if (notificationApiHandler.downloadToStream(currentDownloadableFile.getDownloadUrl(),
-							zipInfo.getZos()) > 0) {
+							zipInfo.getZos()) == 0) {
 						log.error("Cannot download notification {}",notifName);
 					}
 					zipService.closeEntry(zipInfo);

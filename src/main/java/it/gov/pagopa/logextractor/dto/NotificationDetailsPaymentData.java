@@ -6,6 +6,5 @@ import lombok.Getter;
 public class NotificationDetailsPaymentData {
 
 	private NotificationDetailsPaymentTypeData pagoPa;
-	private NotificationDetailsPaymentTypeData f24flatRate;
-	private NotificationDetailsPaymentTypeData f24standard;
+	private F24Payment f24;
 }
