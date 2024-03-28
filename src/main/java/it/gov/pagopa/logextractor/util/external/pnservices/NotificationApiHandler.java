@@ -194,7 +194,7 @@ public class NotificationApiHandler {
 		try {
 			return client.exchange(url, HttpMethod.GET, entity, FileDownloadMetadataResponseDto.class).getBody();
 		}catch(RestClientException rce) {
-			log.error("Error downloading resource {}", url);
+			log.error("Error downloading resource {}", url, rce);
 			throw rce;
 		}
 	}
