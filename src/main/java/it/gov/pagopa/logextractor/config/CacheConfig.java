@@ -35,11 +35,12 @@ public class CacheConfig {
     JedisConnectionFactory jedisConnectionFactory() {
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(redisHostName, redisPort);
         JedisConnectionFactory conf = new JedisConnectionFactory(redisStandaloneConfiguration);
-        GenericObjectPoolConfig<Jedis> poolConfig = conf.getPoolConfig();
+        /*GenericObjectPoolConfig<Jedis> poolConfig = conf.getPoolConfig();
         if(poolConfig != null) {
             poolConfig.setMaxIdle(30);
             poolConfig.setMinIdle(10);
-        }
+        }*/
+        conf.setUsePool(false);
         return conf;
     }
  
