@@ -35,7 +35,9 @@ public class CacheConfig {
     JedisConnectionFactory jedisConnectionFactory() {
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(redisHostName, redisPort);
         JedisConnectionFactory conf = new JedisConnectionFactory(redisStandaloneConfiguration);
-        conf.setUseSsl(true)
+
+        conf.setUseSsl(true);
+        
         /*GenericObjectPoolConfig<Jedis> poolConfig = conf.getPoolConfig();
         if(poolConfig != null) {
             poolConfig.setMaxIdle(30);
