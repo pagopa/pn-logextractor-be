@@ -41,18 +41,17 @@ public class CacheConfig {
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(redisHostName, redisPort);
         JedisConnectionFactory conf = new JedisConnectionFactory(redisStandaloneConfiguration);
 
-        GenericObjectPoolConfig<Jedis> poolConfig = conf.getPoolConfig();
-        if(poolConfig != null) {
-            poolConfig.setMaxIdle(30);
-            poolConfig.setMinIdle(10);
-        }
-
         switch (redisMode) {
             case SERVERLESS:
                 conf.setUseSsl(true);
                 break;  
             case MANAGED:
-                conf.setUseSsl(false);
+                    GenericObjectPoolConfig<Jedis> poolConfig = conf.getPoolConfig();
+                    if(poolConfig != null) {
+                        poolConfig.setMaxIdle(30);
+                        poolConfig.setMinIdle(10);
+                    }
+                    conf.setUseSsl(false);
                 break;      
         }
         
