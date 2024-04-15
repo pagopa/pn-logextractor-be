@@ -190,6 +190,14 @@ Parameters:
     Type: String
     Description: elasticache endpoint
 
+  ElasticacheMode:
+    Type: String
+    Description: elasticache mode
+    Default: serverless
+    AllowedValues:
+      - serverless
+      - managed 
+
   ElasticacheSecurityGroup:
     Type: String
     Description: Elasticache security group
@@ -274,6 +282,7 @@ Resources:
         ContainerEnvEntry20: !Sub 'S3_DOWNLOAD_URL=${SamlAssertionDownloadUrl}'
         ContainerEnvEntry21: !Sub 'S3_BUCKET_NAME=${SamlAssertionBucketName}'
         ContainerEnvEntry22: !Sub 'BUCKET_NAME=${TmpBucketName}' 
+        ContainerEnvEntry23: !Sub 'ELASTICACHE_MODE=${ElasticacheMode}'
         ContainerSecret1: !Sub 'BASIC_AUTH_USERNAME=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-opensearch-logextractor:username:AWSCURRENT:'
         ContainerSecret2: !Sub 'BASIC_AUTH_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-opensearch-logextractor:password:AWSCURRENT:'
         MappedPaths: '/log-extractor/*'

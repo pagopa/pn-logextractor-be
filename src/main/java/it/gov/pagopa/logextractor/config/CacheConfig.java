@@ -18,6 +18,8 @@ import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import redis.clients.jedis.Jedis;
 
+import it.gov.pagopa.logextractor.enums.RedisMode;
+
 /**
  * Configuration class to manage the cache logics*/
 @Configuration
@@ -31,15 +33,28 @@ public class CacheConfig {
     @Value("${redis.port}")
     private int redisPort;
  
+    @Value("${redis.mode}")
+    private RedisMode redisMode;
+
     @Bean
     JedisConnectionFactory jedisConnectionFactory() {
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(redisHostName, redisPort);
         JedisConnectionFactory conf = new JedisConnectionFactory(redisStandaloneConfiguration);
-        GenericObjectPoolConfig<Jedis> poolConfig = conf.getPoolConfig();
-        if(poolConfig != null) {
-            poolConfig.setMaxIdle(30);
-            poolConfig.setMinIdle(10);
+
+        switch (redisMode) {
+            case SERVERLESS:
+                conf.setUseSsl(true);
+                break;  
+            case MANAGED:
+                    GenericObjectPoolConfig<Jedis> poolConfig = conf.getPoolConfig();
+                    if(poolConfig != null) {
+                        poolConfig.setMaxIdle(30);
+                        poolConfig.setMinIdle(10);
+                    }
+                    conf.setUseSsl(false);
+                break;      
         }
+        
         return conf;
     }
  
