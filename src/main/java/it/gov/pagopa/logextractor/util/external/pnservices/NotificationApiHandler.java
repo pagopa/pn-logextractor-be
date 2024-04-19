@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import it.gov.pagopa.logextractor.dto.NotificationData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsDocumentData;
+import it.gov.pagopa.logextractor.dto.NotificationDetailsPaymentData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsRecipientsData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsTimelineData;
 import it.gov.pagopa.logextractor.dto.NotificationDetailsTimelineLegalFactsData;
@@ -193,7 +194,7 @@ public class NotificationApiHandler {
 		try {
 			return client.exchange(url, HttpMethod.GET, entity, FileDownloadMetadataResponseDto.class).getBody();
 		}catch(RestClientException rce) {
-			log.error("Error downloading resource {}", url);
+			log.error("Error downloading resource {}", url, rce);
 			throw rce;
 		}
 	}
@@ -229,7 +230,7 @@ public class NotificationApiHandler {
 		try (
 				BufferedInputStream in = new BufferedInputStream(new URL(uri).openStream());
 			) {
-		    byte dataBuffer[] = new byte[1024];
+		    byte[] dataBuffer = new byte[1024];
 			int bytesRead;
 			while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
 				total += bytesRead;
@@ -365,22 +366,32 @@ public class NotificationApiHandler {
 	 * */
 	private List<NotificationDownloadFileData> getRecipientPayments(NotificationDetailsRecipientsData recipient) {
 		ArrayList<NotificationDownloadFileData> currentRecipientPayments = new ArrayList<>();
-		if(null != recipient.getPayment()) {
-			if(null != recipient.getPayment().getF24flatRate()) {
-				currentRecipientPayments.add(new NotificationDownloadFileData(
-								GenericConstants.F24_FLAT_RATE_PAYMENT_FILE_NAME,
-								StringUtils.remove(recipient.getPayment().getF24flatRate().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
-			}
-			if(null != recipient.getPayment().getF24standard()) {
-				currentRecipientPayments.add(new NotificationDownloadFileData(
-						GenericConstants.F24_STANDARD_PAYMENT_FILE_NAME,
-						StringUtils.remove(recipient.getPayment().getF24standard().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
+		if(null != recipient.getPayments()) {
+			for (NotificationDetailsPaymentData payment: recipient.getPayments()) {
+				//TODO:Sentire Turra o altri per capire questi filename se ha senso distinguerli
 
-			}
-			if(null != recipient.getPayment().getPagoPaForm()) {
-				currentRecipientPayments.add(new NotificationDownloadFileData(
+				/*if(null != payment.getF24flatRate()) {
+					currentRecipientPayments.add(new NotificationDownloadFileData(
+						GenericConstants.F24_FLAT_RATE_PAYMENT_FILE_NAME,
+						StringUtils.remove(payment.getF24flatRate().getAttachment().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
+				}
+				if(null != payment.getF24standard()) {
+					currentRecipientPayments.add(new NotificationDownloadFileData(
+						GenericConstants.F24_STANDARD_PAYMENT_FILE_NAME,
+						StringUtils.remove(payment.getF24standard().getAttachment().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
+	
+				}*/
+				if(null != payment.getPagoPa() &&  (null != payment.getPagoPa().getAttachment())) {
+					currentRecipientPayments.add(new NotificationDownloadFileData(
 						GenericConstants.PAGOPA_FORMA_PAYMENT_FILE_NAME,
-						StringUtils.remove(recipient.getPayment().getPagoPaForm().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
+						StringUtils.remove(payment.getPagoPa().getAttachment().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
+				}
+				if(null != payment.getF24() && payment.getF24().getMetadataAttachment() != null) {
+					currentRecipientPayments.add(new NotificationDownloadFileData(
+						GenericConstants.F24_STANDARD_PAYMENT_FILE_NAME,
+						StringUtils.remove(payment.getF24().getMetadataAttachment().getRef().getKey(), GenericConstants.SAFESTORAGE_PREFIX)));
+	
+				}
 			}
 		}
 		return currentRecipientPayments;

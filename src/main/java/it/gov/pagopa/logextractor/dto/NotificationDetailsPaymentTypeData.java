@@ -4,5 +4,6 @@ import lombok.Getter;
 
 @Getter
 public class NotificationDetailsPaymentTypeData {
-	private NotificationDetailsRefData ref;
+	
+	private NotificationDetailsPaymentAttachment attachment;
 }
