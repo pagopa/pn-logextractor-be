@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
+import it.gov.pagopa.logextractor.util.external.pnservices.NotificationNotDownloadedFileData;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -105,6 +107,9 @@ public class JsonUtilities {
 	public JSONObject toJson(NotificationDownloadFileData objectToConvert) {
 		JSONObject convertedJson = new JSONObject();
 		convertedJson.put(objectToConvert.getFileCategory(), objectToConvert.getKey());
+		if (objectToConvert instanceof NotificationNotDownloadedFileData) {
+			convertedJson.put("reason", ((NotificationNotDownloadedFileData)objectToConvert).getReason());
+		}
 		return convertedJson;
 	}
 }
