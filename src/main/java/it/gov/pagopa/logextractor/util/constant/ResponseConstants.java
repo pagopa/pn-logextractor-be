@@ -15,7 +15,7 @@ public class ResponseConstants {
 
   public static final String GENERIC_BAD_REQUEST_ERROR_ENGLISH_MESSAGE = "Informations not valid";
   public static final String OPERATION_CANNOT_BE_COMPLETED_MESSAGE =
-      "L'operazione non può essere ancora completata, ritentare tra ";
+      "L'operazione non puo' essere ancora completata, ritentare tra ";
   public static final String SUCCESS_RESPONSE_MESSAGE = "Operazione completata con successo";
   public static final String NO_NOTIFICATION_FOUND_MESSAGE =
       "Nessuna notifica trovata per i dati inseriti";

@@ -17,7 +17,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.logextractor.dto.response.FileDownloadMetadataResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationDetailsResponseDto;
 import it.gov.pagopa.logextractor.dto.response.NotificationHistoryResponseDto;
-import it.gov.pagopa.logextractor.exception.CustomException;
 import it.gov.pagopa.logextractor.pn_logextractor_be.model.NotificationInfoRequestDto;
 import it.gov.pagopa.logextractor.util.JsonUtilities;
 import it.gov.pagopa.logextractor.util.constant.GenericConstants;
@@ -27,6 +26,7 @@ import it.gov.pagopa.logextractor.util.external.IStorageService;
 import it.gov.pagopa.logextractor.util.external.opensearch.OpenSearchApiHandlerFactory;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationApiHandler;
 import it.gov.pagopa.logextractor.util.external.pnservices.NotificationDownloadFileData;
+import it.gov.pagopa.logextractor.util.external.pnservices.NotificationNotDownloadedFileData;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -99,52 +99,51 @@ public class NotificationLogService {
 					FileDownloadMetadataResponseDto downloadMetaData = notificationApiHandler
 							.getDownloadMetadata(currentDownloadData.getKey());
 					currentDownloadData.setDownloadUrl(downloadMetaData.getDownload().getUrl());
-					downloadableFiles.add(currentDownloadData);
-					if ( secondsToWait < getRetryAfter(downloadMetaData)) {
+					if (getRetryAfter(downloadMetaData) > 0) {
 						secondsToWait = downloadMetaData.getDownload().getRetryAfter();
+						log.warn("Download file not available {}, please retry after {}", currentDownloadData,
+								secondsToWait);
+						NotificationNotDownloadedFileData notDownloadedFileData = new NotificationNotDownloadedFileData(
+								currentDownloadData);
+						int timeToWaitInMinutes = (int) Math.ceil(secondsToWait / 60);
+						String reason = ResponseConstants.OPERATION_CANNOT_BE_COMPLETED_MESSAGE + timeToWaitInMinutes
+								+ (timeToWaitInMinutes > 1 ? GenericConstants.MINUTES_LABEL : GenericConstants.MINUTE_LABEL);
+						notDownloadedFileData.setReason(reason);
+						filesNotDownloadable.add(notDownloadedFileData);
+					} else {
+						downloadableFiles.add(currentDownloadData);
 					}
 				} catch (HttpServerErrorException | HttpClientErrorException ex) {
 					log.warn("Cannot download notification {} for error: {}", currentDownloadData,ex.getMessage());
 					filesNotDownloadable.add(currentDownloadData);
 				}
 			}
-			if (secondsToWait > 0) {
-				log.info(
-						"Notification downloads' metadata retrieved in {} ms, physical files aren't ready yet. Constructing service response...",
-						System.currentTimeMillis() - performanceMillis);
-				int timeToWaitInMinutes = (int) Math.ceil(secondsToWait / 60);
-				throw new CustomException(ResponseConstants.OPERATION_CANNOT_BE_COMPLETED_MESSAGE + timeToWaitInMinutes
-						+ (timeToWaitInMinutes > 1 ? GenericConstants.MINUTES_LABEL : GenericConstants.MINUTE_LABEL), 503);
-			} else {
-				log.info("Notification downloads' metadata retrieved in {} ms, getting physical files... ",
-						System.currentTimeMillis() - performanceMillis);
-				performanceMillis = System.currentTimeMillis();
-				for (NotificationDownloadFileData currentDownloadableFile : downloadableFiles) {
-					String notifName = 
-							currentDownloadableFile.getFileCategory() + "-" + currentDownloadableFile.getKey();
-					zipService.addEntry(zipInfo, notifName);
-					if (notificationApiHandler.downloadToStream(currentDownloadableFile.getDownloadUrl(),
-							zipInfo.getZos()) == 0) {
-						log.error("Cannot download notification {}",notifName);
-					}
-					zipService.closeEntry(zipInfo);
+
+			log.info("Notification downloads' metadata retrieved in {} ms, getting physical files... ",
+					System.currentTimeMillis() - performanceMillis);
+			performanceMillis = System.currentTimeMillis();
+			for (NotificationDownloadFileData currentDownloadableFile : downloadableFiles) {
+				String notifName = 
+						currentDownloadableFile.getFileCategory() + "-" + currentDownloadableFile.getKey();
+				zipService.addEntry(zipInfo, notifName);
+				if (notificationApiHandler.downloadToStream(currentDownloadableFile.getDownloadUrl(),
+						zipInfo.getZos()) == 0) {
+					log.error("Cannot download notification {}",notifName);
 				}
-				log.info("Physical files retrieved in {} ms", System.currentTimeMillis() - performanceMillis);
-	
-				
-				OutputStream out = zipInfo.getZos();
-				zipService.addEntry(zipInfo, "dati.txt");
-				int docsNumber = openSearchApiHandlerFactory.getOpenSearchApiHanlder().getAnonymizedLogsByIun(requestData.getIun(),
-						notificationStartDate.toString(), notificationEndDate, out);
 				zipService.closeEntry(zipInfo);
-				log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis,
-						docsNumber);
-				performanceMillis = System.currentTimeMillis();
-				log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME,
-						System.currentTimeMillis() - performanceMillis);
-				log.info("Notification data retrieve process - END in {} ms",
-						(System.currentTimeMillis() - serviceStartTime));
 			}
+			log.info("Physical files retrieved in {} ms", System.currentTimeMillis() - performanceMillis);
+
+			OutputStream out = zipInfo.getZos();
+			zipService.addEntry(zipInfo, "dati.txt");
+			int docsNumber = openSearchApiHandlerFactory.getOpenSearchApiHanlder().getAnonymizedLogsByIun(requestData.getIun(),
+					notificationStartDate.toString(), notificationEndDate, out);
+			zipService.closeEntry(zipInfo);
+			log.info(LoggingConstants.QUERY_EXECUTION_COMPLETED_TIME, System.currentTimeMillis() - performanceMillis,
+					docsNumber);
+			performanceMillis = System.currentTimeMillis();
+			log.info(LoggingConstants.SERVICE_RESPONSE_CONSTRUCTION_TIME, System.currentTimeMillis() - performanceMillis);
+			log.info("Notification data retrieve process - END in {} ms", (System.currentTimeMillis() - serviceStartTime));
 			if (!filesNotDownloadable.isEmpty()) {
 				zipService.addEntry(zipInfo, GenericConstants.ERROR_SUMMARY_FILE_NAME + ".txt");
 				JsonUtilities jsonUtilities = new JsonUtilities();
