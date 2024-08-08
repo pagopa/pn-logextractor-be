@@ -196,7 +196,19 @@ Parameters:
     Default: serverless
     AllowedValues:
       - serverless
-      - managed 
+      - managed
+
+  ElasticacheUserId:
+    Type: String
+    Description: the username to connect to elasticache
+
+  ElasticacheCacheName:
+    Type: String
+    Description: the name of the cache
+
+  ElasticacheCacheRegion:
+    Type: String
+    Description: the region of the cache
 
   ElasticacheSecurityGroup:
     Type: String
@@ -283,6 +295,9 @@ Resources:
         ContainerEnvEntry21: !Sub 'S3_BUCKET_NAME=${SamlAssertionBucketName}'
         ContainerEnvEntry22: !Sub 'BUCKET_NAME=${TmpBucketName}' 
         ContainerEnvEntry23: !Sub 'ELASTICACHE_MODE=${ElasticacheMode}'
+        ContainerEnvEntry24: !Sub 'ELASTICACHE_USER_ID=${ElasticacheUserId}'
+        ContainerEnvEntry25: !Sub 'ELASTICACHE_CACHE_NAME=${ElasticacheCacheName}'
+        ContainerEnvEntry26: !Sub 'ELASTICACHE_CACHE_REGION=${ElasticacheCacheRegion}'
         ContainerSecret1: !Sub 'BASIC_AUTH_USERNAME=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-opensearch-logextractor:username:AWSCURRENT:'
         ContainerSecret2: !Sub 'BASIC_AUTH_PASSWORD=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-opensearch-logextractor:password:AWSCURRENT:'
         MappedPaths: '/log-extractor/*'
