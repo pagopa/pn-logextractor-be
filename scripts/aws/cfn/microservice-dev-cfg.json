@@ -10,6 +10,9 @@
     "SamlAssertionDownloadUrl": "s3://spidhub-dev-hublogin-1toyy-samlassertionlogbucket-rbdwuvk3lc6p/%s",
     "DownloadFileUrl": "http://%s:8080/%ssafe-storage/v1/files/%s",
     "CorsAllowedDomain": "https://helpdesk.dev.notifichedigitali.it",
-    "ElasticacheMode": "serverless"
+    "ElasticacheMode": "serverless",
+    "ElasticacheUserId": "iam-user-logextractor",
+    "ElasticacheCacheName": "pn-redis-serverless",
+    "ElasticacheCacheRegion": "eu-south-1"
   }
 }
