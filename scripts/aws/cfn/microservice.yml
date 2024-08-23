@@ -347,7 +347,13 @@ Resources:
             Resource:
               - !Sub "${TmpBucketArn}/*"
               - !Sub "${TmpBucketArn}"
-
+          - Sid: RedisAuth
+            Action:
+              - elasticache:Connect
+            Effect: Allow
+            Resource:
+              - !Ref RedisServerlessArn
+              - !Ref ElasticCacheLogExtractorUserArn
 
   LogextractorBeApiGatewayBo:
     Type: AWS::CloudFormation::Stack
