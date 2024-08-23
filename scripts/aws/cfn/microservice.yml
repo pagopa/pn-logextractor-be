@@ -245,7 +245,15 @@ Parameters:
   LogAlarmStrategy:
     Type: String
     Default: 'FATAL'
-  
+
+  RedisServerlessArn:
+    Type: String
+    Description: 'RedisServerless ARN'
+
+  ElasticCacheLogExtractorUserArn:
+    Type: String
+    Description: 'ElastiCacheUser for log-extractor'
+    
 Conditions:
   HasSamlAssertionKmsKeyArn: !Not [ !Equals [ !Ref SamlAssertionBucketKeyArn, '' ] ]
   HasSamlAssertionBucketArn: !Not [ !Equals [ !Ref SamlAssertionBucketArn, '' ] ]
