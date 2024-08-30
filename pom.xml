@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>it.gov.pagopa.logextractor</groupId>
 	<artifactId>pn-logextractor-be</artifactId>
-	<version>2.4.0</version>
+	<version>2.4.1-SNAPSHOT</version>
 	<name>pn-logextractor-be</name>
 	<description>Microservice for log extraction</description>
 	<scm>
@@ -21,9 +21,7 @@
 	</scm>
 	<properties>
 		<jacoco.min.line.cover.ratio>0.10</jacoco.min.line.cover.ratio>
-		<openapi-generator-maven-plugin-version>5.1.0</openapi-generator-maven-plugin-version>
 		<jacoco.min.line.cover.ratio>0.10</jacoco.min.line.cover.ratio>
-		<openapi-generator-maven-plugin-version>5.1.0</openapi-generator-maven-plugin-version>
 		<sonar.coverage.jacoco.xmlReportPaths>${project.reporting.outputDirectory}/jacoco-unit-test-coverage-report/jacoco.xml,${project.reporting.outputDirectory}/jacoco-integration-test-coverage-report/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 	</properties>
 	 <dependencyManagement>
@@ -114,19 +112,9 @@
 			<artifactId>jedis</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.openapitools</groupId>
-			<artifactId>jackson-databind-nullable</artifactId>
-			<version>0.2.1</version>
-		</dependency>
-		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger2</artifactId>
-			<version>3.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger-ui</artifactId>
-			<version>3.0.0</version>
+			<groupId>io.swagger</groupId>
+			<artifactId>swagger-annotations</artifactId>
+			<version>1.6.5</version>
 		</dependency>
 		<dependency>
 			<groupId>com.amazonaws</groupId>
@@ -165,7 +153,30 @@
 		<dependency>
 			<groupId>it.pagopa.pn</groupId>
 			<artifactId>pn-commons</artifactId>
-			<version>2.1.11</version>
+			<version>2.3.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>it.pagopa.tech.lollipop-consumer-java-sdk</groupId>
+					<artifactId>core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>it.pagopa.tech.lollipop-consumer-java-sdk</groupId>
+					<artifactId>http-verifier</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>it.pagopa.tech.lollipop-consumer-java-sdk</groupId>
+					<artifactId>assertion-rest-client-native</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>it.pagopa.tech.lollipop-consumer-java-sdk</groupId>
+					<artifactId>identity-service-rest-client-native</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.codehaus.janino/janino -->
+		<dependency>
+			<groupId>org.codehaus.janino</groupId>
+			<artifactId>janino</artifactId>
 		</dependency>
 	</dependencies>
 	<build>
@@ -173,24 +184,28 @@
 			<plugin>
 				<groupId>org.openapitools</groupId>
 				<artifactId>openapi-generator-maven-plugin</artifactId>
-				<version>${openapi-generator-maven-plugin-version}</version>
+				<version>5.4.0</version>
 				<executions>
 					<execution>
 						<id>spring-server</id>
 						<goals>
 							<goal>generate</goal>
 						</goals>
+						<phase>generate-resources</phase>
 						<configuration>
 							<inputSpec>${project.basedir}/docs/openapi/api-internal-v1.yaml</inputSpec>
 							<generatorName>spring</generatorName>
 							<apiPackage>${project.groupId}.${project.artifactId}.api</apiPackage>
 							<modelPackage>${project.groupId}.${project.artifactId}.model</modelPackage>
-							<enablePostProcessFile>true</enablePostProcessFile>
 							<configOptions>
 								<useTags>true</useTags>
 								<serializableModel>true</serializableModel>
 								<interfaceOnly>true</interfaceOnly>
 								<unhandledException>true</unhandledException>
+								<openApiNullable>false</openApiNullable>
+								<annotationLibrary>none</annotationLibrary>
+								<documentationProvider>source</documentationProvider>
+								<skipDefaultInterface>false</skipDefaultInterface>
 							</configOptions>
 						</configuration>
 					</execution>
