@@ -1,5 +1,6 @@
 package it.gov.pagopa.logextractor.service;
 
+import it.pagopa.pn.commons.log.PnAuditLogEventType;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,9 @@ public class PersonServiceImpl implements PersonService {
 	@Autowired
 	DeanonimizationApiHandler handler;
 
+	@Autowired
+	AuditLogService auditLogService;
+
 	@Override
 	public GetBasicDataResponseDto getTaxId(PersonTaxIdRequestDto requestData,
 											String xPagopaHelpdUid,
@@ -32,6 +36,7 @@ public class PersonServiceImpl implements PersonService {
 				xPagopaHelpdUid, xPagopaCxType, requestData.getPersonId());
 		long serviceStartTime = System.currentTimeMillis();
 		log.info("Getting tax id...");
+		auditLogService.buildAuditLogEvent(xPagopaHelpdUid, PnAuditLogEventType.AUD_DV_DEC, "Deanonimized tax ID: ", requestData.getPersonId());
 		GetBasicDataResponseDto response = handler.getTaxCodeForPerson(requestData.getPersonId());
 		long performanceMillis = System.currentTimeMillis() - serviceStartTime;
 		log.info("Tax id retrieved in {} ms", performanceMillis);

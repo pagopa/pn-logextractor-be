@@ -61,7 +61,7 @@ public class DeanonimizationService {
 	
 					String cxType = cxTypeNode==null ? "" : cxTypeNode.asText();
 //					log.info("deanonimize doc with uid: {} and cxId: {}", uid, cxId);
-					
+
 					/**
 					 * Sunto riunione del 7/6
 					  	se cx_type è PF cx_id e uid sono praticamente la stessa cosa (deanonimizzi uno e usi il valore in due punti)
