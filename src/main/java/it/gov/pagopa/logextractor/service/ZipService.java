@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ import net.lingala.zip4j.model.enums.CompressionLevel;
 import net.lingala.zip4j.model.enums.EncryptionMethod;
 
 @Service
+@Slf4j
 public class ZipService {
 
 	@Autowired
@@ -42,7 +44,7 @@ public class ZipService {
 				zos = zip.createArchiveStream(new FileOutputStream(tmpFile));
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Error creating zip", e);
 		}
 
 		return new ZipInfo(password, zos, zip, tmpFile, key);
