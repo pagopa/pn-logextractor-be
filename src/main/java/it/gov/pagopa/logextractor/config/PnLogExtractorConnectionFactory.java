@@ -77,7 +77,7 @@ public class PnLogExtractorConnectionFactory extends JedisConnectionFactory {
             try {
                 refreshAuthToken();
             } catch (URISyntaxException e) {
-                e.printStackTrace();
+                log.error("Error while refreshing IAM token.", e);
             }
         }, TOKEN_REFRESH_MINUTES, TOKEN_REFRESH_MINUTES, TimeUnit.MINUTES);
     }
