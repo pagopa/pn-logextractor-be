@@ -16,6 +16,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static it.gov.pagopa.logextractor.enums.RedisMode.SERVERLESS;
+import static it.pagopa.pn.commons.log.PnLogger.ALARM_LOG;
 
 /**
  * A custom connection factory extending the JedisConnectionFactory. This connection factory implements an IAM based authentication for Redis and a scheduled IAM token refresh.
@@ -77,7 +78,7 @@ public class PnLogExtractorConnectionFactory extends JedisConnectionFactory {
             try {
                 refreshAuthToken();
             } catch (URISyntaxException e) {
-                log.error("Error while refreshing IAM token.", e);
+                log.error("{} : Error while refreshing IAM token.", ALARM_LOG, e);
             }
         }, TOKEN_REFRESH_MINUTES, TOKEN_REFRESH_MINUTES, TimeUnit.MINUTES);
     }
