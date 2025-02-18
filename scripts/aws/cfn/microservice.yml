@@ -83,6 +83,11 @@ Parameters:
     Default: ''
     Description: 'Base key of the microservice in the s3 bucket'
 
+  ApplicativeEnvFileChecksum:
+    Type: String
+    Default: ''
+    Description: 'Applicative environment variable file checksum'
+
   # Log group parameters
   EcsLogGroup:
     Type: String
@@ -280,6 +285,7 @@ Resources:
         AutoscalingDataPointN: !Ref AutoscalingDataPointN
         AutoscalingDataPointM: !Ref AutoscalingDataPointM
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+        ApplicativeEnvFileChecksum: !Ref ApplicativeEnvFileChecksum
         ContainerImageURI: !Sub '${ContainerImageUri}'
         ContainerEnvEntry1: !Sub 'ENSURE_RECIPIENT_BY_EXTERNAL_ID_URL=${PnDataVaultRootPath}/datavault-private/v1/recipients/external/%s'
         ContainerEnvEntry2: !Sub 'GET_RECIPIENT_DENOMINATION_BY_INTERNAL_ID_URL=${PnDataVaultRootPath}/datavault-private/v1/recipients/internal'
