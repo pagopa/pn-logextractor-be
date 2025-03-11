@@ -3,6 +3,7 @@ package it.gov.pagopa.logextractor.service;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,13 +63,13 @@ public class NotificationLogService {
 			String notificationEndDate = notificationStartDate.plusMonths(3).toString();
 			log.info("Service response: notificationDetails={} retrieved in {} ms, getting history data...",
 					notificationJson, System.currentTimeMillis() - serviceStartTime);
-			zipService.addEntry(zipInfo, GenericConstants.NOTIFICATION, notificationJson.getBytes()); 
+			zipService.addEntry(zipInfo, GenericConstants.NOTIFICATION, notificationJson.getBytes(StandardCharsets.UTF_8));
 			String notificationHistoryJson = notificationApiHandler.getNotificationHistory(
 					requestData.getIun(), notificationDetails.getRecipients().size(), notificationStartDate.toString());
 			NotificationHistoryResponseDto notificationHistory  = notificationApiHandler.getNotificationHistory(notificationHistoryJson);
 			log.info("Service response: notificationHistory={} retrieved in {} ms, getting legal facts' keys...",
 					mapper.writer().writeValueAsString(notificationHistory), System.currentTimeMillis() - serviceStartTime);
-			zipService.addEntry(zipInfo, GenericConstants.NOTIFICATION_HISTORY, notificationHistoryJson.getBytes());
+			zipService.addEntry(zipInfo, GenericConstants.NOTIFICATION_HISTORY, notificationHistoryJson.getBytes(StandardCharsets.UTF_8));
 			
 			long performanceMillis = System.currentTimeMillis();
 			ArrayList<NotificationDownloadFileData> downloadFileData = new ArrayList<>(
