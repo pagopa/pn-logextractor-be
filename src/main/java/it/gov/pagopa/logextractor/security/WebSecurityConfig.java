@@ -33,8 +33,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		            .contentSecurityPolicy("default-src 'none'; script-src 'self'; connect-src 'self'; img-src 'self'; style-src 'self'; frame-ancestors 'none'; form-action 'self'")
 		            .and()
 		            .httpStrictTransportSecurity()
+				    //.preload(true)  // Attivare in caso di richiesta esplicita di inclusione su https://hstspreload.org
+					.maxAgeInSeconds(31536000)
 		            .includeSubDomains(true)
-		            .maxAgeInSeconds(10886400)
+					.maxAgeInSeconds(31536000)
 		            .and()
 		            .contentTypeOptions()
 		            .and()
