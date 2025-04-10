@@ -36,7 +36,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				    //.preload(true)  // Attivare in caso di richiesta esplicita di inclusione su https://hstspreload.org
 					.maxAgeInSeconds(31536000)
 		            .includeSubDomains(true)
-					.maxAgeInSeconds(31536000)
 		            .and()
 		            .contentTypeOptions()
 		            .and()
