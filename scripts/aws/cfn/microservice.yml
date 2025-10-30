@@ -32,6 +32,10 @@ Parameters:
     Type: String
     Description: 'The name of the ECS cluster where the microservice is going to be deployed'
 
+  VpcCidr:
+    Type: String
+    Description: 'CIDR of the VPC where the microservice is deployed'
+
   SubnetsIds:
     Type: String
     Description: 'subnets ids comma separated list. Where to deploy the microservice'
@@ -313,6 +317,7 @@ Resources:
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
         VpcId: !Ref VpcId
+        MicroserviceVpcCidr: !Ref VpcCidr
         HealthCheckPath: /status
         EcsDefaultSecurityGroup: !Ref ElasticacheSecurityGroup
         LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
