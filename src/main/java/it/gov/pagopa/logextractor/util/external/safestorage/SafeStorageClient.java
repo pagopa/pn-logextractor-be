@@ -1,10 +1,6 @@
 package it.gov.pagopa.logextractor.util.external.safestorage;
 
-import java.net.URI;
-import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.List;
-
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,13 +11,15 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Base64Utils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import lombok.extern.slf4j.Slf4j;
+import java.net.URI;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
 
 //@Component
 @Slf4j
@@ -198,7 +196,7 @@ public class SafeStorageClient {
 	        try{
 	            MessageDigest digest = MessageDigest.getInstance("SHA-256");
 	            byte[] encodedHash = digest.digest( content );
-	            return Base64Utils.encodeToString( encodedHash );
+	            return Base64.getEncoder().encodeToString(encodedHash);
 	        } catch (Exception e) {
 	            log.error("Cannot compute sha256", e);
 	            return null;
