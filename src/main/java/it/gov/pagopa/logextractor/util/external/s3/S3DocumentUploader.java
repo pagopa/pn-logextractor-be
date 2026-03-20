@@ -1,126 +1,96 @@
 package it.gov.pagopa.logextractor.util.external.s3;
 
 import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
-import com.amazonaws.services.s3.model.CompleteMultipartUploadResult;
-import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
-import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
-import com.amazonaws.services.s3.model.PartETag;
-import com.amazonaws.services.s3.model.UploadPartRequest;
-import com.amazonaws.services.s3.model.UploadPartResult;
-import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
-
-import it.gov.pagopa.logextractor.config.S3ClientBuilder;
 import it.gov.pagopa.logextractor.exception.CustomException;
 import it.gov.pagopa.logextractor.util.FileUtilities;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.CompletedMultipartUpload;
+import software.amazon.awssdk.services.s3.model.CompletedPart;
+import software.amazon.awssdk.services.s3.model.CreateMultipartUploadRequest;
+import software.amazon.awssdk.services.s3.model.CreateMultipartUploadResponse;
 
 @Slf4j
-@AllArgsConstructor
 @Service
 public class S3DocumentUploader {
-	
-	private final S3ClientBuilder s3ClientBuilder;
-	
+
 	private final FileUtilities fileutils;
-	
-//	@Async
-//	public void upload(PutObjectRequest por) {
-//		try {
-//			TransferManager tm = TransferManagerBuilder.standard()
-//                    .withS3Client(s3ClientBuilder.amazonS3Client())
-//                    .build();
-//        	Upload upload = tm.upload(por);
-//        	UploadResult result = upload.waitForUploadResult();
-//        	log.info("Upload to bucket completed! Version: {}", result.getVersionId());
-//        } catch(Exception err) {
-//            log.error("Error in thread upload to bucket", err);
-//        }
-//	}
-	
+	private final S3Client s3ClientV2;
+
+	public S3DocumentUploader(FileUtilities fileutils,
+							  S3Client s3ClientV2) {
+		this.fileutils = fileutils;
+		this.s3ClientV2 = s3ClientV2;
+	}
+
 	@Async
-	public void uploadV2(InputStream is, String bucketName, String key) {
-		final AmazonS3 s3Client = s3ClientBuilder.amazonS3Client();
-		final int BUFFER_SIZE = 1024*1024*5;//5MB size minima (https://docs.aws.amazon.com/AmazonS3/latest/userguide/qfacts.html)
+	public void uploadV3(InputStream is, String bucketName, String key) {
+		final int BUFFER_SIZE = 1024 * 1024 * 5;
 		try {
-			List<PartETag> partETags = new ArrayList<PartETag>();
-			InitiateMultipartUploadRequest initRequest = new InitiateMultipartUploadRequest(bucketName, key);
-			InitiateMultipartUploadResult initResponse = s3Client.initiateMultipartUpload(initRequest);
-			
-			TransferManager tm = TransferManagerBuilder.standard()
-					.withS3Client(s3Client)
+			CreateMultipartUploadRequest createRequest = CreateMultipartUploadRequest.builder()
+					.bucket(bucketName)
+					.key(key)
 					.build();
-			boolean chunkFilled=false;
-			boolean finished=false;
-			tm.getConfiguration().setMultipartCopyPartSize(BUFFER_SIZE);
+			CreateMultipartUploadResponse createResponse = s3ClientV2.createMultipartUpload(createRequest);
+			String uploadId = createResponse.uploadId();
+
+			List<CompletedPart> completedParts = new ArrayList<>();
 			BufferedInputStream bis = new BufferedInputStream(is, BUFFER_SIZE);
-			
-			long totalSize=0;
+			byte[] buffer = new byte[BUFFER_SIZE];
 			int partNumber = 1;
-			int partSize = 0;
-			
-			while(!finished) {
-				partSize = 0;
-				chunkFilled = false;
-				File tmpFilename = fileutils.getFileWithRandomName("tmp", ".bin");
-				log.info("Created file tmp {}",tmpFilename.getPath());
-				FileOutputStream fos = new FileOutputStream(tmpFilename);
-				//Riempiamo il chunk con i 5MB
-				while (!chunkFilled) {
-					byte[] buffer = new byte[BUFFER_SIZE];
-					int readSize = bis.read(buffer);
-					if (readSize < 0) {
-						finished = true;
-					}else {
-						fos.write(buffer,0, readSize);
-						partSize += readSize;
-					}
-					log.trace("read {} bytes to tmp file; total fileSize is now {}",readSize,partSize);
-					chunkFilled = (finished || partSize >= BUFFER_SIZE);
+			boolean finished = false;
+
+			while (!finished) {
+				int totalRead = 0;
+				int readSize;
+				while (totalRead < BUFFER_SIZE && (readSize = bis.read(buffer, totalRead, BUFFER_SIZE - totalRead)) != -1) {
+					totalRead += readSize;
 				}
-				fos.flush();
-				fos.close();
-				if (partSize>0) {
-					FileInputStream bais = new FileInputStream(tmpFilename);
-	
-					UploadPartRequest uploadRequest = new UploadPartRequest()
-							.withBucketName(bucketName).withKey(key)
-							.withUploadId(initResponse.getUploadId())
-							.withPartNumber(partNumber)
-							.withInputStream(bais)
-							.withPartSize(partSize);
-					UploadPartResult uploadResult = s3Client.uploadPart(uploadRequest);
-					partETags.add(uploadResult.getPartETag());
-	
-					bais.close();
-					Files.delete(tmpFilename.toPath());
-					log.info("Uploaded part {}, size {} to bucket {} for key {}",partNumber,partSize,bucketName,key);
-					partNumber++;
-					totalSize += partSize;
+				if (totalRead == 0) {
+					break;
 				}
+				finished = (bis.available() == 0);
+
+				software.amazon.awssdk.services.s3.model.UploadPartRequest uploadPartRequest =
+						software.amazon.awssdk.services.s3.model.UploadPartRequest.builder()
+								.bucket(bucketName)
+								.key(key)
+								.uploadId(uploadId)
+								.partNumber(partNumber)
+								.contentLength((long) totalRead)
+								.build();
+				software.amazon.awssdk.services.s3.model.UploadPartResponse uploadPartResponse = s3ClientV2.uploadPart(
+						uploadPartRequest, RequestBody.fromBytes(Arrays.copyOf(buffer, totalRead)));
+				completedParts.add(CompletedPart.builder()
+						.partNumber(partNumber)
+						.eTag(uploadPartResponse.eTag())
+						.build());
+				log.info("Uploaded part (v3) {}, size {} to bucket {} for key {}", partNumber, totalRead, bucketName, key);
+				partNumber++;
 			}
-			CompleteMultipartUploadRequest compRequest = new CompleteMultipartUploadRequest(bucketName, key,
-                    initResponse.getUploadId(), partETags);
-            CompleteMultipartUploadResult completeResult = s3Client.completeMultipartUpload(compRequest);
-			log.info("Upload to bucket completed with {} bytes ! result={}", totalSize, completeResult.toString());
-		} catch(Exception err) {
-			log.error("Error in thread upload to bucket", err);
+
+			software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest completeRequest =
+					software.amazon.awssdk.services.s3.model.CompleteMultipartUploadRequest.builder()
+							.bucket(bucketName)
+							.key(key)
+							.uploadId(uploadId)
+							.multipartUpload(CompletedMultipartUpload.builder().parts(completedParts).build())
+							.build();
+			s3ClientV2.completeMultipartUpload(completeRequest);
+			log.info("Upload (v3) to bucket {} for key {} completed!", bucketName, key);
+		} catch (Exception err) {
+			log.error("Error in uploadV3 to bucket", err);
 			throw new CustomException(err.getMessage());
 		}
 	}
-	
+
 }
