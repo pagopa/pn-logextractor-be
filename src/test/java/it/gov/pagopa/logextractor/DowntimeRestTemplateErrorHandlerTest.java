@@ -14,6 +14,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.lang.NonNull;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +23,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 
 @SpringBootTest
+@ActiveProfiles("test")
 class DowntimeRestTemplateErrorHandlerTest {
 
   ClientHttpResponse response;
@@ -53,18 +56,15 @@ class DowntimeRestTemplateErrorHandlerTest {
   void testHasError_whenResponseIs4xx_thenReturnTrue() throws IOException {
     response = new ClientHttpResponse() {
       @Override
-      public HttpStatus getStatusCode() throws IOException {
+      @NonNull
+      public HttpStatus getStatusCode() {
         return HttpStatus.CONFLICT;
       }
 
       @Override
-      public int getRawStatusCode() throws IOException {
-        return 409;
-      }
-
-      @Override
-      public String getStatusText() throws IOException {
-        return null;
+      @NonNull
+      public String getStatusText() {
+        return "CONFLICT";
       }
 
       @Override
@@ -72,14 +72,16 @@ class DowntimeRestTemplateErrorHandlerTest {
       }
 
       @Override
+      @NonNull
       public InputStream getBody() throws IOException {
         return IOUtils.toInputStream(simpleObjectMapper.writeValueAsString(problem),
             Charset.defaultCharset());
       }
 
       @Override
+      @NonNull
       public HttpHeaders getHeaders() {
-        return null;
+        return HttpHeaders.EMPTY;
       }
     };
     Assertions.assertTrue(downtimeRestTemplateErrorHandler.hasError(response));
@@ -90,18 +92,15 @@ class DowntimeRestTemplateErrorHandlerTest {
   void testHasError_whenResponseIs5xx_thenReturnTrue() throws IOException {
     response = new ClientHttpResponse() {
       @Override
-      public HttpStatus getStatusCode() throws IOException {
+      @NonNull
+      public HttpStatus getStatusCode() {
         return HttpStatus.INTERNAL_SERVER_ERROR;
       }
 
       @Override
-      public int getRawStatusCode() throws IOException {
-        return 500;
-      }
-
-      @Override
-      public String getStatusText() throws IOException {
-        return null;
+      @NonNull
+      public String getStatusText() {
+        return "INTERNAL_SERVER_ERROR";
       }
 
       @Override
@@ -109,14 +108,16 @@ class DowntimeRestTemplateErrorHandlerTest {
       }
 
       @Override
+      @NonNull
       public InputStream getBody() throws IOException {
         return IOUtils.toInputStream(simpleObjectMapper.writeValueAsString(problem),
             Charset.defaultCharset());
       }
 
       @Override
+      @NonNull
       public HttpHeaders getHeaders() {
-        return null;
+        return HttpHeaders.EMPTY;
       }
     };
     Assertions.assertTrue(downtimeRestTemplateErrorHandler.hasError(response));
@@ -127,18 +128,15 @@ class DowntimeRestTemplateErrorHandlerTest {
   void testHandleError_whenResponseIs409_thenThrowsIntegrationException() throws IOException {
     response = new ClientHttpResponse() {
       @Override
-      public HttpStatus getStatusCode() throws IOException {
+      @NonNull
+      public HttpStatus getStatusCode() {
         return HttpStatus.CONFLICT;
       }
 
       @Override
-      public int getRawStatusCode() throws IOException {
-        return 409;
-      }
-
-      @Override
-      public String getStatusText() throws IOException {
-        return null;
+      @NonNull
+      public String getStatusText() {
+        return "CONFLICT";
       }
 
       @Override
@@ -146,14 +144,16 @@ class DowntimeRestTemplateErrorHandlerTest {
       }
 
       @Override
+      @NonNull
       public InputStream getBody() throws IOException {
         return IOUtils.toInputStream(simpleObjectMapper.writeValueAsString(problem),
             Charset.defaultCharset());
       }
 
       @Override
+      @NonNull
       public HttpHeaders getHeaders() {
-        return null;
+        return HttpHeaders.EMPTY;
       }
     };
     Assertions.assertThrows(IOException.class,
@@ -165,18 +165,15 @@ class DowntimeRestTemplateErrorHandlerTest {
   void testHandleError_whenResponseIs500_thenThrowsIntegrationException() throws IOException {
     response = new ClientHttpResponse() {
       @Override
-      public HttpStatus getStatusCode() throws IOException {
+      @NonNull
+      public HttpStatus getStatusCode() {
         return HttpStatus.INTERNAL_SERVER_ERROR;
       }
 
       @Override
-      public int getRawStatusCode() throws IOException {
-        return 500;
-      }
-
-      @Override
-      public String getStatusText() throws IOException {
-        return null;
+      @NonNull
+      public String getStatusText() {
+        return "INTERNAL_SERVER_ERROR";
       }
 
       @Override
@@ -184,14 +181,16 @@ class DowntimeRestTemplateErrorHandlerTest {
       }
 
       @Override
+      @NonNull
       public InputStream getBody() throws IOException {
         return IOUtils.toInputStream(simpleObjectMapper.writeValueAsString(problem),
             Charset.defaultCharset());
       }
 
       @Override
+      @NonNull
       public HttpHeaders getHeaders() {
-        return null;
+        return HttpHeaders.EMPTY;
       }
     };
     Assertions.assertThrows(IOException.class,
@@ -203,18 +202,15 @@ class DowntimeRestTemplateErrorHandlerTest {
   void testHandleError_whenResponseIs4xx_thenThrowsIntegrationException() throws IOException {
     response = new ClientHttpResponse() {
       @Override
-      public HttpStatus getStatusCode() throws IOException {
+      @NonNull
+      public HttpStatus getStatusCode() {
         return HttpStatus.NOT_ACCEPTABLE;
       }
 
       @Override
-      public int getRawStatusCode() throws IOException {
-        return 406;
-      }
-
-      @Override
-      public String getStatusText() throws IOException {
-        return null;
+      @NonNull
+      public String getStatusText() {
+        return "NOT_ACCEPTABLE";
       }
 
       @Override
@@ -222,14 +218,16 @@ class DowntimeRestTemplateErrorHandlerTest {
       }
 
       @Override
+      @NonNull
       public InputStream getBody() throws IOException {
         return IOUtils.toInputStream(simpleObjectMapper.writeValueAsString(problem),
             Charset.defaultCharset());
       }
 
       @Override
+      @NonNull
       public HttpHeaders getHeaders() {
-        return null;
+        return HttpHeaders.EMPTY;
       }
     };
     Assertions.assertThrows(IOException.class,

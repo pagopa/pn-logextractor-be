@@ -10,8 +10,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import it.gov.pagopa.logextractor.service.ZipInfo;
 import it.gov.pagopa.logextractor.service.ZipService;
+import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
+@ActiveProfiles("test")
 class ZipServiceTest {
 
 	@Autowired ZipService zipService;

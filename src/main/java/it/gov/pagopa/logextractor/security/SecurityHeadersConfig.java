@@ -2,8 +2,8 @@ package it.gov.pagopa.logextractor.security;
 
 import org.springframework.context.annotation.Configuration;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Configuration

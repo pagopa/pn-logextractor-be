@@ -119,7 +119,6 @@ public abstract class AbstractMock {
 	protected final String statusUrl = "/log-extractor/downtime/v1/status";
 	protected final String eventsUrl = "/log-extractor/downtime/v1/events";
 
-	protected final String fakeHeader = "Basic YWxhZGRpbjpvcGVuc2VzYW1l";
 	private static ObjectMapper mapper = new ObjectMapper();
 
 	@Mock
@@ -134,8 +133,8 @@ public abstract class AbstractMock {
 	
 	protected HttpHeaders getHeaders() {
 		HttpHeaders headers = new HttpHeaders();
-		headers.add("x-pagopa-pn-uid", fakeHeader);
-		headers.add("x-pagopa-pn-cx-type", fakeHeader);
+		headers.set("x-pagopa-pn-uid", "test-user-id");
+		headers.set("x-pagopa-pn-cx-type", "PF");
 		return headers;
 	}
 

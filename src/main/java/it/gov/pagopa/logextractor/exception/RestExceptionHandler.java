@@ -14,6 +14,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -59,8 +60,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
    * @return A new {@link ResponseEntity} with {@link Problem} body
    */
   @Override
-  protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-      HttpHeaders headers, HttpStatus status, WebRequest request) {
+  protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request){
     log.error(ExceptionUtils.getStackTrace(ex));
     Problem problemResponse = createProblem(HttpStatus.BAD_REQUEST,
         ResponseConstants.GENERIC_BAD_REQUEST_ERROR_ENGLISH_MESSAGE,

@@ -1,8 +1,8 @@
 package it.gov.pagopa.logextractor.dto.response;
 
 import java.io.Serializable;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import it.gov.pagopa.logextractor.annotation.RecipientType;
 import it.gov.pagopa.logextractor.util.constant.ValidationConstants;
 import lombok.AllArgsConstructor;
