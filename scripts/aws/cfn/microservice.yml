@@ -388,6 +388,7 @@ Resources:
         WAFName: !Sub '${ProjectName}-logextractor-be-bo'
         IntendedUsage: BACKOFFICE
         APIGatewayARNs: !GetAtt LogextractorBeApiGatewayBo.Outputs.APIGatewayARN
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
 
   ## Dashboard
   LogextractorBeMicroserviceCloudWatchDashboard:
