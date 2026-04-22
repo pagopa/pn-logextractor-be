@@ -1,7 +1,7 @@
 package it.gov.pagopa.logextractor.config;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import it.gov.pagopa.logextractor.enums.RedisMode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,7 @@ public class PnLogExtractorConnectionFactory extends JedisConnectionFactory {
     // Token refresh interval is set to 14 minutes because the token expires after 15 minutes. Reference: https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/auth-iam.html#:~:text=The%20IAM%20authentication%20token%20is%20valid%20for%2015%20minutes.%20For%20long%2Dlived%20connections%2C%20we%20recommend%20using%20a%20Redis%20OSS%20client%20that%20supports%20a%20credentials%20provider%20interface.
     private static final Long TOKEN_REFRESH_MINUTES = 14L;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private final AWSCredentialsProvider credentialsProvider = new DefaultAWSCredentialsProviderChain();
+    private final AwsCredentialsProvider credentialsProvider = DefaultCredentialsProvider.create();
     private final IAMAuthTokenRequest iamAuthTokenRequest;
     @Getter
     private final RedisMode redisMode;
@@ -67,7 +67,7 @@ public class PnLogExtractorConnectionFactory extends JedisConnectionFactory {
      * @throws URISyntaxException the uri syntax exception
      */
     private String generateAuthToken() throws URISyntaxException {
-        return this.iamAuthTokenRequest.toSignedRequestUri(this.credentialsProvider.getCredentials());
+        return this.iamAuthTokenRequest.toSignedRequestUri(this.credentialsProvider);
     }
 
     /**

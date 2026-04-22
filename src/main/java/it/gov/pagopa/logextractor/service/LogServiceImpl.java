@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
@@ -54,9 +53,6 @@ public class LogServiceImpl implements LogService {
 	@Value("${external.s3.saml.assertion.bucket}")
 	String s3Bucket;
 
-	@Autowired
-	AmazonS3 s3Client;
-	
 	@Autowired
 	NotificationApiHandler notificationApiHandler;
 	
@@ -275,7 +271,7 @@ public class LogServiceImpl implements LogService {
 						zipInfo.getZos());
 				zipService.closeEntry(zipInfo);
 	
-				s3DocumentDownloader.downloadToZip(s3Bucket, filenameCollector.getNames(), zipInfo);
+				s3DocumentDownloader.downloadToZipV2(s3Bucket, filenameCollector.getNames(), zipInfo);
 			} else {
 				if (requestData.getIun() != null) {
 					// use case 4
@@ -380,7 +376,7 @@ public class LogServiceImpl implements LogService {
 			deanonimizationService.deanonimizeDocuments(openSearchResponse, RecipientTypes.PF, zipInfo.getZos());
 			zipService.closeEntry(zipInfo);
 			
-			s3DocumentDownloader.downloadToZip(s3Bucket, filenameCollector.getNames(), zipInfo);
+			s3DocumentDownloader.downloadToZipV2(s3Bucket, filenameCollector.getNames(), zipInfo);
 	
 			Files.delete(openSearchResponse.toPath());
 			log.info("Deanonimization completed in {} ms, constructing service response...", System.currentTimeMillis() - performanceMillis);
