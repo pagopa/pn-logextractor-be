@@ -2,6 +2,7 @@ package it.gov.pagopa.logextractor.util.external.s3;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
@@ -36,15 +37,15 @@ public class S3DocumentDownloader {
 								.bucket(bucketName)
 								.key(name)
 								.build();
-				ResponseInputStream<GetObjectResponse> objectData = s3Client.getObject(request);
-				BufferedReader br = new BufferedReader(new InputStreamReader(objectData));
-				StringBuilder content = new StringBuilder();
-				String line;
-				while ((line = br.readLine()) != null) {
-					content.append(line);
+				try (ResponseInputStream<GetObjectResponse> objectData = s3Client.getObject(request);
+					 BufferedReader br = new BufferedReader(new InputStreamReader(objectData, StandardCharsets.UTF_8))) {
+					StringBuilder content = new StringBuilder();
+					String line;
+					while ((line = br.readLine()) != null) {
+						content.append(line);
+					}
+					zipService.addEntryWithContent(zipInfo, name, content.toString());
 				}
-				objectData.close();
-				zipService.addEntryWithContent(zipInfo, name, content.toString());
 				log.info("document (v2) {} retrieved in {} ms", name, System.currentTimeMillis() - t0);
 			} catch (Exception err) {
 				log.error("Error downloading document (v2) {} from S3 bucket {}", name, bucketName, err);

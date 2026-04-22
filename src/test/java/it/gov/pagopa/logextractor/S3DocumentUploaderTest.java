@@ -1,7 +1,6 @@
 package it.gov.pagopa.logextractor;
 
 import it.gov.pagopa.logextractor.exception.CustomException;
-import it.gov.pagopa.logextractor.util.FileUtilities;
 import it.gov.pagopa.logextractor.util.external.s3.S3DocumentUploader;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,9 +34,6 @@ class S3DocumentUploaderTest {
 
     @Mock
     private S3Client s3Client;
-
-    @Mock
-    private FileUtilities fileutils;
 
     @InjectMocks
     private S3DocumentUploader s3DocumentUploader;

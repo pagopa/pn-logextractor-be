@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
@@ -66,9 +68,11 @@ public class S3ClientService implements IStorageService {
 
 	public String downloadUrlV2(String objectKey) {
 		try {
-			if (getObjectV2(objectKey) == null) {
-				return "notready";
-			}
+			HeadObjectRequest headRequest = HeadObjectRequest.builder()
+					.bucket(bucketName)
+					.key(objectKey)
+					.build();
+			s3Client.headObject(headRequest);
 			log.info("Generating pre-signed URL for download of key {}", objectKey);
 			GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
 					.signatureDuration(Duration.ofHours(1))
@@ -78,6 +82,8 @@ public class S3ClientService implements IStorageService {
 			String url = presigned.url().toString();
 			log.info("Pre-Signed URL for download: {}", url);
 			return url;
+		} catch (NoSuchKeyException e) {
+			return "notready";
 		} catch (Exception e) {
 			log.error("Error getting downloadURL from S3", e);
 		}
@@ -94,7 +100,7 @@ public class S3ClientService implements IStorageService {
 							.build();
 			return s3Client.getObject(request);
 		} catch (S3Exception err) {
-			String errorCode = err.awsErrorDetails().errorCode();
+			String errorCode = err.awsErrorDetails() != null ? err.awsErrorDetails().errorCode() : null;
 			if ("NoSuchKey".equals(errorCode)) {
 				log.debug("download url not ready for key {}", key);
 				return null;

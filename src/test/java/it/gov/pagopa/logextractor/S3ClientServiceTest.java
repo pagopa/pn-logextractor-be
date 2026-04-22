@@ -16,6 +16,9 @@ import software.amazon.awssdk.http.AbortableInputStream;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
@@ -59,12 +62,8 @@ class S3ClientServiceTest {
         URL fakeUrl = new URL("https://s3.example.com/test-bucket/test/key.zip?X-Amz-Signature=abc");
         PresignedGetObjectRequest presignedRequest = mock(PresignedGetObjectRequest.class);
         when(presignedRequest.url()).thenReturn(fakeUrl);
+        when(s3Client.headObject(any(HeadObjectRequest.class))).thenReturn(HeadObjectResponse.builder().build());
         when(s3Presigner.presignGetObject(any(GetObjectPresignRequest.class))).thenReturn(presignedRequest);
-
-        ResponseInputStream<GetObjectResponse> fakeStream = new ResponseInputStream<>(
-                GetObjectResponse.builder().build(),
-                AbortableInputStream.create(new ByteArrayInputStream(new byte[0])));
-        when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(fakeStream);
 
         String result = s3ClientService.downloadUrlV2(KEY);
 
@@ -75,9 +74,8 @@ class S3ClientServiceTest {
     @Test
     @DisplayName("downloadUrlV2_oggettoAssente_restituisceNotready")
     void downloadUrlV2_oggettoAssente_restituisceNotready() {
-        S3Exception noSuchKey = mock(S3Exception.class);
-        when(noSuchKey.awsErrorDetails()).thenReturn(AwsErrorDetails.builder().errorCode("NoSuchKey").build());
-        when(s3Client.getObject(any(GetObjectRequest.class))).thenThrow(noSuchKey);
+        when(s3Client.headObject(any(HeadObjectRequest.class)))
+                .thenThrow(NoSuchKeyException.builder().message("NoSuchKey").build());
 
         String result = s3ClientService.downloadUrlV2(KEY);
 
