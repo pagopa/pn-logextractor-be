@@ -82,7 +82,7 @@ public class LogServiceImpl implements LogService {
 
 	@Override
 	@Async
-	public String getAnonymizedPersonLogs(String key, String pass, PersonLogsRequestDto requestData, String xPagopaHelpdUid, String xPagopaCxType)
+	public void getAnonymizedPersonLogs(String key, String pass, PersonLogsRequestDto requestData, String xPagopaHelpdUid, String xPagopaCxType)
 			throws IOException {
 		log.info(
 				"Anonymized logs retrieve process - START - user={}, userType={}, ticketNumber={}, "
@@ -133,7 +133,6 @@ public class LogServiceImpl implements LogService {
 		}
 		zipService.close(zipInfo);
 		log.info(LoggingConstants.ANONYMIZED_RETRIEVE_PROCESS_END, (System.currentTimeMillis() - serviceStartTime));
-		return zipInfo.getPassword();
 	}
 
 	@Override
