@@ -2,4 +2,4 @@
 * @pagopa/pn-pagopa-core-frontier
 
 # scripts/aws/cfn ownership on yml filesto administrators
-scripts/aws/cfn/*.yml @pagopa/pn-pagopa-infra\
+scripts/aws/cfn/*.yml @pagopa/pn-pagopa-infra
