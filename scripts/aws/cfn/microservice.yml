@@ -253,7 +253,12 @@ Parameters:
   ElasticCacheLogExtractorUserArn:
     Type: String
     Description: 'ElastiCacheUser for log-extractor'
-    
+  
+  JavaToolOptions:
+    Type: String
+    Default: ''
+    Description: Java tool options for the Fargate tasks
+
 Conditions:
   HasSamlAssertionKmsKeyArn: !Not [ !Equals [ !Ref SamlAssertionBucketKeyArn, '' ] ]
   HasSamlAssertionBucketArn: !Not [ !Equals [ !Ref SamlAssertionBucketArn, '' ] ]
@@ -321,6 +326,7 @@ Resources:
         TaskRoleManagedPolicyArn: !Ref LogextractorBeMicroserviceTaskManagedPolicy
         EcsLogGroup: !Ref EcsLogGroup
         LogAlarmStrategyV1: !Ref LogAlarmStrategy
+        JavaToolOptions: !Ref JavaToolOptions
         
   # Grant operational rights to PN-Downtime-Logs microservice
   LogextractorBeMicroserviceTaskManagedPolicy:
