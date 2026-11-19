@@ -259,6 +259,14 @@ Parameters:
     Default: ''
     Description: Java tool options for the Fargate tasks
 
+  CpuArchitecture:
+    Type: String
+    Default: 'ARM'
+    Description: CPU architecture for the Fargate tasks
+    AllowedValues:
+      - 'ARM'
+      - 'AMD'
+      
 Conditions:
   HasSamlAssertionKmsKeyArn: !Not [ !Equals [ !Ref SamlAssertionBucketKeyArn, '' ] ]
   HasSamlAssertionBucketArn: !Not [ !Equals [ !Ref SamlAssertionBucketArn, '' ] ]
@@ -327,7 +335,8 @@ Resources:
         EcsLogGroup: !Ref EcsLogGroup
         LogAlarmStrategyV1: !Ref LogAlarmStrategy
         JavaToolOptions: !Ref JavaToolOptions
-        
+        CpuArchitecture: !Ref CpuArchitecture
+
   # Grant operational rights to PN-Downtime-Logs microservice
   LogextractorBeMicroserviceTaskManagedPolicy:
     Type: AWS::IAM::ManagedPolicy
