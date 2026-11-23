@@ -334,7 +334,6 @@ Resources:
         TaskRoleManagedPolicyArn: !Ref LogextractorBeMicroserviceTaskManagedPolicy
         EcsLogGroup: !Ref EcsLogGroup
         LogAlarmStrategyV1: !Ref LogAlarmStrategy
-        LogAlarmStrategyV1: !Ref LogAlarmStrategy
         CpuArchitecture: !Ref CpuArchitecture
         JavaToolOptions: !Ref JavaToolOptions
   # Grant operational rights to PN-Downtime-Logs microservice
